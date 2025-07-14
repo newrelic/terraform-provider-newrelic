@@ -328,6 +328,10 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds
 				rawConfiguration.Thresholds = expandDashboardLineWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardLineWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -724,6 +728,19 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	cfg = expandDashboardWidgetNullValuesInput(w, cfg)
 	cfg = expandDashboardWidgetColorsInput(w, cfg)
 	cfg = expandDashboardWidgetUnitsInput(w, cfg)
+
+	// Handle tooltip configuration
+	if tooltip, ok := w["tooltip"]; ok && len(tooltip.([]interface{})) > 0 {
+		tooltipList := tooltip.([]interface{})
+		if len(tooltipList) > 0 && tooltipList[0] != nil {
+			tooltipMap := tooltipList[0].(map[string]interface{})
+			var tooltipConfig dashboards.DashboardWidgetTooltip
+			if mode, ok := tooltipMap["mode"]; ok {
+				tooltipConfig.Mode = mode.(string)
+			}
+			cfg.Tooltip = &tooltipConfig
+		}
+	}
 
 	if l, ok := w["limit"]; ok {
 		cfg.Limit = l.(float64)
@@ -1178,7 +1195,7 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	if len(options) == 0 {
 		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
 		// this is required to make options -> ignore_time_range backward compatible and show no drift
-		// when customer configuration does not comprise these attributes
+		// when customer configuration does not yet comprise these attributes
 		return nil
 	}
 
@@ -1382,6 +1399,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			if thresholds != nil {
 				out["threshold"] = thresholds
 			}
+		}
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardLineWidgetTooltip(rawCfg.Tooltip)
 		}
 
 	case "viz.markdown":
@@ -1843,4 +1864,40 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 		}
 
 	}
+}
+
+func expandDashboardLineWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
+
+	tooltipPath := fmt.Sprintf("page.%d.widget_line.%d.tooltip", pageIndex, widgetIndex)
+	if tooltipData, ok := d.GetOk(tooltipPath); ok && len(tooltipData.([]interface{})) > 0 {
+		tooltipList := tooltipData.([]interface{})
+		if len(tooltipList) > 0 && tooltipList[0] != nil {
+			tooltipMap := tooltipList[0].(map[string]interface{})
+
+			var tooltip dashboards.DashboardWidgetTooltip
+			if mode, ok := tooltipMap["mode"]; ok {
+				tooltip.Mode = mode.(string)
+			}
+
+			return &tooltip
+		}
+	}
+
+	return nil
+}
+
+func flattenDashboardLineWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) []interface{} {
+	if tooltip == nil {
+		return nil
+	}
+
+	var tooltipFetched = make(map[string]interface{})
+	var tooltipFetchedInterface []interface{}
+
+	if tooltip.Mode != "" {
+		tooltipFetched["mode"] = tooltip.Mode
+	}
+
+	tooltipFetchedInterface = append(tooltipFetchedInterface, tooltipFetched)
+	return tooltipFetchedInterface
 }
