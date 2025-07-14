@@ -121,7 +121,7 @@ resource "newrelic_one_dashboard" "exampledash" {
       refresh_rate = 30000 // 30 seconds
 
       nrql_query {
-        account_id = 12345
+        account_id = "[12345,23456]"
         query      = "FROM Transaction select max(duration) as 'max duration' where httpResponseCode = '504' timeseries since 5 minutes ago"
       }
 
@@ -473,8 +473,14 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
+  * `account_id` - (Optional) Determines the New Relic account ID for the dashboard. You can now provide a list of IDs to create the dashboard in multiple accounts. If omitted, it defaults to the account associated with the API key being used. When specified on a widget, it determines which account the widget will query. See [this page](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/newrelic_one_dashboard_multi_account_guide) for more details.
+    * Note: If a widget attempts to query data from an account for which you do not have permissions, Terraform will not throw an error. The operation will succeed, but the widget will display a "data inaccessible" message within the New Relic UI.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+
+-> **A Note on Drift Detection and account_id**
+For the most predictable drift detection behavior, we strongly recommend explicitly defining the account_id attribute within your nrql_query blocks.
+  * **When account_id is explicitly set**: Terraform will always detect and report a plan change if the widget's account configuration is modified outside of Terraform (e.g., in the New Relic UI). This is the recommended approach for configurations you want to manage strictly.
+  * **When account_id is omitted**: This is still a completely valid approach. The provider will automatically use a default account from your environment to create the widget.
 
 ```hcl
 widget_line {
@@ -485,7 +491,7 @@ widget_line {
   height = 3
 
   nrql_query {
-    account_id  = Another_Account_ID
+    account_id  = "[1234456,14322344]"
     query       = "FROM Transaction SELECT average(duration) FACET appName"
   }
 

@@ -1000,11 +1000,24 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 		var query dashboards.DashboardWidgetNRQLQueryInput
 		q := v.(map[string]interface{})
 
-		if acct, ok := q["account_id"]; ok {
-			query.AccountID = acct.(int)
+		if acct, ok := q["account_id"]; ok && acct != "" {
+			acctStr := fmt.Sprintf("%v", acct)
+
+			var ids []int // Attempt to parse the string as a JSON array
+			err := json.Unmarshal([]byte(acctStr), &ids)
+
+			if err == nil {
+				query.AccountIDS = ids
+			} else {
+				singleID, convErr := strconv.Atoi(acctStr) // Now, convert the original string to an integer.
+				if convErr != nil {
+					return nil, fmt.Errorf("could not convert account_id '%s' to an integer: %w", acctStr, convErr)
+				}
+				query.AccountID = singleID
+			}
 		}
 
-		if query.AccountID < 1 {
+		if query.AccountID < 1 && len(query.AccountIDS) < 1 {
 			defs := meta.(map[string]interface{})
 			if acct, ok := defs["account_id"]; ok {
 				query.AccountID = acct.(int)
@@ -1483,10 +1496,17 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
-		m["account_id"] = v.AccountID
 		m["query"] = v.Query
-
 		out[i] = m
+
+		var jsonBytes []byte
+		if len(v.AccountIDS) > 0 {
+			jsonBytes, _ = json.Marshal(v.AccountIDS)
+		} else if v.AccountID > 0 {
+			jsonBytes, _ = json.Marshal(v.AccountID)
+		}
+
+		m["account_id"] = string(jsonBytes)
 	}
 
 	return out
@@ -1737,6 +1757,7 @@ func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{
 }
 
 func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+
 	var errorsList []string
 
 	err := validateDashboardVariableOptions(d)

@@ -2,7 +2,10 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -519,10 +522,23 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The account id used for the NRQL query.",
+				Description: "The account ID(s) used for the NRQL query. Can be a single account ID or multiple account IDs in a JSON-encoded array.",
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string) // It's valid if it's a simple number string or number.
+					if _, err := strconv.Atoi(v); err == nil {
+						return
+					}
+
+					var ids []int // It's also valid if it's a JSON array of numbers.
+					if err := json.Unmarshal([]byte(v), &ids); err == nil {
+						return
+					}
+					errs = append(errs, fmt.Errorf("%q must be a single numeric ID or string containing a single numeric ID or a JSON-encoded array of numeric IDs", key))
+					return
+				},
 			},
 			"query": {
 				Type:        schema.TypeString,
