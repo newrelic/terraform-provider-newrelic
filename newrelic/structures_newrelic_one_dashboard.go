@@ -729,19 +729,6 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	cfg = expandDashboardWidgetColorsInput(w, cfg)
 	cfg = expandDashboardWidgetUnitsInput(w, cfg)
 
-	// Handle tooltip configuration
-	if tooltip, ok := w["tooltip"]; ok && len(tooltip.([]interface{})) > 0 {
-		tooltipList := tooltip.([]interface{})
-		if len(tooltipList) > 0 && tooltipList[0] != nil {
-			tooltipMap := tooltipList[0].(map[string]interface{})
-			var tooltipConfig dashboards.DashboardWidgetTooltip
-			if mode, ok := tooltipMap["mode"]; ok {
-				tooltipConfig.Mode = mode.(string)
-			}
-			cfg.Tooltip = &tooltipConfig
-		}
-	}
-
 	if l, ok := w["limit"]; ok {
 		cfg.Limit = l.(float64)
 	}
@@ -1195,7 +1182,7 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	if len(options) == 0 {
 		// if nothing exists in the options list in the state (configuration), "do nothing", to avoid drift
 		// this is required to make options -> ignore_time_range backward compatible and show no drift
-		// when customer configuration does not yet comprise these attributes
+		// when customer configuration does not comprise these attributes
 		return nil
 	}
 
