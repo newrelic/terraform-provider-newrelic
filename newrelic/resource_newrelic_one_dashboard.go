@@ -1005,9 +1005,14 @@ func dashboardWidgetTooltipSchema() *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"mode": {
-					Type:         schema.TypeString,
-					Required:     true,
-					Description:  "Tooltip display mode.",
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Tooltip display mode.",
+					ValidateFunc: validation.StringInSlice([]string{
+						string(dashboards.DashboardTooltipTypes.ALL),
+						string(dashboards.DashboardTooltipTypes.SINGLE),
+						string(dashboards.DashboardTooltipTypes.HIDDEN),
+					}, false),
 				},
 			},
 		},
