@@ -139,7 +139,7 @@ func TestAccNewRelicOneDashboard_UpdateInvalidNRQL(t *testing.T) {
 			// Test: Update
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("Invalid widget input"),
+				ExpectError: regexp.MustCompile(`query error; Input: \[\[PageInput: \[\[WidgetInput: \[Error parsing 'THIS IS INVALID NRQL', cause: Invalid nrql query]]]]]`),
 			},
 		},
 	})
@@ -156,7 +156,7 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 			// Test: Create
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("Invalid widget input"),
+				ExpectError: regexp.MustCompile(`query error; Input: \[\[PageInput: \[\[WidgetInput: \[Error parsing 'THIS IS INVALID NRQL', cause: Invalid nrql query]]]]]`),
 			},
 		},
 	})
