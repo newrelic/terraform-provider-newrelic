@@ -202,12 +202,15 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 		page.Widgets = []dashboards.DashboardWidgetInput{}
 		// For each of the widget type, we need to expand them as well
 		if widgets, ok := p["widget_area"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.area")
 				if err != nil {
 					return nil, err
 				}
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -330,7 +333,7 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.Thresholds = expandDashboardLineWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
 
 				// Set tooltip
-				rawConfiguration.Tooltip = expandDashboardLineWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -428,12 +431,15 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_stacked_bar"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.stacked-bar")
 				if err != nil {
 					return nil, err
 				}
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -1316,6 +1322,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.area":
 		widgetType = "widget_area"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
 	case "viz.bar":
 		widgetType = "widget_bar"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1389,7 +1399,7 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		}
 
 		if rawCfg.Tooltip != nil {
-			out["tooltip"] = flattenDashboardLineWidgetTooltip(rawCfg.Tooltip)
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
 		}
 
 	case "viz.markdown":
@@ -1398,6 +1408,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.stacked-bar":
 		widgetType = "widget_stacked_bar"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
 	case "viz.pie":
 		widgetType = "widget_pie"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1853,7 +1867,7 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 	}
 }
 
-func expandDashboardLineWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
+func expandDashboardWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
 
 	tooltipPath := fmt.Sprintf("page.%d.widget_line.%d.tooltip", pageIndex, widgetIndex)
 	if tooltipData, ok := d.GetOk(tooltipPath); ok && len(tooltipData.([]interface{})) > 0 {
@@ -1873,7 +1887,7 @@ func expandDashboardLineWidgetConfigurationTooltipInput(d *schema.ResourceData, 
 	return nil
 }
 
-func flattenDashboardLineWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) []interface{} {
+func flattenDashboardWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) []interface{} {
 	if tooltip == nil {
 		return nil
 	}

@@ -1228,10 +1228,12 @@ resource "newrelic_one_dashboard" "tooltip_test" {
         query      = "FROM Transaction SELECT count(*) TIMESERIES"
       }
 
-      
+      tooltip {
+	    mode = "all"
+	  }
     }
 
-    widget_bar {
+    widget_stacked_bar {
       title = "Bar widget with tooltip"
       row = 4
       column = 1
@@ -1243,7 +1245,9 @@ resource "newrelic_one_dashboard" "tooltip_test" {
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
 
-      
+      tooltip {
+	    mode = "all"
+	  }
     }
   }
 }`
@@ -1288,10 +1292,12 @@ resource "newrelic_one_dashboard" "tooltip_test" {
         query      = "FROM Transaction SELECT count(*) TIMESERIES"
       }
 
-      
+      tooltip {
+        mode = "single"
+      }
     }
 
-    widget_bar {
+    widget_stacked_bar {
       title = "Bar widget with tooltip"
       row = 4
       column = 1
@@ -1303,7 +1309,9 @@ resource "newrelic_one_dashboard" "tooltip_test" {
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
 
-      
+      tooltip {
+        mode = "single"
+      }
     }
   }
 }`

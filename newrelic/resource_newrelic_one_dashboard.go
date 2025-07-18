@@ -536,6 +536,8 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 func dashboardWidgetAreaSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
+	s["tooltip"] = dashboardWidgetTooltipSchema()
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -729,6 +731,8 @@ func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
 
 func dashboardWidgetStackedBarSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
+
+	s["tooltip"] = dashboardWidgetTooltipSchema()
 
 	return &schema.Resource{
 		Schema: s,
