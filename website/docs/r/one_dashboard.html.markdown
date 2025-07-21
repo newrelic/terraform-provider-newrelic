@@ -134,6 +134,10 @@ resource "newrelic_one_dashboard" "exampledash" {
       y_axis_left_min = 0
       y_axis_left_max = 1
       
+      tooltip {
+        mode = "single"
+      }
+      
       y_axis_right {
         y_axis_right_zero   = true
         y_axis_right_min    = 0
@@ -308,6 +312,7 @@ All nested `widget` blocks support the following common arguments:
   * `units` - (Optional) A nested block that describes units on your Y axis. See [Nested Units blocks](#nested-units-blocks) below for details.
   * `colors` - (Optional) A nested block that describes colors of your charts per series. See [Nested Colors blocks](#nested-colors-blocks) below for details.
   *  `refresh_rate` - (Optional) This attribute determines the frequency for data refresh specified in milliseconds. Accepted values are `auto` for default value, `0` for no refresh, `5000` for 5 seconds, `30000` for 30 seconds, `60000` for 60 seconds, `300000` for 5 minutes, `1800000` for 30 minutes, `3600000` for 60 minute, `10800000` for 3 hours, `43200000` for 12 hours and `86400000` for 24 hours.
+  * `tooltip` - (Optional) A nested block that describes tooltip configuration for area, line, and stacked bar widgets. See [Nested tooltip blocks](#nested-tooltip-blocks) below for details. 
 
 Each widget type supports an additional set of arguments:
 
@@ -532,6 +537,15 @@ The following arguments are supported:
 
 * `color` - (Optional) Choose a color to customize the color of your charts per series in area, bar, line, pie, and stacked bar charts. Accepted values are RGB, HEX, or HSL code.
 * `series_overrides` - (Optional) A Nested block which will take two string attributes `color` and `series_name`. This nested block is used to customize colors of individual.
+
+### Nested `tooltip` blocks
+
+The following arguments are supported:
+
+* `mode` - (Required) The tooltip display mode. Valid values are:
+  * `all` - Show tooltip for all data points.
+  * `single` - Show tooltip for a single data point.
+  * `hidden` - Hide tooltips completely.
 
 ## Additional Examples
 

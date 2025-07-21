@@ -139,7 +139,7 @@ func TestAccNewRelicOneDashboard_UpdateInvalidNRQL(t *testing.T) {
 			// Test: Update
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("Invalid widget input"),
+				ExpectError: regexp.MustCompile(`query error; Input: \[\[PageInput: \[\[WidgetInput: \[Error parsing 'THIS IS INVALID NRQL', cause: Invalid nrql query]]]]]`),
 			},
 		},
 	})
@@ -156,7 +156,7 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 			// Test: Create
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("Invalid widget input"),
+				ExpectError: regexp.MustCompile(`query error; Input: \[\[PageInput: \[\[WidgetInput: \[Error parsing 'THIS IS INVALID NRQL', cause: Invalid nrql query]]]]]`),
 			},
 		},
 	})
@@ -283,6 +283,52 @@ func TestAccNewRelicOneDashboard_EmptyPage(t *testing.T) {
 				ResourceName:      "newrelic_one_dashboard.bar",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_Tooltip tests creating and updating dashboards with tooltip configuration
+func TestAccNewRelicOneDashboard_Tooltip(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// Create dashboard with tooltip
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_WithTooltip(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.tooltip_test", 0),
+				),
+			},
+			// Update tooltip configuration
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_WithTooltipUpdated(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.tooltip_test", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.tooltip_test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidTooltipMode checks for proper response if a tooltip is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidTooltipMode(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_line.0.tooltip.0.mode to be one of \[all single hidden\], got invalid`),
 			},
 		},
 	})
@@ -1112,6 +1158,159 @@ resource "newrelic_one_dashboard" "bar" {
       column = 1
       nrql_query {
         query      = "THIS IS INVALID NRQL"
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL generates a basic dashboard with Invalid Tooltip Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_line {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT 2 TIMESERIES"
+      }
+      tooltip {
+        mode = "invalid_mode"
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_WithTooltip generates a basic dashboard with Valid Tooltip Configuration
+func testAccCheckNewRelicOneDashboardConfig_WithTooltip(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "tooltip_test" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `_page"
+
+    widget_line {
+      title = "Line widget with tooltip"
+      row = 1
+      column = 1
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT average(duration) TIMESERIES"
+      }
+
+      tooltip {
+        mode = "all"
+      }
+    }
+
+    widget_area {
+      title = "Area widget with tooltip"
+      row = 1
+      column = 7
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) TIMESERIES"
+      }
+
+      tooltip {
+	    mode = "all"
+	  }
+    }
+
+    widget_stacked_bar {
+      title = "Bar widget with tooltip"
+      row = 4
+      column = 1
+      height = 3
+      width = 12
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) FACET name"
+      }
+
+      tooltip {
+	    mode = "all"
+	  }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_WithTooltipUpdated generates a basic dashboard with Updated Tooltip Configuration
+func testAccCheckNewRelicOneDashboardConfig_WithTooltipUpdated(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "tooltip_test" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `_page"
+
+    widget_line {
+      title = "Line widget with tooltip"
+      row = 1
+      column = 1
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT average(duration) TIMESERIES"
+      }
+
+      tooltip {
+        mode = "single"
+      }
+    }
+
+    widget_area {
+      title = "Area widget with tooltip"
+      row = 1
+      column = 7
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) TIMESERIES"
+      }
+
+      tooltip {
+        mode = "single"
+      }
+    }
+
+    widget_stacked_bar {
+      title = "Bar widget with tooltip"
+      row = 4
+      column = 1
+      height = 3
+      width = 12
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) FACET name"
+      }
+
+      tooltip {
+        mode = "single"
       }
     }
   }
