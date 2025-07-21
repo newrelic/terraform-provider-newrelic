@@ -65,7 +65,7 @@ func resourceNewRelicEntityTags() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Second),
+			Create: schema.DefaultTimeout(180 * time.Second),
 		},
 	}
 }
