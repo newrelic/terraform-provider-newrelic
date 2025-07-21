@@ -536,6 +536,8 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 func dashboardWidgetAreaSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
 
+	s["tooltip"] = dashboardWidgetTooltipSchema()
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -696,6 +698,8 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 		},
 	}
 
+	s["tooltip"] = dashboardWidgetTooltipSchema()
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -727,6 +731,8 @@ func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
 
 func dashboardWidgetStackedBarSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
+
+	s["tooltip"] = dashboardWidgetTooltipSchema()
 
 	return &schema.Resource{
 		Schema: s,
@@ -992,4 +998,27 @@ func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	return nil
+}
+
+func dashboardWidgetTooltipSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Tooltip configuration for the widget.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"mode": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Tooltip display mode.",
+					ValidateFunc: validation.StringInSlice([]string{
+						string(dashboards.DashboardTooltipTypes.ALL),
+						string(dashboards.DashboardTooltipTypes.SINGLE),
+						string(dashboards.DashboardTooltipTypes.HIDDEN),
+					}, false),
+				},
+			},
+		},
+	}
 }
