@@ -522,9 +522,9 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				//Computed:    true,
 				Description: "The account ID(s) used for the NRQL query. Can be a single account ID or multiple account IDs in a JSON-encoded array.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(string) // It's valid if it's a simple number string or number.

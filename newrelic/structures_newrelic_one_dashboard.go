@@ -1500,8 +1500,10 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 		out[i] = m
 
 		var jsonBytes []byte
-		if len(v.AccountIDS) > 0 {
+		if len(v.AccountIDS) > 1 {
 			jsonBytes, _ = json.Marshal(v.AccountIDS)
+		} else if len(v.AccountIDS) == 1 {
+			jsonBytes, _ = json.Marshal(v.AccountIDS[0])
 		} else if v.AccountID > 0 {
 			jsonBytes, _ = json.Marshal(v.AccountID)
 		}
