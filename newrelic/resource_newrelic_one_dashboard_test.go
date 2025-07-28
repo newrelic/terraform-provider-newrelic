@@ -178,7 +178,14 @@ func TestAccNewRelicOneDashboard_PageNRQLAccountIdConflict(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(rName, strconv.Itoa(testAccountID)),
+				Config:      testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(rName, strconv.Itoa(testAccountID)),
+				ExpectError: regexp.MustCompile(`Use a single numeric ID instead of a list`),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(
+					rName,
+					fmt.Sprintf("%s,%s", strconv.Itoa(testAccountID), strconv.Itoa(testSubAccountID)),
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 10), // Sleep waiting for entity re-indexing
 				),
