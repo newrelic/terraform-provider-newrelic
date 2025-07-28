@@ -43,10 +43,8 @@ jobs:
         run: make lint
 
       - name: Check links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        uses: JustinBeckwith/linkinator-action@v1
         with:
-          use-quiet-mode: 'yes'
-          use-verbose-mode: 'yes'
-          config-file: '.markdownlinkcheck.json'
-          folder-path: 'website/docs'
-          file-extension: '.markdown'
+          paths: 'website/docs/**/*.markdown'
+          config: '.linkinator.json'
+

@@ -202,12 +202,15 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 		page.Widgets = []dashboards.DashboardWidgetInput{}
 		// For each of the widget type, we need to expand them as well
 		if widgets, ok := p["widget_area"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.area")
 				if err != nil {
 					return nil, err
 				}
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -328,6 +331,10 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds
 				rawConfiguration.Thresholds = expandDashboardLineWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -424,12 +431,15 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_stacked_bar"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.stacked-bar")
 				if err != nil {
 					return nil, err
 				}
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -1312,6 +1322,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.area":
 		widgetType = "widget_area"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
 	case "viz.bar":
 		widgetType = "widget_bar"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1384,12 +1398,20 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			}
 		}
 
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
+
 	case "viz.markdown":
 		widgetType = "widget_markdown"
 		out["text"] = rawCfg.Text
 	case "viz.stacked-bar":
 		widgetType = "widget_stacked_bar"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
 	case "viz.pie":
 		widgetType = "widget_pie"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1843,4 +1865,40 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 		}
 
 	}
+}
+
+func expandDashboardWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
+
+	tooltipPath := fmt.Sprintf("page.%d.widget_line.%d.tooltip", pageIndex, widgetIndex)
+	if tooltipData, ok := d.GetOk(tooltipPath); ok && len(tooltipData.([]interface{})) > 0 {
+		tooltipList := tooltipData.([]interface{})
+		if len(tooltipList) > 0 && tooltipList[0] != nil {
+			tooltipMap := tooltipList[0].(map[string]interface{})
+
+			var tooltip dashboards.DashboardWidgetTooltip
+			if mode, ok := tooltipMap["mode"]; ok {
+				tooltip.Mode = mode.(string)
+			}
+
+			return &tooltip
+		}
+	}
+
+	return nil
+}
+
+func flattenDashboardWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) []interface{} {
+	if tooltip == nil {
+		return nil
+	}
+
+	var tooltipFetched = make(map[string]interface{})
+	var tooltipFetchedInterface []interface{}
+
+	if tooltip.Mode != "" {
+		tooltipFetched["mode"] = tooltip.Mode
+	}
+
+	tooltipFetchedInterface = append(tooltipFetchedInterface, tooltipFetched)
+	return tooltipFetchedInterface
 }

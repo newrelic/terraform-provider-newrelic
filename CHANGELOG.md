@@ -1,14 +1,50 @@
-<a name="v3.61.2"></a>
-## [v3.61.2] - 2025-04-28
+<a name="v3.64.0"></a>
+## [v3.64.0] - 2025-07-21
+### Bug Fixes
+- **entity-tags:** resolve `newrelic_entity_tags` resource issue ([#2913](https://github.com/newrelic/terraform-provider-newrelic/issues/2913))
+
+### Features
+- **tooltip-support:** add tooltip support in dashboard rawConfiguration ([#2911](https://github.com/newrelic/terraform-provider-newrelic/issues/2911))
+
+<a name="v3.63.0"></a>
+## [v3.63.0] - 2025-06-24
+### Features
+- updated html markdown
+- enable workflow automation entities creation
+- **cloud:** added AWS AutoDiscovery Slug for configure-integration API ([#2898](https://github.com/newrelic/terraform-provider-newrelic/issues/2898))
+
+<a name="v3.62.1"></a>
+## [v3.62.1] - 2025-06-09
+### Bug Fixes
+- resolve distributed tracing flag misfunction bug ([#2889](https://github.com/newrelic/terraform-provider-newrelic/issues/2889))
+- **synthetics:** disable count check to track changes outside of terraform scope in synthetics_secure_credential ([#2891](https://github.com/newrelic/terraform-provider-newrelic/issues/2891))
+
 ### Documentation Updates
-- correct typo in muting rule example
+- enhances newrelic_api_access_key resource documentation ([#2884](https://github.com/newrelic/terraform-provider-newrelic/issues/2884))
+
+<a name="v3.62.0"></a>
+## [v3.62.0] - 2025-05-22
+### Features
+- **alerts:** add support for silent alerts to `newrelic_nrql_alert_condition` via `disable_health_status_reporting` ([#2871](https://github.com/newrelic/terraform-provider-newrelic/issues/2871))
+
+<a name="v3.61.3"></a>
+## [v3.61.3] - 2025-05-21
+### Bug Fixes
+- **user_module:** minimal commit to trigger a release v3.61.3 ([#2882](https://github.com/newrelic/terraform-provider-newrelic/issues/2882))
+
+<a name="v3.61.2"></a>
+## [v3.61.2] - 2025-05-21
+### Bug Fixes
+- **browserapp:** allow `loader_type` of browser apps to be updated ([#2877](https://github.com/newrelic/terraform-provider-newrelic/issues/2877))
 
 <a name="v3.61.1"></a>
-## [v3.61.1] - 2025-04-28
+## [v3.61.1] - 2025-05-21
 ### Bug Fixes
+- **release:** revert v3.61.1, v3.62.2 changelog updates to trigger new release ([#2879](https://github.com/newrelic/terraform-provider-newrelic/issues/2879))
 - **synthetics:** allow public locations of ping and browser monitors to be read ([#2864](https://github.com/newrelic/terraform-provider-newrelic/issues/2864))
 
 ### Documentation Updates
+- correct typo in muting rule example
 - adds a note about the order of widgets in `one_dashboard` resource ([#2865](https://github.com/newrelic/terraform-provider-newrelic/issues/2865))
 
 <a name="v3.61.0"></a>
@@ -1706,10 +1742,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -2376,7 +2412,12 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.64.0...HEAD
+[v3.64.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.63.0...v3.64.0
+[v3.63.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.1...v3.63.0
+[v3.62.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.0...v3.62.1
+[v3.62.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.3...v3.62.0
+[v3.61.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.2...v3.61.3
 [v3.61.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.1...v3.61.2
 [v3.61.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.61.0...v3.61.1
 [v3.61.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.60.2...v3.61.0
@@ -2575,9 +2616,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2
