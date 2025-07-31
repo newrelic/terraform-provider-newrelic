@@ -2,14 +2,19 @@ locals {
   freeform_tags = {
     newrelic-terraform = "true"
   }
-  image_url = "${var.region}.ocir.io/${var.tenancy_namespace}/${var.repository_name}/${var.function_name}:${var.repository_version}"
+  image_url = "iad.ocir.io/idfmbxeaoavl/sanath-testing-registry/oci-function-x86:0.0.1"
+  function_app_name = "newrelic-logs-function-app"
+  function_app_shape = "GENERIC_X86"
+  connector_hub_name = "newrelic-logs-connector-hub"
+  newrelic_logs_policy = "newrelic-logs-policy"
+  dynamic_group_name = "newrelic-logging-dynamic-group"
 }
 
 resource "oci_identity_dynamic_group" "nr_serviceconnector_group" {
   compartment_id = var.tenancy_ocid
   description    = "[DO NOT REMOVE] Dynamic group for service connector"
   matching_rule  = "All {resource.type = 'serviceconnector'}"
-  name           = var.dynamic_group_name
+  name           = local.dynamic_group_name
   defined_tags   = {}
   freeform_tags  = local.freeform_tags
 }
@@ -19,11 +24,11 @@ resource "oci_identity_policy" "log_forwarding_policy" {
   depends_on     = [oci_identity_dynamic_group.nr_serviceconnector_group]
   compartment_id = var.tenancy_ocid
   description    = "[DO NOT REMOVE] Policy to have any connector hub read from source and write to a target function"
-  name           = var.newrelic_logs_policy
+  name           = local.newrelic_logs_policy
   statements     = [
-    "Allow dynamic-group ${var.dynamic_group_name} to read logs in tenancy",
-    "Allow dynamic-group ${var.dynamic_group_name} to use fn-function in tenancy",
-    "Allow dynamic-group ${var.dynamic_group_name} to use fn-invocation in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to read logs in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to use fn-function in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to use fn-invocation in tenancy",
   ]
   defined_tags  = {}
   freeform_tags = local.freeform_tags
@@ -50,10 +55,10 @@ resource "oci_functions_application" "logs_function_app" {
     "ACCOUNT_ID"                   = var.newrelic_account_id
   }
   defined_tags               = {}
-  display_name               = var.function_app_name
+  display_name               = local.function_app_name
   freeform_tags              = local.freeform_tags
   network_security_group_ids = []
-  shape                      = var.function_app_shape
+  shape                      = local.function_app_shape
   subnet_ids                 = [var.subnet_id]
 }
 
@@ -74,7 +79,7 @@ resource "oci_functions_function" "logs_function" {
 resource "oci_sch_service_connector" "nr_service_connector" {
   depends_on     = [oci_functions_function.logs_function]
   compartment_id = var.compartment_ocid
-  display_name   = var.connector_hub_name
+  display_name   = local.connector_hub_name
 
   source {
     kind = "logging"

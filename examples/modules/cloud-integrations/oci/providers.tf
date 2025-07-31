@@ -10,3 +10,7 @@ terraform {
     }
   }
 }
+
+provider "newrelic" {
+  account_id = 2813435
+}
