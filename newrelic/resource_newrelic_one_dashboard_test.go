@@ -162,6 +162,43 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_PageNRQLAccountIdConflict ensures that we set both multiple account_ids and a single account_id in a same NRQL query block with account_id key
+func TestAccNewRelicOneDashboard_PageNRQLAccountIdConflict(t *testing.T) {
+
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountId(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(rName, strconv.Itoa(testAccountID)),
+				ExpectError: regexp.MustCompile(`Use a single numeric ID instead of a list`),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(
+					rName,
+					fmt.Sprintf("%s,%s", strconv.Itoa(testAccountID), strconv.Itoa(testSubAccountID)),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 10), // Sleep waiting for entity re-indexing
+				),
+			},
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 // TestAccNewRelicOneDashboard_FilterCurrentDashboard Checks if linked_entity_guid is set after updating
 func TestAccNewRelicOneDashboard_FilterCurrentDashboard(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
@@ -1311,6 +1348,50 @@ resource "newrelic_one_dashboard" "tooltip_test" {
 
       tooltip {
         mode = "single"
+      }
+    }
+  }
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountId(dashboardName string, accountID string) string {
+
+	return `
+	resource "newrelic_one_dashboard" "bar" {
+	  name = "` + dashboardName + `"
+	  permissions = "private"
+		page {
+		name = "` + dashboardName + `"
+		widget_line {
+		  title = "foo"
+		  row = 1
+		  column = 1
+		  nrql_query {
+			account_id = ` + accountID + `
+			query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
+		  }
+		}
+	  }
+	}
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_line {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+		account_id = jsonencode([` + accountID + `])
+        query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
       }
     }
   }

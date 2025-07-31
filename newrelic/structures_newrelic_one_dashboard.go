@@ -63,6 +63,48 @@ func checkForNilElements(d []interface{}) bool {
 	return false
 }
 
+func validateDashboardWidgetNRQLQueryAccountIDs(accountIDValue interface{}, key string) (warns []string, errs []error) {
+	accountIDValueAsString := accountIDValue.(string)
+	if _, err := strconv.Atoi(accountIDValueAsString); err == nil {
+		return
+	}
+
+	// the following change would not make sense, as the existence of `jsonencode()` cannot be checked for, as the account IDs are already
+	// unpacked into integers, when received by Terraform
+
+	//if strings.Contains(accountIDValueAsString, "[") && strings.Contains(accountIDValueAsString, "]") && !strings.HasPrefix(accountIDValueAsString, "jsonencode(") {
+	//	errs = append(errs, fmt.Errorf("%q contains an array declaration but is not JSON-encoded. Use `jsonencode()` to encode the array.", key))
+	//	return
+	//}
+
+	var accountIDsUnpackedFromJSONString []int
+	if err := json.Unmarshal([]byte(accountIDValueAsString), &accountIDsUnpackedFromJSONString); err == nil {
+		if len(accountIDsUnpackedFromJSONString) == 1 {
+			errs = append(
+				errs,
+				fmt.Errorf(
+					"invalid input '%s': %q contains only one ID `jsonencode([%d])`. Use a single numeric ID instead of a list, %d",
+					accountIDValueAsString,
+					key,
+					accountIDsUnpackedFromJSONString[0],
+					accountIDsUnpackedFromJSONString[0],
+				),
+			)
+			return
+		}
+		return
+	}
+	errs = append(
+		errs,
+		fmt.Errorf(
+			"invalid input '%s': %q must be a single numeric ID or a JSON-encoded array of numeric IDs",
+			accountIDValueAsString,
+			key,
+		),
+	)
+	return
+}
+
 func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
@@ -1000,11 +1042,24 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 		var query dashboards.DashboardWidgetNRQLQueryInput
 		q := v.(map[string]interface{})
 
-		if acct, ok := q["account_id"]; ok {
-			query.AccountID = acct.(int)
+		if acct, ok := q["account_id"]; ok && acct != "" {
+			acctStr := fmt.Sprintf("%v", acct)
+
+			var ids []int // Attempt to parse the string as a JSON array
+			err := json.Unmarshal([]byte(acctStr), &ids)
+
+			if err == nil {
+				query.AccountIDS = ids
+			} else {
+				singleID, convErr := strconv.Atoi(acctStr) // Now, convert the original string to an integer.
+				if convErr != nil {
+					return nil, fmt.Errorf("could not convert account_id '%s' to an integer: %w", acctStr, convErr)
+				}
+				query.AccountID = singleID
+			}
 		}
 
-		if query.AccountID < 1 {
+		if query.AccountID < 1 && len(query.AccountIDS) < 1 {
 			defs := meta.(map[string]interface{})
 			if acct, ok := defs["account_id"]; ok {
 				query.AccountID = acct.(int)
@@ -1483,8 +1538,20 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
-		m["account_id"] = v.AccountID
 		m["query"] = v.Query
+
+		var accountIDResultantString string
+		if len(v.AccountIDS) > 1 {
+			accountIDBytes, _ := json.Marshal(v.AccountIDS)
+			accountIDResultantString = string(accountIDBytes)
+		} else {
+			if v.AccountID != 0 {
+				accountIDResultantString = strconv.Itoa(v.AccountID)
+			} else if len(v.AccountIDS) == 1 {
+				accountIDResultantString = strconv.Itoa(v.AccountIDS[0])
+			}
+		}
+		m["account_id"] = accountIDResultantString
 
 		out[i] = m
 	}
