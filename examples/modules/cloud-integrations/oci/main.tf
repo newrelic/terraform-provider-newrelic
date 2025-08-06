@@ -10,7 +10,13 @@ locals {
   dynamic_group_name = "newrelic-logging-dynamic-group"
 }
 
-resource "oci_identity_dynamic_group" "nr_serviceconnector_group" {
+# ToDo: Enable once infra team completes this task https://github.com/newrelic/terraform-provider-newrelic/pull/2907
+# resource "newrelic_cloud_oci_link_account" "nr_link_account" {
+#   tenant_id = var.tenancy_ocid
+#   name = var.tenancy_ocid
+# }
+
+resource "oci_identity_dynamic_group" "nr_logging_service_connector_dg" {
   compartment_id = var.tenancy_ocid
   description    = "[DO NOT REMOVE] Dynamic group for service connector"
   matching_rule  = "All {resource.type = 'serviceconnector'}"
@@ -21,7 +27,7 @@ resource "oci_identity_dynamic_group" "nr_serviceconnector_group" {
 
 # Dynamic group for service connector
 resource "oci_identity_policy" "log_forwarding_policy" {
-  depends_on     = [oci_identity_dynamic_group.nr_serviceconnector_group]
+  depends_on     = [oci_identity_dynamic_group.nr_logging_service_connector_dg]
   compartment_id = var.tenancy_ocid
   description    = "[DO NOT REMOVE] Policy to have any connector hub read from source and write to a target function"
   name           = local.newrelic_logs_policy
@@ -34,21 +40,11 @@ resource "oci_identity_policy" "log_forwarding_policy" {
   freeform_tags = local.freeform_tags
 }
 
-# New Relic API Access Key
-resource "newrelic_api_access_key" "newrelic_aws_access_key" {
-  account_id  = var.newrelic_account_id
-  key_type    = "INGEST"
-  ingest_type = "LICENSE"
-  name        = "logging-integrations-ingest-key"
-  notes       = "Ingest License key for OCI Logging Integrations"
-}
-
 # Function Application
 resource "oci_functions_application" "logs_function_app" {
   depends_on     = [oci_identity_policy.log_forwarding_policy]
   compartment_id = var.compartment_ocid
   config = {
-    "LICENSE_KEY"                  = newrelic_api_access_key.newrelic_aws_access_key.key
     "DEBUG_ENABLED"                = var.debug_enabled
     "REGION"                       = var.nr_region
     "LOG_GROUP_ID"                 = var.log_group_id
@@ -76,7 +72,7 @@ resource "oci_functions_function" "logs_function" {
 }
 
 # Service Connector Hub
-resource "oci_sch_service_connector" "nr_service_connector" {
+resource "oci_sch_service_connector" "nr_logging_service_connector" {
   depends_on     = [oci_functions_function.logs_function]
   compartment_id = var.compartment_ocid
   display_name   = local.connector_hub_name
