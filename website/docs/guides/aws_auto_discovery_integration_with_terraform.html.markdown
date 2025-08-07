@@ -28,9 +28,9 @@ The below integration process presumes that the client has already integrated wi
  * **Type** - String
  * **Example** - "NewRelicInfrastructureIntegrationRole"
 
-* **AWS Account Id** ```aws_account_id``` - The AWS Account Id which has been integrated with New Relic on which Auto-Discovery has to be enabled.
+* **Provider Account Id** ```provider_account_id``` - The Provider Account Id which has been integrated with New Relic on which Auto-Discovery has to be enabled.
  * **Type** - Integer
- * **Example** - 123456789012
+ * **Example** - 123456
 
 * **Metric Polling Interval** ```metric_polling_interval``` - The interval at which the auto-discovery scans are to be triggered on the integrated AWS account in seconds
  * **Type** - Integer
@@ -73,8 +73,8 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
 }
 
 resource "newrelic_cloud_aws_integrations" "auto_discovery_integrations" {
-  linked_account_id = var.aws_account_id
-  aws_auto_discovery = {
+  linked_account_id = var.provider_account_id
+  aws_auto_discovery {
     metric_polling_interval = var.metric_polling_interval
     aws_regions = var.aws_regions
   }
