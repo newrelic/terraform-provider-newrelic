@@ -62,6 +62,23 @@ resource "newrelic_one_dashboard" "exampledash" {
       nrql_query {
         query = "FROM Transaction SELECT rate(count(*), 1 minute)"
       }
+
+      billboard_settings {
+        link {
+          new_tab = true
+          title = "Click to view more details"
+          url = "https://example.com"
+        }
+        visual {
+          alignment = "inline"
+          display = "auto"
+        }
+        grid_options {
+          columns = 4
+          label = 6
+          value = 8
+        }
+      }
     }
 
     widget_bar {
@@ -327,6 +344,7 @@ Each widget type supports an additional set of arguments:
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
+    * `billboard_settings` - (Optional) A nested block that describes billboard specific settings. See [Nested billboard\_settings blocks](#nested-billboard_settings-blocks) below for details.
     * `data_format` - (Optional) A nested block that describes data format. See [Nested data_format blocks](#nested-data_format-blocks) below for details.
   * `widget_bullet`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
@@ -467,6 +485,25 @@ This attribute requires specifying the following attributes in a nested block -
     type = "humanized"
   }
 ```
+
+### Nested `billboard_settings` blocks
+
+Nested `billboard_settings` blocks allow you to configure billboard specific settings for billboard widgets, including link configuration, visual configuration, and grid layout options.
+
+The following arguments are supported:
+
+  * `link` - (Optional) A nested block that configures clickable links for the billboard widget. This block supports:
+    * `new_tab` - (Optional) Boolean value indicating whether the link should open in a new tab. Defaults to `false`.
+    * `title` - (Optional) The title text for the link.
+    * `url` - (Optional) The URL to navigate to when the billboard is clicked.
+    
+  * `visual` - (Optional) A nested block that configures the visual settings of the billboard widget. This block supports:
+    * `alignment` - (Optional) Controls the alignment of the billboard content. Accepted values are `inline` or `stacked`.
+    * `display` - (Optional) Controls how the billboard content is displayed. Accepted values are `auto`, `all`, `none`, `label` or `value`.
+  * `grid_options` - (Optional) A nested block that configures grid layout options for the billboard widget. This block supports:
+    * `columns` - (Optional) Number of columns to use for the grid layout.
+    * `label` - (Optional) Grid configuration for label. 
+    * `value` - (Optional) Grid configuration for value.
 
 ### Nested `nrql_query` blocks (for Widgets)
 
