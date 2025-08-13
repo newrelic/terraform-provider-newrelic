@@ -391,6 +391,36 @@ func TestAccNewRelicOneDashboard_InvalidTooltipMode(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_InvalidBillboardAlignment checks for proper response if billboard alignment is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidBillboardAlignment(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_billboard.0.billboard_settings.0.visual.0.alignment to be one of \[stacked inline\], got test_alignment`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidBillboardDisplay checks for proper response if billboard display is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidBillboardDisplay(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_billboard.0.billboard_settings.0.visual.0.display to be one of \[auto all none label value\], got test_display`),
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboard_FilterCurrentDashboard fetches the dashboard resource after creation, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing. The filter_current_dashboard requires a second call to update
 // the linked_entity_guid to add the page GUID. This also checks to make sure the page GUID matches what has been added.
@@ -1745,6 +1775,114 @@ EOT
     }
 	  }
 	}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment generates a basic dashboard with Invalid Billboard Alignment Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          alignment = "test_alignment"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay generates a basic dashboard with Invalid Billboard Display Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          display = "test_display"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment generates a basic dashboard with Invalid Billboard Alignment Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          alignment = "test_alignment"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay generates a basic dashboard with Invalid Billboard Display Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          display = "test_display"
+        }
+      }
+    }
+  }
+}`
 }
 
 // Test configuration with variable account_ids explicitly set
