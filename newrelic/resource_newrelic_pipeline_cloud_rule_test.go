@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build integration || LOGGING_RULES
+// +build integration LOGGING_RULES
 
 package newrelic
 
