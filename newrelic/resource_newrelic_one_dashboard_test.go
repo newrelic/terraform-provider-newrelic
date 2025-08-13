@@ -250,6 +250,26 @@ func TestAccNewRelicOneDashboard_BillboardThresholds(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_BillboardSettings Checks if billboard settings are configured correctly
+func TestAccNewRelicOneDashboard_BillboardSettings(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rWidgetName := fmt.Sprintf("tf-test-widget-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings(rName, rWidgetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
@@ -1452,6 +1472,43 @@ resource "newrelic_one_dashboard" "bar" {
       column = 1
       nrql_query {
         query      = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings generates billboard with billboard settings
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings(dashboardName string, widgetName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      billboard_settings {
+        link {
+          new_tab = true
+          title = "test"
+          url = "https://example.com"
+        }
+        visual {
+          alignment = "inline"
+          display = "auto"
+        }
+        grid_options {
+          columns = 3
+          label = 5
+          value = 8
+        }
       }
     }
   }
