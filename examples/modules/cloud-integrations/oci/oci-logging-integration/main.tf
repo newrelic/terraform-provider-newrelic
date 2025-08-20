@@ -1,3 +1,10 @@
+# OCI New Relic Account Linking
+resource "newrelic_cloud_oci_link_account" "nr_link_account" {
+  tenant_id = var.tenancy_ocid
+  name = var.tenancy_ocid
+  description = "[DO NOT REMOVE] Links OCI tenancy to New Relic for cloud integration"
+}
+
 # Cross-Tenancy New Relic Read-Only Access Policy
 resource "oci_identity_policy" "cross_tenancy_read_only_policy" {
   compartment_id = var.compartment_ocid
@@ -6,8 +13,8 @@ resource "oci_identity_policy" "cross_tenancy_read_only_policy" {
   statements     = [
     "Define tenancy NRTenancyAlias as ${var.new_relic_tenancy_ocid}",
     "Define group NRCustomerOCIAccessGroupAlias as ${var.new_relic_group_ocid}",
-    "Admit group NRCustomerOCIAccessGroupAlias of tenancy NRTenancyAlias to read virtual-network-family in tenancy",
     "Admit group NRCustomerOCIAccessGroupAlias of tenancy NRTenancyAlias to read log-content in tenancy",
+    "Admit group NRCustomerOCIAccessGroupAlias of tenancy NRTenancyAlias to inspect compartments in tenancy"
   ]
 }
 
@@ -49,7 +56,7 @@ resource "oci_identity_policy" "functions_vault_access_policy" {
 # Vault Resources for New Relic API Key
 resource "oci_kms_vault" "newrelic_vault" {
   compartment_id = var.compartment_ocid
-  display_name   = var.kms_vault_name
+  display_name   = "newrelic-vault"
   vault_type     = "DEFAULT"
 }
 
@@ -74,11 +81,4 @@ resource "oci_vault_secret" "api_key" {
     content      = base64encode(var.newrelic_ingest_api_key)
     name         = "testkey"
   }
-}
-
-# Link OCI Tenancy to New Relic Account
-resource "newrelic_cloud_oci_link_account" "nr_link_account" {
-  tenant_id = var.tenancy_ocid
-  name = var.tenancy_ocid
-  description = "Links OCI tenancy to New Relic for logging integration"
 }

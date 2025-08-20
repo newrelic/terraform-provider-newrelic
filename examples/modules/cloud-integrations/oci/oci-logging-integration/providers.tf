@@ -15,18 +15,12 @@ terraform {
 provider "oci" {
   alias                = "home"
   tenancy_ocid         = var.tenancy_ocid
-  user_ocid            = data.oci_identity_user.current_user.user_id
+  user_ocid            = var.current_user_ocid
   region               = var.region
-  private_key_path     = var.private_key_path != "" ? var.private_key_path : null
-  fingerprint          = var.fingerprint
 }
 
 provider "newrelic" {
   region = "US" # US or EU
   account_id = var.newrelic_account_id
   api_key = var.newrelic_user_api_key
-}
-
-data "oci_identity_user" "current_user" {
-  user_id = var.current_user_ocid
 }
