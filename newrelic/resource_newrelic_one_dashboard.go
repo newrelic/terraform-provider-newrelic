@@ -519,10 +519,11 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The account id used for the NRQL query.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The account ID(s) used for the NRQL query. Can be a single account ID or multiple account IDs in a JSON-encoded array.",
+				ValidateFunc: validateDashboardWidgetNRQLQueryAccountIDs,
 			},
 			"query": {
 				Type:        schema.TypeString,

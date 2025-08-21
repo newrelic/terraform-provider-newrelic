@@ -121,7 +121,8 @@ resource "newrelic_one_dashboard" "exampledash" {
       refresh_rate = 30000 // 30 seconds
 
       nrql_query {
-        account_id = 12345
+        # multi-account query
+        account_id = jsonencode([1234567, 2345671])
         query      = "FROM Transaction select max(duration) as 'max duration' where httpResponseCode = '504' timeseries since 5 minutes ago"
       }
 
@@ -473,24 +474,41 @@ Nested `nrql_query` blocks allow you to make one or more NRQL queries within a w
 
 The following arguments are supported:
 
-  * `account_id` - (Optional) The New Relic account ID to issue the query against. Defaults to the Account ID where the dashboard was created. When using an account ID you don't have permissions for the widget will be replaced with a widget showing the data is inaccessible. Terraform will not throw an error, so this widget will only be visible in the UI.
+-> **❗<b style="color:green;">\*NEW\*</b>** **Starting v3.65.0 of the New Relic Terraform Provider**, <b style="color:green;">one can provide a list of account IDs as the value of the attribute** `account_id`.</b> **This allows creating a dashboard that queries data from multiple accounts**, and is particularly useful for cross-account dashboards.<br><br>The value should be a JSON-encoded list of account IDs, e.g., `jsonencode([12345, 67890])`. See the example below for details on the usage of `account_id` with multiple account IDs.
+
+  * `account_id` - (Optional) Determines the New Relic Account ID(s) to be used to compute the results of the queries provided, corresponding to the widget the `nrql_query` block is used with. _If omitted_, defaults to the account associated with the API key being used. See the example below for usage.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
+-> **NOTE:** If a widget attempts to query data from an account for which you do not have permissions, Terraform will not throw an error. The operation will succeed, but the widget will display a "data inaccessible" message within the New Relic UI.
+
+The following example demonstrates the usage of `nrql_query` with single and multiple `account_id`s. 
+ * Also see [_this detailed guide_](/providers/newrelic/newrelic/latest/docs/guides/newrelic_one_dashboard_multi_account_guide) which explains the nuances of the change made to have `account_id` accept both, a single account ID, and a JSON-encoded list of (multiple) account IDs, in greater detail with examples.
+
+-> **NOTE:** While `account_id` is an optional attribute and defaults to the account used in the provider configuration if not specified, it is **highly recommended** to **specify the account ID (or) JSON-encoded list of account IDs** in the `nrql_query` block. This ensures that the queries are executed against the correct account(s), facilitates accurate drift management (provides adequate visibility into changes _if any_ occurring to the account IDs associated with the query from external sources such as the UI), and avoids potential issues with data visibility.
 ```hcl
 widget_line {
-  title = "Average transaction duration and the request per minute, by application"
-  row = 4
+  title  = "Transaction duration and request rate comparison across accounts"
+  row    = 4
   column = 7
-  width = 6
+  width  = 6
   height = 3
 
+  # nrql_query with account_id as a JSON encoded list of multiple account IDs
   nrql_query {
-    account_id  = Another_Account_ID
-    query       = "FROM Transaction SELECT average(duration) FACET appName"
+    account_id = jsonencode([1234456, 4566123])
+    query      = "FROM Transaction SELECT average(duration) FACET appName SINCE 1 hour ago TIMESERIES auto"
+  }
+  
+  # nrql_query with account_id specified as a single value
+  nrql_query {
+    account_id = 1234456
+    query      = "FROM Transaction SELECT count(*) FACET appName TIMESERIES auto"
   }
 
+  # nrql_query without account_id, defaults to the account associated with the API key
+  # this is not recommended - specifying value(s) against account_id in either of the formats shown above is ideal
   nrql_query {
-    query       = "FROM Transaction SELECT rate(count(*), 1 minute)"
+    query = "FROM Transaction SELECT rate(count(*), 1 minute) SINCE 1 hour ago TIMESERIES 1 minute"
   }
 }
 ```

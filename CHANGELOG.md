@@ -1,3 +1,13 @@
+<a name="v3.66.0"></a>
+## [v3.66.0] - 2025-08-08
+### Features
+- **cloud:** corrected Documentation for Auto-Discovery ([#2917](https://github.com/newrelic/terraform-provider-newrelic/issues/2917))
+
+<a name="v3.65.0"></a>
+## [v3.65.0] - 2025-07-31
+### Features
+- **dashboards:** add support for multi account queries in widgets ([#2914](https://github.com/newrelic/terraform-provider-newrelic/issues/2914))
+
 <a name="v3.64.0"></a>
 ## [v3.64.0] - 2025-07-21
 ### Bug Fixes
@@ -2412,7 +2422,9 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.64.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.66.0...HEAD
+[v3.66.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.65.0...v3.66.0
+[v3.65.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.64.0...v3.65.0
 [v3.64.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.63.0...v3.64.0
 [v3.63.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.1...v3.63.0
 [v3.62.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.62.0...v3.62.1
