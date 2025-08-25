@@ -67,6 +67,9 @@ data_source_newrelic_obfuscation_expression.go:
 data_source_newrelic_obfuscation_expression_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+data_source_newrelic_pipeline_cloud_rule.go:
+  test: false
+  product_mapping: CLOUD
 data_source_newrelic_synthetics_private_location.go:
   test: false
   product_mapping: SYNTHETICS
@@ -313,6 +316,9 @@ resource_newrelic_one_dashboard_raw_test.go:
 resource_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+resource_newrelic_pipeline_cloud_rule.go:
+  test: false
+  product_mapping: CLOUD
 resource_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS

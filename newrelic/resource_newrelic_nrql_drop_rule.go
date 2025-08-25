@@ -55,6 +55,11 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 				Computed:    true,
 				Description: "The id, uniquely identifying the rule.",
 			},
+			"something": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id, uniquely identifying the rule.",
+			},
 		},
 	}
 }
@@ -142,6 +147,10 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err := d.Set("nrql", rule.NRQL); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("something", "something"); err != nil {
 		return diag.FromErr(err)
 	}
 
