@@ -1,12 +1,12 @@
 ---
 layout: "newrelic"
-page_title: "New Relic Terraform Provider Cloud integrations example for AWS, GCP, and Azure"
+page_title: "New Relic Terraform Provider Cloud integrations example for AWS, GCP, Azure, and OCI"
 sidebar_current: "docs-newrelic-provider-cloud-integrations-guide"
 description: |-
   Use this guide to set up the New Relic cloud integrations fully automated through Terraform.
 ---
 
-## New Relic Terraform Provider Cloud integrations example for AWS, GCP and Azure
+## New Relic Terraform Provider Cloud integrations example for AWS, GCP, Azure, and OCI
 
 The [New Relic Cloud integrations](https://docs.newrelic.com/docs/infrastructure/infrastructure-integrations/get-started/introduction-infrastructure-integrations/) collect data from cloud platform services and accounts. There's no installation process for cloud integrations and they do not require the use of our infrastructure agent: you simply connect your New Relic account to your cloud provider account. This guide describes the process of enabling the New Relic cloud integrations fully automated through Terraform.
 
@@ -15,6 +15,7 @@ We have different instructions for each cloud provider, use the links below to g
 - [AWS](#aws)
 - [Azure](#azure)
 - [Google Cloud Platform](#gcp)
+- [Oracle Cloud Infrastructure](#oci)
 
 If you encounter issues or bugs, please [report those on Github repository](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose).
 
@@ -163,3 +164,60 @@ Variables:
 * name: A unique name used throughout the module to name the resources.
 * service_account_id: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
 * project_id: The ID of the project you want to receive data from in GCP.
+
+### OCI
+
+The Oracle Cloud Infrastructure (OCI) integrations report data from various OCI services to your New Relic account. OCI provides enterprise-grade cloud infrastructure services including compute, storage, networking, and database services across multiple regions globally.
+
+The following OCI services may be integrated using the New Relic Terraform Provider. The OCI integration collects metrics from these services via both Service Connector Hub (for streaming metrics) and API polling (for metadata and tags). More details on the arguments needed to set up OCI integrations can be found in the documentation of the [`newrelic_cloud_oci_integrations`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_integrations) resource.
+
+|                          |                            |                          |
+|--------------------------|----------------------------|--------------------------|
+| `API Gateway`            | `Autonomous Database`      | `Block Storage`          |
+| `Compute`                | `Compute Infrastructure`   | `Compute Instance Health`|
+| `Compute Agent`          | `Database`                 | `Database Cluster`       |
+| `Functions (FaaS)`       | `Health Checks`            | `Internet Gateway`       |
+| `Load Balancer (LBaaS)`  | `Logging`                  | `NAT Gateway`            |
+| `Network Load Balancer`  | `NoSQL Database`           | `Object Storage`         |
+| `Container Engine (OKE)` | `PostgreSQL`               | `Service Connector Hub`  |
+| `Service Gateway`        | `Virtual Cloud Network`    | `VCN IP`                 |
+| `VM Resource Utilization`|
+
+Check out our [introduction to OCI integrations](https://docs.newrelic.com/docs/infrastructure/oracle-cloud-infrastructure-integrations/get-started/introduction-oracle-cloud-infrastructure-integrations/) and the requirements documentation before continuing with the steps below.
+
+The GitHub repository of the Terraform Provider also has an OCI Cloud Integrations 'module', that can be used to simplify setting up an OCI Integration. This module sets up the complete infrastructure including IAM policies, service connector hub, functions, and both streaming metrics and metadata/tags integrations. To use this module, add the following to your Terraform code, and set the variables to your desired values.
+
+-> **NOTE:** This module assumes you've already set up the New Relic and OCI provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [OCI instructions](https://registry.terraform.io/providers/oracle/oci/latest/docs).
+
+```
+module "newrelic-oci-cloud-integrations" {
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci"
+
+  tenancy_ocid            = "ocid1.tenancy.oc1..aaaaaaaaexample"
+  compartment_ocid        = "ocid1.compartment.oc1..aaaaaaaaexample"
+  current_user_ocid       = "ocid1.user.oc1..aaaaaaaaexample"
+  region                  = "us-phoenix-1"
+  fingerprint             = "your_api_key_fingerprint"
+  private_key_path        = "~/.oci/oci_api_key.pem"
+  
+  newrelic_account_id     = 1234567
+  newrelic_ingest_api_key = "your_newrelic_ingest_api_key"
+  newrelic_user_api_key   = "your_newrelic_user_api_key"
+  newrelic_endpoint       = "https://metric-api.newrelic.com/metric/v1"
+}
+```
+
+[*You can find the sourcecode for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci)
+
+Variables:
+
+* `tenancy_ocid`: The OCI tenancy OCID where resources will be created.
+* `compartment_ocid`: The OCID of the compartment where resources will be created.
+* `current_user_ocid`: The OCID of the current user executing the Terraform script.
+* `region`: OCI Region (e.g., us-phoenix-1, us-ashburn-1, eu-frankfurt-1).
+* `fingerprint`: The fingerprint of the OCI API key.
+* `private_key_path`: The path to the private key file for OCI API authentication.
+* `newrelic_account_id`: The New Relic account ID for linking and sending metrics.
+* `newrelic_ingest_api_key`: The New Relic Ingest API key for sending metrics.
+* `newrelic_user_api_key`: The New Relic User API key for linking the OCI account.
+* `newrelic_endpoint` (Optional): The New Relic metric endpoint. Use `https://metric-api.eu.newrelic.com/metric/v1` for EU accounts.
