@@ -38,3 +38,14 @@ variable "debug_enabled" {
   default     = "FALSE"
   description = "Enable debug mode."
 }
+
+variable "new_relic_region" {
+  type        = string
+  default     = "US"
+  description = "New Relic Region. US or EU"
+}
+
+variable "secret_ocid" {
+  type        = string
+  description = "OCI Vault Secret OCID that contains the New Relic License Key."
+}

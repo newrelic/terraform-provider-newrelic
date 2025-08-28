@@ -21,8 +21,8 @@ resource "oci_functions_application" "logging_function_app" {
   config = {
     "VAULT_REGION"      = var.region
     "DEBUG_ENABLED"     = var.debug_enabled
-    "NEW_RELIC_REGION"  = "Staging"
-    "SECRET_OCID"       = "ocid1.vaultsecret.oc1.iad.amaaaaaatvlqdbyalbfcjsw7pure4hhwo3joulttzllysk6k5flajrwjhevq"
+    "NEW_RELIC_REGION"  = var.new_relic_region
+    "SECRET_OCID"       = var.secret_ocid
     "CLIENT_TTL"        = 30
   }
   display_name               = "${var.newrelic_logging_prefix}-logging-function-app"
