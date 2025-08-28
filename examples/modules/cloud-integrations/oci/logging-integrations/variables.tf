@@ -49,3 +49,13 @@ variable "secret_ocid" {
   type        = string
   description = "OCI Vault Secret OCID that contains the New Relic License Key."
 }
+
+variable "log_group_id" {
+  type        = string
+  description = "OCI Logging Log Group OCID that contains the log to be sent to New Relic."
+}
+
+variable "log_id" {
+  type        = string
+  description = "OCI Logging Log OCID to be sent to New Relic."
+}

@@ -8,11 +8,7 @@ locals {
   nat_gateway     = "${local.vcn_name}-natgateway"
   service_gateway = "${local.vcn_name}-servicegateway"
   subnet          = "${local.vcn_name}-public-subnet"
-
-  connectors = jsondecode(data.external.connector_payload.result.connectors)
-  connectors_map = {
-    for conn in local.connectors : conn.display_name => conn
-  }
+  connector_name  = "${var.newrelic_logging_prefix}-logging-connector"
 }
 
 # --- Function App Resources ---
@@ -46,21 +42,16 @@ resource "oci_functions_function" "logging_function" {
 
 # --- Service Connector Hub - Routes logs to New Relic function ---
 resource "oci_sch_service_connector" "nr_logging_service_connector" {
-  for_each = local.connectors_map
-
   compartment_id = var.compartment_ocid
-  display_name   = each.value.display_name
-  description    = each.value.description
+  display_name   = local.connector_name
   freeform_tags  = local.freeform_tags
 
   source {
     kind = "logging"
-    dynamic "log_sources" {
-      for_each = each.value.log_sources
-      content {
-        compartment_id = log_sources.value.compartment_id
-        log_group_id   = log_sources.value.log_group_id
-      }
+    log_sources {
+      compartment_id = var.compartment_ocid
+      log_group_id   = var.log_group_id
+      log_id         = var.log_id
     }
   }
 
@@ -113,5 +104,4 @@ resource "oci_core_default_route_table" "default_internet_route" {
     network_entity_id = module.vcn[0].internet_gateway_id # Reference the internet gateway created by the module
     description       = "Route to Internet Gateway for New Relic logging"
   }
-
 }
