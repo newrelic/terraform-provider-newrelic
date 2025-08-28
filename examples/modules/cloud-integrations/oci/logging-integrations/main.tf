@@ -2,7 +2,8 @@ locals {
   freeform_tags = {
     newrelic-terraform = "true"
   }
-  # Names for the network infra
+
+  # --- VCN Resource Names ---
   vcn_name        = "${var.newrelic_logging_prefix}-logging-vcn"
   nat_gateway     = "${local.vcn_name}-natgateway"
   service_gateway = "${local.vcn_name}-servicegateway"
@@ -18,12 +19,14 @@ locals {
 resource "oci_functions_application" "logging_function_app" {
   compartment_id = var.compartment_ocid
   config = {
-    "VAULT_REGION"  = var.region
-    "DEBUG_ENABLED" = var.debug_enabled
+    "VAULT_REGION"      = var.region
+    "DEBUG_ENABLED"     = var.debug_enabled
+    "NEW_RELIC_REGION"  = "Staging"
+    "SECRET_OCID"       = "ocid1.vaultsecret.oc1.iad.amaaaaaatvlqdbyalbfcjsw7pure4hhwo3joulttzllysk6k5flajrwjhevq"
+    "CLIENT_TTL"        = 30
   }
   display_name               = "${var.newrelic_logging_prefix}-logging-function-app"
   freeform_tags              = local.freeform_tags
-  network_security_group_ids = []
   shape                      = "GENERIC_X86"
   subnet_ids                 = [data.oci_core_subnet.input_subnet.id]
 }
@@ -97,7 +100,7 @@ module "vcn" {
   internet_gateway_display_name = "NRLoggingInternetGateway" # Name the Internet Gateway
 }
 
-# Resource to manage the VCN's default route table and add your rule.
+# --- Route Table Resources ---
 resource "oci_core_default_route_table" "default_internet_route" {
   manage_default_resource_id = data.oci_core_route_tables.default_vcn_route_table[0].route_tables[0].id
   depends_on = [
@@ -111,28 +114,4 @@ resource "oci_core_default_route_table" "default_internet_route" {
     description       = "Route to Internet Gateway for New Relic logging"
   }
 
-}
-
-output "vcn_network_details" {
-  depends_on  = [module.vcn]
-  description = "Output of the created network infra"
-  value = var.create_vcn && length(module.vcn) > 0 ? {
-    vcn_id             = module.vcn[0].vcn_id
-    nat_gateway_id     = module.vcn[0].nat_gateway_id
-    nat_route_id       = module.vcn[0].nat_route_id
-    service_gateway_id = module.vcn[0].service_gateway_id
-    sgw_route_id       = module.vcn[0].sgw_route_id
-    subnet_id          = module.vcn[0].subnet_id[local.subnet]
-    } : {
-    vcn_id             = ""
-    nat_gateway_id     = ""
-    nat_route_id       = ""
-    service_gateway_id = ""
-    sgw_route_id       = ""
-    subnet_id          = var.function_subnet_id
-  }
-}
-
-output "stack_id" {
-  value = data.oci_resourcemanager_stacks.current_stack.stacks[0].id
 }
