@@ -12,13 +12,11 @@ terraform {
 provider "oci" {
   alias        = "home"
   tenancy_ocid = var.tenancy_ocid
-  user_ocid    = data.oci_identity_user.current_user.user_id
   region       = var.region
 }
 
 
 locals {
-
   freeform_tags = {
     newrelic-terraform = "true"
   }
@@ -34,10 +32,6 @@ locals {
   }
 }
 
-
-
-
-
 #Resource for the logging function application
 resource "oci_functions_application" "logging_function_app" {
   compartment_id = var.compartment_ocid
@@ -45,7 +39,6 @@ resource "oci_functions_application" "logging_function_app" {
     "VAULT_REGION"  = var.region
     "DEBUG_ENABLED" = var.debug_enabled
   }
-  defined_tags               = {}
   display_name               = "${var.newrelic_logging_prefix}-logging-function-app"
   freeform_tags              = local.freeform_tags
   network_security_group_ids = []
@@ -57,8 +50,6 @@ resource "oci_functions_application" "logging_function_app" {
 
 # Resource for the function
 resource "oci_functions_function" "logging_function" {
-  depends_on = [oci_functions_application.logging_function_app]
-
   application_id = oci_functions_application.logging_function_app.id
   display_name   = "${oci_functions_application.logging_function_app.display_name}-logging-function"
   memory_in_mbs  = "256"
@@ -71,7 +62,6 @@ resource "oci_functions_function" "logging_function" {
     count    = 20
   }
 }
-
 
 # Service Connector Hub - Routes logs from multiple log groups to New Relic function
 resource "oci_sch_service_connector" "nr_logging_service_connector" {
@@ -100,8 +90,6 @@ resource "oci_sch_service_connector" "nr_logging_service_connector" {
     compartment_id    = var.compartment_ocid
     function_id       = oci_functions_function.logging_function.id
   }
-
-  depends_on = [oci_functions_function.logging_function]
 }
 
 
@@ -132,7 +120,6 @@ module "vcn" {
 }
 
 data "oci_core_route_tables" "default_vcn_route_table" {
-  depends_on     = [module.vcn] # Ensure VCN is created before attempting to find its route tables
   count          = var.create_vcn ? 1 : 0
   compartment_id = var.compartment_ocid
   vcn_id         = module.vcn[0].vcn_id
