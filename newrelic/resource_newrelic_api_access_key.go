@@ -65,17 +65,14 @@ func resourceNewRelicAPIAccessKey() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-
 			"notes": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"key": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -94,8 +91,8 @@ func resourceNewrelicAPIAccessKeyImport(ctx context.Context, d *schema.ResourceD
 		return nil, setErr
 	}
 
-	diag := resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
-	if diag.HasError() {
+	readDiags := resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
+	if readDiags.HasError() {
 		return nil, fmt.Errorf("error reading after import")
 	}
 
@@ -169,6 +166,11 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 	// Set the resource ID to be a composite of the key ID and the key type in order to lookup the newly created key
 	d.SetId(keys[0].ID)
 
+	// Expose the API key only at creation time; subsequent reads will not refresh/overwrite it.
+	if err := d.Set("key", keys[0].Key); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
 }
 
@@ -215,10 +217,12 @@ func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("key", key.Key)
-	if setErr != nil {
-		return diag.FromErr(setErr)
-	}
+	// Intentionally do not set the "key" on Read to avoid drift and preserve the
+	// sensitive value that was captured at creation time.
+	// setErr = d.Set("key", key.Key)
+	// if setErr != nil {
+	// 	return diag.FromErr(setErr)
+	// }
 
 	return nil
 }
