@@ -8,6 +8,13 @@ data "oci_resourcemanager_stacks" "current_stack" {
   }
 }
 
+data "oci_core_services" "all_services" {
+  filter {
+    name = "name"
+    values = ["All services in ${var.region}"]
+  }
+}
+
 data "external" "connector_payload" {
   program = ["python", "${path.module}/connector.py"]
   query = {

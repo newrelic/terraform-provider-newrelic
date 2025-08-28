@@ -36,7 +36,6 @@ variable "newrelic_region" {
 
 variable "create_vcn" {
   type        = bool
-  default     = true
   description = "Variable to create virtual network for the setup. True by default"
 }
 
