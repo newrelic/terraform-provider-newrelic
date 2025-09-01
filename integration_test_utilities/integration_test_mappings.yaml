@@ -313,6 +313,12 @@ resource_newrelic_one_dashboard_raw_test.go:
 resource_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+resource_newrelic_pipeline_cloud_rule.go:
+  test: false
+  product_mapping: NGEP
+resource_newrelic_pipeline_cloud_rule_test.go:
+  test: true
+  product_mapping: NGEP
 resource_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS

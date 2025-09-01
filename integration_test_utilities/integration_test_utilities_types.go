@@ -21,6 +21,7 @@ var ProductMappingTypes = struct {
 	EVENTS               ProductMapping
 	KeyTransactions      ProductMapping
 	LoggingIntegrations  ProductMapping
+	NGEP                 ProductMapping
 	SYNTHETICS           ProductMapping
 	WorkflowIntegrations ProductMapping
 	WORKLOADS            ProductMapping
@@ -35,6 +36,7 @@ var ProductMappingTypes = struct {
 	EVENTS:               "EVENTS",
 	KeyTransactions:      "KEY_TRANSACTIONS",
 	LoggingIntegrations:  "LOGGING_INTEGRATIONS",
+	NGEP:                 "NGEP",
 	SYNTHETICS:           "SYNTHETICS",
 	WorkflowIntegrations: "WORKFLOW_INTEGRATIONS",
 	WORKLOADS:            "WORKLOADS",
@@ -58,7 +60,9 @@ var productMappings = map[ProductMapping][]string{
 	},
 	ProductMappingTypes.CLOUD: {
 		"link_account",
-		"cloud",
+		"cloud_aws",
+		"cloud_azure",
+		"cloud_gcp",
 		"cloud_account",
 	},
 	ProductMappingTypes.DASHBOARDS: {
@@ -79,6 +83,9 @@ var productMappings = map[ProductMapping][]string{
 		"grok",
 		"log_parsing_rule",
 		"obfuscation",
+	},
+	ProductMappingTypes.NGEP: {
+		"pipeline_cloud_rule",
 	},
 	ProductMappingTypes.SYNTHETICS: {
 		"monitor_downtime",
