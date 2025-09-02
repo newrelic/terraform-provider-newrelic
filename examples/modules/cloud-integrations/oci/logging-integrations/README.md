@@ -22,8 +22,37 @@ This Terraform Module links Oracle Logs and Log Groups to New Relic. It sets up 
    ```sh
    cd terraform-provider-newrelic/examples/modules/cloud-integrations/oci/logging-integrations
     ```
-4. Create a `terraform.tfvars` file in the same directory and add your variables.
-5. Initialize the Terraform configuration. Review the Terraform plan to see the resources that will be created. Apply the Terraform configuration to create the resources.
+4. Create `connectors.json` file in the following format based on the number of log groups to be instrumented or based on preference. This file will be used to create the Service Connector Hub resources.
+   ```json
+   [
+       {
+           "display_name": "logging-connector-1",
+           "description": "Service connector for logs from compartment A to New Relic",
+           "log_sources": [
+               {
+                   "compartment_id": "ocid1.tenancy.oc1..****",
+                   "log_group_id": "ocid1.loggroup.oc1.iad.****"
+               }
+           ]
+       },
+       {
+           "display_name": "logging-connector-2",
+           "description": "Service connector for logs from compartment A to New Relic",
+           "log_sources": [
+               {
+                   "compartment_id": "ocid1.compartment.oc1..****",
+                   "log_group_id": "ocid1.loggroup.oc1.iad.****"
+               },
+               {
+                   "compartment_id": "ocid1.compartment.oc1..****",
+                   "log_group_id": "ocid1.loggroup.oc1.iad.****"
+               }
+           ]
+       }
+   ]
+   ```
+5. Create a `terraform.tfvars` file in the same directory and add your variables.
+6. Initialize the Terraform configuration. Review the Terraform plan to see the resources that will be created. Apply the Terraform configuration to create the resources.
    ```sh
    terraform init
    terraform plan
@@ -31,7 +60,6 @@ This Terraform Module links Oracle Logs and Log Groups to New Relic. It sets up 
    ```
 
 ## Variables
-
 - `tenancy_id`: The OCID of your OCI tenancy.
 - `compartment_id`: The OCID of the compartment where New Relic logging resources will be created.
 - `newrelic_logging_prefix`: Prefix for naming New Relic logging resources.

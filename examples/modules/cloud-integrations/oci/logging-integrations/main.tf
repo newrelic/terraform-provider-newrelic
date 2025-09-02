@@ -4,11 +4,10 @@ locals {
   }
 
   # --- VCN Resource Names ---
-  vcn_name        = "${var.newrelic_logging_prefix}-logging-vcn"
+  vcn_name        = "${var.newrelic_logging_prefix}-${var.region}-logging-vcn"
   nat_gateway     = "${local.vcn_name}-natgateway"
   service_gateway = "${local.vcn_name}-servicegateway"
   subnet          = "${local.vcn_name}-public-subnet"
-  connector_name  = "${var.newrelic_logging_prefix}-logging-connector"
 }
 
 # --- Function App Resources ---
@@ -42,16 +41,23 @@ resource "oci_functions_function" "logging_function" {
 
 # --- Service Connector Hub - Routes logs to New Relic function ---
 resource "oci_sch_service_connector" "nr_logging_service_connector" {
+  for_each = {
+    for item in jsondecode(file("connectors.json")) : item.display_name => item
+  }
+
   compartment_id = var.compartment_ocid
-  display_name   = local.connector_name
+  display_name   = each.value.display_name
+  description    = each.value.description
   freeform_tags  = local.freeform_tags
 
   source {
     kind = "logging"
-    log_sources {
-      compartment_id = var.compartment_ocid
-      log_group_id   = var.log_group_id
-      log_id         = var.log_id
+    dynamic "log_sources" {
+      for_each = each.value.log_sources
+      content {
+        compartment_id = log_sources.value.compartment_id
+        log_group_id   = log_sources.value.log_group_id
+      }
     }
   }
 
@@ -87,8 +93,8 @@ module "vcn" {
   nat_gateway_display_name      = local.nat_gateway
   create_service_gateway        = true
   service_gateway_display_name  = local.service_gateway
-  create_internet_gateway       = true                       # Enable creation of Internet Gateway
-  internet_gateway_display_name = "NRLoggingInternetGateway" # Name the Internet Gateway
+  create_internet_gateway       = true
+  internet_gateway_display_name = "NRLoggingInternetGateway"
 }
 
 # --- Route Table Resources ---
@@ -99,7 +105,7 @@ resource "oci_core_default_route_table" "default_internet_route" {
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
-    network_entity_id = module.vcn[0].internet_gateway_id # Reference the internet gateway created by the module
+    network_entity_id = module.vcn[0].internet_gateway_id
     description       = "Route to Internet Gateway for New Relic logging"
   }
 }
