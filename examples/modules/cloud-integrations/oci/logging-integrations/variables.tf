@@ -30,6 +30,12 @@ variable "function_subnet_id" {
   description = "The OCID of the subnet to be used for the function app. If create_vcn is set to true, that will take precedence"
 }
 
+# Connector Hub Variables
+variable "service_connectors_json" {
+  type        = string
+  description = "JSON formatted string for the service connectors to be created. See README for details and example"
+}
+
 # New Relic Function variables
 variable "debug_enabled" {
   type        = string
