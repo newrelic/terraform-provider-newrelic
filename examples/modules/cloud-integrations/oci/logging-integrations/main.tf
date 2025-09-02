@@ -24,7 +24,7 @@ resource "oci_functions_application" "logging_function_app" {
   display_name               = "${var.newrelic_logging_prefix}-logging-function-app"
   freeform_tags              = local.freeform_tags
   shape                      = "GENERIC_X86"
-  subnet_ids                 = [data.oci_core_subnet.input_subnet.id]
+  subnet_ids                 = [var.create_vcn ? module.vcn[0].subnet_id[local.subnet] : var.function_subnet_id]
 }
 
 # --- Function Resources ---
@@ -93,11 +93,9 @@ module "vcn" {
 
 # --- Route Table Resources ---
 resource "oci_core_default_route_table" "default_internet_route" {
+  for_each = var.create_vcn ? { "default" = true } : {}
+
   manage_default_resource_id = data.oci_core_route_tables.default_vcn_route_table[0].route_tables[0].id
-  depends_on = [
-    module.vcn,
-    data.oci_core_route_tables.default_vcn_route_table
-  ]
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
