@@ -24,6 +24,11 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: `The "newrelic_nrql_drop_rule" resource is deprecated and will be removed in a future major release after January 7, 2026. 
+This aligns with the official end-of-life (EOL) for this feature by New Relic. 
+Please migrate to its replacement, Pipeline Cloud Rules, using the "newrelic_pipeline_cloud_rule" resource: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/r/pipeline_cloud_rule. 
+For more details, see the EOL announcement: https://docs.newrelic.com/eol/2025/05/drop-rule-filter/`,
+
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
