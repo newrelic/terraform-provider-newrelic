@@ -6,18 +6,20 @@ description: |-
   Use this resource to create and manage a New Relic Pipeline Cloud Rule.
 ---
 
-# newrelic\_pipeline\_cloud\_rule
+# Resource: newrelic\_pipeline\_cloud\_rule
 
 Use this resource to create and manage a New Relic Pipeline Cloud Rule.
+
+-> **❗<b style="color:green;">\*NEW\*</b>** **Starting v3.67.0 of the New Relic Terraform Provider**, <b style="color:green;">Pipeline Cloud Rules can be managed using the resource `newrelic_pipeline_cloud_rule`.</b> This resource replaces the <span style="color:red;">deprecated [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/r/nrql_drop_rule) resource</span>. <br><br><b>For customers currently managing Drop Rules with the deprecated [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/r/pipeline_cloud_rule) resource:</b> Please see our [migration guide](/providers/newrelic/newrelic/latest/docs/guides/drop_rules_eol_guide) for instructions on switching to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/r/pipeline_cloud_rule) resource. <span style="color:red;">The resource `newrelic_nrql_drop_rule` is <b>deprecated</b> and will be removed on <b>January 7, 2026</b></span>. While New Relic has automatically migrated your Drop Rules to Pipeline Cloud Rules upstream, <span style="color:tomato;">you must update your Terraform configuration to continue managing Drop Rules as Pipeline Cloud Rules</span>, using the <b style="color:green;">new</b> [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/r/pipeline_cloud_rule) resource.<br><br>
 
 ## Example Usage
 
 ```hcl
 resource "newrelic_pipeline_cloud_rule" "foo" {
-  account_id  = "12345"
-  name        = "My Rule"
-  description = "My rule description"
-  nrql        = "SELECT * FROM Log WHERE message like '%my-app%'"
+  account_id  = "1000100"
+  name        = "Test Pipeline Cloud Rule"
+  description = "This rule deletes all DEBUG logs from the dev environment."
+  nrql        = "DELETE FROM Log WHERE logLevel = 'DEBUG' AND environment = 'dev'"
 }
 ```
 
@@ -25,20 +27,20 @@ resource "newrelic_pipeline_cloud_rule" "foo" {
 
 The following arguments are supported:
 
-*   `account_id` - (Optional) The account ID where the Pipeline Cloud rule will be created.
+*   `account_id` - (Optional) The account ID where the Pipeline Cloud Rule will be created.
 *   `name` - (Required) The name of the rule. This must be unique within an account.
-*   `nrql` - (Required) The NRQL query that defines which data will be processed by this pipeline cloud rule.
-*   `description` - (Optional) Provides additional information about the rule.
+*   `nrql` - (Required) The NRQL query that defines the data to be processed by this Pipeline Cloud Rule.
+*   `description` - (Optional) Additional information about the rule.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-*   `id` - The ID of the pipeline cloud rule.
+*   `id` - The ID of the Pipeline Cloud Rule.
 
 ## Import
 
-Pipeline cloud rules can be imported using the `id`, e.g.
+Pipeline Cloud Rules can be imported using the `id`. For example:
 
 ```bash
 $ terraform import newrelic_pipeline_cloud_rule.foo <id>
