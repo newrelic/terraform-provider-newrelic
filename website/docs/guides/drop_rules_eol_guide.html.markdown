@@ -20,7 +20,14 @@ NRQL Drop Rules are being replaced by **Pipeline Cloud Rules**. See [this articl
 New Relic will handle the upstream migration of existing NRQL Drop Rules to Pipeline Cloud Rules. However, to continue managing these NRQL Drop Rules as Pipeline Cloud Rules, in their new definition (and any new Pipeline Cloud Rules) via Terraform, <span style="color:tomato;">customers using the `newrelic_nrql_drop_rule` resource must transition to the new `newrelic_pipeline_cloud_rule` resource.</span> Please see [this page](/providers/newrelic/newrelic/latest/docs/r/pipeline_cloud_rule) for documentation on using the `newrelic_pipeline_cloud_rule` resource.
 
 To transition to the `newrelic_pipeline_cloud_rule` resource for rules already migrated upstream by New Relic, you will need to:
-- _Import_ the existing Pipeline Cloud Rules (which were formerly NRQL Drop Rules) into your Terraform state as `newrelic_pipeline_cloud_rule` resources using the `terraform import` command. See [this page](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule#import) for details on how to import a Pipeline Cloud Rule. To simplify this process, you can pair the import (in a different form) with `terraform plan -generate-config-out` to automatically generate the corresponding resource configuration, as explained [here](https://developer.hashicorp.com/terraform/language/import/generating-configuration).
-- _Remove_ all references to the `newrelic_nrql_drop_rule` resources from the Terraform state (after successfully importing them as `newrelic_pipeline_cloud_rule` resources) using the `terraform state rm` command. See [this page](https://developer.hashicorp.com/terraform/cli/commands/state/rm) for details on removing items from the Terraform state.
+- _Import_ the existing Pipeline Cloud Rules (which were formerly NRQL Drop Rules) into your Terraform state as `newrelic_pipeline_cloud_rule` resources using the `terraform import` command with the ID(s) of Pipeline Cloud Rules. See [this page](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule#import) for details on how to import a Pipeline Cloud Rule. 
+  - To simplify this process, you can pair the import (in a different form) with `terraform plan -generate-config-out` to automatically generate the corresponding resource configuration, as explained [here, in the Terraform docs](https://developer.hashicorp.com/terraform/language/import/generating-configuration).
+  ```hcl
+  import {
+    to = newrelic_pipeline_cloud_rule.foo
+    id = "MXxXX0XXxXXXXXXXXX5XX0XXX1XXX1XXXXX8XXX5XXXxX2XxXxxxXX03XXX2XXx0XXXxXXXxXxXxXXXxXXXx"
+  }
+  ```
+ - _Remove_ all references to the `newrelic_nrql_drop_rule` resources from the Terraform state (after successfully importing them as `newrelic_pipeline_cloud_rule` resources) using the `terraform state rm` command. See [this page](https://developer.hashicorp.com/terraform/cli/commands/state/rm) for details on removing items from the Terraform state.
 
 The process outlined above is our recommendation for migrating to Pipeline Cloud Rules. We are exploring ways to assist with automating this migration in certain scenarios and will share updates and resources here as they become available.

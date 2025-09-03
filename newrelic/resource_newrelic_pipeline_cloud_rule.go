@@ -44,10 +44,10 @@ func resourceNewRelicPipelineCloudRule() *schema.Resource {
 				Optional:    true,
 				Description: "Provides additional information about the rule.",
 			},
-			"entity_version": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
+			//"entity_version": {
+			//	Type:     schema.TypeInt,
+			//	Computed: true,
+			//},
 		},
 	}
 }
@@ -78,7 +78,7 @@ func resourceNewRelicPipelineCloudRuleCreate(ctx context.Context, d *schema.Reso
 	}
 
 	d.SetId(created.Entity.ID)
-	return resourceNewRelicPipelineCloudRuleRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicPipelineCloudRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -87,7 +87,6 @@ func resourceNewRelicPipelineCloudRuleRead(ctx context.Context, d *schema.Resour
 
 	log.Printf("[INFO] Reading New Relic Pipeline Cloud Rule for %s", d.Id())
 
-	accountID := selectAccountID(providerConfig, d)
 	ruleID := d.Id()
 
 	resp, err := client.Pipelinecontrol.GetEntityWithContext(ctx, ruleID)
@@ -104,8 +103,15 @@ func resourceNewRelicPipelineCloudRuleRead(ctx context.Context, d *schema.Resour
 	case *pipelinecontrol.EntityManagementPipelineCloudRuleEntity:
 		entity := (*resp).(*pipelinecontrol.EntityManagementPipelineCloudRuleEntity)
 
-		d.SetId(ruleID)
-		if err := d.Set("account_id", accountID); err != nil {
+		accountIDInPipelineCloudRuleEntity := entity.Scope.ID
+		accountIDInt, accountIDIntErr := strconv.Atoi(accountIDInPipelineCloudRuleEntity)
+		if accountIDIntErr != nil {
+			log.Printf("[ERROR] Failed to convert accountIDInPipelineCloudRuleEntity to integer: %v", err)
+			accountIDInt = selectAccountID(providerConfig, d)
+			log.Printf("[INFO] Assigning this variable the value of account_id from the state to prevent a panic: %d", accountIDInt)
+		}
+
+		if err := d.Set("account_id", accountIDInt); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -121,9 +127,9 @@ func resourceNewRelicPipelineCloudRuleRead(ctx context.Context, d *schema.Resour
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("entity_version", entity.Metadata.Version); err != nil {
-			return diag.FromErr(err)
-		}
+		//if err := d.Set("entity_version", entity.Metadata.Version); err != nil {
+		//	return diag.FromErr(err)
+		//}
 	default:
 		// This handles cases where the GUID belongs to a different type of New Relic entity.
 		return diag.Errorf("unexpected entity type %T for ID %s", entityType, d.Id())
@@ -162,8 +168,7 @@ func resourceNewRelicPipelineCloudRuleUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("error in updating entity with ruleID %s", ruleID))
 	}
 
-	// d.SetId(updated.Entity.ID)
-	return resourceNewRelicPipelineCloudRuleRead(ctx, d, meta)
+	return nil
 }
 
 func resourceNewRelicPipelineCloudRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

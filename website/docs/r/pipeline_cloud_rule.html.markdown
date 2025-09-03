@@ -16,7 +16,7 @@ Use this resource to create and manage a New Relic Pipeline Cloud Rule.
 
 ```hcl
 resource "newrelic_pipeline_cloud_rule" "foo" {
-  account_id  = "1000100"
+  account_id  = 1000100
   name        = "Test Pipeline Cloud Rule"
   description = "This rule deletes all DEBUG logs from the dev environment."
   nrql        = "DELETE FROM Log WHERE logLevel = 'DEBUG' AND environment = 'dev'"
