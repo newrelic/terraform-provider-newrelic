@@ -40,3 +40,33 @@ This Terraform Module links Oracle Logs and Log Groups to New Relic. It sets up 
 - `debug_enabled`: Boolean to enable or disable debug logging.
 - `new_relic_region`: The New Relic region (US or EU).
 - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
+- `log_sources_details`: List of log sources to be integrated with New Relic. Use stringified json of below structure:
+   ```json
+     [
+       {
+        "display_name": "logging-connector-1",
+        "description": "Service connector for logs from compartment A to New Relic",
+        "log_sources": [
+         {
+          "compartment_id": "ocid1.tenancy.oc1..abcdefghijk",
+          "log_group_id": "ocid1.loggroup.oc1.iad.abcdefghijk"
+         }
+        ]
+       },
+       {
+        "display_name": "logging-connector-2",
+        "description": "Service connector for logs from compartment A to New Relic",
+        "log_sources": [
+         {
+          "compartment_id": "ocid1.compartment.oc1..aaaaaaabbbbbcccccc",
+          "log_group_id": "ocid1.loggroup.oc1.iad.aaaaaaabbbbbcccccc"
+         },
+         {
+          "compartment_id": "ocid1.compartment.oc1..aaaaaaabbbbbcccccc",
+          "log_group_id": "ocid1.loggroup.oc1.iad.aaaaaaabbbbbcccccc"
+         }
+        ]
+       }
+     ]
+
+   ```

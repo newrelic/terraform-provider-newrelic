@@ -31,7 +31,7 @@ variable "function_subnet_id" {
 }
 
 # Connector Hub Variables
-variable "service_connectors_json" {
+variable "log_sources_details" {
   type        = string
   description = "JSON formatted string for the service connectors to be created. See README for details and example"
 }
@@ -52,14 +52,4 @@ variable "new_relic_region" {
 variable "secret_ocid" {
   type        = string
   description = "OCI Vault Secret OCID that contains the New Relic License Key."
-}
-
-variable "log_group_id" {
-  type        = string
-  description = "OCI Logging Log Group OCID that contains the log to be sent to New Relic."
-}
-
-variable "log_id" {
-  type        = string
-  description = "OCI Logging Log OCID to be sent to New Relic."
 }

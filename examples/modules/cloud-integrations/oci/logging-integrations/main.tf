@@ -42,7 +42,7 @@ resource "oci_functions_function" "logging_function" {
 # --- Service Connector Hub - Routes logs to New Relic function ---
 resource "oci_sch_service_connector" "nr_logging_service_connector" {
   for_each = {
-    for connector in jsondecode(var.service_connectors_json) : connector.display_name => connector
+    for connector in jsondecode(var.log_sources_details) : connector.display_name => connector
   }
 
   compartment_id = var.compartment_ocid
