@@ -1,3 +1,8 @@
+<a name="v3.67.0"></a>
+## [v3.67.0] - 2025-09-03
+### Features
+- **pipelinecontrol:** add a new resource to manage Pipeline Cloud Rules ([#2927](https://github.com/newrelic/terraform-provider-newrelic/issues/2927))
+
 <a name="v3.66.0"></a>
 ## [v3.66.0] - 2025-08-08
 ### Features
@@ -2422,7 +2427,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.66.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.67.0...HEAD
+[v3.67.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.66.0...v3.67.0
 [v3.66.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.65.0...v3.66.0
 [v3.65.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.64.0...v3.65.0
 [v3.64.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.63.0...v3.64.0
