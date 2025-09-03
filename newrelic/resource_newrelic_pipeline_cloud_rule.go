@@ -77,7 +77,13 @@ func resourceNewRelicPipelineCloudRuleCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	// handling the case when account_id is not specified in the configuration,
+	// but is picked up from the provider's NEW_RELIC_ACCOUNT_ID specification
+	// setting it here, to avoid an extra read function call
+	_ = d.Set("account_id", accountID)
+
 	d.SetId(created.Entity.ID)
+
 	return nil
 }
 
