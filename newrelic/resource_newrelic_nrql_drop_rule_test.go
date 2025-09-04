@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -180,6 +181,8 @@ func testAccCheckNewRelicNRQLDropRuleExists(n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
+
+		time.Sleep(30 * time.Second)
 
 		_, err = client.Nrqldroprules.GetList(accountID)
 		if err != nil {
