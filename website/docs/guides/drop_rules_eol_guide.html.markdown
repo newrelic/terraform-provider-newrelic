@@ -1,6 +1,6 @@
 ---
 layout: "newrelic"
-page_title: "🚨NRQL Drop Rules EOL (Upcoming): Implications and Actions Needed"
+page_title: "🚨 NRQL Drop Rules EOL (Upcoming): Implications and Actions Needed"
 sidebar_current: "docs-newrelic-provider-drop-rules-eol-migration-guide"
 description: |-
   Use this guide to find details on the end-of-life of NRQL Drop Rules, implications seen by customers maintaining NRQL Drop Rule resources via the New Relic Terraform Provider, and actions to be taken prior to the EOL to avoid consequences.
