@@ -36,7 +36,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-*   `id` - The ID of the Pipeline Cloud Rule. D
+*   `id` - The ID of the Pipeline Cloud Rule.
 
 ## Import
 
