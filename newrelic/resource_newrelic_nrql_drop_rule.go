@@ -160,10 +160,6 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("pipeline_cloud_rule_entity_id", rule.PipelineCloudRuleEntityId); err != nil {
-		return diag.FromErr(err)
-	}
-
 	// applying a retry mechanism on `pipeline_cloud_rule_entity_id`, to prevent it being from being lost
 	// since we call a read immediately after creation, and the entity could need time to be fully indexed
 	// the maximum timeout is set to 1 minute in the resource configuration above, and is not customizable by the customer
