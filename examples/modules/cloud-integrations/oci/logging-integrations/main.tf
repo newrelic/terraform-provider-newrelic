@@ -30,13 +30,9 @@ resource "oci_functions_application" "logging_function_app" {
 resource "oci_functions_function" "logging_function" {
   application_id  = oci_functions_application.logging_function_app.id
   display_name    = "${oci_functions_application.logging_function_app.display_name}-logging-function"
-  memory_in_mbs   = "256"
+  memory_in_mbs   = "128"
   freeform_tags   = local.freeform_tags
   image           = "${var.region}.ocir.io/idfmbxeaoavl/testing-registry/oci-function-test:0.0.1" #TODO to change the actual function name
-  provisioned_concurrency_config {
-    strategy      = "CONSTANT"
-    count         = 20
-  }
 }
 
 # --- Service Connector Hub - Routes logs to New Relic function ---
