@@ -34,6 +34,11 @@ func TestAccNewRelicAPIAccessKey_BasicIngestBrowser(t *testing.T) {
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
 			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyIngest(accountID, keyTypeIngestBrowser, keyName, keyNotes),
+				PlanOnly: true,
+			},
 		},
 	})
 }
@@ -59,6 +64,11 @@ func TestAccNewRelicAPIAccessKey_BasicIngestLicense(t *testing.T) {
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "notes", keyNotes),
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
+			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyIngest(accountID, keyTypeIngestLicense, keyName, keyNotes),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -87,6 +97,11 @@ func TestAccNewRelicAPIAccessKey_BasicUser(t *testing.T) {
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
 			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyUser(accountID, userID, keyName, keyNotes),
+				PlanOnly: true,
+			},
 		},
 	})
 }
@@ -111,6 +126,11 @@ func TestAccNewRelicAPIAccessKey_BasicIngestBrowserNoNotesNames(t *testing.T) {
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
 			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyIngestNoNameNotes(accountID, keyTypeIngestBrowser),
+				PlanOnly: true,
+			},
 		},
 	})
 }
@@ -132,6 +152,11 @@ func TestAccNewRelicAPIAccessKey_ImportBasic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccNewRelicAPIAccessKeyImportStateIdFunc_Basic("newrelic_api_access_key.foobar"),
+			},
+			{
+				// Planning after import should not show changes
+				Config:   testAccCheckNewRelicAPIAccessKeyIngest(accountID, keyTypeIngestLicense, keyName, keyNotes),
+				PlanOnly: true,
 			},
 		},
 	})
