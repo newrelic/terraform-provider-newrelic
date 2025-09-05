@@ -1,34 +1,51 @@
-# OCI Logging Integration Example
+# OCI Logging Integration Module
 
-This Terraform Module links Oracle Logs and Log Groups to New Relic. It sets up the necessary infrastructure including Functions, Service Connector Hub, IAM policies, and Networking Components to enable logs collection from Oracle to New Relic.
+This Terraform Module links Oracle Logs and Log Groups to New Relic. 
 
 ## Prerequisites
 
-- Ensure you have the [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) installed.
 - An Oracle Cloud Infrastructure (OCI) account with the necessary permissions to create resources.
-- A New Relic account with License Key and User API Key.
-- OCI CLI installed and configured in your local. If not, follow the [OCI CLI installation guide](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm).
+- A New Relic account with the necessary permissions to create and manage cloud integrations.
 
-## Steps to Deploy the Terraform Script
-1. Configure OCI CLI with your credentials:
-   ```sh
-   oci setup config
-   ```
-2. Clone the repository containing the Terraform example:
-   ```sh
-   git clone https://github.com/newrelic/terraform-provider-newrelic.git
-   ```
-3. Navigate to the directory containing the Terraform example:
-   ```sh
-   cd terraform-provider-newrelic/examples/modules/cloud-integrations/oci/logging-integrations
-    ```
-4. Create a `terraform.tfvars` file in the same directory and add your variables.
-5. Initialize the Terraform configuration. Review the Terraform plan to see the resources that will be created. Apply the Terraform configuration to create the resources.
-   ```sh
-   terraform init
-   terraform plan
-   terraform apply
-   ```
+## How the Module Works
+
+This module creates several OCI resources including Functions, Service Connector Hub, IAM policies, and Networking Components to enable logs collection from Oracle to New Relic.
+
+## Usage
+
+> **Note:** Using this module requires a minimum version of `3.56.0` of the New Relic Terraform Provider.
+
+```hcl
+module "newrelic-aws-govcloud-integrations" {
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/logging-integrations"
+
+  # Variables
+  tenancy_ocid = "ocid1.tenancy.oc1..***"
+  compartment_ocid = "ocid1.tenancy.oc1..***"
+  region = "us-ashburn-1"
+  newrelic_logging_prefix = "nr_logging"
+  create_vcn = false
+  function_subnet_id = "ocid1.subnet.oc1.iad.***"
+  debug_enabled = "FALSE"
+  new_relic_region = "US"
+  secret_ocid = "ocid1.vaultsecret.oc1.iad.***"
+  log_sources_details = "[{\"display_name\":\"nr-service-connector-1\",\"description\":\"Service connector for logs from compartment A to New Relic\",\"log_sources\":[{\"compartment_id\":\"ocid1.tenancy.oc1..***\",\"log_group_id\":\"ocid1.loggroup.oc1.iad.***\"}]}]"
+}
+```
+
+> **Note:** If you have cloned this repo and would like to deploy this configuration in `main.tf` in the `testing` folder, use the following path as the value of the `source` argument:
+
+```hcl
+  source                  = "../examples/modules/cloud-integrations/oci/logging-integrations"
+```
+
+### A Note on 'Applying' the Module :warning:
+
+When applying this module, please use reduced parallelism (ideally `--parallelism=1`) with the `terraform apply` command. The volume of resources in the module sometimes leads to a race condition where AWS resources are applied and the ARN is made available for the `newrelic_aws_govcloud_link_account` resource, but not yet updated on the AWS backend. This could sometimes lead to validation issues with the ARN. To avoid this, reduced parallelism can keep the apply operation streamlined and ensure adequate time for the ARN to be available and valid on the AWS backend.
+
+```sh
+terraform apply --parallelism=1
+```
 
 ## Variables
 - `tenancy_id`: The OCID of your OCI tenancy.
