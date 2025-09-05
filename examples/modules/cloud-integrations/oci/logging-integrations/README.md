@@ -16,7 +16,7 @@ This module creates several OCI resources including Functions, Service Connector
 > **Note:** Using this module requires a minimum version of `3.56.0` of the New Relic Terraform Provider.
 
 ```hcl
-module "newrelic-aws-govcloud-integrations" {
+module "newrelic-oci-logging-integrations" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/logging-integrations"
 
   # Variables
