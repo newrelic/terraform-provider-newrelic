@@ -213,8 +213,7 @@ func expandVariableNRQLQuery(in []interface{}, meta interface{}) *dashboards.Das
 
 		// Default to provider account ID if not set or empty
 		if !hasAccountIDs {
-			log.Printf("[DEBUG] expandVariableNRQLQuery: account_ids not set or empty, attempting to default from provider...")
-			
+			log.Printf("[DEBUG] expandVariableNRQLQuery: account_ids not set or empty, attempting to default from provider.")
 			if metaMap, ok := meta.(map[string]interface{}); ok {
 				if acct, exists := metaMap["account_id"]; exists {
 					accountIDs = []int{acct.(int)}
