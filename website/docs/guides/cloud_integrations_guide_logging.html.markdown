@@ -1,19 +1,21 @@
-# OCI Logging Integration Module
+---
+layout: "newrelic"
+page_title: "New Relic Terraform Provider Logging Integration example for Oracle Cloud Integration"
+sidebar_current: "docs-newrelic-provider-cloud-logging-integrations-guide"
+description: |-
+  Use this guide to set up the New Relic Logging Integrations fully automated through Terraform.
+---
 
-This Terraform Module links Oracle Logs and Log Groups to New Relic. 
+## New Relic Terraform Provider Logging Integration example for Oracle Cloud Integration
 
-## Prerequisites
+This guide describes the process of enabling the New Relic Logging Integration for your Oracle Cloud fully automated through Terraform.
 
-- An Oracle Cloud Infrastructure (OCI) account with the necessary permissions to create resources.
-- A New Relic account with the necessary permissions to create and manage cloud integrations.
+> **NOTE:** This module assumes you've already set up the Oracle provider with the correct credentials. If you haven't done so, you can find the instructions here: [OCI instructions](https://registry.terraform.io/providers/oracle/oci/latest/docs).
 
-## How the Module Works
-
-This module creates several OCI resources including Functions, Service Connector Hub, IAM policies, and Networking Components to enable logs collection from Oracle to New Relic.
+If you encounter issues or bugs, please [report those on Github repository](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose).
 
 ## Usage
-
-> **Note:** Using this module requires a minimum version of `3.56.0` of the New Relic Terraform Provider.
+This module creates several OCI resources including Functions, Service Connector Hub, IAM policies, and Networking Components to enable logs collection from Oracle to New Relic.
 
 ```hcl
 module "newrelic-oci-logging-integrations" {
@@ -39,14 +41,6 @@ module "newrelic-oci-logging-integrations" {
   source                  = "../examples/modules/cloud-integrations/oci/logging-integrations"
 ```
 
-### A Note on 'Applying' the Module :warning:
-
-When applying this module, please use reduced parallelism (ideally `--parallelism=1`) with the `terraform apply` command. The volume of resources in the module sometimes leads to a race condition where AWS resources are applied and the ARN is made available for the `newrelic_aws_govcloud_link_account` resource, but not yet updated on the AWS backend. This could sometimes lead to validation issues with the ARN. To avoid this, reduced parallelism can keep the apply operation streamlined and ensure adequate time for the ARN to be available and valid on the AWS backend.
-
-```sh
-terraform apply --parallelism=1
-```
-
 ## Variables
 - `tenancy_id`: The OCID of your OCI tenancy.
 - `compartment_id`: The OCID of the compartment where New Relic logging resources will be created.
@@ -65,8 +59,8 @@ terraform apply --parallelism=1
         "description": "Service connector for logs from compartment A to New Relic",
         "log_sources": [
          {
-          "compartment_id": "ocid1.tenancy.oc1..abcdefghijk",
-          "log_group_id": "ocid1.loggroup.oc1.iad.abcdefghijk"
+          "compartment_id": "ocid1.tenancy.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
          }
         ]
        },
@@ -75,12 +69,12 @@ terraform apply --parallelism=1
         "description": "Service connector for logs from compartment A to New Relic",
         "log_sources": [
          {
-          "compartment_id": "ocid1.compartment.oc1..aaaaaaabbbbbcccccc",
-          "log_group_id": "ocid1.loggroup.oc1.iad.aaaaaaabbbbbcccccc"
+          "compartment_id": "ocid1.compartment.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
          },
          {
-          "compartment_id": "ocid1.compartment.oc1..aaaaaaabbbbbcccccc",
-          "log_group_id": "ocid1.loggroup.oc1.iad.aaaaaaabbbbbcccccc"
+          "compartment_id": "ocid1.compartment.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
          }
         ]
        }
