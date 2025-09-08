@@ -37,7 +37,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}), meta)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func validateDashboardWidgetNRQLQueryAccountIDs(accountIDValue interface{}, key 
 	return
 }
 
-func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
+func expandDashboardVariablesInput(variables []interface{}, meta interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
 	}
@@ -139,7 +139,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		}
 
 		if q, ok := v["nrql_query"]; ok && len(q.([]interface{})) > 0 {
-			variable.NRQLQuery = expandVariableNRQLQuery(q.([]interface{}))
+			variable.NRQLQuery = expandVariableNRQLQuery(q.([]interface{}), meta)
 		}
 
 		if r, ok := v["replacement_strategy"]; ok {
@@ -190,16 +190,43 @@ func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumIte
 	return out
 }
 
-func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQLQueryInput {
+func expandVariableNRQLQuery(in []interface{}, meta interface{}) *dashboards.DashboardVariableNRQLQueryInput {
 	var out dashboards.DashboardVariableNRQLQueryInput
 
 	for _, v := range in {
 		cfg := v.(map[string]interface{})
-		out = dashboards.DashboardVariableNRQLQueryInput{
-			AccountIDs: expandVariableAccountIDs(cfg["account_ids"].([]interface{})),
-			Query:      nrdb.NRQL(cfg["query"].(string))}
-	}
 
+		var accountIDs []int
+		rawAccountIDs, hasAccountIDs := cfg["account_ids"]
+
+		// Check if account_ids is explicitly set AND non-empty
+		if hasAccountIDs && rawAccountIDs != nil {
+			accountIDsSlice := rawAccountIDs.([]interface{})
+			if len(accountIDsSlice) > 0 {
+				// Non-empty slice, use as-is
+				accountIDs = expandVariableAccountIDs(accountIDsSlice)
+			} else {
+				// Empty slice - treat as omitted for defaulting purposes
+				hasAccountIDs = false
+			}
+		}
+
+		// Default to provider account ID if not set or empty
+		if !hasAccountIDs {
+			log.Printf("[DEBUG] expandVariableNRQLQuery: account_ids not set or empty, attempting to default from provider...")
+			
+			if metaMap, ok := meta.(map[string]interface{}); ok {
+				if acct, exists := metaMap["account_id"]; exists {
+					accountIDs = []int{acct.(int)}
+				}
+			}
+		}
+
+		out = dashboards.DashboardVariableNRQLQueryInput{
+			AccountIDs: accountIDs,
+			Query:      nrdb.NRQL(cfg["query"].(string)),
+		}
+	}
 	return &out
 }
 
