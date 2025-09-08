@@ -5,14 +5,11 @@ sidebar_current: "docs-newrelic-resource-nrql-drop-rule"
 description: |-
   Create and manage NRQL Drop Rules.
 ---
-
 # Resource: newrelic\_nrql\_drop\_rule
 
-Use this resource to create, and delete New Relic NRQL Drop Rules.
+-> **WARNING ⚠️** <span style="color:red;">The resource [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) is <b>deprecated</b> and will be removed on <b>January 7, 2026</b></span>. While New Relic has automatically migrated your Drop Rules to Pipeline Cloud Rules upstream, <span style="color:tomato;">you must update your Terraform configuration to continue managing Drop Rules as Pipeline Cloud Rules</span>, using the <b style="color:green;">new</b> [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.<br><br>Please see our [migration guide](/providers/newrelic/newrelic/latest/docs/guides/drop_rules_eol_guide) for instructions on switching to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.
 
--> **IMPORTANT!** Version 2.0.0 of the New Relic Terraform Provider introduces some [additional requirements](/providers/newrelic/newrelic/latest/docs/guides/migration_guide_v2) for configuring the provider.
-<br><br>
-Before upgrading to version 2.0.0 or later, it is recommended to upgrade to the most recent 1.x version of the provider and ensure that your environment successfully runs `terraform plan` without unexpected changes.
+Use this resource to create, and delete New Relic NRQL Drop Rules.
 
 ## Example Usage
 
@@ -53,8 +50,15 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
   * `rule_id` - The id, uniquely identifying the rule.
+  * `pipeline_cloud_rule_entity_id` - The ID (GUID) of the corresponding Pipeline Cloud Rule, (migrated upstream by New Relic, in light of the upcoming EOL, as stated in the Deprecation Warning above). This can be used to import the corresponding Pipeline Cloud Rule as a [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource, as explained in our [Drop Rules EOL Migration Guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/drop_rules_eol_guide#alternatives-and-action-needed).
 
-## Using `newrelic-cli` to List Out Drop Rules
+## ⚠️ Upcoming Drop Rules EOL: Transitioning from NRQL Drop Rules to Pipeline Cloud Rules Managed via Terraform
+
+<span style="color:red;">The resource [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) is <b>deprecated</b> and will be removed on <b>January 7, 2026</b></span>. While New Relic has automatically migrated your Drop Rules to Pipeline Cloud Rules upstream, <span style="color:tomato;">you must update your Terraform configuration to continue managing Drop Rules as Pipeline Cloud Rules</span>, using the <b style="color:green;">new</b> [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.<br><br>Please see our [migration guide](/providers/newrelic/newrelic/latest/docs/guides/drop_rules_eol_guide) for instructions on switching to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.
+
+While New Relic has automatically migrated your Drop Rules to Pipeline Cloud Rules upstream, <span style="color:tomato;">you must update your Terraform configuration to continue managing Drop Rules as Pipeline Cloud Rules</span>, using the <b style="color:green;">new</b> [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.<br><br>Please see our [migration guide](/providers/newrelic/newrelic/latest/docs/guides/drop_rules_eol_guide) for instructions on switching to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.
+
+## Using `newrelic-cli` to List Out Drop Rules (Deprecated)
 
 All NRQL Drop Rules associated with a New Relic account may be listed out using the following newrelic-cli command:
 ```bash
