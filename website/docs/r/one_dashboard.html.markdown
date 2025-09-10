@@ -249,6 +249,21 @@ EOT
 ```
 See additional [examples](#additional-examples).
 
+## Important: NRQL Query Schema Differences
+
+⚠️ **Critical Difference:** Widget and variable NRQL blocks use different attribute names and formats for account specifications:
+
+| Block Type | Attribute Name | Format | Example |
+|------------|----------------|--------|---------|
+| **Widget** `nrql_query` | `account_id` | String/Number or JSON-encoded array | `12345` or `jsonencode([12345, 67890])` |
+| **Variable** `nrql_query` | `account_ids` | List of integers | `[12345, 67890]` |
+
+**Historical Context:** This difference exists because:
+- **Variables** were designed with multi-account support from the beginning (v3.9.0+).
+- **Widgets** originally supported only single accounts, with multi-account support added later (v3.65.0+) using JSON encoding for backward compatibility.
+
+Both blocks default to the provider's configured account ID when the account field is omitted or empty.
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -318,31 +333,31 @@ All nested `widget` blocks support the following common arguments:
 Each widget type supports an additional set of arguments:
 
   * `widget_area`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
   * `widget_bar`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_billboard`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `critical` - (Optional) Threshold above which the displayed value will be styled with a red color.
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
     * `data_format` - (Optional) A nested block that describes data format. See [Nested data_format blocks](#nested-data_format-blocks) below for details.
   * `widget_bullet`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `limit` - (Required) Visualization limit for the widget.
   * `widget_funnel`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
   * `widget_json`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
   * `widget_heatmap`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_histogram`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
   * `widget_line`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `y_axis_left_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_left_min` (or 0 if it is not defined) to `y_axis_left_max`. Use `y_axis_left_zero = true` with a combination of `y_axis_left_min` and `y_axis_left_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_left_zero = false` to fit the graph to scale.
     * `y_axis_right` - (Optional) An attribute which helps specify the configuration of the Y-Axis displayed on the right side of the line widget. This is a nested block, which includes the following attributes:
       * `y_axis_right_zero` - (Optional) An attribute that specifies if the values on the graph to be rendered need to be fit to scale, or printed within the specified range from `y_axis_right_min` (or 0 if it is not defined) to `y_axis_right_max`. Use `y_axis_right_zero = true` with a combination of `y_axis_right_min` and `y_axis_right_max` to render values from 0 or the specified minimum to the maximum, and `y_axis_right_zero = false` to fit the graph to scale.
@@ -357,15 +372,15 @@ Each widget type supports an additional set of arguments:
   * `widget_markdown`:
     * `text` - (Required) The markdown source to be rendered in the widget.
   * `widget_stacked_bar`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
   * `widget_pie`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
   * `widget_log_table`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
   * `widget_table`
-    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) below for details.
+    * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `linked_entity_guids`: (Optional) Related entity GUIDs. Currently only supports Dashboard entity GUIDs.
     * `filter_current_dashboard`: (Optional) Use this item to filter the current dashboard.
     * `threshold` - (Optional) An attribute that helps specify multiple thresholds, each inclusive of a range of values between which the threshold would need to function, the name of the threshold and its severity. Multiple thresholds can be defined in a table widget. The `threshold` attribute requires specifying the following attributes in a nested block - 
@@ -468,20 +483,23 @@ This attribute requires specifying the following attributes in a nested block -
   }
 ```
 
-### Nested `nrql_query` blocks
+### Nested `nrql_query` blocks (for Widgets)
 
-Nested `nrql_query` blocks allow you to make one or more NRQL queries within a widget, against a specified account.
+Nested `nrql_query` blocks in **widget** allow you to make one or more NRQL queries within a widget, against one or more specified accounts.
 
 The following arguments are supported:
 
 -> **❗<b style="color:green;">\*NEW\*</b>** **Starting v3.65.0 of the New Relic Terraform Provider**, <b style="color:green;">one can provide a list of account IDs as the value of the attribute** `account_id`.</b> **This allows creating a dashboard that queries data from multiple accounts**, and is particularly useful for cross-account dashboards.<br><br>The value should be a JSON-encoded list of account IDs, e.g., `jsonencode([12345, 67890])`. See the example below for details on the usage of `account_id` with multiple account IDs.
 
-  * `account_id` - (Optional) Determines the New Relic Account ID(s) to be used to compute the results of the queries provided, corresponding to the widget the `nrql_query` block is used with. _If omitted_, defaults to the account associated with the API key being used. See the example below for usage.
+  * `account_id` - (Optional) Determines the New Relic Account ID(s) to be used to compute the results of the queries provided, corresponding to the widget the `nrql_query` block is used with. Can be:
+    - A single account ID: `12345`. 
+    - A JSON-encoded array for multiple accounts: `jsonencode([12345, 67890])`.
+    - _If omitted_, defaults to the provider's configured account ID.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 -> **NOTE:** If a widget attempts to query data from an account for which you do not have permissions, Terraform will not throw an error. The operation will succeed, but the widget will display a "data inaccessible" message within the New Relic UI.
 
-The following example demonstrates the usage of `nrql_query` with single and multiple `account_id`s. 
+The following example demonstrates the usage of widget `nrql_query` with single and multiple `account_id`s. 
  * Also see [_this detailed guide_](/providers/newrelic/newrelic/latest/docs/guides/newrelic_one_dashboard_multi_account_guide) which explains the nuances of the change made to have `account_id` accept both, a single account ID, and a JSON-encoded list of (multiple) account IDs, in greater detail with examples.
 
 -> **NOTE:** While `account_id` is an optional attribute and defaults to the account used in the provider configuration if not specified, it is **highly recommended** to **specify the account ID (or) JSON-encoded list of account IDs** in the `nrql_query` block. This ensures that the queries are executed against the correct account(s), facilitates accurate drift management (provides adequate visibility into changes _if any_ occurring to the account IDs associated with the query from external sources such as the UI), and avoids potential issues with data visibility.
@@ -521,13 +539,78 @@ The following arguments are supported:
   * `is_multi_selection` - (Optional) Indicates whether this variable supports multiple selection or not. Only applies to variables of type `nrql` or `enum`.
   * `item` - (Optional) List of possible values for variables of type `enum`. See [Nested item blocks](#nested-item-blocks) below for details.
   * `name` - (Required) The variable identifier.
-  * `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks](#nested-nrql_query-blocks) for details.
+  * `nrql_query` - (Optional) Configuration for variables of type `nrql`. See [Nested nrql\_query blocks for Variables](#nested-nrql_query-blocks-for-variables) for details.
   * `replacement_strategy` - (Optional) Indicates the strategy to apply when replacing a variable in a NRQL query. One of `default`, `identifier`, `number` or `string`.
   * `title` - (Optional) Human-friendly display string for this variable.
   * `type` - (Required) Specifies the data type of the variable and where its possible values may come from. One of `enum`, `nrql` or `string`
   * `options` - (Optional) Specifies additional options to be added to dashboard variables. Supports the following nested attribute(s) -
     * `ignore_time_range` - (Optional) An argument with a boolean value that is supported only by variables of `type` _nrql_ - when true, the time range specified in the query will override the time picker on dashboards and other pages.
     * `excluded` - (Optional) An argument with a boolean value. With this turned on, the query condition defined with the variable will not be included in the query. Defaults to `false`.
+### Nested `nrql_query` blocks (for Variables)
+
+Nested `nrql_query` blocks in **variable** allow you to make NRQL queries to populate dashboard variables with dynamic values from one or more accounts.
+
+The following arguments are supported:
+
+  * `account_ids` - (Optional) List of account IDs such as `[12345, 67890]`. If omitted or set to `[]` (empty list), defaults to the provider's configured account ID.
+  * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+
+Example usage:
+```hcl
+variable {
+    default_values     = ["value"]
+    is_multi_selection = true
+    item {
+      title = "item"
+      value = "ITEM"
+    }
+    name = "variable"
+    nrql_query {
+      # Multi-account query - specify multiple account IDs as list of integers
+      account_ids = [12345, 67890]
+      query       = "FROM Transaction SELECT average(duration) FACET appName"
+    }
+    replacement_strategy = "default"
+    title                = "title"
+    type                 = "nrql"
+}
+
+variable {
+    default_values     = ["value"]
+    is_multi_selection = true
+    item {
+      title = "item"
+      value = "ITEM"
+    }
+    name = "variable"
+    nrql_query {
+      # Single account - use list format
+      account_ids = [12345]
+      query       = "FROM Transaction SELECT average(duration) FACET appName"
+    }
+    replacement_strategy = "default"
+    title                = "title"
+    type                 = "nrql"
+}
+
+variable {
+    default_values     = ["value"]
+    is_multi_selection = true
+    item {
+      title = "item"
+      value = "ITEM"
+    }
+    name = "variable"
+    nrql_query {
+      # account_ids defaults to provider account if omitted or empty
+      query       = "FROM Transaction SELECT average(duration) FACET appName"
+    }
+    replacement_strategy = "default"
+    title                = "title"
+    type                 = "nrql"
+}
+```
+
 ### Nested `item` blocks
 
 The following arguments are supported:
