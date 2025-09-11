@@ -17,8 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
 var (
@@ -86,13 +84,4 @@ func retrieveIdsFromEnvOrSkip(t *testing.T, envKey string) (string, int) {
 	}
 
 	return envValue, id
-}
-
-func testAccNewRelicFetchUserID() int {
-	customerAdministrationClient := customeradministration.New(config.Config{
-		PersonalAPIKey: testAccAPIKey,
-	})
-
-	user, _ := customerAdministrationClient.GetUser()
-	return user.ID
 }

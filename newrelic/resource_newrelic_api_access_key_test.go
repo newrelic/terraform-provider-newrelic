@@ -76,6 +76,10 @@ func TestAccNewRelicAPIAccessKey_BasicUser(t *testing.T) {
 	keyName := fmt.Sprintf("tftest-keyname-%s", acctest.RandString(10))
 	keyNotes := fmt.Sprintf("tftest-keynotes-%s", acctest.RandString(10))
 
+	if testUserID == 0 {
+		t.Skipf("Skipping this test, as NEW_RELIC_TEST_USER_ID must be set for this test to run.")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)

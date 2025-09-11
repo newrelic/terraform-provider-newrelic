@@ -71,6 +71,10 @@ func init() {
 		testAccountID = v
 	}
 
+	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_TEST_USER_ID")); v != 0 {
+		testUserID = v
+	}
+
 	// Used for cross-account scenarios if needed, such as dashboard widgets.
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_SUBACCOUNT_ID")); v != 0 {
 		testSubAccountID = v
@@ -80,8 +84,6 @@ func init() {
 	} else {
 		testAccountName = "New Relic Terraform Provider Acceptance Testing"
 	}
-
-	testUserID = testAccNewRelicFetchUserID()
 }
 
 func testAccNewRelicProviderConfig(region string, baseURL string, resourceName string) string {
