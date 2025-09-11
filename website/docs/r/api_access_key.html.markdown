@@ -9,7 +9,7 @@ description: |-
 # Resource: newrelic_api_access_key
 
 Use this resource to programmatically create and manage the following types of keys in New Relic:
-- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
+- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
 - License (or ingest) keys, including:
   - General (Ingest) [license keys](https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/license-key) used for APM
   - [Browser license keys](https://docs.newrelic.com/docs/browser/new-relic-browser/configuration/copy-browser-monitoring-license-key-app-id)
@@ -102,7 +102,7 @@ For customers using Terraform v1.5 and above, it is recommended to use the `impo
 For example:
 ```hcl
 import {
-  id = "131313133A331313130B5F13DF01313FDB13B13133EE5E133D13EAAB3A3C13D3:INGESTT"
+  id = "131313133A331313130B5F13DF01313FDB13B13133EE5E133D13EAAB3A3C13D3:INGEST"
   to = newrelic_api_access_key.foobar
 }
 ```
