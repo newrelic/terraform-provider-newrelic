@@ -8,23 +8,48 @@ description: |-
 
 # Resource: newrelic_api_access_key
 
-Use this resource to programmatically create and manage the following types of keys:
-- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
+Use this resource to programmatically create and manage the following types of keys in New Relic:
+- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)- [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
 - License (or ingest) keys, including:
   - General (Ingest) [license keys](https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/license-key) used for APM
   - [Browser license keys](https://docs.newrelic.com/docs/browser/new-relic-browser/configuration/copy-browser-monitoring-license-key-app-id)
 
 Refer to the New Relic article ['Use NerdGraph to manage license keys and User API keys'](https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys) for detailed information.
 
+-> **WARNING:** When creating a User API key, if a <span style="color:tomato;">truncated API key</span> appears in the state after the first `terraform apply`, it is likely because the API key was created for a user other than the one running Terraform. This is a security measure by the New Relic API to _prevent exposing the full key value when an API key is created for another user_. See the [Important Considerations](#creating-api-keys-for-other-users) section below for more details.
+
 ## Example Usage
 
+### Example: Creating a User API Key
 ```
-resource "newrelic_api_access_key" "apm_license_key" {
+resource "newrelic_api_access_key" "user_api_key" {
   account_id  = 1234321
-  key_type    = "INGEST"
-  ingest_type = "LICENSE"
-  name        = "User X's Ingest License Key"
-  notes       = "A Terraform-managed Ingest License Key, used by apps reporting to New Relic"
+  key_type    = "USER" # Specifies the key type as USER
+  user_id     = 1001111101 # Specifies the user ID for whom the key is created
+  name        = "User API Key for Admin Access"
+  notes       = "This key is used for managing user-level API access."
+}
+```
+
+### Example: Creating an Ingest License Key
+```
+resource "newrelic_api_access_key" "ingest_license_key" {
+  account_id  = 1234321
+  key_type    = "INGEST" # Specifies the key type as INGEST
+  ingest_type = "LICENSE" # Specifies the ingest type as LICENSE
+  name        = "Ingest License Key for App Monitoring"
+  notes       = "This key is used for APM and other ingest purposes."
+}
+```
+
+### Example: Creating an Ingest Browser Key
+```
+resource "newrelic_api_access_key" "ingest_browser_key" {
+  account_id  = 1234321
+  key_type    = "INGEST" # Specifies the key type as INGEST
+  ingest_type = "BROWSER" # Specifies the ingest type as BROWSER
+  name        = "Browser Monitoring Key"
+  notes       = "This key is used for browser monitoring and analytics."
 }
 ```
 
