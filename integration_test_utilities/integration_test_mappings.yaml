@@ -424,6 +424,9 @@ structures_newrelic_alert_policy_channel.go:
 structures_newrelic_alert_policy_channel_test.go:
   test: true
   product_mapping: ALERTS
+structures_newrelic_api_access_key.go:
+  test: false
+  product_mapping: APIKS
 structures_newrelic_application_settings.go:
   test: false
   product_mapping: APM

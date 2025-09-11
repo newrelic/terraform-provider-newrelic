@@ -15,15 +15,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apm"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/config"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
@@ -40,6 +39,7 @@ var (
 	testAccProvider                            *schema.Provider
 	testAccountID                              int
 	testSubAccountID                           int
+	testUserID                                 int
 	testAccountName                            string
 	testAccAPMEntityCreated                    = false
 	testAccAPMSingleQuotedEntityCreated        = false
@@ -69,6 +69,10 @@ func init() {
 
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_ACCOUNT_ID")); v != 0 {
 		testAccountID = v
+	}
+
+	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_TEST_USER_ID")); v != 0 {
+		testUserID = v
 	}
 
 	// Used for cross-account scenarios if needed, such as dashboard widgets.
