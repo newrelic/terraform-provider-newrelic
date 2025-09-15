@@ -249,21 +249,6 @@ EOT
 ```
 See additional [examples](#additional-examples).
 
-## Important: NRQL Query Schema Differences
-
-⚠️ **Critical Difference:** Widget and variable NRQL blocks use different attribute names and formats for account specifications:
-
-| Block Type | Attribute Name | Format | Example |
-|------------|----------------|--------|---------|
-| **Widget** `nrql_query` | `account_id` | String/Number or JSON-encoded array | `12345` or `jsonencode([12345, 67890])` |
-| **Variable** `nrql_query` | `account_ids` | List of integers | `[12345, 67890]` |
-
-**Historical Context:** This difference exists because:
-- **Variables** were designed with multi-account support from the beginning (v3.9.0+).
-- **Widgets** originally supported only single accounts, with multi-account support added later (v3.65.0+) using JSON encoding for backward compatibility.
-
-Both blocks default to the provider's configured account ID when the account field is omitted or empty.
-
 ## Argument Reference
 
 The following arguments are supported:
@@ -531,6 +516,8 @@ widget_line {
 }
 ```
 
+-> **NOTE:** This is not to be confused with `nrql_query` used with variables blocks - for more details on the differences between the two, please see the [Important: `nrql_query` Blocks: Schema Differences](#important-nrql_query-blocks-schema-differences) section.
+
 ### Nested `variable` blocks
 
 The following arguments are supported:
@@ -546,6 +533,7 @@ The following arguments are supported:
   * `options` - (Optional) Specifies additional options to be added to dashboard variables. Supports the following nested attribute(s) -
     * `ignore_time_range` - (Optional) An argument with a boolean value that is supported only by variables of `type` _nrql_ - when true, the time range specified in the query will override the time picker on dashboards and other pages.
     * `excluded` - (Optional) An argument with a boolean value. With this turned on, the query condition defined with the variable will not be included in the query. Defaults to `false`.
+
 ### Nested `nrql_query` blocks (for Variables)
 
 Nested `nrql_query` blocks in **variable** allow you to make NRQL queries to populate dashboard variables with dynamic values from one or more accounts.
@@ -611,6 +599,8 @@ variable {
 }
 ```
 
+-> **NOTE:** This is not to be confused with `nrql_query` used with widgets blocks - for more details on the differences between the two, please see the [Important: `nrql_query` Blocks: Schema Differences](#important-nrql_query-blocks-schema-differences) section.
+
 ### Nested `item` blocks
 
 The following arguments are supported:
@@ -647,6 +637,21 @@ The following arguments are supported:
   * `all` - Show tooltip for all data points.
   * `single` - Show tooltip for a single data point.
   * `hidden` - Hide tooltips completely.
+
+### Important: `nrql_query` Blocks: Schema Differences
+
+⚠️ **Critical Difference:** Widget and variable NRQL blocks use different attribute names and formats for account specifications:
+
+| Block Type | Attribute Name | Format | Example |
+|------------|----------------|--------|---------|
+| **Widget** `nrql_query` | `account_id` | String/Number or JSON-encoded array | `12345` or `jsonencode([12345, 67890])` |
+| **Variable** `nrql_query` | `account_ids` | List of integers | `[12345, 67890]` |
+
+**Historical Context:** This difference exists because:
+- **Variables** were designed with multi-account support from the beginning (v3.9.0+).
+- **Widgets** originally supported only single accounts, with multi-account support added later (v3.65.0+) using JSON encoding for backward compatibility.
+
+Both blocks default to the provider's configured account ID when the account field is omitted or empty.
 
 ## Additional Examples
 
