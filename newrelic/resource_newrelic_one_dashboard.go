@@ -145,6 +145,7 @@ func dashboardVariableSchemaElem() *schema.Resource {
 						"account_ids": {
 							Type:        schema.TypeList,
 							Optional:    true,
+							Computed:    true,
 							Description: "New Relic account ID(s) to issue the query against.",
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
