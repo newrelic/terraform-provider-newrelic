@@ -15,7 +15,6 @@ import (
 func TestAccNewRelicAPIAccessKey_BasicIngestBrowser(t *testing.T) {
 	keyName := fmt.Sprintf("tftest-keyname-%s", acctest.RandString(10))
 	keyNotes := fmt.Sprintf("tftest-keynotes-%s", acctest.RandString(10))
-	accountIDRaw, accountID := retrieveIdsFromEnvOrSkip(t, "NEW_RELIC_TEST_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -24,15 +23,20 @@ func TestAccNewRelicAPIAccessKey_BasicIngestBrowser(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAPIAccessKeyIngest(accountID, keyTypeIngestBrowser, keyName, keyNotes),
+				Config: testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestBrowser, keyName, keyNotes),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", accountIDRaw),
+					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", fmt.Sprintf("%d", testSubAccountID)),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "key_type", keyTypeIngest),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "ingest_type", keyTypeIngestBrowser),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "name", keyName),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "notes", keyNotes),
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
+			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestBrowser, keyName, keyNotes),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -41,7 +45,6 @@ func TestAccNewRelicAPIAccessKey_BasicIngestBrowser(t *testing.T) {
 func TestAccNewRelicAPIAccessKey_BasicIngestLicense(t *testing.T) {
 	keyName := fmt.Sprintf("tftest-keyname-%s", acctest.RandString(10))
 	keyNotes := fmt.Sprintf("tftest-keynotes-%s", acctest.RandString(10))
-	accountIDRaw, accountID := retrieveIdsFromEnvOrSkip(t, "NEW_RELIC_TEST_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -50,15 +53,20 @@ func TestAccNewRelicAPIAccessKey_BasicIngestLicense(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAPIAccessKeyIngest(accountID, keyTypeIngestLicense, keyName, keyNotes),
+				Config: testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestLicense, keyName, keyNotes),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", accountIDRaw),
+					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", fmt.Sprintf("%d", testSubAccountID)),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "key_type", keyTypeIngest),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "ingest_type", keyTypeIngestLicense),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "name", keyName),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "notes", keyNotes),
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
+			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestLicense, keyName, keyNotes),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -67,8 +75,10 @@ func TestAccNewRelicAPIAccessKey_BasicIngestLicense(t *testing.T) {
 func TestAccNewRelicAPIAccessKey_BasicUser(t *testing.T) {
 	keyName := fmt.Sprintf("tftest-keyname-%s", acctest.RandString(10))
 	keyNotes := fmt.Sprintf("tftest-keynotes-%s", acctest.RandString(10))
-	accountIDRaw, accountID := retrieveIdsFromEnvOrSkip(t, "NEW_RELIC_TEST_ACCOUNT_ID")
-	userIDRaw, userID := retrieveIdsFromEnvOrSkip(t, "NEW_RELIC_TEST_USER_ID")
+
+	if testUserID == 0 {
+		t.Skipf("Skipping this test, as NEW_RELIC_TEST_USER_ID must be set for this test to run.")
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -77,23 +87,26 @@ func TestAccNewRelicAPIAccessKey_BasicUser(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAPIAccessKeyUser(accountID, userID, keyName, keyNotes),
+				Config: testAccCheckNewRelicAPIAccessKeyUser(testSubAccountID, testUserID, keyName, keyNotes),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", accountIDRaw),
+					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", fmt.Sprintf("%d", testSubAccountID)),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "key_type", keyTypeUser),
-					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "user_id", userIDRaw),
+					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "user_id", fmt.Sprintf("%d", testUserID)),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "name", keyName),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "notes", keyNotes),
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
+			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyUser(testSubAccountID, testUserID, keyName, keyNotes),
+				PlanOnly: true,
 			},
 		},
 	})
 }
 
 func TestAccNewRelicAPIAccessKey_BasicIngestBrowserNoNotesNames(t *testing.T) {
-	accountIDRaw, accountID := retrieveIdsFromEnvOrSkip(t, "NEW_RELIC_TEST_ACCOUNT_ID")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -101,15 +114,21 @@ func TestAccNewRelicAPIAccessKey_BasicIngestBrowserNoNotesNames(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAPIAccessKeyIngestNoNameNotes(accountID, keyTypeIngestBrowser),
+				Config: testAccCheckNewRelicAPIAccessKeyIngestNoNameNotes(testSubAccountID, keyTypeIngestBrowser),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", accountIDRaw),
+					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "account_id", fmt.Sprintf("%d", testSubAccountID)),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "key_type", keyTypeIngest),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "ingest_type", keyTypeIngestBrowser),
-					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "name", ""),
+					// ignoring the following since there is a drift - when no name is assigned, the API gives an autogenerated name
+					// resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "name", ""),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "notes", ""),
 					resource.TestCheckResourceAttrSet("newrelic_api_access_key.foobar", "key"),
 				),
+			},
+			{
+				// Ensure a subsequent plan has no drift
+				Config:   testAccCheckNewRelicAPIAccessKeyIngestNoNameNotes(testSubAccountID, keyTypeIngestBrowser),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -118,20 +137,24 @@ func TestAccNewRelicAPIAccessKey_BasicIngestBrowserNoNotesNames(t *testing.T) {
 func TestAccNewRelicAPIAccessKey_ImportBasic(t *testing.T) {
 	keyName := fmt.Sprintf("tftest-keyname-%s", acctest.RandString(10))
 	keyNotes := fmt.Sprintf("tftest-keynotes-%s", acctest.RandString(10))
-	_, accountID := retrieveIdsFromEnvOrSkip(t, "NEW_RELIC_TEST_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckNewRelicAPIAccessKeyIngest(accountID, keyTypeIngestLicense, keyName, keyNotes),
+				Config: testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestLicense, keyName, keyNotes),
 			},
 			{
 				ResourceName:      "newrelic_api_access_key.foobar",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccNewRelicAPIAccessKeyImportStateIdFunc_Basic("newrelic_api_access_key.foobar"),
+			},
+			{
+				// Planning after import should not show changes
+				Config:   testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestLicense, keyName, keyNotes),
+				PlanOnly: true,
 			},
 		},
 	})
