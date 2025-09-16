@@ -3,20 +3,11 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apiaccess"
-)
-
-var (
-	keyTypeIngest        = string(apiaccess.APIAccessKeyTypeTypes.INGEST)
-	keyTypeIngestBrowser = string(apiaccess.APIAccessIngestKeyTypeTypes.BROWSER)
-	keyTypeIngestLicense = string(apiaccess.APIAccessIngestKeyTypeTypes.LICENSE)
-	keyTypeUser          = string(apiaccess.APIAccessKeyTypeTypes.USER)
 )
 
 func resourceNewRelicAPIAccessKey() *schema.Resource {
@@ -25,130 +16,40 @@ func resourceNewRelicAPIAccessKey() *schema.Resource {
 		ReadContext:   resourceNewRelicAPIAccessKeyRead,
 		UpdateContext: resourceNewRelicAPIAccessKeyUpdate,
 		DeleteContext: resourceNewRelicAPIAccessKeyDelete,
-
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceNewrelicAPIAccessKeyImport,
 		},
-
-		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
-			},
-
-			"key_type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{keyTypeIngest, keyTypeUser}, false),
-			},
-
-			"ingest_type": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Computed:      true,
-				ConflictsWith: []string{"user_id"},
-				ValidateFunc:  validation.StringInSlice([]string{keyTypeIngestBrowser, keyTypeIngestLicense}, false),
-			},
-			"user_id": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				ForceNew:      true,
-				Computed:      true,
-				ConflictsWith: []string{"ingest_type"},
-			},
-
-			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-
-			"notes": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-
-			"key": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
-			},
-		},
+		Schema:        resourceNewRelicAPIAccessKeySchema(),
+		CustomizeDiff: validateAPIAccessKeyAttributes,
 	}
-}
-
-func resourceNewrelicAPIAccessKeyImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	keyID, keyType, parseErr := parseCompositeID(d.Id())
-	if parseErr != nil {
-		return nil, parseErr
-	}
-
-	d.SetId(keyID)
-
-	setErr := d.Set("key_type", strings.ToUpper(keyType))
-	if setErr != nil {
-		return nil, setErr
-	}
-
-	diag := resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
-	if diag.HasError() {
-		return nil, fmt.Errorf("error reading after import")
-	}
-
-	return []*schema.ResourceData{d}, nil
 }
 
 func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	// Define initial keys to create an API access key.
-	opts := apiaccess.APIAccessCreateInput{}
-
-	// Get the account id. This is required regardless of key type.
-	var accountID int
-	if v, ok := d.GetOk("account_id"); ok {
-		accountID = v.(int)
-		log.Printf("[DEBUG] new api access account_id: %d", accountID)
-	}
-
-	// Get the key type.
+	accountID := getAPIAccessKeyAccountID(d)
 	keyType := getAPIAccessKeyType(d)
 
-	// Validate to make sure the following:
-	// - If key_type is set to INGEST, `ingest_type` must be set to a value.
-	// - If key_type is set to USER, `user_id` must be set to a value.
+	opts := apiaccess.APIAccessCreateInput{}
+
 	switch keyType {
 	case keyTypeIngest:
 		ingestKeyOpts := apiaccess.APIAccessCreateIngestKeyInput{}
 
-		if v, ok := d.GetOk("ingest_type"); ok {
-			ingestKeyOpts.IngestType = apiaccess.APIAccessIngestKeyType(v.(string))
-			log.Printf("[DEBUG] new api access ingest_type: %s", ingestKeyOpts.IngestType)
-		} else {
-			return diag.Errorf("[ERROR] you must define the ingest_type attribute when creating an INGEST key")
-		}
-
 		ingestKeyOpts.AccountID = accountID
+		ingestKeyOpts.IngestType = apiaccess.APIAccessIngestKeyType(getAPIAccessIngestType(d))
 		ingestKeyOpts.Name = getAPIAccessKeyName(d)
 		ingestKeyOpts.Notes = getAPIAccessKeyNotes(d)
+
 		opts.Ingest = []apiaccess.APIAccessCreateIngestKeyInput{ingestKeyOpts}
 	case keyTypeUser:
 		userKeyOpts := apiaccess.APIAccessCreateUserKeyInput{}
 
-		if v, ok := d.GetOk("user_id"); ok {
-			userKeyOpts.UserID = v.(int)
-			log.Printf("[DEBUG] new api access user_id: %d", userKeyOpts.UserID)
-		} else {
-			return diag.Errorf("[ERROR] you must define the user_id attribute when creating an USER key")
-		}
-
 		userKeyOpts.AccountID = accountID
 		userKeyOpts.Name = getAPIAccessKeyName(d)
 		userKeyOpts.Notes = getAPIAccessKeyNotes(d)
+		userKeyOpts.UserID = getAPIAccessUserID(d)
+
 		opts.User = []apiaccess.APIAccessCreateUserKeyInput{userKeyOpts}
 	default:
 		err := fmt.Errorf("unknown api access key type: %s", keyType)
@@ -169,6 +70,11 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 	// Set the resource ID to be a composite of the key ID and the key type in order to lookup the newly created key
 	d.SetId(keys[0].ID)
 
+	// Expose the API key only at creation time; subsequent reads will not refresh/overwrite it.
+	if err := d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Key, keys[0].Key); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
 }
 
@@ -183,41 +89,71 @@ func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceDat
 		}
 		return diag.FromErr(readErr)
 	}
+	if key == nil {
+		return diag.FromErr(fmt.Errorf("no New Relic API Access Key found with given id %s", d.Id()))
+	}
 
 	var setErr error
-	setErr = d.Set("account_id", key.AccountID)
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.AccountID, key.AccountID)
 	if setErr != nil {
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("key_type", key.Type)
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.KeyType, key.Type)
 	if setErr != nil {
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("ingest_type", key.IngestType)
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.IngestType, key.IngestType)
 	if setErr != nil {
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("user_id", key.UserID)
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.UserID, key.UserID)
 	if setErr != nil {
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("name", key.Name)
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Name, key.Name)
 	if setErr != nil {
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("notes", key.Notes)
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Notes, key.Notes)
 	if setErr != nil {
 		return diag.FromErr(setErr)
 	}
 
-	setErr = d.Set("key", key.Key)
-	if setErr != nil {
-		return diag.FromErr(setErr)
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// Intentionally do not set the "key" on Read to avoid drift
+	// We shall set the "key" in the state only if it is not present already,
+	// implying that we would do it on an import (as a create would have the "key" set in the state).
+	///////////////////////////////////////////////////////////////////////////////////////////////
+
+	// check if the state already has the key value set (it would only be set at creation time or if manually set in the state)
+	// this would help enter the nested conditions only if the key value is not already set in the state, i.e. during an "import".
+	if _, ok := d.GetOk(ResourceNewRelicAPIAccessKeyAttributeLabels.Key); !ok {
+		// if the key value returned by NerdGraph is truncated (which happens when the key belongs to a user that is not
+		// associated with the API Key used to perform this read operation via the provider), then emit a warning
+		// and do not set the key value in the state (as it would be a truncated value and not the actual key value).
+		if strings.HasSuffix(key.Key, "...") {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary: fmt.Sprintf("Importing an API Key belonging to a user that is not associated with the API Key " +
+						"used to perform this import operation via the provider is not supported, as NerdGraph will only return a " +
+						"truncated key value in such a case, for security reasons.\n" +
+						"Please see this article for more information: " +
+						"https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys/#query-keys"),
+				}}
+		}
+		// (else) if the key value is not truncated, then set it in the state (this would be the case when the key belongs to
+		// the user associated with the API Key used to perform this read operation via the provider).
+		setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Key, key.Key)
+		if setErr != nil {
+			return diag.FromErr(setErr)
+		}
+
 	}
 
 	return nil
@@ -233,30 +169,17 @@ func resourceNewRelicAPIAccessKeyUpdate(ctx context.Context, d *schema.ResourceD
 	// Construct the key type specific update opts.
 	switch keyType {
 	case keyTypeIngest:
-		updateKeyOpts := apiaccess.APIAccessUpdateIngestKeyInput{}
-		updateKeyOpts.KeyID = d.Id()
-
-		// Check if the following attributes have changed. If there are changes, get the new attribute values.
-		if d.HasChange("name") {
-			updateKeyOpts.Name = d.Get("name").(string)
+		updateKeyOpts := apiaccess.APIAccessUpdateIngestKeyInput{
+			KeyID: d.Id(),
+			Name:  getAPIAccessKeyName(d),
+			Notes: getAPIAccessKeyNotes(d),
 		}
-
-		if d.HasChange("notes") {
-			updateKeyOpts.Notes = d.Get("notes").(string)
-		}
-
 		opts.Ingest = []apiaccess.APIAccessUpdateIngestKeyInput{updateKeyOpts}
 	case keyTypeUser:
-		updateKeyOpts := apiaccess.APIAccessUpdateUserKeyInput{}
-		updateKeyOpts.KeyID = d.Id()
-
-		// Check if the following attributes have changed. If there are changes, get the new attribute values.
-		if d.HasChange("name") {
-			updateKeyOpts.Name = d.Get("name").(string)
-		}
-
-		if d.HasChange("notes") {
-			updateKeyOpts.Notes = d.Get("notes").(string)
+		updateKeyOpts := apiaccess.APIAccessUpdateUserKeyInput{
+			KeyID: d.Id(),
+			Name:  getAPIAccessKeyName(d),
+			Notes: getAPIAccessKeyNotes(d),
 		}
 		opts.User = []apiaccess.APIAccessUpdateUserKeyInput{updateKeyOpts}
 	default:
@@ -303,35 +226,23 @@ func resourceNewRelicAPIAccessKeyDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func getAPIAccessKeyType(d *schema.ResourceData) string {
-	keyType := ""
-	if v, ok := d.GetOk("key_type"); ok {
-		keyType = v.(string)
+func resourceNewrelicAPIAccessKeyImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	keyID, keyType, parseErr := parseCompositeID(d.Id())
+	if parseErr != nil {
+		return nil, parseErr
 	}
 
-	log.Printf("[DEBUG] api access key_type: %s", keyType)
+	d.SetId(keyID)
 
-	return keyType
-}
-
-func getAPIAccessKeyNotes(d *schema.ResourceData) string {
-	notes := ""
-	if v, ok := d.GetOk("notes"); ok {
-		notes = v.(string)
+	setErr := d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.KeyType, strings.ToUpper(keyType))
+	if setErr != nil {
+		return nil, setErr
 	}
 
-	log.Printf("[DEBUG] api access key notes: %s", notes)
-
-	return notes
-}
-
-func getAPIAccessKeyName(d *schema.ResourceData) string {
-	name := ""
-	if v, ok := d.GetOk("name"); ok {
-		name = v.(string)
+	readDiagnostics := resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
+	if readDiagnostics.HasError() || d.Id() == "" {
+		return nil, fmt.Errorf("unable to find New Relic API Access Key with given id %s and type %s", keyID, keyType)
 	}
 
-	log.Printf("[DEBUG] api access key name: %s", name)
-
-	return name
+	return []*schema.ResourceData{d}, nil
 }

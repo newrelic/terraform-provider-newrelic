@@ -8,27 +8,48 @@ description: |-
 
 # Resource: newrelic_api_access_key
 
-Use this resource to programmatically create and manage the following types of keys:
+Use this resource to programmatically create and manage the following types of keys in New Relic:
 - [User API keys](https://docs.newrelic.com/docs/apis/get-started/intro-apis/types-new-relic-api-keys#user-api-key)
 - License (or ingest) keys, including:
-    - General [license key](https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/license-key) used for APM
-    - [Browser license key](https://docs.newrelic.com/docs/browser/new-relic-browser/configuration/copy-browser-monitoring-license-key-app-id)
+  - General (Ingest) [license keys](https://docs.newrelic.com/docs/accounts/install-new-relic/account-setup/license-key) used for APM
+  - [Browser license keys](https://docs.newrelic.com/docs/browser/new-relic-browser/configuration/copy-browser-monitoring-license-key-app-id)
 
-Please visit the New Relic article ['Use NerdGraph to manage license keys and User API keys'](https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys)
-for more information.
+Refer to the New Relic article ['Use NerdGraph to manage license keys and User API keys'](https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys) for detailed information.
 
--> **Action Required for Key Retrieval:**
-    To retrieve the actual API key value after creation, **it is essential to use this resource in conjunction with the [`Create Access Keys`](#module-create-and-retrieve-access-keys) module** detailed in the [Extended Usage with Modules](#extended-usage-with-modules) section below. Please see the [Important Considerations](#important-considerations-for-using-this-resource) section for a full explanation.
+-> **WARNING:** When creating a User API key, if a <span style="color:tomato;">truncated API key</span> appears in the state after the first `terraform apply`, it is likely because the API key was created for a user other than the one running Terraform. This is a security measure by the New Relic API to _prevent exposing the full key value when an API key is created for another user_. See the [Important Considerations](#creating-api-keys-for-other-users) section below for more details.
 
-## Example Usage (Resource Only - Key Not Retrievable Directly)
+## Example Usage
 
-```terraform
-resource "newrelic_api_access_key" "apm_license_key" {
-  account_id  = 1234567
-  key_type    = "INGEST"
-  ingest_type = "LICENSE"
-  name        = "APM Ingest License Key for Service X"
-  notes       = "Managed by Terraform, used for Service X APM agent."
+### Example: Creating a User API Key
+```
+resource "newrelic_api_access_key" "user_api_key" {
+  account_id  = 1234321
+  key_type    = "USER" # Specifies the key type as USER
+  user_id     = 1001111101 # Specifies the user ID for whom the key is created
+  name        = "User API Key for Admin Access"
+  notes       = "This key is used for managing user-level API access."
+}
+```
+
+### Example: Creating an Ingest License Key
+```
+resource "newrelic_api_access_key" "ingest_license_key" {
+  account_id  = 1234321
+  key_type    = "INGEST" # Specifies the key type as INGEST
+  ingest_type = "LICENSE" # Specifies the ingest type as LICENSE
+  name        = "Ingest License Key for App Monitoring"
+  notes       = "This key is used for APM and other ingest purposes."
+}
+```
+
+### Example: Creating an Ingest Browser Key
+```
+resource "newrelic_api_access_key" "ingest_browser_key" {
+  account_id  = 1234321
+  key_type    = "INGEST" # Specifies the key type as INGEST
+  ingest_type = "BROWSER" # Specifies the ingest type as BROWSER
+  name        = "Browser Monitoring Key"
+  notes       = "This key is used for browser monitoring and analytics."
 }
 ```
 
@@ -36,138 +57,54 @@ resource "newrelic_api_access_key" "apm_license_key" {
 
 The following arguments are supported:
 
-- `account_id` - (Required) The New Relic account ID of the account you wish to create the API access key.
-- `key_type` - (Required) What type of API key to create. Valid options are `INGEST` or `USER`, case-sensitive.
-- `ingest_type` - (Optional) Required if `key_type = INGEST`. Valid options are `BROWSER` or `LICENSE`, case-sensitive.
-- `user_id` - (Optional) Required if `key_type = USER`. The New Relic user ID yous wish to create the API access key for in an account.
-- `name` - (Optional) The name of the key.
-- `notes` - (Optional) Any notes about this ingest key.
+- `account_id` - (Required) The New Relic account ID where the API access key will be created.
+- `key_type` - (Required) The type of API key to create. Valid options are `INGEST` or `USER` (case-sensitive).
+  - If `key_type` is `INGEST`, then `ingest_type` must be specified.
+  - If `key_type` is `USER`, then `user_id` must be specified.
+- `ingest_type` - (Optional) Required if `key_type` is `INGEST`. Valid options are `BROWSER` or `LICENSE` (case-sensitive).
+- `user_id` - (Optional) Required if `key_type` is `USER`. The New Relic user ID for which the API access key will be created.
+- `name` - (Optional) The name of the API key.
+  - **Note**: While `name` is optional, it is <b style="color:red;">\*\*strongly recommended\*\*</b> to provide a meaningful name for easier identification and management of keys. If a `name` is not provided, the API will assign a default name when processing the request to create the API key, which may cause unexpected drift in your Terraform state. To prevent this, it is best practice to always specify a `name`.
+- `notes` - (Optional) Additional notes about the API access key.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the API key.
-- `key` - The actual API key. This attribute is masked and not be visible in your terminal, CI, etc.
+- `key` - The actual API key.
+  - <span style="color:tomato;">It is important to exercise caution when exporting the value of `key`, as it is sensitive information</span>. Avoid logging or exposing it inappropriately.
 
-## Important Considerations for Using This Resource
+## Important Considerations
+#### Updating Existing Keys
+- Only `name` and `notes` can be updated in place. Changes to other attributes will recreate the key (the `newrelic_api_access_key` resource), invalidating the existing one.
 
-Before you begin, please take note of the following critical points:
+#### Creating API Keys for Other Users
+- If an API key is created for a user other than the owner of the API key used to run Terraform, the full key value will not be returned by the API for security reasons. Instead, a truncated version of the key will be provided. To retrieve the full key, ensure the necessary capabilities and access management settings are applied to the user running Terraform. For more details, contact New Relic Support.
 
-1.  **Retrieving the API Key:**
+#### Importing Existing Keys into Terraform State
+- A key may be imported with its ID using the syntax described in the [Import](#import) section below. However, the actual value of the key _cannot be imported_ if the key being fetched was created by a user other than the one whose API key is being used to run Terraform. In such cases, the API returns a truncated key for security reasons. For more details, see [Use NerdGraph to manage license keys and User API keys](https://docs.newrelic.com/docs/apis/nerdgraph/examples/use-nerdgraph-manage-license-keys-user-keys/#query-keys).
 
-    -> The [`newrelic_api_access_key`](#module-create-and-retrieve-access-keys) resource will create an API key in New Relic, but it does not directly output the sensitive key string for use in your Terraform configuration (e.g., via the key attribute). This is to help prevent accidental exposure of sensitive credentials. To programmatically create an API key and retrieve its value for use in subsequent configurations or outputs, you must use the Create Access Keys module. This module is detailed in the [Extended Usage with Modules](#extended-usage-with-modules) section. It works by first creating the key with this resource and then immediately fetching the key's value using a secure API call.
-2.  **Updating Existing Keys:**
-
-    -> **IMPORTANT!** Exercise extreme caution when updating existing [`newrelic_api_access_key`](#module-create-and-retrieve-access-keys) resources. Only the `name` and `notes` attributes are updatable in place. Modifying any other attribute will force the resource to be recreated, which **invalidates the previous API key(s)** and generates new ones.
-3.  **Account Type Restrictions for Ingest Keys:**
-
-    -> **WARNING:** Creating 'Ingest - License' and 'Ingest - Browser' keys using this resource is restricted to 'core' or 'full platform' New Relic user accounts. If you've signed up as a 'basic' user with New Relic, or have been added as a 'basic' user to your organization on New Relic, you would not be able to use your account to create 'Ingest' keys. If you see the message `"You do not have permission to create this key"` in the response of the API called by this resource, it could be owing to the aforementioned. For more insights into user account types on New Relic and associated privileges, please check out this [page](https://docs.newrelic.com/docs/accounts/accounts-billing/new-relic-one-user-management/user-type/#api-access).
-
+#### Account Type Restrictions for Ingest Keys
+- Creating `INGEST` keys requires a New Relic user with core or full platform access. See [user types](https://docs.newrelic.com/docs/accounts/accounts-billing/new-relic-one-user-management/user-type/#api-access).
 
 ## Import
 
-Existing API access keys can be imported using a composite ID of `<api_access_key_id>:<key_type>`. `<key_type>`
-will be either `INGEST` or `USER`.
+Existing API access keys can be imported using a composite ID of `<api_access_key_id>:<key_type>`, where `<key_type>` is either `INGEST` or `USER`. Refer to the considerations listed in the [Important Considerations](#importing-existing-keys-into-terraform-state) section above regarding limitations on importing the actual key value.
 
 For example:
 ```
-$ terraform import newrelic_api_access_key.foobar "1234567:INGEST"
+$ terraform import newrelic_api_access_key.foobar "131313133A331313130B5F13DF01313FDB13B13133EE5E133D13EAAB3A3C13D3:INGEST"
 ```
-## Extended Usage With Modules
 
-As highlighted in the [Important Considerations](#important-considerations-for-using-this-resource) section, to effectively create and retrieve API keys or to fetch existing keys, the following modules are provided. They utilize NerdGraph queries behind the scenes to access the key values.
+For customers using Terraform v1.5 and above, it is recommended to use the `import {}` block in your Terraform configuration. This allows Terraform to [generate the resource configuration automatically](https://developer.hashicorp.com/terraform/language/import/generating-configuration#workflow) during the import process by running a `terraform plan -generate-config-out=<filename>.tf`, reducing manual effort and ensuring accuracy.
 
-### Module: Create and Retrieve Access Keys
-
-### Overview
-This module allows you to create a new User or Ingest API key using the [`newrelic_api_access_key`](#resource-newrelic_api_access_key) resource and fetch the created key, by performing a NerdGraph query under the hood, using the ID of the key created via the resource to fetch the created key. This is the recommended method for creating new API keys with Terraform when you need to use the key value programmatically.
-
-### Outputs
-The following output values are provided by the module:
-
-* `key`: The actual API key.
-* `name`: The name of the key.
-* `type`: The type of API key.
-* `ingest_type`: The type of ingest (applicable only for `key_type = INGEST`).
-
--> For a comprehensive guide on securely providing your New Relic API Key to Terraform as showcased in below examples,please refer [to the guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/api_key_usage_guide) for detailed steps regarding local development and CI/CD pipelines.
-### Example Usage #1 (USER)
-```terraform
-module "create_access_keys" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
-  
-  api_key             = var.newrelic_api_key
-  newrelic_account_id = "12345678"
-  name                = "Access key for DemoApp"
-  key_type            = "USER"
-  user_id             = 12345623445
-}
-
-output "required_attributes" {
-  value = module.create_access_keys.required_attributes
+For example:
+```hcl
+import {
+  id = "131313133A331313130B5F13DF01313FDB13B13133EE5E133D13EAAB3A3C13D3:INGEST"
+  to = newrelic_api_access_key.foobar
 }
 ```
--> **IMPORTANT!** The `user_id` parameter is optional, but its behavior changes depending on your `key_type`. If your `key_type` is set to "USER", you must provide `user_id` if you intend to create the API key for a user different from the one associated with the API key making the current Terraform request. However, if `key_type` is "USER" and this parameter is omitted, the `user_id` will be automatically inferred from the API key used to authenticate this request, meaning the new access key will be generated for that inferred user. Always double-check your `user_id` value, or its omission, to ensure the API key is created for the correct New Relic user.
 
-### Example Usage #2 (INGEST-LICENSE)
-```terraform
-module "create_access_keys" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
-
-  api_key             = var.newrelic_api_key
-  newrelic_account_id = "12345678"
-  name                = "DemoApp"
-  key_type            = "INGEST"
-  ingest_type         = "LICENSE"
-}
-
-output "required_attributes" {
-  value = module.create_access_keys.required_attributes
-}
-```
-### Example Usage #3 (INGEST-BROWSER)
-```terraform
-module "create_access_keys" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
-
-  api_key             = var.newrelic_api_key
-  newrelic_account_id = "12345678"
-  name                = "DemoApp"
-  key_type            = "INGEST"
-  ingest_type         = "BROWSER"
-}
-
-output "required_attributes" {
-  value = module.create_access_keys.required_attributes
-}
-```
-## Module: Fetch Access Keys
-
-### Overview
-This module may be used to fetch a user or ingest key, using the ID of the key. Note that the ID of a key can be copied from the New Relic One UI, and is also exported by the [`newrelic_api_access_key`](#resource-newrelic_api_access_key) resource in the New Relic Terraform Provider, if the key is created using this resource.
-
-### Outputs
-The following output values are provided by the module:
-
-* `key`: The actual API key
-* `name`: The name of the key.
-* `type`: The type of API key
-* `ingest_type`: The type of ingest (applicable only for `key_type = INGEST`).
-
-### Example Usage
-
-```terraform
-module "fetch_access_keys" {
-  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/newrelic_api_access_key_extended/"
-
-  api_key = var.newrelic_api_key
-  key_id = "DWEGHFF327532576931786356532327538273"
-  key_type = "INGEST"
-}
-
-output "required_attributes" {
-  value = module.fetch_access_keys.required_attributes
-}
-```
- 
+This approach simplifies the import process and ensures that the resource configuration aligns with the imported state.
