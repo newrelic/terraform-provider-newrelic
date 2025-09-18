@@ -97,7 +97,7 @@ module "vcn" {
 resource "oci_core_default_route_table" "default_internet_route" {
   for_each = var.create_vcn ? { "default" = true } : {}
 
-  manage_default_resource_id = data.oci_core_route_tables.default_vcn_route_table[0].route_tables[0].id
+  manage_default_resource_id = data.oci_core_route_tables.default_vcn_route_table["default"].route_tables[0].id
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
