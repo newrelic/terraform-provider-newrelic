@@ -1,12 +1,12 @@
 ---
 layout: "newrelic"
-page_title: "New Relic Terraform Provider Cloud integrations example for AWS, GCP, and Azure"
+page_title: "New Relic Terraform Provider Cloud integrations example for AWS, GCP, Azure and OCI"
 sidebar_current: "docs-newrelic-provider-cloud-integrations-guide"
 description: |-
   Use this guide to set up the New Relic cloud integrations fully automated through Terraform.
 ---
 
-## New Relic Terraform Provider Cloud integrations example for AWS, GCP and Azure
+## New Relic Terraform Provider Cloud integrations example for AWS, GCP, Azure, and OCI
 
 The [New Relic Cloud integrations](https://docs.newrelic.com/docs/infrastructure/infrastructure-integrations/get-started/introduction-infrastructure-integrations/) collect data from cloud platform services and accounts. There's no installation process for cloud integrations and they do not require the use of our infrastructure agent: you simply connect your New Relic account to your cloud provider account. This guide describes the process of enabling the New Relic cloud integrations fully automated through Terraform.
 
@@ -15,6 +15,7 @@ We have different instructions for each cloud provider, use the links below to g
 - [AWS](#aws)
 - [Azure](#azure)
 - [Google Cloud Platform](#gcp)
+- [Oracle Cloud Infrastructure](#oci)
 
 If you encounter issues or bugs, please [report those on Github repository](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose).
 
@@ -163,3 +164,88 @@ Variables:
 * name: A unique name used throughout the module to name the resources.
 * service_account_id: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
 * project_id: The ID of the project you want to receive data from in GCP.
+
+
+### OCI
+
+Oracle Cloud Infrastructure (OCI) integrations collect metrics, logs, and metadata from supported OCI services and send them to your New Relic account.
+
+#### Modular OCI setup
+
+Two composable modules are available under `examples/modules/cloud-integrations/oci/`. One for metrics collection and one for logging integration. You can provision any or both modules based on requirement. 
+
+* `policy-setup` – Creates IAM policies and identity trust / configuration prerequisites (including workload identity federation inputs) required to link an OCI tenancy to New Relic (Note: This is mandatory module).
+* `metrics-integration` – Creates Service Connector Hub resources, optional networking (VCN / subnets), and supporting artifacts that export metrics to New Relic.
+* `logging-integration` – Creates Service Connector Hub resources, optional networking (VCN / subnets), and supporting artifacts that integrate logs to New Relic.
+
+Use them independently (for example, a central security team applies `policy-setup` while a platform team applies `metrics-integration`) or combine them in the same configuration. In all cases, the `policy-setup` module must be applied successfully before the `metrics-integration` or `logging-integration` module, because the latter modules on IAM policies, dynamic groups / identity trust, and (if configured) workload identity federation artifacts created by the former.
+
+> **NOTE:** These modules assume both the New Relic and OCI providers are already configured. See: [New Relic getting started](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started) and [OCI provider setup](https://registry.terraform.io/providers/oracle/oci/latest/docs).
+
+#### Example: Policy setup module
+
+```hcl
+module "oci_policy_setup" {
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/policy-setup"
+
+  # OCI configuration
+  tenancy_ocid = "ocid1.tenancy.oc1..***"
+  compartment_ocid = "ocid1.tenancy.oc1..***"
+  region = "us-ashburn-1"
+  
+  # New Relic Resource naming
+  newrelic_logging_prefix = "nr_logging"
+  
+  # Network components
+  create_vcn = false
+  function_subnet_id = "ocid1.subnet.oc1.iad.***"
+  
+  # Function configuration
+  debug_enabled = "FALSE"
+  new_relic_region = "US"
+  secret_ocid = "ocid1.vaultsecret.oc1.iad.***"
+  log_sources_details = "[{\"display_name\":\"nr-service-connector-1\",\"description\":\"Service connector for logs from compartment A to New Relic\",\"log_sources\":[{\"compartment_id\":\"ocid1.tenancy.oc1..***\",\"log_group_id\":\"ocid1.loggroup.oc1.iad.***\"}]}]"
+}
+```
+
+Key variables (policy module):
+
+- `tenancy_id`: The OCID of your OCI tenancy.
+- `compartment_id`: The OCID of the compartment where New Relic logging resources will be created.
+- `newrelic_logging_prefix`: Prefix for naming New Relic logging resources.
+- `region`: The OCI region where resources will be created.
+- `create_vcn`: Boolean to determine if a new VCN should be created.
+- `function_subnet_id`: The OCID of the subnet for the function if new VCN is not created.
+- `debug_enabled`: Boolean to enable or disable debug logging.
+- `new_relic_region`: The New Relic region (US or EU).
+- `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
+- `log_sources_details`: List of log sources to be integrated with New Relic. Use stringified json of below structure:
+   ```json
+     [
+       {
+        "display_name": "logging-connector-1",
+        "description": "Service connector for logs from compartment A to New Relic",
+        "log_sources": [
+         {
+          "compartment_id": "ocid1.tenancy.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
+         }
+        ]
+       },
+       {
+        "display_name": "logging-connector-2",
+        "description": "Service connector for logs from compartment A to New Relic",
+        "log_sources": [
+         {
+          "compartment_id": "ocid1.compartment.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
+         },
+         {
+          "compartment_id": "ocid1.compartment.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
+         }
+        ]
+       }
+     ]
+
+   ```
