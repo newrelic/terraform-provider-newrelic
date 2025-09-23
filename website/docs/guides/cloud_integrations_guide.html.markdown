@@ -168,7 +168,7 @@ Variables:
 <a id="oci"></a>
 ### Oracle Cloud Infrastructure
 
-Oracle Cloud Infrastructure (OCI) integration collects metrics, logs, and metadata from supported OCI services and sends them to your New Relic account. Data collection uses a combination of:
+The New Relic OCI integration collects metrics, logs, and metadata from supported OCI services and sends them to your New Relic account. This integration uses a combination of:
 
 * Service Connector Hub pipelines (for metrics / logs export)
 * Functions for data transformation and payload enrichment
@@ -230,7 +230,7 @@ module "oci_policy_setup" {
 }
 ```
 
-Key variables (policy module):
+Key variables:
 
 * `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
 * `client_id`, `client_secret`, `oci_domain_url`, `svc_user_name` – Workload identity federation (OAuth2) inputs (see the [OCI link account](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_link_account) resource docs for guidance).
