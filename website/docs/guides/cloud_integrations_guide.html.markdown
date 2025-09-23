@@ -263,7 +263,7 @@ module "oci_metrics_integration" {
 }
 ```
 
-Key variables (metrics module):
+Key variables:
 
 * `create_vcn` / `function_subnet_id` – Networking control. Set `create_vcn=false` and provide an existing `function_subnet_id` to reuse existing infrastructure.
 * `connector_hubs_data` – A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. 
