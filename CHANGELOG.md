@@ -1,3 +1,8 @@
+<a name="v3.69.1"></a>
+## [v3.69.1] - 2025-09-23
+### Documentation Updates
+- **synthetics:** update examples with `depends_on` for race condition with monitor and secure credential ([#2935](https://github.com/newrelic/terraform-provider-newrelic/issues/2935))
+
 <a name="v3.69.0"></a>
 ## [v3.69.0] - 2025-09-11
 ### Features
@@ -2437,7 +2442,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.1...HEAD
+[v3.69.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.0...v3.69.1
 [v3.69.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.68.0...v3.69.0
 [v3.68.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.67.0...v3.68.0
 [v3.67.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.66.0...v3.67.0
