@@ -15,8 +15,8 @@ This setup is used to create a provider account with OCI credentials, establishi
 
 For the `newrelic_cloud_oci_link_account` resource to work properly, you need an OCI tenancy with IAM permissions to create and manage the identity artifacts (client/application, secrets, compartments, and service user) referenced below. OCI provides enterprise-grade cloud services across multiple global regions.
 
-> **NOTE:** This resource assumes you've already configured the New Relic provider with valid credentials:
-> - [New Relic provider getting started](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started)
+> NOTE: Before using this resource, ensure the New Relic provider is configured with valid credentials.  
+> See Getting Started: [New Relic provider guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started)
 
 If you encounter issues or bugs, please [open an issue in the GitHub repository](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose).
 
