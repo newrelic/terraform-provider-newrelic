@@ -28,3 +28,14 @@ variable "include_metric_filters" {
   type        = map(list(string))
   default     = {}
 }
+
+variable "output_format" {
+  description = "The output format for the CloudWatch metric stream"
+  type        = string
+  default     = "opentelemetry0.7"
+
+  validation {
+    condition     = contains(["opentelemetry0.7", "opentelemetry1.0"], var.output_format)
+    error_message = "The output_format must be either 'opentelemetry0.7' or 'opentelemetry1.0'."
+  }
+}
