@@ -576,6 +576,22 @@ func TestAccNewRelicOneDashboard_VariablesEnum(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_VariableAccountIDsValidation tests that the validation function properly catches empty account_ids
+func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
+				ExpectError: regexp.MustCompile(`variable\[0\]: account_ids cannot be empty for NRQL variables`),
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboardConfig_TwoPageBasic generates a TF config snippet for a simple
 // two page dashboard.
 func testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(dashboardName string, accountID string) string {
@@ -1674,93 +1690,8 @@ EOT
 	}`
 }
 
-// TestAccNewRelicOneDashboard_VariableDefaultAccountIDs tests the default behavior of account_ids in variables
-func TestAccNewRelicOneDashboard_VariableDefaultAccountIDs(t *testing.T) {
-	resourceName := "newrelic_one_dashboard.bar"
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: Create dashboard with variable but without explicit account_ids
-			{
-				Config: testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardExists(resourceName, 0),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "test_variable"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.type", "nrql"),
-				),
-			},
-			// Step 2: Update with explicit account_ids - should not cause drift
-			{
-				Config: testAccNewRelicOneDashboardConfigVariableAccountIDsExplicit(rName, strconv.Itoa(testAccountID)),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardExists(resourceName, 0),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					// account_ids should be explicitly set in state
-					resource.TestCheckResourceAttr(resourceName, "variable.0.nrql_query.0.account_ids.#", "1"),
-				),
-			},
-			// Step 3: Remove explicit account_ids again - should not cause drift
-			{
-				Config: testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardExists(resourceName, 0),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
-				),
-			},
-			// Step 4: Import test to verify state consistency
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-// Test configuration with variable account_ids omitted
-func testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(dashboardName string) string {
-	return fmt.Sprintf(`
-resource "newrelic_one_dashboard" "bar" {
-  name = "%[1]s"
-
-  page {
-    name = "Test Page"
-
-    widget_line {
-      title  = "Test Widget"
-      row    = 1
-      column = 1
-      width  = 6
-      height = 3
-
-      nrql_query {
-        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
-      }
-    }
-  }
-
-  variable {
-    name               = "test_variable"
-    title              = "Test Variable"
-    type               = "nrql"
-    replacement_strategy = "default"
-
-    nrql_query {
-      # account_ids intentionally omitted to test defaulting
-      query = "FROM Transaction SELECT uniques(appName)"
-    }
-  }
-}
-`, dashboardName)
-}
-
 // Test configuration with variable account_ids explicitly set
-func testAccNewRelicOneDashboardConfigVariableAccountIDsExplicit(dashboardName string, accountID string) string {
+func testAccNewRelicOneDashboardConfigVariableAccountIDs(dashboardName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_one_dashboard" "bar" {
   name = "%[1]s"
@@ -1788,10 +1719,10 @@ resource "newrelic_one_dashboard" "bar" {
     replacement_strategy = "default"
 
     nrql_query {
-      account_ids = [%[2]s]
+      account_ids = []
       query       = "FROM Transaction SELECT uniques(appName)"
     }
   }
 }
-`, dashboardName, accountID)
+`, dashboardName)
 }
