@@ -67,3 +67,9 @@ variable "fingerprint" {
   type        = string
   description = "The fingerprint of the public key. Get this from OCI Console -> User Settings -> API Keys"
 }
+
+variable "image_version" {
+  type = string
+  description = "The version of the Docker image for the New Relic function for the region."
+  default = "latest"
+}
