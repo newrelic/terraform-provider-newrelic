@@ -428,7 +428,7 @@ This attribute requires specifying the following attributes in a nested block -
 
   data_format {
     name = "Max duration"
-    Type = "duration"
+    type = "duration"
   }
 
   data_format {
@@ -446,13 +446,13 @@ This attribute requires specifying the following attributes in a nested block -
 ```hcl
   data_format {
     name = "timestamp"
-    Type = "date"
+    type = "date"
   }
 
   data_format {
     name = "timestamp"
-    Type = "custom"
-    Format = "%Y-%m-%dT%X.%L%Z"
+    type = "custom"
+    format = "%Y-%m-%dT%X.%L%Z"
   }
 ```
 * Similarly, in order to use `data_format{}` with numeric values, the `type` would be need to set to `decimal`. The `precision` of the value may also be specified with type `decimal`. However, in order to have "Autoformat" enabled on the numeric value, specify the type as `humanized`.
