@@ -191,42 +191,54 @@ func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumIte
 }
 
 func expandVariableNRQLQuery(in []interface{}, meta interface{}) *dashboards.DashboardVariableNRQLQueryInput {
+
 	var out dashboards.DashboardVariableNRQLQueryInput
 
 	for _, v := range in {
 		cfg := v.(map[string]interface{})
-
-		var accountIDs []int
-		rawAccountIDs, hasAccountIDs := cfg["account_ids"]
-
-		// Check if account_ids is explicitly set AND non-empty
-		if hasAccountIDs && rawAccountIDs != nil {
-			accountIDsSlice := rawAccountIDs.([]interface{})
-			if len(accountIDsSlice) > 0 {
-				// Non-empty slice, use as-is
-				accountIDs = expandVariableAccountIDs(accountIDsSlice)
-			} else {
-				// Empty slice - treat as omitted for defaulting purposes
-				hasAccountIDs = false
-			}
-		}
-
-		// Default to provider account ID if not set or empty
-		if !hasAccountIDs {
-			log.Printf("[DEBUG] expandVariableNRQLQuery: account_ids not set or empty, attempting to default from provider.")
-			if metaMap, ok := meta.(map[string]interface{}); ok {
-				if acct, exists := metaMap["account_id"]; exists {
-					accountIDs = []int{acct.(int)}
-				}
-			}
-		}
-
 		out = dashboards.DashboardVariableNRQLQueryInput{
-			AccountIDs: accountIDs,
-			Query:      nrdb.NRQL(cfg["query"].(string)),
-		}
+			AccountIDs: expandVariableAccountIDs(cfg["account_ids"].([]interface{})),
+			Query:      nrdb.NRQL(cfg["query"].(string))}
 	}
+
 	return &out
+
+	//var out dashboards.DashboardVariableNRQLQueryInput
+	//
+	//for _, v := range in {
+	//	cfg := v.(map[string]interface{})
+	//
+	//	var accountIDs []int
+	//	rawAccountIDs, hasAccountIDs := cfg["account_ids"]
+	//
+	//	// Check if account_ids is explicitly set AND non-empty
+	//	if hasAccountIDs && rawAccountIDs != nil {
+	//		accountIDsSlice := rawAccountIDs.([]interface{})
+	//		if len(accountIDsSlice) > 0 {
+	//			// Non-empty slice, use as-is
+	//			accountIDs = expandVariableAccountIDs(accountIDsSlice)
+	//		} else {
+	//			// Empty slice - treat as omitted for defaulting purposes
+	//			hasAccountIDs = false
+	//		}
+	//	}
+	//
+	//	// Default to provider account ID if not set or empty
+	//	if !hasAccountIDs {
+	//		log.Printf("[DEBUG] expandVariableNRQLQuery: account_ids not set or empty, attempting to default from provider.")
+	//		if metaMap, ok := meta.(map[string]interface{}); ok {
+	//			if acct, exists := metaMap["account_id"]; exists {
+	//				accountIDs = []int{acct.(int)}
+	//			}
+	//		}
+	//	}
+	//
+	//	out = dashboards.DashboardVariableNRQLQueryInput{
+	//		AccountIDs: accountIDs,
+	//		Query:      nrdb.NRQL(cfg["query"].(string)),
+	//	}
+	//}
+	//return &out
 }
 
 func expandVariableAccountIDs(in []interface{}) []int {
@@ -1837,6 +1849,11 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 		errorsList = append(errorsList, err.Error())
 	}
 
+	err = validateDashboardVariableNRQLAccountIDs(d, meta)
+	if err != nil {
+		errorsList = append(errorsList, err.Error())
+	}
+
 	//adding a function to validate that the " to and "from" fields in "threshold" for table & line widget are a floating point number.
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
@@ -1881,6 +1898,54 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
 				}
 
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateDashboardVariableNRQLAccountIDs(d *schema.ResourceDiff, meta interface{}) error {
+
+	_, variablesListObtained := d.GetChange("variable")
+	vars := variablesListObtained.([]interface{})
+
+	// Get default account ID from provider metadata
+	var defaultAccountID int
+	if providerMeta, ok := meta.(*ProviderConfig); ok {
+		defaultAccountID = providerMeta.AccountID
+	}
+
+	for i, v := range vars {
+		variableMap := v.(map[string]interface{})
+
+		nrqlQuery, nrqlQueryOk := variableMap["nrql_query"]
+		if !nrqlQueryOk {
+			continue
+		}
+
+		nrqlQueryInterface := nrqlQuery.([]interface{})
+		if len(nrqlQueryInterface) == 0 {
+			continue
+		}
+
+		for _, query := range nrqlQueryInterface {
+			if query == nil {
+				continue
+			}
+
+			queryMap := query.(map[string]interface{})
+			accountIDs, accountIDsOk := queryMap["account_ids"]
+
+			// Check if account_ids is missing or empty
+			if !accountIDsOk {
+				return fmt.Errorf("variable[%d]: account_ids is required for NRQL variables. Default provider account ID is %d - consider setting account_ids = [%d]",
+					i, defaultAccountID, defaultAccountID)
+			}
+
+			if accountIDsSlice, ok := accountIDs.([]interface{}); ok && len(accountIDsSlice) == 0 {
+				return fmt.Errorf("variable[%d]: account_ids cannot be empty for NRQL variables. Default provider account ID is %d - consider setting account_ids = [%d]",
+					i, defaultAccountID, defaultAccountID)
 			}
 		}
 	}
