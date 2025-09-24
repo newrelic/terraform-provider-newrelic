@@ -205,6 +205,12 @@ resource_newrelic_cloud_gcp_link_account.go:
 resource_newrelic_cloud_gcp_link_account_test.go:
   test: true
   product_mapping: CLOUD
+resource_newrelic_cloud_oci_link_account.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_oci_link_account_test.go:
+  test: true
+  product_mapping: CLOUD
 resource_newrelic_data_partition.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
