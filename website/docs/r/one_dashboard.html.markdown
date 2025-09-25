@@ -540,7 +540,7 @@ Nested `nrql_query` blocks in **variable** allow you to make NRQL queries to pop
 
 The following arguments are supported:
 
-  * `account_ids` - (Optional) List of account IDs such as `[12345, 67890]`. If omitted or set to `[]` (empty list), defaults to the provider's configured account ID.
+  * `account_ids` - (Required) List of account IDs such as `[12345, 67890]`.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
 
 Example usage:
