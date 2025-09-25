@@ -1901,12 +1901,12 @@ func validateDashboardVariableNRQLAccountIDs(d *schema.ResourceDiff, meta interf
 
 			// Check if account_ids is missing or empty
 			if !accountIDsOk {
-				return fmt.Errorf("variable[%d]: account_ids is required for NRQL variables. Default provider account ID is %d - consider setting account_ids = [%d]",
+				return fmt.Errorf("variable[%d]: `account_ids` is required for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
 					i, defaultAccountID, defaultAccountID)
 			}
 
 			if accountIDsSlice, ok := accountIDs.([]interface{}); ok && len(accountIDsSlice) == 0 {
-				return fmt.Errorf("variable[%d]: account_ids cannot be empty for NRQL variables. Default provider account ID is %d - consider setting account_ids = [%d]",
+				return fmt.Errorf("variable[%d]: `account_ids` cannot be empty for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
 					i, defaultAccountID, defaultAccountID)
 			}
 		}
