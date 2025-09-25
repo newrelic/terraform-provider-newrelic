@@ -308,7 +308,7 @@ module "oci_logs_integration" {
   
   # network components
   create_vcn = true # set to false to reuse existing VCN/subnet created from metrics module
-  function_subnet_id = module.oci_metrics_integration.vcn_network_details.subnet_id # ignored when create_vcn = true
+  function_subnet_id = "" # ignored when create_vcn = true
   
   # function application environment variables configuration
   image_version = "latest" # latest image version for the logging function
