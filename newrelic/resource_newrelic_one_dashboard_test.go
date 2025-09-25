@@ -576,6 +576,22 @@ func TestAccNewRelicOneDashboard_VariablesEnum(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_VariableAccountIDsValidation tests that the validation function properly catches empty account_ids
+func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
+				ExpectError: regexp.MustCompile("`account_ids` cannot be empty for NRQL variables"),
+			},
+		},
+	})
+}
+
 // testAccCheckNewRelicOneDashboardConfig_TwoPageBasic generates a TF config snippet for a simple
 // two page dashboard.
 func testAccCheckNewRelicOneDashboardConfig_TwoPageBasic(dashboardName string, accountID string) string {
@@ -1672,4 +1688,41 @@ EOT
     }
 	  }
 	}`
+}
+
+// Test configuration with variable account_ids explicitly set
+func testAccNewRelicOneDashboardConfigVariableAccountIDs(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_one_dashboard" "bar" {
+  name = "%[1]s"
+
+  page {
+    name = "Test Page"
+
+    widget_line {
+      title  = "Test Widget"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      nrql_query {
+        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+      }
+    }
+  }
+
+  variable {
+    name               = "test_variable"
+    title              = "Test Variable"
+    type               = "nrql"
+    replacement_strategy = "default"
+
+    nrql_query {
+      account_ids = []
+      query       = "FROM Transaction SELECT uniques(appName)"
+    }
+  }
+}
+`, dashboardName)
 }
