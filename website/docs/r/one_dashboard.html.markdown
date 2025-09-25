@@ -580,23 +580,6 @@ variable {
     title                = "title"
     type                 = "nrql"
 }
-
-variable {
-    default_values     = ["value"]
-    is_multi_selection = true
-    item {
-      title = "item"
-      value = "ITEM"
-    }
-    name = "variable"
-    nrql_query {
-      # account_ids defaults to provider account if omitted or empty
-      query       = "FROM Transaction SELECT average(duration) FACET appName"
-    }
-    replacement_strategy = "default"
-    title                = "title"
-    type                 = "nrql"
-}
 ```
 
 -> **NOTE:** This is not to be confused with `nrql_query` used with widgets blocks - for more details on the differences between the two, please see the [Important: `nrql_query` Blocks: Schema Differences](#important-nrql_query-blocks-schema-differences) section.
@@ -650,8 +633,6 @@ The following arguments are supported:
 **Historical Context:** This difference exists because:
 - **Variables** were designed with multi-account support from the beginning (v3.9.0+).
 - **Widgets** originally supported only single accounts, with multi-account support added later (v3.65.0+) using JSON encoding for backward compatibility.
-
-Both blocks default to the provider's configured account ID when the account field is omitted or empty.
 
 ## Additional Examples
 
