@@ -1,3 +1,8 @@
+<a name="v3.70.1"></a>
+## [v3.70.1] - 2025-09-25
+### Bug Fixes
+- **cloud:** make subnet optional in oci module ([#2938](https://github.com/newrelic/terraform-provider-newrelic/issues/2938))
+
 <a name="v3.70.0"></a>
 ## [v3.70.0] - 2025-09-24
 ### Features
@@ -2447,7 +2452,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.1...HEAD
+[v3.70.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.0...v3.70.1
 [v3.70.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.1...v3.70.0
 [v3.69.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.0...v3.69.1
 [v3.69.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.68.0...v3.69.0
