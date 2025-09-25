@@ -191,7 +191,6 @@ func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumIte
 }
 
 func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQLQueryInput {
-
 	var out dashboards.DashboardVariableNRQLQueryInput
 
 	for _, v := range in {
@@ -202,7 +201,6 @@ func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQL
 	}
 
 	return &out
-
 }
 
 func expandVariableAccountIDs(in []interface{}) []int {
