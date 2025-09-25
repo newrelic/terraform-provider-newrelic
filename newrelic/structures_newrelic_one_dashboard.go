@@ -37,7 +37,7 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}), meta)
+	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func validateDashboardWidgetNRQLQueryAccountIDs(accountIDValue interface{}, key 
 	return
 }
 
-func expandDashboardVariablesInput(variables []interface{}, meta interface{}) ([]dashboards.DashboardVariableInput, error) {
+func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
 	}
