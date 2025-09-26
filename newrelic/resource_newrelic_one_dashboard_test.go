@@ -250,6 +250,26 @@ func TestAccNewRelicOneDashboard_BillboardThresholds(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicOneDashboard_BillboardSettings Checks if billboard settings are configured correctly
+func TestAccNewRelicOneDashboard_BillboardSettings(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rWidgetName := fmt.Sprintf("tf-test-widget-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings(rName, rWidgetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicOneDashboard_UnlinkFilterCurrentDashboard(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 
@@ -366,6 +386,36 @@ func TestAccNewRelicOneDashboard_InvalidTooltipMode(t *testing.T) {
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL(rName),
 				ExpectError: regexp.MustCompile(`expected page.0.widget_line.0.tooltip.0.mode to be one of \[all single hidden\], got invalid`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidBillboardAlignment checks for proper response if billboard alignment is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidBillboardAlignment(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_billboard.0.billboard_settings.0.visual.0.alignment to be one of \[stacked inline\], got test_alignment`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidBillboardDisplay checks for proper response if billboard display is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidBillboardDisplay(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_billboard.0.billboard_settings.0.visual.0.display to be one of \[auto all none label value\], got test_display`),
 			},
 		},
 	})
@@ -1458,6 +1508,43 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings generates billboard with billboard settings
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings(dashboardName string, widgetName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      billboard_settings {
+        link {
+          new_tab = true
+          title = "test"
+          url = "https://example.com"
+        }
+        visual {
+          alignment = "inline"
+          display = "auto"
+        }
+        grid_options {
+          columns = 3
+          label = 5
+          value = 8
+        }
+      }
+    }
+  }
+}`
+}
+
 // testAccCheckNewRelicOneDashboardExists fetches the dashboard back, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing.
 func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int) resource.TestCheckFunc {
@@ -1688,6 +1775,60 @@ EOT
     }
 	  }
 	}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay generates a basic dashboard with Invalid Billboard Display Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          display = "test_display"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment generates a basic dashboard with Invalid Billboard Alignment Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          alignment = "test_alignment"
+        }
+      }
+    }
+  }
+}`
 }
 
 // Test configuration with variable account_ids explicitly set
