@@ -289,8 +289,66 @@ resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
   force_destroy = true
 }
 
+// Check for existing AWS Config Configuration Recorders
+data "external" "check_existing_recorder" {
+  program = ["bash", "-c", <<-EOT
+    echo "🔍 Checking for existing AWS Config Configuration Recorders..." >&2
+    region=${data.aws_region.current.id}
+    echo "📍 Current AWS Region: $region" >&2
+
+    # Check if AWS CLI is available
+    if ! command -v aws >/dev/null 2>&1; then
+      error_message="AWS CLI not found. Assuming no recorders exist."
+      echo "❌ $error_message" >&2
+      echo '{"has_recorder":"false","message":"AWS CLI not available","log":"'$error_message'","region":"'$region'"}'
+      exit 0
+    fi
+
+    # Get configuration recorders
+    recorders=$(aws configservice describe-configuration-recorders --region "$region" --output json 2>/dev/null)
+
+    if [ $? -ne 0 ]; then
+      error_message="Failed to describe configuration recorders. Assuming no recorders exist."
+      echo "⚠️  $error_message" >&2
+      echo '{"has_recorder":"false","message":"Failed to query AWS Config","log":"'$error_message'","region":"'$region'"}'
+      exit 0
+    fi
+
+    # Count recorders
+    recorder_count=$(echo "$recorders" | jq -r '.ConfigurationRecorders | length' 2>/dev/null || echo "0")
+
+    if [ "$recorder_count" -gt 0 ]; then
+      success_message="Found $recorder_count existing AWS Config Configuration Recorder(s) in region $region - Skipping creation to avoid AWS limits."
+      echo "✅ Found $recorder_count existing AWS Config Configuration Recorder(s) in region $region:" >&2
+      echo "$recorders" | jq -r '.ConfigurationRecorders[].name' 2>/dev/null | while read name; do
+        echo "   - $name" >&2
+      done
+      echo "🚫 Skipping creation of new Configuration Recorder to avoid AWS limits." >&2
+      recorder_names=$(echo "$recorders" | jq -r '.ConfigurationRecorders[].name' 2>/dev/null | tr '\n' ',' | sed 's/,$//')
+      echo '{"has_recorder":"true","count":"'$recorder_count'","recorder_names":"'$recorder_names'","message":"Found existing recorders","log":"'$success_message'","region":"'$region'"}'
+    else
+      no_recorder_message="No existing AWS Config Configuration Recorders found in region $region - Will proceed with creating new Configuration Recorder."
+      echo "📝 No existing AWS Config Configuration Recorders found in region $region." >&2
+      echo "✨ Will proceed with creating new Configuration Recorder." >&2
+      echo '{"has_recorder":"false","count":"0","message":"No existing recorders found","log":"'$no_recorder_message'","region":"'$region'"}'
+    fi
+  EOT
+  ]
+}
+
+data "aws_region" "current" {}
+
+locals {
+  has_existing_recorder = data.external.check_existing_recorder.result.has_recorder == "true"
+  should_create_recorder = !local.has_existing_recorder
+
+  # Make logs visible during Terraform execution - use try() to handle missing keys gracefully
+  recorder_check_log = try(data.external.check_existing_recorder.result.log, "No log available")
+}
+
 resource "aws_iam_role" "newrelic_configuration_recorder" {
-  name               = "newrelic_configuration_recorder-${var.name}"
+  count = local.should_create_recorder ? 1 : 0
+  name  = "newrelic_configuration_recorder-${var.name}"
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -309,8 +367,9 @@ EOF
 }
 
 resource "aws_iam_role_policy" "newrelic_configuration_recorder_s3" {
-  name = "newrelic-configuration-recorder-s3-${var.name}"
-  role = aws_iam_role.newrelic_configuration_recorder.id
+  count = local.should_create_recorder ? 1 : 0
+  name  = "newrelic-configuration-recorder-s3-${var.name}"
+  role  = aws_iam_role.newrelic_configuration_recorder[0].id
 
   policy = <<POLICY
 {
@@ -332,22 +391,26 @@ POLICY
 }
 
 resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
-  role       = aws_iam_role.newrelic_configuration_recorder.name
+  count      = local.should_create_recorder ? 1 : 0
+  role       = aws_iam_role.newrelic_configuration_recorder[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 resource "aws_config_configuration_recorder" "newrelic_recorder" {
+  count    = local.should_create_recorder ? 1 : 0
   name     = "newrelic_configuration_recorder-${var.name}"
-  role_arn = aws_iam_role.newrelic_configuration_recorder.arn
+  role_arn = aws_iam_role.newrelic_configuration_recorder[0].arn
 }
 
 resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
-  name       = aws_config_configuration_recorder.newrelic_recorder.name
+  count      = local.should_create_recorder ? 1 : 0
+  name       = aws_config_configuration_recorder.newrelic_recorder[0].name
   is_enabled = true
   depends_on = [aws_config_delivery_channel.newrelic_recorder_delivery]
 }
 
 resource "aws_config_delivery_channel" "newrelic_recorder_delivery" {
+  count          = local.should_create_recorder ? 1 : 0
   name           = "newrelic_configuration_recorder-${var.name}"
   s3_bucket_name = aws_s3_bucket.newrelic_configuration_recorder_s3.bucket
   depends_on = [
