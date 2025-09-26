@@ -1777,33 +1777,6 @@ EOT
 	}`
 }
 
-// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment generates a basic dashboard with Invalid Billboard Alignment Configuration
-func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(dashboardName string) string {
-	return `
-resource "newrelic_one_dashboard" "bar" {
-  name = "` + dashboardName + `"
-  permissions = "private"
-
-  page {
-    name = "` + dashboardName + `"
-
-    widget_billboard {
-      title = "foo"
-      row = 1
-      column = 1
-      nrql_query {
-        query = "FROM Transaction SELECT count(*)"
-      }
-      billboard_settings {
-        visual {
-          alignment = "test_alignment"
-        }
-      }
-    }
-  }
-}`
-}
-
 // testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay generates a basic dashboard with Invalid Billboard Display Configuration
 func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(dashboardName string) string {
 	return `
