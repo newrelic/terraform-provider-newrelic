@@ -28,3 +28,9 @@ variable "include_metric_filters" {
   type        = map(list(string))
   default     = {}
 }
+
+variable "enable_config_recorder" {
+  description = "Set to true to enable AWS Configuration Recorder."
+  type        = bool
+  default     = false
+}
