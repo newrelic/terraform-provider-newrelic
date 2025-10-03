@@ -572,6 +572,14 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 
 	s["billboard_settings"] = dashboardWidgetBillboardSettingsSchema()
 
+	s["thresholds_with_series_overrides"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Thresholds with series overrides configuration for the billboard widget.",
+		Elem:        dashboardWidgetThresholdsWithSeriesOverridesSchemaElem(),
+	}
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -1112,6 +1120,49 @@ func dashboardWidgetBillboardSettingsSchema() *schema.Schema {
 								Optional:    true,
 								Description: "Number of columns in the grid.",
 							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetThresholdsWithSeriesOverridesSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"series_overrides": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Series overrides for thresholds.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"from": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "The number from which the range starts in thresholds.",
+						},
+						"to": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "The number at which the range ends in thresholds.",
+						},
+						"series_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Name of the series to which the threshold would be applied.",
+						},
+						"severity": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SUCCESS),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.WARNING),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.UNAVAILABLE),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SEVERE),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.CRITICAL),
+							}, false),
+							Description: "Severity of the threshold, which would reflect in the widget.",
 						},
 					},
 				},
