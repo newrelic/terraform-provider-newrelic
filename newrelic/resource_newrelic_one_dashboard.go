@@ -1131,6 +1131,37 @@ func dashboardWidgetBillboardSettingsSchema() *schema.Schema {
 func dashboardWidgetThresholdsWithSeriesOverridesSchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"thresholds": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Thresholds for the billboard widget.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"from": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "The number from which the range starts in thresholds.",
+						},
+						"to": {
+							Type:        schema.TypeFloat,
+							Optional:    true,
+							Description: "The number at which the range ends in thresholds.",
+						},
+						"severity": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SUCCESS),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.WARNING),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.UNAVAILABLE),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.SEVERE),
+								string(dashboards.DashboardLineTableWidgetsAlertSeverityTypes.CRITICAL),
+							}, false),
+							Description: "Severity of the threshold, which would reflect in the widget.",
+						},
+					},
+				},
+			},
 			"series_overrides": {
 				Type:        schema.TypeList,
 				Optional:    true,
