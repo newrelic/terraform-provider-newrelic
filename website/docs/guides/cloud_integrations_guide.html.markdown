@@ -251,7 +251,7 @@ module "oci_metrics_integration" {
   private_key       = "USER_PVT_KEY"
 
   # Endpoint selection (validated internally)
-  newrelic_endpoint = "newrelic-metric-api" # or newrelic-eu-metric-api
+  newrelic_endpoint = "US" # or EU
 
   # Networking
   create_vcn         = true
