@@ -289,8 +289,6 @@ resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
   force_destroy = true
 }
 
-data "aws_region" "current" {}
-
 locals {
   should_create_recorder = var.enable_config_recorder
 }
