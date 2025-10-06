@@ -2077,7 +2077,7 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[]string) {
 	_, pagesListObtained := d.GetChange("page")
 	pages := pagesListObtained.([]interface{})
-	
+
 	for pageIndex, p := range pages {
 		page := p.(map[string]interface{})
 		widgets, widgetOk := page["widget_billboard"]
@@ -2091,12 +2091,12 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 							*errorsList = append(*errorsList, fmt.Sprintf("thresholds_with_series_overrides in page %d widget_billboard %d cannot be empty - it must contain at least one 'thresholds' or 'series_overrides' block with content", pageIndex, widgetIndex))
 							continue
 						}
-						
+
 						thresholdBlock := t.(map[string]interface{})
-						
+
 						hasValidThresholds := false
 						hasValidSeriesOverrides := false
-						
+
 						// Check thresholds block
 						if thresholds, ok := thresholdBlock["thresholds"]; ok {
 							thresholdsList := thresholds.([]interface{})
@@ -2106,7 +2106,7 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 										*errorsList = append(*errorsList, fmt.Sprintf("threshold %d in page %d widget_billboard %d thresholds block cannot be null", thresholdIndex, pageIndex, widgetIndex))
 										continue
 									}
-									
+
 									thresholdMap := threshold.(map[string]interface{})
 									if hasThresholdContent(thresholdMap) {
 										hasValidThresholds = true
@@ -2116,17 +2116,17 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 								}
 							}
 						}
-						
+
 						// Check series_overrides block
 						if seriesOverrides, ok := thresholdBlock["series_overrides"]; ok {
 							seriesOverridesList := seriesOverrides.([]interface{})
 							if len(seriesOverridesList) > 0 {
 								for overrideIndex, override := range seriesOverridesList {
 									if override == nil {
-										*errorsList = append(*errorsList, fmt.Sprintf("series_override %d in page %d widget_billboard %d series_overrides block  cannot be null", overrideIndex, pageIndex, widgetIndex))
+										*errorsList = append(*errorsList, fmt.Sprintf("series_override %d in page %d widget_billboard %d series_overrides block cannot be null", overrideIndex, pageIndex, widgetIndex))
 										continue
 									}
-									
+
 									overrideMap := override.(map[string]interface{})
 									if hasSeriesOverrideContent(overrideMap) {
 										hasValidSeriesOverrides = true
@@ -2136,7 +2136,7 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 								}
 							}
 						}
-						
+
 						// Check if the entire thresholds_with_series_overrides block has no valid content
 						if !hasValidThresholds && !hasValidSeriesOverrides {
 							*errorsList = append(*errorsList, fmt.Sprintf("thresholds_with_series_overrides in page %d widget_billboard %d must contain at least one valid 'thresholds' or 'series_overrides' block with content", pageIndex, widgetIndex))
@@ -2159,7 +2159,7 @@ func hasThresholdContent(thresholdMap map[string]interface{}) bool {
 	if _, ok := thresholdMap["severity"]; ok {
 		return true
 	}
-	
+
 	return false
 }
 
@@ -2177,7 +2177,7 @@ func hasSeriesOverrideContent(overrideMap map[string]interface{}) bool {
 	if _, ok := overrideMap["severity"]; ok {
 		return true
 	}
-	
+
 	return false
 }
 
@@ -2391,4 +2391,3 @@ func flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(thresholdsWith
 	thresholdsFetchedInterface = append(thresholdsFetchedInterface, thresholdsFetched)
 	return thresholdsFetchedInterface
 }
-
