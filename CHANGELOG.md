@@ -1,3 +1,38 @@
+<a name="v3.70.5"></a>
+## [v3.70.5] - 2025-09-29
+### Bug Fixes
+- **oci:** update Docker image path and newrelic_endpoint validation ([#2942](https://github.com/newrelic/terraform-provider-newrelic/issues/2942))
+
+<a name="v3.70.4"></a>
+## [v3.70.4] - 2025-09-26
+### Bug Fixes
+- **deps:** upgrade v2 to v3 to allow go.dev listing ([#2941](https://github.com/newrelic/terraform-provider-newrelic/issues/2941))
+
+<a name="v3.70.3"></a>
+## [v3.70.3] - 2025-09-26
+### Bug Fixes
+- **dashboard:** add billboard settings support in newrelic_one_dashboard resource ([#2916](https://github.com/newrelic/terraform-provider-newrelic/issues/2916))
+
+<a name="v3.70.2"></a>
+## [v3.70.2] - 2025-09-25
+### Bug Fixes
+- **newrelic_one_dashboard:** add plan-time validation for `account_ids` in `variable{}` block ([#2930](https://github.com/newrelic/terraform-provider-newrelic/issues/2930))
+
+<a name="v3.70.1"></a>
+## [v3.70.1] - 2025-09-25
+### Bug Fixes
+- **cloud:** make subnet optional in oci module ([#2938](https://github.com/newrelic/terraform-provider-newrelic/issues/2938))
+
+<a name="v3.70.0"></a>
+## [v3.70.0] - 2025-09-24
+### Features
+- **cloud:** add `newrelic_cloud_oci_link account` resource, associated onboarding modules ([#2936](https://github.com/newrelic/terraform-provider-newrelic/issues/2936))
+
+<a name="v3.69.1"></a>
+## [v3.69.1] - 2025-09-23
+### Documentation Updates
+- **synthetics:** update examples with `depends_on` for race condition with monitor and secure credential ([#2935](https://github.com/newrelic/terraform-provider-newrelic/issues/2935))
+
 <a name="v3.69.0"></a>
 ## [v3.69.0] - 2025-09-11
 ### Features
@@ -2437,7 +2472,14 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.5...HEAD
+[v3.70.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.4...v3.70.5
+[v3.70.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.3...v3.70.4
+[v3.70.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.2...v3.70.3
+[v3.70.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.1...v3.70.2
+[v3.70.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.0...v3.70.1
+[v3.70.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.1...v3.70.0
+[v3.69.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.69.0...v3.69.1
 [v3.69.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.68.0...v3.69.0
 [v3.68.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.67.0...v3.68.0
 [v3.67.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.66.0...v3.67.0

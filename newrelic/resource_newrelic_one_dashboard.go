@@ -570,6 +570,8 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 		Description: "The warning threshold value.",
 	}
 
+	s["billboard_settings"] = dashboardWidgetBillboardSettingsSchema()
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -1018,6 +1020,100 @@ func dashboardWidgetTooltipSchema() *schema.Schema {
 						string(dashboards.DashboardTooltipTypes.SINGLE),
 						string(dashboards.DashboardTooltipTypes.HIDDEN),
 					}, false),
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetBillboardSettingsSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Billboard settings configuration for the widget.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"link": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Link configuration for the billboard widget.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"title": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The title for the link.",
+							},
+							"url": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The URL for the link.",
+							},
+							"new_tab": {
+								Type:        schema.TypeBool,
+								Optional:    true,
+								Description: "Whether to open the link in a new tab.",
+							},
+						},
+					},
+				},
+				"visual": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Visual configuration for the billboard widget.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"alignment": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Billboard alignment type.",
+								ValidateFunc: validation.StringInSlice([]string{
+									string(dashboards.DashboardBillboardAlignmentTypes.STACKED),
+									string(dashboards.DashboardBillboardAlignmentTypes.INLINE),
+								}, false),
+							},
+							"display": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Billboard display type.",
+								ValidateFunc: validation.StringInSlice([]string{
+									string(dashboards.DashboardBillboardDisplayTypes.AUTO),
+									string(dashboards.DashboardBillboardDisplayTypes.ALL),
+									string(dashboards.DashboardBillboardDisplayTypes.NONE),
+									string(dashboards.DashboardBillboardDisplayTypes.LABEL),
+									string(dashboards.DashboardBillboardDisplayTypes.VALUE),
+								}, false),
+							},
+						},
+					},
+				},
+				"grid_options": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Grid options configuration for the billboard widget.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"value": {
+								Type:        schema.TypeInt,
+								Optional:    true,
+								Description: "Grid value setting.",
+							},
+							"label": {
+								Type:        schema.TypeInt,
+								Optional:    true,
+								Description: "Grid label setting.",
+							},
+							"columns": {
+								Type:        schema.TypeInt,
+								Optional:    true,
+								Description: "Number of columns in the grid.",
+							},
+						},
+					},
 				},
 			},
 		},

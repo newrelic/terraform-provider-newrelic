@@ -289,8 +289,13 @@ resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
   force_destroy = true
 }
 
+locals {
+  should_create_recorder = var.enable_config_recorder
+}
+
 resource "aws_iam_role" "newrelic_configuration_recorder" {
-  name               = "newrelic_configuration_recorder-${var.name}"
+  count = local.should_create_recorder ? 1 : 0
+  name  = "newrelic_configuration_recorder-${var.name}"
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -309,8 +314,9 @@ EOF
 }
 
 resource "aws_iam_role_policy" "newrelic_configuration_recorder_s3" {
-  name = "newrelic-configuration-recorder-s3-${var.name}"
-  role = aws_iam_role.newrelic_configuration_recorder.id
+  count = local.should_create_recorder ? 1 : 0
+  name  = "newrelic-configuration-recorder-s3-${var.name}"
+  role  = aws_iam_role.newrelic_configuration_recorder[0].id
 
   policy = <<POLICY
 {
@@ -332,22 +338,26 @@ POLICY
 }
 
 resource "aws_iam_role_policy_attachment" "newrelic_configuration_recorder" {
-  role       = aws_iam_role.newrelic_configuration_recorder.name
+  count      = local.should_create_recorder ? 1 : 0
+  role       = aws_iam_role.newrelic_configuration_recorder[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 resource "aws_config_configuration_recorder" "newrelic_recorder" {
+  count    = local.should_create_recorder ? 1 : 0
   name     = "newrelic_configuration_recorder-${var.name}"
-  role_arn = aws_iam_role.newrelic_configuration_recorder.arn
+  role_arn = aws_iam_role.newrelic_configuration_recorder[0].arn
 }
 
 resource "aws_config_configuration_recorder_status" "newrelic_recorder_status" {
-  name       = aws_config_configuration_recorder.newrelic_recorder.name
+  count      = local.should_create_recorder ? 1 : 0
+  name       = aws_config_configuration_recorder.newrelic_recorder[0].name
   is_enabled = true
   depends_on = [aws_config_delivery_channel.newrelic_recorder_delivery]
 }
 
 resource "aws_config_delivery_channel" "newrelic_recorder_delivery" {
+  count          = local.should_create_recorder ? 1 : 0
   name           = "newrelic_configuration_recorder-${var.name}"
   s3_bucket_name = aws_s3_bucket.newrelic_configuration_recorder_s3.bucket
   depends_on = [

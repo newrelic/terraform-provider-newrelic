@@ -39,3 +39,8 @@ variable "output_format" {
     error_message = "The output_format must be either 'opentelemetry0.7' or 'opentelemetry1.0'."
   }
 }
+variable "enable_config_recorder" {
+  description = "Set to true to enable AWS Configuration Recorder."
+  type        = bool
+  default     = false
+}

@@ -290,6 +290,8 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
 				// Set data formatting
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
+				// Set billboard settings
+				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -1414,6 +1416,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			}
 		}
 
+		if rawCfg.BillboardSettings != nil {
+			out["billboard_settings"] = flattenDashboardWidgetBillboardSettings(rawCfg.BillboardSettings)
+		}
+
 	case "viz.bullet":
 		widgetType = "widget_bullet"
 		out["limit"] = rawCfg.Limit
@@ -1811,6 +1817,11 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 		errorsList = append(errorsList, err.Error())
 	}
 
+	err = validateDashboardVariableNRQLAccountIDs(d, meta)
+	if err != nil {
+		errorsList = append(errorsList, err.Error())
+	}
+
 	//adding a function to validate that the " to and "from" fields in "threshold" for table & line widget are a floating point number.
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
@@ -1855,6 +1866,54 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
 				}
 
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateDashboardVariableNRQLAccountIDs(d *schema.ResourceDiff, meta interface{}) error {
+
+	_, variablesListObtained := d.GetChange("variable")
+	vars := variablesListObtained.([]interface{})
+
+	// Get default account ID from provider metadata
+	var defaultAccountID int
+	if providerMeta, ok := meta.(*ProviderConfig); ok {
+		defaultAccountID = providerMeta.AccountID
+	}
+
+	for i, v := range vars {
+		variableMap := v.(map[string]interface{})
+
+		nrqlQuery, nrqlQueryOk := variableMap["nrql_query"]
+		if !nrqlQueryOk {
+			continue
+		}
+
+		nrqlQueryInterface := nrqlQuery.([]interface{})
+		if len(nrqlQueryInterface) == 0 {
+			continue
+		}
+
+		for _, query := range nrqlQueryInterface {
+			if query == nil {
+				continue
+			}
+
+			queryMap := query.(map[string]interface{})
+			accountIDs, accountIDsOk := queryMap["account_ids"]
+
+			// Check if account_ids is missing or empty
+			if !accountIDsOk {
+				return fmt.Errorf("variable[%d]: `account_ids` is required for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
+					i, defaultAccountID, defaultAccountID)
+			}
+
+			if accountIDsSlice, ok := accountIDs.([]interface{}); ok && len(accountIDsSlice) == 0 {
+				return fmt.Errorf("variable[%d]: `account_ids` cannot be empty for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
+					i, defaultAccountID, defaultAccountID)
 			}
 		}
 	}
@@ -1954,6 +2013,82 @@ func expandDashboardWidgetConfigurationTooltipInput(d *schema.ResourceData, page
 	return nil
 }
 
+func expandDashboardWidgetConfigurationBillboardSettingsInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetBillboardSettings {
+	billboardSettingsPath := fmt.Sprintf("page.%d.widget_billboard.%d.billboard_settings", pageIndex, widgetIndex)
+	if billboardSettingsData, ok := d.GetOk(billboardSettingsPath); ok && len(billboardSettingsData.([]interface{})) > 0 {
+		billboardSettingsList := billboardSettingsData.([]interface{})
+		if len(billboardSettingsList) > 0 && billboardSettingsList[0] != nil {
+			billboardSettingsMap := billboardSettingsList[0].(map[string]interface{})
+
+			var billboardSettings dashboards.DashboardWidgetBillboardSettings
+
+			// Handle link configuration
+			if linkData, ok := billboardSettingsMap["link"]; ok && len(linkData.([]interface{})) > 0 {
+				linkList := linkData.([]interface{})
+				if len(linkList) > 0 && linkList[0] != nil {
+					linkMap := linkList[0].(map[string]interface{})
+					var link dashboards.DashboardWidgetBillboardLink
+
+					if title, ok := linkMap["title"]; ok {
+						link.Title = title.(string)
+					}
+					if url, ok := linkMap["url"]; ok {
+						link.URL = url.(string)
+					}
+					if newTab, ok := linkMap["new_tab"]; ok {
+						link.NewTab = newTab.(bool)
+					}
+
+					billboardSettings.Link = &link
+				}
+			}
+
+			// Handle visual configuration
+			if visualData, ok := billboardSettingsMap["visual"]; ok && len(visualData.([]interface{})) > 0 {
+				visualList := visualData.([]interface{})
+				if len(visualList) > 0 && visualList[0] != nil {
+					visualMap := visualList[0].(map[string]interface{})
+					var visual dashboards.DashboardWidgetBillboardVisual
+
+					if alignment, ok := visualMap["alignment"]; ok {
+						visual.Alignment = dashboards.DashboardBillboardAlignmentType(alignment.(string))
+					}
+					if display, ok := visualMap["display"]; ok {
+						visual.Display = dashboards.DashboardBillboardDisplayType(display.(string))
+					}
+
+					billboardSettings.Visual = &visual
+				}
+			}
+
+			// Handle grid options configuration
+			if gridOptionsData, ok := billboardSettingsMap["grid_options"]; ok && len(gridOptionsData.([]interface{})) > 0 {
+				gridOptionsList := gridOptionsData.([]interface{})
+				if len(gridOptionsList) > 0 && gridOptionsList[0] != nil {
+					gridOptionsMap := gridOptionsList[0].(map[string]interface{})
+					var gridOptions dashboards.DashboardWidgetBillboardGridOptions
+
+					if value, ok := gridOptionsMap["value"]; ok {
+						gridOptions.Value = value.(int)
+					}
+					if label, ok := gridOptionsMap["label"]; ok {
+						gridOptions.Label = label.(int)
+					}
+					if columns, ok := gridOptionsMap["columns"]; ok {
+						gridOptions.Columns = columns.(int)
+					}
+
+					billboardSettings.GridOptions = &gridOptions
+				}
+			}
+
+			return &billboardSettings
+		}
+	}
+
+	return nil
+}
+
 func flattenDashboardWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) []interface{} {
 	if tooltip == nil {
 		return nil
@@ -1968,4 +2103,59 @@ func flattenDashboardWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) [
 
 	tooltipFetchedInterface = append(tooltipFetchedInterface, tooltipFetched)
 	return tooltipFetchedInterface
+}
+
+func flattenDashboardWidgetBillboardSettings(billboardSettings *dashboards.DashboardWidgetBillboardSettings) []interface{} {
+	if billboardSettings == nil {
+		return nil
+	}
+
+	var billboardSettingsFetched = make(map[string]interface{})
+	var billboardSettingsFetchedInterface []interface{}
+
+	// Handle link configuration
+	if billboardSettings.Link != nil {
+		var linkFetched = make(map[string]interface{})
+		if billboardSettings.Link.Title != "" {
+			linkFetched["title"] = billboardSettings.Link.Title
+		}
+		if billboardSettings.Link.URL != "" {
+			linkFetched["url"] = billboardSettings.Link.URL
+		}
+		linkFetched["new_tab"] = billboardSettings.Link.NewTab
+
+		billboardSettingsFetched["link"] = []interface{}{linkFetched}
+	}
+
+	// Handle visual configuration
+	if billboardSettings.Visual != nil {
+		var visualFetched = make(map[string]interface{})
+		if billboardSettings.Visual.Alignment != "" {
+			visualFetched["alignment"] = string(billboardSettings.Visual.Alignment)
+		}
+		if billboardSettings.Visual.Display != "" {
+			visualFetched["display"] = string(billboardSettings.Visual.Display)
+		}
+
+		billboardSettingsFetched["visual"] = []interface{}{visualFetched}
+	}
+
+	// Handle grid options configuration
+	if billboardSettings.GridOptions != nil {
+		var gridOptionsFetched = make(map[string]interface{})
+		if billboardSettings.GridOptions.Value != 0 {
+			gridOptionsFetched["value"] = billboardSettings.GridOptions.Value
+		}
+		if billboardSettings.GridOptions.Label != 0 {
+			gridOptionsFetched["label"] = billboardSettings.GridOptions.Label
+		}
+		if billboardSettings.GridOptions.Columns != 0 {
+			gridOptionsFetched["columns"] = billboardSettings.GridOptions.Columns
+		}
+
+		billboardSettingsFetched["grid_options"] = []interface{}{gridOptionsFetched}
+	}
+
+	billboardSettingsFetchedInterface = append(billboardSettingsFetchedInterface, billboardSettingsFetched)
+	return billboardSettingsFetchedInterface
 }
