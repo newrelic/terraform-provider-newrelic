@@ -2398,7 +2398,7 @@ func flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(thresholdsWith
 			overrideFetched["from"] = override.From
 			overrideFetched["to"] = override.To
 			overrideFetched["series_name"] = override.SeriesName
-			overrideFetched["severity"] = string(override.Severity)
+			overrideFetched["severity"] = override.Severity
 
 			seriesOverridesList[i] = overrideFetched
 		}

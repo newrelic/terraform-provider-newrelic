@@ -580,7 +580,6 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 	s["thresholds_with_series_overrides"] = &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		MaxItems:    1,
 		Description: "Thresholds with series overrides configuration for the billboard widget.",
 		Elem:        dashboardWidgetThresholdsWithSeriesOverridesSchemaElem(),
 	}
