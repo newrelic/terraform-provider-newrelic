@@ -66,6 +66,7 @@ module "newrelic-aws-cloud-integrations" {
     "AWS/EC2" = [], # include ALL metrics from the EC2 namespace
     "AWS/S3" = ["NumberOfObjects"]. # include just a specific metric from the S3 namespace
   }
+  enable_config_recorder = true # Set to true to enable AWS Config Configuration Recorder
 }
 ```
 
@@ -79,6 +80,7 @@ Variables:
 * `name` (Optional): A unique name used throughout the module to name the resources. (Default `production`)
 * `exclude_metric_filters` (Optional): a map of namespaces and metric names to exclude from the Cloudwatch metric stream. `Conflicts with include_metric_filters`.
 * `include_metric_filters` (Optional): a map of namespaces and metric names to include in the Cloudwatch metric stream. `Conflicts with exclude_metric_filters`.
+* `enable_config_recorder` (Optional): Set to `true` to enable creation of an [AWS Config Configuration Recorder](https://docs.aws.amazon.com/config/latest/developerguide/stop-start-recorder.html) in your AWS account. Only one recorder is allowed per region per account. Default is `false`.
 
 ### Azure
 
