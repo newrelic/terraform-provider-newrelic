@@ -346,6 +346,7 @@ Each widget type supports an additional set of arguments:
     * `warning` - (Optional) Threshold above which the displayed value will be styled with a yellow color.
     * `billboard_settings` - (Optional) A nested block that describes billboard specific settings. See [Nested billboard\_settings blocks](#nested-billboard_settings-blocks) below for details.
     * `data_format` - (Optional) A nested block that describes data format. See [Nested data_format blocks](#nested-data_format-blocks) below for details.
+    * `thresholds_with_series_overrides` - (Optional) A nested block that describes threshold and series-overrides configuration. See [Nested thresholds\_with\_series\_overrides blocks](#nested-thresholds_with_series_overrides-blocks) below for details.
   * `widget_bullet`
     * `nrql_query` - (Required) A nested block that describes a NRQL Query. See [Nested nrql\_query blocks (for Widgets)](#nested-nrql_query-blocks-for-widgets) below for details.
     * `limit` - (Required) Visualization limit for the widget.
@@ -504,6 +505,83 @@ The following arguments are supported:
     * `columns` - (Optional) Number of columns to use for the grid layout.
     * `label` - (Optional) Grid configuration for label. 
     * `value` - (Optional) Grid configuration for value.
+
+### Nested `thresholds_with_series_overrides` blocks
+
+Nested `thresholds_with_series_overrides` blocks allow you to configure thresholds and series overrides settings for billboard widgets.
+
+The following arguments are supported:
+
+  * `thresholds` - (Optional) A list of threshold configurations. See [Nested thresholds blocks](#nested-thresholds-blocks) below for details.
+  * `series_overrides` - (Optional) A list of threshold with series overrides configurations. See [Nested series\_overrides blocks](#nested-series_overrides-blocks) below for details.
+
+### Nested `thresholds` blocks
+
+The `thresholds` block within `thresholds_with_series_overrides` supports:
+
+  * `from` - (Optional) The value 'from' which the threshold would need to be applied.
+  * `to` - (Optional) The value until which the threshold would need to be applied.
+  * `severity` - (Optional) The severity of the threshold, which would affect the visual appearance of the threshold (such as its color) accordingly. The value of this attribute would need to be one of the following - `warning`, `severe`, `critical`, `success`, `unavailable` which correspond to the severity labels _Warning_, _Approaching critical_, _Critical_, _Good_, _Neutral_ in the dropdown that helps specify the severity of thresholds in billboard widgets in the UI, respectively.
+
+### Nested `series_overrides` blocks
+
+The `series_overrides` block within `thresholds_with_series_overrides` supports:
+
+  * `from` - (Optional) The value 'from' which the threshold would need to be applied.
+  * `to` - (Optional) The value until which the threshold would need to be applied.
+  * `series_name` - (Optional) The name of the series this override setting applies to.
+  * `severity` - (Optional) The severity of the threshold, which would affect the visual appearance of the threshold (such as its color) accordingly. The value of this attribute would need to be one of the following - `warning`, `severe`, `critical`, `success`, `unavailable` which correspond to the severity labels _Warning_, _Approaching critical_, _Critical_, _Good_, _Neutral_ in the dropdown that helps specify the severity of thresholds in billboard widgets in the UI, respectively.
+
+#### Example Usage
+
+```hcl
+resource "newrelic_one_dashboard" "exampledash" {
+  name        = "New Relic Terraform Example"
+  permissions = "public_read_only"
+
+  page {
+    name = "New Relic Terraform Example"
+
+    widget_billboard {
+      title  = "Requests per minute"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      refresh_rate = 60000 // 60 seconds
+
+      data_format {
+        name = "rate"
+        type = "recent-relative"
+      }
+      
+      nrql_query {
+        query = "FROM Transaction SELECT rate(count(*), 1 minute)"
+      }
+
+      thresholds_with_series_overrides {
+        thresholds {
+          from     = 0
+          to       = 70
+          severity = "warning"
+        }
+        thresholds {
+          from     = 70
+          to       = 100
+          severity = "critical"
+        }
+        series_overrides {
+          from        = 0
+          to          = 50
+          series_name = "Rate"
+          severity    = "warning"
+        }
+      }
+    }
+  }
+}
+```
 
 ### Nested `nrql_query` blocks (for Widgets)
 
