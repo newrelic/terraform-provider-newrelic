@@ -288,14 +288,14 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds (old logic)
 				// rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
-				
+
 				// Set data formatting
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 				// Set billboard settings
 				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
 				// Set thresholds with series overrides
 				rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d, pageIndex, widgetIndex)
-				
+
 				// Set thresholds from warning and critical attributes
 				if rawConfiguration.ThresholdsWithSeriesOverrides == nil {
 					rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsFromWarningCritical(d, pageIndex, widgetIndex)
@@ -622,17 +622,17 @@ func expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d *schema.
 func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides {
 	warningPath := fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)
 	criticalPath := fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)
-	
+
 	warningData, warningExists := d.GetOk(warningPath)
 	criticalData, criticalExists := d.GetOk(criticalPath)
-	
+
 	// If neither warning nor critical exists, return nil
 	if !warningExists && !criticalExists {
 		return nil
 	}
-	
+
 	var warningValue, criticalValue *float64
-	
+
 	// Parse warning value if it exists and is not empty
 	if warningExists {
 		warningStr := warningData.(string)
@@ -642,7 +642,7 @@ func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.Resou
 			}
 		}
 	}
-	
+
 	// Parse critical value if it exists and is not empty
 	if criticalExists {
 		criticalStr := criticalData.(string)
@@ -652,14 +652,14 @@ func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.Resou
 			}
 		}
 	}
-	
+
 	// If both values are nil (empty strings), return nil
 	if warningValue == nil && criticalValue == nil {
 		return nil
 	}
-	
+
 	var thresholds []dashboards.DashboardBillboardWidgetThreshold
-	
+
 	// Case 1: Only warning exists
 	if warningValue != nil && criticalValue == nil {
 		thresholds = []dashboards.DashboardBillboardWidgetThreshold{
@@ -673,7 +673,7 @@ func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.Resou
 			},
 		}
 	}
-	
+
 	// Case 2: Only critical exists
 	if criticalValue != nil && warningValue == nil {
 		thresholds = []dashboards.DashboardBillboardWidgetThreshold{
@@ -687,7 +687,7 @@ func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.Resou
 			},
 		}
 	}
-	
+
 	// Case 3, 4 & 5: Both warning and critical exist
 	if warningValue != nil && criticalValue != nil {
 		if *warningValue < *criticalValue {
@@ -743,7 +743,7 @@ func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.Resou
 			}
 		}
 	}
-	
+
 	return &dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides{
 		Thresholds: thresholds,
 	}
@@ -2051,6 +2051,9 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 	validateWidgetDataFormatterStructure(d, &errorsList, "widget_table")
 	validateWidgetDataFormatterStructure(d, &errorsList, "widget_billboard")
 
+	// Add validation for conflicting billboard threshold configurations
+	validateBillboardLegacyThresholdConflicts(d, &errorsList)
+
 	// Add validation for thresholds_with_series_overrides
 	validateThresholdsWithSeriesOverrides(d, &errorsList)
 
@@ -2247,8 +2250,8 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 
 						thresholdBlock := t.(map[string]interface{})
 
-						hasValidThresholds := false
-						hasValidSeriesOverrides := false
+						//hasValidThresholds := false
+						//hasValidSeriesOverrides := false
 
 						// Check thresholds block
 						if thresholds, ok := thresholdBlock["thresholds"]; ok {
@@ -2260,12 +2263,12 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 										continue
 									}
 
-									thresholdMap := threshold.(map[string]interface{})
-									if hasThresholdContent(thresholdMap) {
-										hasValidThresholds = true
-									} else {
-										*errorsList = append(*errorsList, fmt.Sprintf("threshold %d in page %d widget_billboard %d thresholds block is empty - it must contain at least one field: from, to, or severity", thresholdIndex, pageIndex, widgetIndex))
-									}
+									//thresholdMap := threshold.(map[string]interface{})
+									//if hasThresholdContent(thresholdMap) {
+									//	hasValidThresholds = true
+									//} else {
+									//	*errorsList = append(*errorsList, fmt.Sprintf("threshold %d in page %d widget_billboard %d thresholds block is empty - it must contain at least one field: from, to, or severity", thresholdIndex, pageIndex, widgetIndex))
+									//}
 								}
 							}
 						}
@@ -2280,20 +2283,20 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 										continue
 									}
 
-									overrideMap := override.(map[string]interface{})
-									if hasSeriesOverrideContent(overrideMap) {
-										hasValidSeriesOverrides = true
-									} else {
-										*errorsList = append(*errorsList, fmt.Sprintf("series_override %d in page %d widget_billboard %d series_overrides block is empty - it must contain at least one field: from, to, series_name, or severity", overrideIndex, pageIndex, widgetIndex))
-									}
+									//overrideMap := override.(map[string]interface{})
+									//if hasSeriesOverrideContent(overrideMap) {
+									//	hasValidSeriesOverrides = true
+									//} else {
+									//	*errorsList = append(*errorsList, fmt.Sprintf("series_override %d in page %d widget_billboard %d series_overrides block is empty - it must contain at least one field: from, to, series_name, or severity", overrideIndex, pageIndex, widgetIndex))
+									//}
 								}
 							}
 						}
 
 						// Check if the entire thresholds_with_series_overrides block has no valid content
-						if !hasValidThresholds && !hasValidSeriesOverrides {
-							*errorsList = append(*errorsList, fmt.Sprintf("thresholds_with_series_overrides in page %d widget_billboard %d must contain at least one valid 'thresholds' or 'series_overrides' block with content", pageIndex, widgetIndex))
-						}
+						//if !hasValidThresholds && !hasValidSeriesOverrides {
+						//	*errorsList = append(*errorsList, fmt.Sprintf("thresholds_with_series_overrides in page %d widget_billboard %d must contain at least one valid 'thresholds' or 'series_overrides' block with content", pageIndex, widgetIndex))
+						//}
 					}
 				}
 			}
@@ -2545,4 +2548,57 @@ func flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(thresholdsWith
 	return thresholdsFetchedInterface
 }
 
+func validateBillboardLegacyThresholdConflicts(d *schema.ResourceDiff, errorsList *[]string) {
+	_, pagesListObtained := d.GetChange("page")
+	pages := pagesListObtained.([]interface{})
 
+	for pageIndex, p := range pages {
+		page := p.(map[string]interface{})
+		widgets, widgetOk := page["widget_billboard"]
+		if widgetOk {
+			for widgetIndex, w := range widgets.([]interface{}) {
+				widget := w.(map[string]interface{})
+
+				// Check if legacy threshold attributes exist
+				hasLegacyThresholds := false
+				hasNewThresholdsBlock := false
+
+				// Check for legacy warning/critical attributes
+				if _, warningOk := widget["warning"]; warningOk && widget["warning"] != "" {
+					hasLegacyThresholds = true
+				}
+
+				if _, criticalOk := widget["critical"]; criticalOk && widget["critical"] != "" {
+					hasLegacyThresholds = true
+				}
+
+				// Check if thresholds_with_series_overrides contains a thresholds block
+				if thresholdsWithSeriesOverrides, thresholdsWithSeriesOverridesOk := widget["thresholds_with_series_overrides"]; thresholdsWithSeriesOverridesOk {
+					if thresholdsWithSeriesOverridesList, ok := thresholdsWithSeriesOverrides.([]interface{}); ok && len(thresholdsWithSeriesOverridesList) > 0 {
+						for _, thresholdsWithSeriesOverridesBlock := range thresholdsWithSeriesOverridesList {
+							if thresholdsWithSeriesOverridesBlock != nil {
+								thresholdsWithSeriesOverridesBlockMap := thresholdsWithSeriesOverridesBlock.(map[string]interface{})
+
+								// Check if thresholds block exists within thresholds_with_series_overrides
+								if newThresholdsData, newThresholdsOk := thresholdsWithSeriesOverridesBlockMap["thresholds"]; newThresholdsOk {
+									if newThresholdsList, ok := newThresholdsData.([]interface{}); ok && len(newThresholdsList) > 0 {
+										hasNewThresholdsBlock = true
+										break
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// Report conflict if both legacy warning/critical and new thresholds block are present
+				if hasLegacyThresholds && hasNewThresholdsBlock {
+					*errorsList = append(*errorsList, fmt.Sprintf(
+						"Conflicting threshold configurations in page %d widget_billboard %d: cannot use both legacy threshold attributes (warning/critical) and thresholds block within thresholds_with_series_overrides at the same time.",
+						pageIndex, widgetIndex,
+					))
+				}
+			}
+		}
+	}
+}
