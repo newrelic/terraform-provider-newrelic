@@ -286,14 +286,20 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 					return nil, err
 				}
 
-				// Set thresholds
-				rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
+				// Set thresholds (old logic)
+				// rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
+				
 				// Set data formatting
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 				// Set billboard settings
 				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
 				// Set thresholds with series overrides
 				rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d, pageIndex, widgetIndex)
+				
+				// Set thresholds from warning and critical attributes
+				if rawConfiguration.ThresholdsWithSeriesOverrides == nil {
+					rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsFromWarningCritical(d, pageIndex, widgetIndex)
+				}
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -611,6 +617,136 @@ func expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d *schema.
 	}
 
 	return nil
+}
+
+func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides {
+	warningPath := fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)
+	criticalPath := fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)
+	
+	warningData, warningExists := d.GetOk(warningPath)
+	criticalData, criticalExists := d.GetOk(criticalPath)
+	
+	// If neither warning nor critical exists, return nil
+	if !warningExists && !criticalExists {
+		return nil
+	}
+	
+	var warningValue, criticalValue *float64
+	
+	// Parse warning value if it exists and is not empty
+	if warningExists {
+		warningStr := warningData.(string)
+		if warningStr != "" {
+			if parsed, err := strconv.ParseFloat(warningStr, 64); err == nil {
+				warningValue = &parsed
+			}
+		}
+	}
+	
+	// Parse critical value if it exists and is not empty
+	if criticalExists {
+		criticalStr := criticalData.(string)
+		if criticalStr != "" {
+			if parsed, err := strconv.ParseFloat(criticalStr, 64); err == nil {
+				criticalValue = &parsed
+			}
+		}
+	}
+	
+	// If both values are nil (empty strings), return nil
+	if warningValue == nil && criticalValue == nil {
+		return nil
+	}
+	
+	var thresholds []dashboards.DashboardBillboardWidgetThreshold
+	
+	// Case 1: Only warning exists
+	if warningValue != nil && criticalValue == nil {
+		thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+			{
+				To:       *warningValue,
+				Severity: "success",
+			},
+			{
+				From:     *warningValue,
+				Severity: "warning",
+			},
+		}
+	}
+	
+	// Case 2: Only critical exists
+	if criticalValue != nil && warningValue == nil {
+		thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+			{
+				To:       *criticalValue,
+				Severity: "success",
+			},
+			{
+				From:     *criticalValue,
+				Severity: "critical",
+			},
+		}
+	}
+	
+	// Case 3, 4 & 5: Both warning and critical exist
+	if warningValue != nil && criticalValue != nil {
+		if *warningValue < *criticalValue {
+			// Case 3: warning < critical
+			thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+				{
+					To:       *warningValue,
+					Severity: "success",
+				},
+				{
+					From:     *warningValue,
+					To:       *criticalValue,
+					Severity: "warning",
+				},
+				{
+					From:     *criticalValue,
+					Severity: "critical",
+				},
+			}
+		} else if *warningValue == *criticalValue {
+			// Case 4: warning == critical
+			thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+				{
+					To:       *warningValue,
+					Severity: "warning",
+				},
+				{
+					From:     *warningValue,
+					To:       *criticalValue,
+					Severity: "critical",
+				},
+				{
+					From:     *criticalValue,
+					Severity: "success",
+				},
+			}
+		} else {
+			// Case 5: critical < warning
+			thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+				{
+					To:       *criticalValue,
+					Severity: "critical",
+				},
+				{
+					From:     *criticalValue,
+					To:       *warningValue,
+					Severity: "warning",
+				},
+				{
+					From:     *warningValue,
+					Severity: "success",
+				},
+			}
+		}
+	}
+	
+	return &dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides{
+		Thresholds: thresholds,
+	}
 }
 
 func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) dashboards.DashboardLineWidgetThresholdInput {
@@ -2391,3 +2527,5 @@ func flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(thresholdsWith
 	thresholdsFetchedInterface = append(thresholdsFetchedInterface, thresholdsFetched)
 	return thresholdsFetchedInterface
 }
+
+
