@@ -41,7 +41,7 @@ var (
 	testSubAccountID                           int
 	testUserID                                 int
 	testAccountName                            string
-	testAccAPMEntityCreated                    = false
+	testAccAPMEntityCreatedGuid                common.EntityGUID
 	testAccAPMSingleQuotedEntityCreated        = false
 	testAccCleanupComplete                     = false
 	testCloudAccCleanupComplete                = map[string]bool{
@@ -116,9 +116,8 @@ func testAccPreCheck(t *testing.T) {
 	}
 
 	// Create a test application for use in newrelic_alert_condition and other tests
-	if !testAccAPMEntityCreated {
-		testAccCreateEntity(t, testAccExpectedApplicationName)
-		testAccAPMEntityCreated = true
+	if testAccAPMEntityCreatedGuid == "" {
+		testAccAPMEntityCreatedGuid = testAccCreateEntity(t, testAccExpectedApplicationName)
 	}
 }
 
@@ -139,7 +138,7 @@ func testAccSingleQuotedPreCheck(t *testing.T) {
 	}
 }
 
-func testAccCreateEntity(t *testing.T, name string) {
+func testAccCreateEntity(t *testing.T, name string) common.EntityGUID {
 	// Clean up old instances of the applications
 	testAccApplicationsCleanup(t)
 
@@ -158,6 +157,8 @@ func testAccCreateEntity(t *testing.T, name string) {
 		Domain: "APM",
 	}
 
+	var createdApplicationGuid common.EntityGUID
+
 	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
 		entityResults, err := client.GetEntitySearchWithContext(context.Background(), entities.EntitySearchOptions{}, "", params, []entities.EntitySearchSortCriteria{}, []entities.SortCriterionWithDirection{})
 		if err != nil {
@@ -168,6 +169,8 @@ func testAccCreateEntity(t *testing.T, name string) {
 			return resource.RetryableError(fmt.Errorf("Entity not found, or found more than one"))
 		}
 
+		createdApplicationGuid = entityResults.Results.Entities[0].GetGUID()
+
 		return nil
 	})
 
@@ -177,6 +180,8 @@ func testAccCreateEntity(t *testing.T, name string) {
 
 	// We have to give time for the async nature of the entity creation to complete
 	time.Sleep(1 * time.Second)
+
+	return createdApplicationGuid
 }
 
 func testAccPreCheckEnvVars(t *testing.T) {
