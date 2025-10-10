@@ -29,6 +29,16 @@ variable "include_metric_filters" {
   default     = {}
 }
 
+variable "output_format" {
+  description = "The output format for the CloudWatch metric stream"
+  type        = string
+  default     = "opentelemetry0.7"
+
+  validation {
+    condition     = contains(["opentelemetry0.7", "opentelemetry1.0"], var.output_format)
+    error_message = "The output_format must be either 'opentelemetry0.7' or 'opentelemetry1.0'."
+  }
+}
 variable "enable_config_recorder" {
   description = "Set to true to enable AWS Configuration Recorder."
   type        = bool
