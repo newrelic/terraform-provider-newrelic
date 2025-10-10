@@ -262,7 +262,6 @@ resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
   aws_transit_gateway {}
   aws_waf {}
   aws_wafv2 {}
-  aws_auto_discovery {}
   cloudfront {}
   dynamodb {}
   ec2 {}
