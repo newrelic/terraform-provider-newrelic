@@ -725,6 +725,39 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_TargetEntity(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	targetEntity := "MTE1NTc3N3xOQXwxMjM0NTY3OHwwfDE2ODg5NjU3NjU"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create condition with target entity
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithTargetEntity(
+					rName,
+					targetEntity,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Target entity is nullable
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithNullTargetEntity(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlAlertConditionDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -1545,6 +1578,73 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 		disable_health_status_reporting = true
+	}
+}
+`, name)
+}
+
+func testAccNewRelicNrqlAlertConditionWithTargetEntity(
+	name string,
+	targetEntity string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
+	target_entity                = "%[2]s"
+
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+`, name)
+}
+
+func testAccNewRelicNrqlAlertConditionWithNullTargetEntity(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
+	target_entity                = null
+
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
 	}
 }
 `, name)

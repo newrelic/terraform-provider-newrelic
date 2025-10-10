@@ -53,6 +53,8 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 
 	titleTemplate := "Title {{template}}"
 
+	targetEntity := "MXxBUE18QVBQTElDQVRJT058MQ"
+
 	signalSeasonality := alerts.NrqlSignalSeasonalities.Daily
 
 	cases := map[string]struct {
@@ -424,6 +426,24 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
 			},
 		},
+		"target entity not nil": {
+			Data: map[string]interface{}{
+				"nrql":          []interface{}{nrql},
+				"target_entity": targetEntity,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
+		"target entity nil": {
+			Data: map[string]interface{}{
+				"nrql":          []interface{}{nrql},
+				"target_entity": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -578,6 +598,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		NrqlConditionBase: alerts.NrqlConditionBase{
 			Description:   "description test",
 			TitleTemplate: &titleTemplate,
+			TargetEntity:  &common.EntityGUID(targetEntity),
 			Enabled:       true,
 			Name:          "name-test",
 			Nrql: alerts.NrqlConditionQuery{
@@ -696,6 +717,9 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 
 		titleTemplate := d.Get("title_template").(string)
 		assert.Equal(t, "Title {{template}}", titleTemplate)
+
+		targetEntity := d.Get("target_entity").(string)
+		assert.Equal(t, "MXxBUE18QVBQTElDQVRJT058MQ", targetEntity)
 
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
