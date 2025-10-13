@@ -1,3 +1,10 @@
+<a name="v3.70.6"></a>
+## [v3.70.6] - 2025-10-13
+### Bug Fixes
+- **aws:** remove aws_auto_discovery from the example module as it is a separate integration ([#2945](https://github.com/newrelic/terraform-provider-newrelic/issues/2945))
+- **aws:** add a variable to the AWS module to help customers opt in or out of creation of a configuration recorder resource ([#2944](https://github.com/newrelic/terraform-provider-newrelic/issues/2944))
+- **output-format-example:** otel version upgrade changes ([#2946](https://github.com/newrelic/terraform-provider-newrelic/issues/2946))
+
 <a name="v3.70.5"></a>
 ## [v3.70.5] - 2025-09-29
 ### Bug Fixes
@@ -2472,7 +2479,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.6...HEAD
+[v3.70.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.5...v3.70.6
 [v3.70.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.4...v3.70.5
 [v3.70.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.3...v3.70.4
 [v3.70.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.2...v3.70.3
