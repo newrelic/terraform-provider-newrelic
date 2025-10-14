@@ -415,6 +415,11 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return (strings.EqualFold(old, string(alerts.NrqlSignalSeasonalities.NewRelicCalculation)) && new == "") || strings.EqualFold(old, new)
 				},
 			},
+			"target_entity": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "BETA PREVIEW: the `target_entity` field is in limited release and only enabled for preview on a per-account basis. - The GUID of the entity explicitly targeted by the condition. Issues triggered by this condition will affect the health status of this entity instead of having the affected entity detected automatically",
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
