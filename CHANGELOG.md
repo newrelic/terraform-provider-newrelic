@@ -1,3 +1,8 @@
+<a name="v3.71.0"></a>
+## [v3.71.0] - 2025-10-14
+### Features
+- **alerts:** add support for target entity in NRQL conditions ([#2950](https://github.com/newrelic/terraform-provider-newrelic/issues/2950))
+
 <a name="v3.70.6"></a>
 ## [v3.70.6] - 2025-10-13
 ### Bug Fixes
@@ -2479,7 +2484,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.6...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.71.0...HEAD
+[v3.71.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.6...v3.71.0
 [v3.70.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.5...v3.70.6
 [v3.70.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.4...v3.70.5
 [v3.70.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.3...v3.70.4
