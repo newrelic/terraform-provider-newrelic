@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
 var (
@@ -95,11 +94,6 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		input.TitleTemplate = &template
 	}
 
-	if targetEntity, ok := d.GetOk("target_entity"); ok {
-		target := common.EntityGUID(targetEntity.(string))
-		input.TargetEntity = &target
-	}
-
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
 		input.ViolationTimeLimitSeconds = violationTimeLimitSec.(int)
 	} else if violationTimeLimit, ok := d.GetOk("violation_time_limit"); ok {
@@ -170,11 +164,6 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 	if titleTemplate, ok := d.GetOk("title_template"); ok {
 		template := titleTemplate.(string)
 		input.TitleTemplate = &template
-	}
-
-	if targetEntity, ok := d.GetOk("target_entity"); ok {
-		target := common.EntityGUID(targetEntity.(string))
-		input.TargetEntity = &target
 	}
 
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
@@ -605,7 +594,6 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("title_template", condition.TitleTemplate)
-	_ = d.Set("target_entity", condition.TargetEntity)
 	_ = d.Set("enabled", condition.Enabled)
 	_ = d.Set("entity_guid", condition.EntityGUID)
 
