@@ -29,7 +29,6 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name                           = "foo"
   description                    = "Alert when transactions are taking too long"
   title_template                 = "Issue in environment: {{ tags.environment }}"
-  target_entity                  = "MXxBUE18QVBQTElDQVRJT058MQ"
   runbook_url                    = "https://www.example.com"
   enabled                        = true
   violation_time_limit_seconds   = 3600
@@ -73,7 +72,6 @@ The following arguments are supported:
 - `baseline_direction` - (Optional) The baseline direction of a _baseline_ NRQL alert condition. Valid values are: `lower_only`, `upper_and_lower`, `upper_only` (case insensitive).
 - `description` - (Optional) The description of the NRQL alert condition.
 - `title_template` - (Optional) The custom title to be used when incidents are opened by the condition. Setting this field will override the default title. Must be [Handlebars](https://handlebarsjs.com/) format.
-- `target_entity` - (Optional) BETA PREVIEW: The GUID of the entity explicitly targeted by the condition. Issues triggered by this condition will affect the health status of this entity instead of having the affected entity detected automatically. The entity's account ID must be either `account_id` or `nrql.data_account_id`.
 - `policy_id` - (Required) The ID of the policy where this condition should be used.
 - `name` - (Required) The title of the condition.
 - `type` - (Optional) The type of the condition. Valid values are `static` or `baseline`. Defaults to `static`.
