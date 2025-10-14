@@ -17,12 +17,14 @@ variable "region" {
 variable "newrelic_ingest_api_key" {
   type        = string
   sensitive   = true
+  default     = ""
   description = "The Ingest API key for sending metrics to New Relic endpoints"
 }
 
 variable "newrelic_user_api_key" {
   type        = string
   sensitive   = true
+  default     = ""
   description = "The User API key for Linking the OCI Account to the New Relic account"
 }
 
@@ -75,4 +77,16 @@ variable "private_key" {
 variable "fingerprint" {
   type        = string
   description = "The fingerprint of the public key. Get this from OCI Console -> User Settings -> API Keys"
+}
+
+variable "user_key_secret_ocid" {
+  type        = string
+  default     = ""
+  description = "The OCID of the secret containing the New Relic User API key"
+}
+
+variable "ingest_key_secret_ocid" {
+    type        = string
+    default     = ""
+    description = "The OCID of the secret containing the New Relic Ingest License API key"
 }
