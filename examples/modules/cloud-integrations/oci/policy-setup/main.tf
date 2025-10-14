@@ -153,6 +153,6 @@ output "user_vault_ocid" {
   value = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
 }
 
-output "linked_account_id" {
+output "provider_account_id" {
   value = newrelic_cloud_oci_link_account.linkAccount.id
 }
