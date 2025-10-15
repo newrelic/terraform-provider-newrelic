@@ -1,3 +1,8 @@
+<a name="v3.72.1"></a>
+## [v3.72.1] - 2025-10-15
+### Bug Fixes
+- **nrqldroprules:** fix entity mapping with pipeline cloud rules, allow accurate retry mechanism ([#2955](https://github.com/newrelic/terraform-provider-newrelic/issues/2955))
+
 <a name="v3.72.0"></a>
 ## [v3.72.0] - 2025-10-14
 ### Features
@@ -2489,7 +2494,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.1...HEAD
+[v3.72.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.0...v3.72.1
 [v3.72.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.71.0...v3.72.0
 [v3.71.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.6...v3.71.0
 [v3.70.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.5...v3.70.6
