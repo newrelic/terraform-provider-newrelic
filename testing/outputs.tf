@@ -1,6 +1,6 @@
 locals {
-  enable_standalone_drop_rules = false
-  enable_modular_drop_rules    = false
+  enable_standalone_drop_rules = true
+  enable_modular_drop_rules    = true
 
   # 1. Prepare the standalone rules (conditionally)
   standalone_rules = local.enable_standalone_drop_rules ? [
@@ -27,17 +27,29 @@ locals {
     {
       name     = "drop_health_checks_two_1"
       resource = newrelic_nrql_drop_rule.drop_health_checks_two[1]
-    }
+    },
+
 
   ] : []
 
   # 2. Prepare the modular rules (conditionally)
   # This list is only used as an intermediate step for the flatten logic below.
   _modular_rules_raw = local.enable_modular_drop_rules ? [
+    #################### COPY FROM HERE ####################
     {
-      name     = "drop_rules"
+      name     = "drop_debug_logs"
       resource = module.drop_rules["drop_debug_logs"].all_rules
-    }
+    },
+    {
+      name     = "drop_health_checks"
+      resource = module.drop_rules["drop_health_checks"].all_rules
+    },
+    {
+      name     = "drop_pii_data"
+      resource = module.drop_rules["drop_pii_data"].all_rules
+    },
+    #################### COPY UNTIL HERE ###################
+
   ] : []
 
   # 3. Process the modular rules into a flat list (conditionally)
@@ -117,5 +129,4 @@ output "validation_errors" {
   description = "Lists any drop rule resources that do not export pipeline_cloud_rule_entity_id"
   value       = length(local.validation_errors) > 0 ? local.validation_errors : null
 }
-
 
