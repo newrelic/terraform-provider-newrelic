@@ -30,6 +30,7 @@ func TestAccNewRelicNRQLDropRule_Data(t *testing.T) {
 				Config: testAccNewRelicNRQLDropRuleConfig(description, "drop_data", "SELECT * FROM MyCustomEvent WHERE appName='LoadGeneratingApp' AND environment='development'"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNRQLDropRuleExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "pipeline_cloud_rule_entity_id"),
 				),
 			},
 			// Test: Import
@@ -57,6 +58,7 @@ func TestAccNewRelicNRQLDropRule_Attributes(t *testing.T) {
 				Config: testAccNewRelicNRQLDropRuleConfig(description, "drop_attributes", "SELECT userEmail, userName FROM MyCustomEvent"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNRQLDropRuleExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "pipeline_cloud_rule_entity_id"),
 				),
 			},
 			// Test: Import
@@ -103,6 +105,7 @@ func TestAccNewRelicNRQLDropRule_AttributesFromMetricAggregates(t *testing.T) {
 				Config: testAccNewRelicNRQLDropRuleConfig(description, "drop_attributes_from_metric_aggregates", "SELECT containerId FROM Metric WHERE metricName = 'some.metric'"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNRQLDropRuleExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "pipeline_cloud_rule_entity_id"),
 				),
 			},
 			// Test: Import
@@ -177,16 +180,24 @@ func testAccCheckNewRelicNRQLDropRuleExists(n string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
-		accountID, _, err := parseNRQLDropRuleIDs(rs.Primary.ID)
+		accountID, ruleID, err := parseNRQLDropRuleIDs(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		time.Sleep(30 * time.Second)
+		time.Sleep(15 * time.Second)
 
-		_, err = client.Nrqldroprules.GetList(accountID)
-		if err != nil {
-			return err
+		matchingRule, getRuleErr := getNRQLDropRuleByID(context.Background(), client, accountID, ruleID)
+		if getRuleErr != nil {
+			return getRuleErr
+		}
+
+		if matchingRule.ID != ruleID {
+			return fmt.Errorf("drop rule not found")
+		}
+
+		if matchingRule.PipelineCloudRuleEntityId == "" {
+			return fmt.Errorf("no pipeline_cloud_rule_entity_id found, corresponding to the drop rule")
 		}
 
 		return nil
