@@ -27,7 +27,7 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(60 * time.Second),
+			Read: schema.DefaultTimeout(90 * time.Second),
 		},
 		DeprecationMessage: `The "newrelic_nrql_drop_rule" resource is deprecated and will be removed in a future major release after January 7, 2026. 
 This aligns with the official end-of-life (EOL) for this feature by New Relic. 
@@ -130,14 +130,45 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	rule, err := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
-	if err != nil {
-		if _, ok := err.(*nrErrors.NotFound); ok {
-			d.SetId("")
-			return nil
+	// applying a retry mechanism on `pipeline_cloud_rule_entity_id`, to prevent it being from being lost
+	// since we call a read immediately after creation, and the entity could need time to be fully indexed
+	// the maximum timeout is set to 90 seconds in the resource configuration above, and is not customizable by the customer
+	// this is done in order to prevent an infinite timeout, as the default TimeoutRead is 20 minutes
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		rule, err := getNRQLDropRuleByID(ctx, client, accountID, ruleID)
+		if err != nil {
+			if _, ok := err.(*nrErrors.NotFound); ok {
+				d.SetId("")
+				return nil
+			}
+
+			return resource.NonRetryableError(err)
 		}
 
-		return diag.FromErr(err)
+		if rule.PipelineCloudRuleEntityId == "" {
+			return resource.RetryableError(fmt.Errorf("no pipeline_cloud_rule_entity_id found corresponding to the drop rule %s - retrying to fetch the mapped pipeline cloud rule", rule.ID))
+		}
+
+		if err := d.Set("pipeline_cloud_rule_entity_id", rule.PipelineCloudRuleEntityId); err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		if err := d.Set("action", strings.ToLower(string(rule.Action))); err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		if err := d.Set("description", rule.Description); err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		if err := d.Set("nrql", rule.NRQL); err != nil {
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
 	if err := d.Set("account_id", accountID); err != nil {
@@ -148,38 +179,6 @@ func resourceNewRelicNRQLDropRuleRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("action", strings.ToLower(string(rule.Action))); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("description", rule.Description); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("nrql", rule.NRQL); err != nil {
-		return diag.FromErr(err)
-	}
-
-	// applying a retry mechanism on `pipeline_cloud_rule_entity_id`, to prevent it being from being lost
-	// since we call a read immediately after creation, and the entity could need time to be fully indexed
-	// the maximum timeout is set to 1 minute in the resource configuration above, and is not customizable by the customer
-	// this is done in order to prevent an infinite timeout, as the default TimeoutRead is 20 minutes
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		pipelineCloudRuleEntityID := rule.PipelineCloudRuleEntityId
-		if pipelineCloudRuleEntityID == "" {
-			return resource.RetryableError(fmt.Errorf("waiting for a non-null pipelineCloudRuleEntityId"))
-		}
-
-		if err := d.Set("pipeline_cloud_rule_entity_id", rule.PipelineCloudRuleEntityId); err != nil {
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
-	}
 	return nil
 }
 
