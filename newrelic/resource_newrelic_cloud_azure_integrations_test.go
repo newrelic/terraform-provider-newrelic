@@ -318,10 +318,15 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  auto_discovery {
+    metrics_polling_interval = 28800
+  }
+
   vpn_gateway {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
+
 }`)
 }
 
@@ -493,9 +498,14 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  auto_discovery {
+    metrics_polling_interval = 28800
+   }
+
   vpn_gateway {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
+
 }`)
 }
