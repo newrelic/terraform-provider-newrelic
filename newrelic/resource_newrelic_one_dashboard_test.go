@@ -1545,6 +1545,225 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
+// TestAccNewRelicOneDashboard_BillboardThresholdsWithSeriesOverrides tests thresholds_with_series_overrides functionality
+func TestAccNewRelicOneDashboard_BillboardThresholdsWithSeriesOverrides(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rWidgetName := fmt.Sprintf("tf-test-widget-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholdsWithSeriesOverrides(rName, rWidgetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholdsWithSeriesOverridesUpdated(rName, rWidgetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_BillboardThresholdsWithSeriesOverridesValidation tests validation for thresholds_with_series_overrides
+func TestAccNewRelicOneDashboard_BillboardThresholdsWithSeriesOverridesValidation(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// Test empty thresholds_with_series_overrides block
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptyThresholdsWithSeriesOverrides(rName),
+				ExpectError: regexp.MustCompile(`thresholds_with_series_overrides.*must contain at least one.*thresholds.*or.*series_overrides.*block with content`),
+			},
+			// Test empty threshold block
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptyThresholdBlock(rName),
+				ExpectError: regexp.MustCompile(`threshold.*thresholds block cannot be null`),
+			},
+			// Test empty series override block
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptySeriesOverrideBlock(rName),
+				ExpectError: regexp.MustCompile(`series_override.*series_overrides block cannot be null`),
+			},
+		},
+	})
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholdsWithSeriesOverrides generates billboard with thresholds_with_series_overrides
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholdsWithSeriesOverrides(dashboardName string, widgetName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample FACET hostname SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      thresholds_with_series_overrides {
+        thresholds {
+          from = 0
+          to = 100
+          severity = "warning"
+        }
+        thresholds {
+          from = 100
+          to = 200
+          severity = "critical"
+        }
+        series_overrides {
+          from = 50
+          to = 150
+          series_name = "test-1"
+          severity = "critical"
+        }
+        series_overrides {
+          from = 25
+          to = 75
+          series_name = "test-2"
+          severity = "warning"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholdsWithSeriesOverridesUpdated generates updated billboard with thresholds_with_series_overrides
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholdsWithSeriesOverridesUpdated(dashboardName string, widgetName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT average(cpuPercent) FROM ProcessSample FACET hostname SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      thresholds_with_series_overrides {
+        thresholds {
+          from = 0
+          to = 80
+          severity = "warning"
+        }
+        thresholds {
+          from = 80
+          to = 100
+          severity = "critical"
+        }
+        series_overrides {
+          from = 60
+          to = 90
+          series_name = "test"
+          severity = "critical"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptyThresholdsWithSeriesOverrides generates billboard with empty thresholds_with_series_overrides
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptyThresholdsWithSeriesOverrides(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "test widget"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      thresholds_with_series_overrides {
+        # Empty block - should trigger validation error
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptyThresholdBlock generates billboard with empty threshold block
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptyThresholdBlock(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "test widget"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      thresholds_with_series_overrides {
+        thresholds {
+          # Empty threshold block - should trigger validation error
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptySeriesOverrideBlock generates billboard with empty series override block
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithEmptySeriesOverrideBlock(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "test widget"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample FACET hostname SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      thresholds_with_series_overrides {
+        series_overrides {
+          # Empty series override block - should trigger validation error
+        }
+      }
+    }
+  }
+}`
+}
+
 // testAccCheckNewRelicOneDashboardExists fetches the dashboard back, with an optional sleep time
 // used when we know the async nature of the API will mess with consistent testing.
 func testAccCheckNewRelicOneDashboardExists(name string, sleepSeconds int) resource.TestCheckFunc {
