@@ -297,8 +297,12 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d, pageIndex, widgetIndex)
 
 				// Set thresholds from warning and critical attributes
-				if rawConfiguration.ThresholdsWithSeriesOverrides == nil {
-					rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsFromWarningCritical(d, pageIndex, widgetIndex)
+				legacyThresholds := expandDashboardBillboardWidgetThresholdsFromWarningCritical(d, pageIndex, widgetIndex)
+				if legacyThresholds != nil && len(legacyThresholds) > 0 {
+					if rawConfiguration.ThresholdsWithSeriesOverrides == nil {
+						rawConfiguration.ThresholdsWithSeriesOverrides = &dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides{}
+					}
+					rawConfiguration.ThresholdsWithSeriesOverrides.Thresholds = legacyThresholds
 				}
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
@@ -619,7 +623,7 @@ func expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d *schema.
 	return nil
 }
 
-func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides {
+func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.ResourceData, pageIndex int, widgetIndex int) []dashboards.DashboardBillboardWidgetThreshold {
 	warningPath := fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)
 	criticalPath := fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)
 
@@ -744,9 +748,7 @@ func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.Resou
 		}
 	}
 
-	return &dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides{
-		Thresholds: thresholds,
-	}
+	return thresholds
 }
 
 func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) dashboards.DashboardLineWidgetThresholdInput {
