@@ -45,7 +45,8 @@ To transition to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrel
 
 The process outlined above is our recommended approach for migrating to Pipeline Cloud Rules. However, the following sections describe automation helpers that can simplify the migration in some specific scenarios or environments.
 
-#### Automated Migration for CI/CD Environments
+
+### Automated Migration for CI/CD Environments
 
 For users managing `newrelic_nrql_drop_rule` resources in CI/CD environments (such as Atlantis, Grandcentral, or similar GitOps workflows), we provide automation helpers that could help streamline the migration process through a **three-phase approach** in some CI/CD environments:
 
@@ -68,4 +69,4 @@ For users managing `newrelic_nrql_drop_rule` resources in CI/CD environments (su
 
 This three-phase automation process is specifically designed for CI/CD workflows where direct local access to Terraform state may be limited. It provides a structured approach to migrate from `newrelic_nrql_drop_rule` to `newrelic_pipeline_cloud_rule` resources while maintaining the integrity of your GitOps processes.
 
-For complete documentation and step-by-step instructions for Phase 1, refer to the [automation helper usage guide](https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/drop_rule_migration_ci/usage_guide.md). Instructions for Phases 2 and 3 are provided through the New Relic CLI `tf-importgen-ci` [command documentation](https://github.com/newrelic/newrelic-cli/blob/main/internal/migrate/tf_importgen_ci_guide.md).
+For complete documentation and step-by-step instructions for Phase 1, refer to the [automation helper usage guide](https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/drop_rule_migration_ci/). Instructions for Phases 2 and 3 are provided through the New Relic CLI `tf-importgen-ci` [command documentation](https://github.com/newrelic/newrelic-cli/blob/main/internal/migrate/tf_importgen_ci_guide.md).
