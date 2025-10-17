@@ -43,11 +43,11 @@ To transition to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrel
   ```
  - **_Remove_** all references to the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resources from the Terraform state (after successfully importing them as [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resources) using the `terraform state rm` command. See [this page](https://developer.hashicorp.com/terraform/cli/commands/state/rm) for details on removing items from the Terraform state.
 
-The process outlined above is our recommendation for migrating to Pipeline Cloud Rules. We are exploring ways to assist with automating this migration in certain scenarios and will share updates and resources here as they become available.
+The process outlined above is our recommended approach for migrating to Pipeline Cloud Rules. However, the following sections describe automation helpers that can simplify the migration in some specific scenarios or environments.
 
 #### Automated Migration for CI/CD Environments
 
-For users managing `newrelic_nrql_drop_rule` resources in CI/CD environments (such as Atlantis, Grandcentral, or similar GitOps workflows), we provide automation helpers that could help streamline the migration process through a **three-phase approach**:
+For users managing `newrelic_nrql_drop_rule` resources in CI/CD environments (such as Atlantis, Grandcentral, or similar GitOps workflows), we provide automation helpers that could help streamline the migration process through a **three-phase approach** in some CI/CD environments:
 
 **Phase 1 - Export Drop Rule Data (CI/CD Environment):**
 - Modify your CI/CD workspace configuration to identify and export existing drop rules as JSON data
