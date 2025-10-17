@@ -54,3 +54,45 @@ resource "oci_sch_service_connector" "nr_logging_service_connector" {
     function_id       = oci_functions_function.logging_function.id
   }
 }
+
+# Resource to link the New Relic account and configure the integration
+resource "null_resource" "newrelic_link_account" {
+  depends_on = [oci_functions_function.logging_function, oci_sch_service_connector.nr_logging_service_connector]
+  provisioner "local-exec" {
+    command = <<EOT
+      # Main execution for cloudLinkAccount
+      response=$(curl --silent --request POST \
+        --url "${local.newrelic_graphql_endpoint}" \
+        --header "API-Key: ${local.user_api_key}" \
+        --header "Content-Type: application/json" \
+        --header "User-Agent: insomnia/11.1.0" \
+        --data '${jsonencode({
+          query = local.updateLinkAccount_graphql_query
+        })}')
+        # Log the full response for debugging
+        echo "Full Response: $response"
+        # Extract errors from the response
+        root_errors=$(echo "$response" | jq -r '.errors[]?.message // empty')
+        update_account_errors=$(echo "$response" | jq -r '.data.cloudUpdateAccount.errors[]?.message // empty')
+        # Check if data is null which indicates a possible error
+        data_null=$(echo "$response" | jq -r 'if .data.cloudUpdateAccount == null then "true" else "false" end')
+        # Combine errors
+        errors="$root_errors"$'\n'"$update_account_errors"
+        errors=$(echo "$errors" | grep -v '^$')
+        # Check if errors exist or data is null
+        if [ -n "$errors" ] || [ "$data_null" == "true" ]; then
+          echo "Operation failed with the following errors:" >&2
+          if [ -n "$errors" ]; then
+            echo "$errors" | while IFS= read -r error; do
+              echo "- $error" >&2
+            done
+          fi
+          if [ "$data_null" == "true" ] && [ -z "$errors" ]; then
+            echo "- GraphQL operation returned null data. Please verify your parameters and query." >&2
+          fi
+          exit 1
+        fi
+        echo "Successfully updated New Relic account link"
+      EOT
+  }
+}
