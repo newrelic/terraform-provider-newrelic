@@ -43,4 +43,30 @@ To transition to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrel
   ```
  - **_Remove_** all references to the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resources from the Terraform state (after successfully importing them as [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resources) using the `terraform state rm` command. See [this page](https://developer.hashicorp.com/terraform/cli/commands/state/rm) for details on removing items from the Terraform state.
 
-The process outlined above is our recommendation for migrating to Pipeline Cloud Rules. We are exploring ways to assist with automating this migration in certain scenarios and will share updates and resources here as they become available.
+The process outlined above is our recommended approach for migrating to Pipeline Cloud Rules. However, the following sections describe automation helpers that can simplify the migration in some specific scenarios or environments.
+
+
+### Automated Migration for CI/CD Environments
+
+For users managing `newrelic_nrql_drop_rule` resources in CI/CD environments (such as Atlantis, Grandcentral, or similar GitOps workflows), we provide automation helpers that could help streamline the migration process through a **three-phase approach** in some CI/CD environments:
+
+**Phase 1 - Export Drop Rule Data (CI/CD Environment):**
+- Modify your CI/CD workspace configuration to identify and export existing drop rules as JSON data
+- Uses automation scripts that validate and extract drop rule information including their Pipeline Cloud Rule counterparts
+- Requires New Relic Terraform Provider version 3.72.1 or above
+- See the [Phase 1 Usage Guide](https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/drop_rule_migration_ci) for detailed instructions
+
+**Phase 2 - Generate Pipeline Cloud Rule Configurations (Local Environment):**
+- Process the exported JSON data using the New Relic CLI command `tf-importgen-ci`
+- Automatically generates `newrelic_pipeline_cloud_rule` configurations and import scripts
+- **Executed locally using the New Relic CLI**
+- See the [Phase 2 Usage Guide](https://github.com/newrelic/newrelic-cli/blob/main/internal/migrate/tf_importgen_ci_guide.md) for detailed instructions
+
+**Phase 3 - Apply Configurations and Complete Migration (CI/CD Environment):**
+- Apply the generated configurations back in the CI/CD environment
+- Import the new Pipeline Cloud Rules into Terraform state
+- Remove legacy NRQL Drop Rules from management
+
+This three-phase automation process is specifically designed for CI/CD workflows where direct local access to Terraform state may be limited. It provides a structured approach to migrate from `newrelic_nrql_drop_rule` to `newrelic_pipeline_cloud_rule` resources while maintaining the integrity of your GitOps processes.
+
+For complete documentation and step-by-step instructions for Phase 1, refer to the [automation helper usage guide](https://github.com/newrelic/terraform-provider-newrelic/blob/main/examples/drop_rule_migration_ci/). Instructions for Phases 2 and 3 are provided through the New Relic CLI `tf-importgen-ci` [command documentation](https://github.com/newrelic/newrelic-cli/blob/main/internal/migrate/tf_importgen_ci_guide.md).

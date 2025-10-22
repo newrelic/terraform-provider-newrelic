@@ -1,3 +1,40 @@
+<a name="v3.72.3"></a>
+## [v3.72.3] - 2025-10-17
+### Bug Fixes
+- **nrqldroprules:** brief corrections to the migration guide ([#2958](https://github.com/newrelic/terraform-provider-newrelic/issues/2958))
+
+<a name="v3.72.2"></a>
+## [v3.72.2] - 2025-10-17
+### Bug Fixes
+- **nrqldroprules:** add ci migration guide phase 1 via terraform script ([#2957](https://github.com/newrelic/terraform-provider-newrelic/issues/2957))
+
+<a name="v3.72.1"></a>
+## [v3.72.1] - 2025-10-15
+### Bug Fixes
+- **nrqldroprules:** fix entity mapping with pipeline cloud rules, allow accurate retry mechanism ([#2955](https://github.com/newrelic/terraform-provider-newrelic/issues/2955))
+
+<a name="v3.72.0"></a>
+## [v3.72.0] - 2025-10-14
+### Features
+- **alerts:** revert add support for target entity in NRQL conditions [#2950](https://github.com/newrelic/terraform-provider-newrelic/issues/2950) ([#2951](https://github.com/newrelic/terraform-provider-newrelic/issues/2951))
+
+<a name="v3.71.0"></a>
+## [v3.71.0] - 2025-10-14
+### Features
+- **alerts:** add support for target entity in NRQL conditions ([#2950](https://github.com/newrelic/terraform-provider-newrelic/issues/2950))
+
+<a name="v3.70.6"></a>
+## [v3.70.6] - 2025-10-13
+### Bug Fixes
+- **aws:** remove aws_auto_discovery from the example module as it is a separate integration ([#2945](https://github.com/newrelic/terraform-provider-newrelic/issues/2945))
+- **aws:** add a variable to the AWS module to help customers opt in or out of creation of a configuration recorder resource ([#2944](https://github.com/newrelic/terraform-provider-newrelic/issues/2944))
+- **output-format-example:** otel version upgrade changes ([#2946](https://github.com/newrelic/terraform-provider-newrelic/issues/2946))
+
+<a name="v3.70.5"></a>
+## [v3.70.5] - 2025-09-29
+### Bug Fixes
+- **oci:** update Docker image path and newrelic_endpoint validation ([#2942](https://github.com/newrelic/terraform-provider-newrelic/issues/2942))
+
 <a name="v3.70.4"></a>
 ## [v3.70.4] - 2025-09-26
 ### Bug Fixes
@@ -2467,7 +2504,14 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.3...HEAD
+[v3.72.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.2...v3.72.3
+[v3.72.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.1...v3.72.2
+[v3.72.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.0...v3.72.1
+[v3.72.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.71.0...v3.72.0
+[v3.71.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.6...v3.71.0
+[v3.70.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.5...v3.70.6
+[v3.70.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.4...v3.70.5
 [v3.70.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.3...v3.70.4
 [v3.70.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.2...v3.70.3
 [v3.70.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.70.1...v3.70.2

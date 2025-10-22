@@ -21,11 +21,11 @@ variable "region" {
 
 variable "newrelic_endpoint" {
   type        = string
-  default     = "newrelic-metric-api"
+  default     = "US"
   description = "The endpoint to hit for sending the metrics. Varies by region [US|EU]"
   validation {
-    condition     = contains(["newrelic-staging-metric-api", "newrelic-metric-api", "newrelic-eu-metric-api"], var.newrelic_endpoint)
-    error_message = "Valid values for var: newrelic_endpoint are (newrelic-staging-metric-api, newrelic-staging-vortex-metric-api, newrelic-metric-api, newrelic-eu-metric-api)."
+    condition     = contains(["US", "EU"], var.newrelic_endpoint)
+    error_message = "Valid values for var: newrelic_endpoint are (US, EU)."
   }
 }
 
@@ -72,4 +72,10 @@ variable "image_version" {
   type = string
   description = "The version of the Docker image for the New Relic function for the region."
   default = "latest"
+}
+
+variable "image_bucket" {
+  type = string
+  description = "The name of the bucket where the Docker image for the New Relic function is stored."
+  default = "idptojlonu4e"
 }
