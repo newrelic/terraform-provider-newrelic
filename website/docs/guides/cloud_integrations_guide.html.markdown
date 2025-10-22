@@ -126,6 +126,15 @@ Variables:
 * name: A unique name used throughout the module to name the resources.
 
 
+##### Azure AutoDiscovery
+
+You can also configure Azure AutoDiscovery via Terraform. This feature is enabled within the ```newrelic_cloud_azure_integrations``` resource, just like the other services listed in the table above.
+
+<b>NOTE:</b> You must have the correct New Relic entitlement for Azure AutoDiscovery before enabling it. Attempting to enable this feature without the proper entitlement may cause your Azure integration to fail or Partial success.
+
+For configuration details, please refer to the [examples-usage](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_azure_integrations#example-usage), in the resource documentation.
+
+
 ### GCP
 
 The Google Cloud Platform integrations reports data from various GCP services to your New Relic account.
