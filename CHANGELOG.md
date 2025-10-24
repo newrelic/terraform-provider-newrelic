@@ -1,3 +1,8 @@
+<a name="v3.73.0"></a>
+## [v3.73.0] - 2025-10-24
+### Features
+- **nrqldroprules:** rebuild the guide explaining the Drop Rules EOL, remediations, automated helper approaches ([#2960](https://github.com/newrelic/terraform-provider-newrelic/issues/2960))
+
 <a name="v3.72.3"></a>
 ## [v3.72.3] - 2025-10-17
 ### Bug Fixes
@@ -2504,7 +2509,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.73.0...HEAD
+[v3.73.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.3...v3.73.0
 [v3.72.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.2...v3.72.3
 [v3.72.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.1...v3.72.2
 [v3.72.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.0...v3.72.1
