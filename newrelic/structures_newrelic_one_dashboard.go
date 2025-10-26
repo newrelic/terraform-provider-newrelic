@@ -286,12 +286,20 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 					return nil, err
 				}
 
-				// Set thresholds
-				rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
+				// Set thresholds (old logic)
+				// rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
+
 				// Set data formatting
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 				// Set billboard settings
 				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
+				// Set thresholds with series overrides
+				rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d, pageIndex, widgetIndex)
+
+				// Set thresholds from warning and critical attributes
+				if rawConfiguration.ThresholdsWithSeriesOverrides == nil {
+					rawConfiguration.ThresholdsWithSeriesOverrides = expandDashboardBillboardWidgetThresholdsFromWarningCritical(d, pageIndex, widgetIndex)
+				}
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -536,6 +544,209 @@ func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i 
 	}
 
 	return thresholds
+}
+
+func expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides {
+	thresholdsPath := fmt.Sprintf("page.%d.widget_billboard.%d.thresholds_with_series_overrides", pageIndex, widgetIndex)
+	if thresholdsWithSeriesOverridesData, ok := d.GetOk(thresholdsPath); ok && len(thresholdsWithSeriesOverridesData.([]interface{})) > 0 {
+		thresholdsWithSeriesOverridesList := thresholdsWithSeriesOverridesData.([]interface{})
+		if len(thresholdsWithSeriesOverridesList) > 0 && thresholdsWithSeriesOverridesList[0] != nil {
+			thresholdsWithSeriesOverridesMap := thresholdsWithSeriesOverridesList[0].(map[string]interface{})
+
+			var thresholdsWithSeriesOverrides dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides
+
+			// Handle thresholds
+			if thresholdsData, ok := thresholdsWithSeriesOverridesMap["thresholds"]; ok && len(thresholdsData.([]interface{})) > 0 {
+				thresholdsList := thresholdsData.([]interface{})
+				thresholds := make([]dashboards.DashboardBillboardWidgetThreshold, len(thresholdsList))
+
+				for i, threshold := range thresholdsList {
+					if threshold != nil {
+						thresholdMap := threshold.(map[string]interface{})
+						var thresholdObj dashboards.DashboardBillboardWidgetThreshold
+
+						if from, ok := thresholdMap["from"]; ok {
+							thresholdObj.From = from.(float64)
+						}
+						if to, ok := thresholdMap["to"]; ok {
+							thresholdObj.To = to.(float64)
+						}
+						if severity, ok := thresholdMap["severity"]; ok {
+							thresholdObj.Severity = severity.(string)
+						}
+
+						thresholds[i] = thresholdObj
+					}
+				}
+
+				thresholdsWithSeriesOverrides.Thresholds = thresholds
+			}
+
+			// Handle series overrides
+			if seriesOverridesData, ok := thresholdsWithSeriesOverridesMap["series_overrides"]; ok && len(seriesOverridesData.([]interface{})) > 0 {
+				seriesOverridesList := seriesOverridesData.([]interface{})
+				seriesOverrides := make([]dashboards.DashboardBillboardWidgetThresholdSeriesOverride, len(seriesOverridesList))
+
+				for i, override := range seriesOverridesList {
+					if override != nil {
+						overrideMap := override.(map[string]interface{})
+						var seriesOverride dashboards.DashboardBillboardWidgetThresholdSeriesOverride
+
+						if from, ok := overrideMap["from"]; ok {
+							seriesOverride.From = from.(float64)
+						}
+						if to, ok := overrideMap["to"]; ok {
+							seriesOverride.To = to.(float64)
+						}
+						if seriesName, ok := overrideMap["series_name"]; ok {
+							seriesOverride.SeriesName = seriesName.(string)
+						}
+						if severity, ok := overrideMap["severity"]; ok {
+							seriesOverride.Severity = severity.(string)
+						}
+
+						seriesOverrides[i] = seriesOverride
+					}
+				}
+
+				thresholdsWithSeriesOverrides.SeriesOverrides = seriesOverrides
+			}
+
+			return &thresholdsWithSeriesOverrides
+		}
+	}
+
+	return nil
+}
+
+func expandDashboardBillboardWidgetThresholdsFromWarningCritical(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides {
+	warningPath := fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)
+	criticalPath := fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)
+
+	warningData, warningExists := d.GetOk(warningPath)
+	criticalData, criticalExists := d.GetOk(criticalPath)
+
+	// If neither warning nor critical exists, return nil
+	if !warningExists && !criticalExists {
+		return nil
+	}
+
+	var warningValue, criticalValue *float64
+
+	// Parse warning value if it exists and is not empty
+	if warningExists {
+		warningStr := warningData.(string)
+		if warningStr != "" {
+			if parsed, err := strconv.ParseFloat(warningStr, 64); err == nil {
+				warningValue = &parsed
+			}
+		}
+	}
+
+	// Parse critical value if it exists and is not empty
+	if criticalExists {
+		criticalStr := criticalData.(string)
+		if criticalStr != "" {
+			if parsed, err := strconv.ParseFloat(criticalStr, 64); err == nil {
+				criticalValue = &parsed
+			}
+		}
+	}
+
+	// If both values are nil (empty strings), return nil
+	if warningValue == nil && criticalValue == nil {
+		return nil
+	}
+
+	var thresholds []dashboards.DashboardBillboardWidgetThreshold
+
+	// Case 1: Only warning exists
+	if warningValue != nil && criticalValue == nil {
+		thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+			{
+				To:       *warningValue,
+				Severity: "success",
+			},
+			{
+				From:     *warningValue,
+				Severity: "warning",
+			},
+		}
+	}
+
+	// Case 2: Only critical exists
+	if criticalValue != nil && warningValue == nil {
+		thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+			{
+				To:       *criticalValue,
+				Severity: "success",
+			},
+			{
+				From:     *criticalValue,
+				Severity: "critical",
+			},
+		}
+	}
+
+	// Case 3, 4 & 5: Both warning and critical exist
+	if warningValue != nil && criticalValue != nil {
+		if *warningValue < *criticalValue {
+			// Case 3: warning < critical
+			thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+				{
+					To:       *warningValue,
+					Severity: "success",
+				},
+				{
+					From:     *warningValue,
+					To:       *criticalValue,
+					Severity: "warning",
+				},
+				{
+					From:     *criticalValue,
+					Severity: "critical",
+				},
+			}
+		} else if *warningValue == *criticalValue {
+			// Case 4: warning == critical
+			thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+				{
+					To:       *warningValue,
+					Severity: "warning",
+				},
+				{
+					From:     *warningValue,
+					To:       *criticalValue,
+					Severity: "critical",
+				},
+				{
+					From:     *criticalValue,
+					Severity: "success",
+				},
+			}
+		} else {
+			// Case 5: critical < warning
+			thresholds = []dashboards.DashboardBillboardWidgetThreshold{
+				{
+					To:       *criticalValue,
+					Severity: "critical",
+				},
+				{
+					From:     *criticalValue,
+					To:       *warningValue,
+					Severity: "warning",
+				},
+				{
+					From:     *warningValue,
+					Severity: "success",
+				},
+			}
+		}
+	}
+
+	return &dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides{
+		Thresholds: thresholds,
+	}
 }
 
 func expandDashboardLineWidgetConfigurationThresholdInput(d *schema.ResourceData, pageIndex int, widgetIndex int) dashboards.DashboardLineWidgetThresholdInput {
@@ -1420,6 +1631,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			out["billboard_settings"] = flattenDashboardWidgetBillboardSettings(rawCfg.BillboardSettings)
 		}
 
+		if rawCfg.ThresholdsWithSeriesOverrides != nil {
+			out["thresholds_with_series_overrides"] = flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(rawCfg.ThresholdsWithSeriesOverrides)
+		}
+
 	case "viz.bullet":
 		widgetType = "widget_bullet"
 		out["limit"] = rawCfg.Limit
@@ -1828,7 +2043,12 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 
 	validateWidgetDataFormatterStructure(d, &errorsList, "widget_table")
 	validateWidgetDataFormatterStructure(d, &errorsList, "widget_billboard")
-	// add any other validation functions here
+
+	// Add validation for conflicting billboard threshold configurations
+	validateBillboardLegacyThresholdConflicts(d, &errorsList)
+
+	// Add validation for thresholds_with_series_overrides
+	validateThresholdsWithSeriesOverrides(d, &errorsList)
 
 	if len(errorsList) == 0 {
 		return nil
@@ -1991,6 +2211,113 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 		}
 
 	}
+}
+
+func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[]string) {
+	_, pagesListObtained := d.GetChange("page")
+	pages := pagesListObtained.([]interface{})
+
+	for pageIndex, p := range pages {
+		page := p.(map[string]interface{})
+		widgets, widgetOk := page["widget_billboard"]
+		if widgetOk {
+			for widgetIndex, w := range widgets.([]interface{}) {
+				widget := w.(map[string]interface{})
+				thresholdsWithOverrides, thresholdsOk := widget["thresholds_with_series_overrides"]
+				if thresholdsOk && len(thresholdsWithOverrides.([]interface{})) > 0 {
+					for _, t := range thresholdsWithOverrides.([]interface{}) {
+						if t == nil {
+							*errorsList = append(*errorsList, fmt.Sprintf("thresholds_with_series_overrides in page %d widget_billboard %d cannot be empty - it must contain at least one 'thresholds' or 'series_overrides' block with content", pageIndex, widgetIndex))
+							continue
+						}
+
+						thresholdBlock := t.(map[string]interface{})
+
+						//hasValidThresholds := false
+						//hasValidSeriesOverrides := false
+
+						// Check thresholds block
+						if thresholds, ok := thresholdBlock["thresholds"]; ok {
+							thresholdsList := thresholds.([]interface{})
+							if len(thresholdsList) > 0 {
+								for thresholdIndex, threshold := range thresholdsList {
+									if threshold == nil {
+										*errorsList = append(*errorsList, fmt.Sprintf("threshold %d in page %d widget_billboard %d thresholds block cannot be null", thresholdIndex, pageIndex, widgetIndex))
+										continue
+									}
+
+									//thresholdMap := threshold.(map[string]interface{})
+									//if hasThresholdContent(thresholdMap) {
+									//	hasValidThresholds = true
+									//} else {
+									//	*errorsList = append(*errorsList, fmt.Sprintf("threshold %d in page %d widget_billboard %d thresholds block is empty - it must contain at least one field: from, to, or severity", thresholdIndex, pageIndex, widgetIndex))
+									//}
+								}
+							}
+						}
+
+						// Check series_overrides block
+						if seriesOverrides, ok := thresholdBlock["series_overrides"]; ok {
+							seriesOverridesList := seriesOverrides.([]interface{})
+							if len(seriesOverridesList) > 0 {
+								for overrideIndex, override := range seriesOverridesList {
+									if override == nil {
+										*errorsList = append(*errorsList, fmt.Sprintf("series_override %d in page %d widget_billboard %d series_overrides block cannot be null", overrideIndex, pageIndex, widgetIndex))
+										continue
+									}
+
+									//overrideMap := override.(map[string]interface{})
+									//if hasSeriesOverrideContent(overrideMap) {
+									//	hasValidSeriesOverrides = true
+									//} else {
+									//	*errorsList = append(*errorsList, fmt.Sprintf("series_override %d in page %d widget_billboard %d series_overrides block is empty - it must contain at least one field: from, to, series_name, or severity", overrideIndex, pageIndex, widgetIndex))
+									//}
+								}
+							}
+						}
+
+						// Check if the entire thresholds_with_series_overrides block has no valid content
+						//if !hasValidThresholds && !hasValidSeriesOverrides {
+						//	*errorsList = append(*errorsList, fmt.Sprintf("thresholds_with_series_overrides in page %d widget_billboard %d must contain at least one valid 'thresholds' or 'series_overrides' block with content", pageIndex, widgetIndex))
+						//}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Helper function to check if a threshold has content
+func hasThresholdContent(thresholdMap map[string]interface{}) bool {
+	if _, ok := thresholdMap["from"]; ok {
+		return true
+	}
+	if _, ok := thresholdMap["to"]; ok {
+		return true
+	}
+	if _, ok := thresholdMap["severity"]; ok {
+		return true
+	}
+
+	return false
+}
+
+// Helper function to check if a series override has content
+func hasSeriesOverrideContent(overrideMap map[string]interface{}) bool {
+	if _, ok := overrideMap["from"]; ok {
+		return true
+	}
+	if _, ok := overrideMap["to"]; ok {
+		return true
+	}
+	if _, ok := overrideMap["series_name"]; ok {
+		return true
+	}
+	if _, ok := overrideMap["severity"]; ok {
+		return true
+	}
+
+	return false
 }
 
 func expandDashboardWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
@@ -2158,4 +2485,103 @@ func flattenDashboardWidgetBillboardSettings(billboardSettings *dashboards.Dashb
 
 	billboardSettingsFetchedInterface = append(billboardSettingsFetchedInterface, billboardSettingsFetched)
 	return billboardSettingsFetchedInterface
+}
+
+func flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(thresholdsWithSeriesOverrides *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides) []interface{} {
+	if thresholdsWithSeriesOverrides == nil {
+		return nil
+	}
+
+	var thresholdsFetched = make(map[string]interface{})
+	var thresholdsFetchedInterface []interface{}
+
+	// Handle thresholds
+	if len(thresholdsWithSeriesOverrides.Thresholds) > 0 {
+		thresholdsList := make([]interface{}, len(thresholdsWithSeriesOverrides.Thresholds))
+		for i, threshold := range thresholdsWithSeriesOverrides.Thresholds {
+			thresholdFetched := make(map[string]interface{})
+
+			thresholdFetched["from"] = threshold.From
+			thresholdFetched["to"] = threshold.To
+			thresholdFetched["severity"] = threshold.Severity
+
+			thresholdsList[i] = thresholdFetched
+		}
+
+		thresholdsFetched["thresholds"] = thresholdsList
+	}
+
+	// Handle series overrides
+	if len(thresholdsWithSeriesOverrides.SeriesOverrides) > 0 {
+		seriesOverridesList := make([]interface{}, len(thresholdsWithSeriesOverrides.SeriesOverrides))
+		for i, override := range thresholdsWithSeriesOverrides.SeriesOverrides {
+			overrideFetched := make(map[string]interface{})
+
+			overrideFetched["from"] = override.From
+			overrideFetched["to"] = override.To
+			overrideFetched["series_name"] = override.SeriesName
+			overrideFetched["severity"] = override.Severity
+
+			seriesOverridesList[i] = overrideFetched
+		}
+		thresholdsFetched["series_overrides"] = seriesOverridesList
+	}
+
+	thresholdsFetchedInterface = append(thresholdsFetchedInterface, thresholdsFetched)
+	return thresholdsFetchedInterface
+}
+
+func validateBillboardLegacyThresholdConflicts(d *schema.ResourceDiff, errorsList *[]string) {
+	_, pagesListObtained := d.GetChange("page")
+	pages := pagesListObtained.([]interface{})
+
+	for pageIndex, p := range pages {
+		page := p.(map[string]interface{})
+		widgets, widgetOk := page["widget_billboard"]
+		if widgetOk {
+			for widgetIndex, w := range widgets.([]interface{}) {
+				widget := w.(map[string]interface{})
+
+				// Check if legacy threshold attributes exist
+				hasLegacyThresholds := false
+				hasNewThresholdsBlock := false
+
+				// Check for legacy warning/critical attributes
+				if _, warningOk := widget["warning"]; warningOk && widget["warning"] != "" {
+					hasLegacyThresholds = true
+				}
+
+				if _, criticalOk := widget["critical"]; criticalOk && widget["critical"] != "" {
+					hasLegacyThresholds = true
+				}
+
+				// Check if thresholds_with_series_overrides contains a thresholds block
+				if thresholdsWithSeriesOverrides, thresholdsWithSeriesOverridesOk := widget["thresholds_with_series_overrides"]; thresholdsWithSeriesOverridesOk {
+					if thresholdsWithSeriesOverridesList, ok := thresholdsWithSeriesOverrides.([]interface{}); ok && len(thresholdsWithSeriesOverridesList) > 0 {
+						for _, thresholdsWithSeriesOverridesBlock := range thresholdsWithSeriesOverridesList {
+							if thresholdsWithSeriesOverridesBlock != nil {
+								thresholdsWithSeriesOverridesBlockMap := thresholdsWithSeriesOverridesBlock.(map[string]interface{})
+
+								// Check if thresholds block exists within thresholds_with_series_overrides
+								if newThresholdsData, newThresholdsOk := thresholdsWithSeriesOverridesBlockMap["thresholds"]; newThresholdsOk {
+									if newThresholdsList, ok := newThresholdsData.([]interface{}); ok && len(newThresholdsList) > 0 {
+										hasNewThresholdsBlock = true
+										break
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// Report conflict if both legacy warning/critical and new thresholds block are present
+				if hasLegacyThresholds && hasNewThresholdsBlock {
+					*errorsList = append(*errorsList, fmt.Sprintf(
+						"Conflicting threshold configurations in page %d widget_billboard %d: cannot use both legacy threshold attributes (warning/critical) and thresholds block within thresholds_with_series_overrides at the same time.",
+						pageIndex, widgetIndex,
+					))
+				}
+			}
+		}
+	}
 }
