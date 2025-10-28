@@ -69,11 +69,11 @@ resource "oci_sch_service_connector" "service_connector" {
 }
 
 # Resource to link the New Relic account and configure the integration
-resource "null_resource" "newrelic_link_account" {
+resource "null_resource" "newrelic_update_account" {
   depends_on = [oci_functions_function.metrics_function, oci_sch_service_connector.service_connector]
   provisioner "local-exec" {
     command = <<EOT
-      # Main execution for cloudLinkAccount
+      # Main execution for cloudUpdateAccount
       response=$(curl --silent --request POST \
         --url "${local.newrelic_graphql_endpoint}" \
         --header "API-Key: ${local.user_api_key}" \
