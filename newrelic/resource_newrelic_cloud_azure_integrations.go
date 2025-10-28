@@ -259,6 +259,13 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
 				MaxItems:    1,
 			},
+			"auto_discovery": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Azure Auto Discovery",
+				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
+				MaxItems:    1,
+			},
 		},
 	}
 }
@@ -614,6 +621,12 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 		cloudAzureIntegration.AzureVpngateways = expandCloudAzureIntegrationVpnGatewayInput(v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("vpn_gateway"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if v, ok := fetchAttributeValueFromResourceConfig(d, "auto_discovery"); ok {
+		cloudAzureIntegration.AzureAutoDiscovery = expandCloudAzureIntegrationAutoDiscoveryInput(v.([]interface{}), linkedAccountID)
+	} else if o, n := d.GetChange("auto_discovery"); len(n.([]interface{})) < len(o.([]interface{})) {
+		cloudDisableAzureIntegration.AzureAutoDiscovery = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	configureInput := cloud.CloudIntegrationsInput{
@@ -1808,6 +1821,31 @@ func expandCloudAzureIntegrationVpnGatewayInput(b []interface{}, linkedAccountID
 	return expanded
 }
 
+func expandCloudAzureIntegrationAutoDiscoveryInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureAutoDiscoveryIntegrationInput {
+	expanded := make([]cloud.CloudAzureAutoDiscoveryIntegrationInput, len(b))
+
+	for i, azureAutoDiscovery := range b {
+		var azureAutoDiscoveryInput cloud.CloudAzureAutoDiscoveryIntegrationInput
+
+		if azureAutoDiscovery == nil {
+			azureAutoDiscoveryInput.LinkedAccountId = linkedAccountID
+			expanded[i] = azureAutoDiscoveryInput
+			return expanded
+		}
+
+		in := azureAutoDiscovery.(map[string]interface{})
+
+		azureAutoDiscoveryInput.LinkedAccountId = linkedAccountID
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			azureAutoDiscoveryInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = azureAutoDiscoveryInput
+	}
+
+	return expanded
+}
+
 /// Read
 
 func resourceNewRelicCloudAzureIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1909,6 +1947,8 @@ func flattenCloudAzureLinkedAccount(d *schema.ResourceData, result *cloud.CloudL
 			_ = d.Set("vms", flattenCloudAzureVmsIntegration(t))
 		case *cloud.CloudAzureVpngatewaysIntegration:
 			_ = d.Set("vpn_gateway", flattenCloudAzureVpnGatewaysIntegration(t))
+		case *cloud.CloudAzureAutoDiscoveryIntegration:
+			_ = d.Set("auto_discovery", flattenCloudAzureAutoDiscoveryIntegration(t))
 
 		}
 
@@ -2392,6 +2432,18 @@ func flattenCloudAzureVpnGatewaysIntegration(in *cloud.CloudAzureVpngatewaysInte
 	return flattened
 }
 
+func flattenCloudAzureAutoDiscoveryIntegration(in *cloud.CloudAzureAutoDiscoveryIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
 /// update
 
 func resourceNewRelicCloudAzureIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2566,6 +2618,10 @@ func expandCloudAzureDisableInputs(d *schema.ResourceData) cloud.CloudDisableInt
 	}
 	if _, ok := fetchAttributeValueFromResourceConfig(d, "vpn_gateway"); ok {
 		cloudAzureDisableInput.AzureVpngateways = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := fetchAttributeValueFromResourceConfig(d, "auto_discovery"); ok {
+		cloudAzureDisableInput.AzureAutoDiscovery = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	deleteInput := cloud.CloudDisableIntegrationsInput{
