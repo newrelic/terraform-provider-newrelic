@@ -79,3 +79,15 @@ variable "image_bucket" {
   description = "The name of the bucket where the Docker image for the New Relic function is stored."
   default = "idptojlonu4e"
 }
+
+variable "newrelic_account_id" {
+  type        = string
+  sensitive   = true
+  description = "The New Relic account ID for sending metrics to New Relic endpoints"
+}
+
+variable "provider_account_id" {
+  type        = string
+  sensitive   = true
+  description = "The Provider Account ID that has been linked with New Relic"
+}

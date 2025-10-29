@@ -15,5 +15,38 @@ locals {
   nat_gateway     = "newrelic-${var.nr_prefix}-${var.region}-vcn-${local.terraform_suffix}"
   service_gateway = "newrelic-${var.nr_prefix}-${var.region}-vcn-${local.terraform_suffix}"
   subnet          = "newrelic-${var.nr_prefix}-${var.region}-vcn-${local.terraform_suffix}"
+
+  user_api_key = base64decode(data.oci_secrets_secretbundle.user_api_key.secret_bundle_content[0].content)
+  newrelic_graphql_endpoint = {
+    US = "https://api.newrelic.com/graphql"
+    EU = "https://api.eu.newrelic.com/graphql"
+  }[var.newrelic_endpoint]
+
+  updateLinkAccount_graphql_query = <<EOF
+  mutation {
+    cloudUpdateAccount(
+      accountId: ${var.newrelic_account_id}
+      accounts: {
+        oci: {
+          linkedAccountId: ${var.provider_account_id}
+          metricStackOcid: "tf"
+          ociRegion: "${var.region}"
+        }
+    }
+  ) {
+      linkedAccounts {
+        id
+        authLabel
+        createdAt
+        disabled
+        externalId
+        metricCollectionMode
+        name
+        nrAccountId
+        updatedAt
+      }
+    }
+  }
+  EOF
 }
 
