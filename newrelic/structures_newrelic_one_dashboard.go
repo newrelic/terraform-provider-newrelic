@@ -1084,7 +1084,7 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 	for _, v := range in {
 
 		cfg := v.(map[string]interface{})
-		var ignoreTimeRangePtr, excludedPtr *bool
+		var ignoreTimeRangePtr, excludedPtr, showApplyActionPtr *bool
 
 		if ignoreTimeRange, ok := cfg["ignore_time_range"].(bool); ok {
 			ignoreTimeRangePtr = &ignoreTimeRange
@@ -1093,9 +1093,13 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 		if excluded, ok := cfg["excluded"].(bool); ok {
 			excludedPtr = &excluded
 		}
+		if showApplyAction, ok := cfg["show_apply_action"].(bool); ok {
+			showApplyActionPtr = &showApplyAction
+		}
 		out = dashboards.DashboardVariableOptionsInput{
 			IgnoreTimeRange: ignoreTimeRangePtr,
 			Excluded:        excludedPtr,
+			ShowApplyAction: showApplyActionPtr,
 		}
 	}
 
@@ -1259,6 +1263,9 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	}
 	if _, ignoreTimeRangeFetchedOk := option["ignore_time_range"]; ignoreTimeRangeFetchedOk {
 		n["ignore_time_range"] = in.IgnoreTimeRange
+	}
+	if _, showApplyActionOk := option["show_apply_action"]; showApplyActionOk {
+		n["show_apply_action"] = in.ShowApplyAction
 	}
 	out[0] = n
 	return out
@@ -1864,6 +1871,16 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 				variableType, variableTypeOk := variableMap["type"]
 				if ignoreTimeRangeOk && variableTypeOk && variableType != "nrql" {
 					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
+				}
+
+				// show_apply_action validation - only valid when is_multi_selection is true
+				if showApplyAction, showApplyActionOk := optionMap["show_apply_action"]; showApplyActionOk {
+					if showApplyActionBool, ok := showApplyAction.(bool); ok && showApplyActionBool {
+						isMultiSelectionVal, isMultiSelectionOk := variableMap["is_multi_selection"].(bool)
+						if !isMultiSelectionOk || !isMultiSelectionVal {
+							return errors.New("`show_apply_action` can only be set to true when `is_multi_selection` is true for the variable")
+						}
+					}
 				}
 
 			}

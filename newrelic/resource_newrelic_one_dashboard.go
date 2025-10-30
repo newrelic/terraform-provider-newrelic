@@ -132,6 +132,11 @@ func dashboardVariableSchemaElem() *schema.Resource {
 							Optional:    true,
 							Description: "Only applies to variables of type NRQL. With this turned on, query condition defined with the variable will not be included in the query.",
 						},
+						"show_apply_action": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Show apply button when multi-selecting",
+						},
 					},
 				},
 			},
