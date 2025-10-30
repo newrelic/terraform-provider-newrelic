@@ -637,7 +637,7 @@ func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
 			{
 				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
 				ExpectError: regexp.MustCompile("`account_ids` cannot be empty for NRQL variables"),
-:wq			},
+			},
 		},
 	})
 }
