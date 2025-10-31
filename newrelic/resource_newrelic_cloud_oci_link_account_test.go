@@ -53,11 +53,6 @@ func TestAccNewRelicCloudOciLinkAccount_Basic(t *testing.T) {
 		t.Skipf("INTEGRATION_TESTING_OCI_HOME_REGION must be set for this acceptance test")
 	}
 
-	testOciSvcUserName := os.Getenv("INTEGRATION_TESTING_OCI_SVC_USER_NAME")
-	if testOciSvcUserName == "" {
-		t.Skipf("INTEGRATION_TESTING_OCI_SVC_USER_NAME must be set for this acceptance test")
-	}
-
 	// Optional fields
 	testOciRegion := os.Getenv("INTEGRATION_TESTING_OCI_REGION")
 	testOciMetricStackOcid := os.Getenv("INTEGRATION_TESTING_OCI_METRIC_STACK_OCID")
@@ -75,7 +70,6 @@ func TestAccNewRelicCloudOciLinkAccount_Basic(t *testing.T) {
 		"oci_client_secret":    testOciClientSecret,
 		"oci_domain_url":       testOciDomainUrl,
 		"oci_home_region":      testOciHomeRegion,
-		"oci_svc_user_name":    testOciSvcUserName,
 		"oci_region":           testOciRegion,
 		"metric_stack_ocid":    testOciMetricStackOcid,
 		"ingest_vault_ocid":    testOciIngestVaultOcid,
@@ -186,7 +180,6 @@ func testAccNewRelicOciLinkAccountConfig(OciLinkAccountTestConfig map[string]str
 		oci_client_secret      = "%s"
 		oci_domain_url         = "%s"
 		oci_home_region        = "%s"
-		oci_svc_user_name      = "%s"
 		ingest_vault_ocid      = "%s"
 		user_vault_ocid        = "%s"
 		`,
@@ -199,7 +192,6 @@ func testAccNewRelicOciLinkAccountConfig(OciLinkAccountTestConfig map[string]str
 		OciLinkAccountTestConfig["oci_client_secret"],
 		OciLinkAccountTestConfig["oci_domain_url"],
 		OciLinkAccountTestConfig["oci_home_region"],
-		OciLinkAccountTestConfig["oci_svc_user_name"],
 		OciLinkAccountTestConfig["ingest_vault_ocid"],
 		OciLinkAccountTestConfig["user_vault_ocid"])
 

@@ -65,11 +65,6 @@ func resourceNewRelicCloudOciAccountLinkAccount() *schema.Resource {
 				Description: "The home region of the tenancy.",
 				Required:    true,
 			},
-			"oci_svc_user_name": {
-				Type:        schema.TypeString,
-				Description: "The service user name for OCI WIF.",
-				Required:    true,
-			},
 			"oci_region": {
 				Type:        schema.TypeString,
 				Description: "The OCI region for the account. This field is only used for updates, not during initial creation.",
@@ -173,10 +168,6 @@ func expandOciCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloud
 		ociAccount.OciHomeRegion = ociHomeRegion.(string)
 	}
 
-	if ociSvcUserName, ok := d.GetOk("oci_svc_user_name"); ok {
-		ociAccount.OciSvcUserName = ociSvcUserName.(string)
-	}
-
 	if ingestVaultOcid, ok := d.GetOk("ingest_vault_ocid"); ok {
 		ociAccount.IngestVaultOcid = ingestVaultOcid.(string)
 	}
@@ -257,10 +248,6 @@ func expandOciCloudUpdateAccountInput(d *schema.ResourceData) cloud.CloudUpdateC
 
 	if ociHomeRegion, ok := d.GetOk("oci_home_region"); ok {
 		ociAccount.OciHomeRegion = ociHomeRegion.(string)
-	}
-
-	if ociSvcUserName, ok := d.GetOk("oci_svc_user_name"); ok {
-		ociAccount.OciSvcUserName = ociSvcUserName.(string)
 	}
 
 	if tenantID, ok := d.GetOk("tenant_id"); ok {

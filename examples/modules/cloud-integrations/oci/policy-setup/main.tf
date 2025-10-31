@@ -133,7 +133,6 @@ resource "newrelic_cloud_oci_link_account" "linkAccount" {
   oci_client_id        = var.client_id
   oci_client_secret    = var.client_secret
   oci_domain_url       = var.oci_domain_url
-  oci_svc_user_name    = var.svc_user_name
   instrumentation_type = var.instrumentation_type
 }
 
