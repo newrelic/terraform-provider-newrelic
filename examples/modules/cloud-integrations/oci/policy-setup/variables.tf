@@ -59,12 +59,6 @@ variable "oci_domain_url" {
   description = "OCI domain URL"
 }
 
-variable "svc_user_name" {
-  type        = string
-  sensitive   = true
-  description = "Service user name for OCI access"
-}
-
 variable "private_key" {
   type        = string
   sensitive   = true

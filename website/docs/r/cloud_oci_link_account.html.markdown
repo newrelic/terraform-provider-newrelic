@@ -22,7 +22,7 @@ If you encounter issues or bugs, please [open an issue in the GitHub repository]
 
 ### Workload Identity Federation (WIF) Attributes
 
-The following arguments rely on an OCI Identity Domain OAuth2 client set up for workload identity federation (identity propagation): `oci_client_id`, `oci_client_secret`, `oci_domain_url`, and `oci_svc_user_name`.
+The following arguments rely on an OCI Identity Domain OAuth2 client set up for workload identity federation (identity propagation): `oci_client_id`, `oci_client_secret` and `oci_domain_url`.
 
 To create and retrieve these values, follow Oracle's guidance for configuring identity propagation / JWT token exchange:
 
@@ -32,8 +32,7 @@ WIF configuration steps:
 1. Create (or identify) an Identity Domain and register an OAuth2 confidential application (client) to represent New Relic ingestion.
 2. Generate / record the client ID (`oci_client_id`) and client secret (`oci_client_secret`). Store the secret securely (e.g., in OCI Vault; reference its OCID via `ingest_vault_ocid` / `user_vault_ocid` if desired).
 3. Use the Identity Domain base URL as `oci_domain_url` (format: `https://idcs-<hash>.identity.oraclecloud.com`).
-4. Provide / map a service user (or principal) used for workload identity federation as `oci_svc_user_name`.
-5. Ensure the client has the required scopes and the tenancy policies allow the token exchange.
+4. Ensure the client has the required scopes and the tenancy policies allow the token exchange.
 
 > TIP: Rotating the OAuth2 client secret only requires updating `oci_client_secret`; it does not force resource replacement.
 
@@ -55,7 +54,6 @@ resource "newrelic_cloud_oci_link_account" "example" {
   oci_client_secret = var.oci_client_secret                                        # Sensitive
   oci_domain_url    = "https://idcs-1234567890abcdef.identity.oraclecloud.com"    # Identity domain base URL
   oci_home_region   = "us-ashburn-1"
-  oci_svc_user_name = "svc-newrelic-collector"
 }
 ```
 
@@ -70,7 +68,6 @@ resource "newrelic_cloud_oci_link_account" "full" {
   oci_client_secret = var.oci_client_secret
   oci_domain_url    = "https://idcs-1234567890abcdef.identity.oraclecloud.com"
   oci_home_region   = "us-ashburn-1"
-  oci_svc_user_name = "svc-newrelic-collector"
 
   # Vault secret OCIDs (these may point to secrets that store rotated values)
   ingest_vault_ocid = "ocid1.vaultsecret.oc1..ccccccccexample"
@@ -98,7 +95,6 @@ The following arguments are supported (current provider schema):
 - `oci_client_secret` - (Required, Sensitive) OAuth2 client secret. Not displayed in plans or state outputs.
 - `oci_domain_url` - (Required) Base URL of the OCI Identity Domain (e.g. `https://idcs-<hash>.identity.oraclecloud.com`).
 - `oci_home_region` - (Required) Home region of the tenancy (e.g. `us-ashburn-1`).
-- `oci_svc_user_name` - (Required) Service user name associated with the WIF configuration.
 - `ingest_vault_ocid` - (Required) Vault secret OCID containing an ingest secret.
 - `user_vault_ocid` - (Required) Vault secret OCID containing a user or auxiliary secret.
 - `instrumentation_type` - (Optional) Specifies the type of integration, such as metrics, logs, or a combination of logs and metrics (e.g., `METRICS`, `LOGS`, `METRICS,LOGS`).
