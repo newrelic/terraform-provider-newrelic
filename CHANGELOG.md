@@ -1,3 +1,8 @@
+<a name="v3.75.0"></a>
+## [v3.75.0] - 2025-11-03
+### Features
+- **azure:** introduce azure autodiscovery integration for limited preview ([#2943](https://github.com/newrelic/terraform-provider-newrelic/issues/2943))
+
 <a name="v3.74.0"></a>
 ## [v3.74.0] - 2025-10-29
 ### Features
@@ -2514,7 +2519,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.74.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.0...HEAD
+[v3.75.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.74.0...v3.75.0
 [v3.74.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.73.0...v3.74.0
 [v3.73.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.3...v3.73.0
 [v3.72.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.2...v3.72.3
