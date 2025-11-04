@@ -582,6 +582,11 @@ func TestAccNewRelicOneDashboard_VariablesNRQL(t *testing.T) {
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
+			// Test: Invalid show_apply_action configuration (expects error)
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(rName),
+				ExpectError: regexp.MustCompile("`show_apply_action` can only be set to true when `is_multi_selection` is true"),
+			},
 			// Import
 			{
 				ResourceName:      "newrelic_one_dashboard.bar",
@@ -637,53 +642,6 @@ func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
 			{
 				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
 				ExpectError: regexp.MustCompile("`account_ids` cannot be empty for NRQL variables"),
-			},
-		},
-	})
-}
-
-// TestAccNewRelicOneDashboard_VariablesNRQL_ShowApplyAction tests create/update of variable options including show_apply_action
-func TestAccNewRelicOneDashboard_VariablesNRQL_ShowApplyAction(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyAction(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
-				),
-			},
-			{
-				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionUpdated(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
-				),
-			},
-			{
-				ResourceName:      "newrelic_one_dashboard.bar",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"variable.0.options",
-				},
-			},
-		},
-	})
-}
-
-// TestAccNewRelicOneDashboard_VariablesNRQL_ShowApplyActionInvalid ensures validation triggers when show_apply_action is true while is_multi_selection is false
-func TestAccNewRelicOneDashboard_VariablesNRQL_ShowApplyActionInvalid(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(rName),
-				ExpectError: regexp.MustCompile("`show_apply_action` can only be set to true when `is_multi_selection` is true"),
 			},
 		},
 	})
@@ -1031,6 +989,7 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	options {
 		excluded = true
 		ignore_time_range = true
+		show_apply_action = true
 	}
   }
 `
@@ -1056,31 +1015,10 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	options {
 		excluded = false
 		ignore_time_range = false
+		show_apply_action = false
 	}
   }
 `
-}
-
-func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyAction(dashboardName string) string {
-	return `
-resource "newrelic_one_dashboard" "bar" {
-	name = "` + dashboardName + `"
-	permissions = "private"
-
-` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
-` + testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyAction() + `
-}`
-}
-
-func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionUpdated(dashboardName string) string {
-	return `
-resource "newrelic_one_dashboard" "bar" {
-	name = "` + dashboardName + `"
-	permissions = "private"
-
-` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
-` + testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionUpdated() + `
-}`
 }
 
 func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(dashboardName string) string {
@@ -1094,75 +1032,29 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
-// Helper configs for NRQL variable with show_apply_action
-func testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyAction() string {
-	return `
-	variable {
-		default_values = ["value"]
-		is_multi_selection = true
-		item {
-				title = "item"
-				value = "ITEM"
-		}
-		name = "variable_show_apply"
-		nrql_query {
-				account_ids = [3806526]
-				query = "FROM Transaction SELECT average(duration) FACET appName"
-		}
-		replacement_strategy = "default"
-		title = "title"
-		type = "nrql"
-		options {
-				show_apply_action = true
-		}
-	}
-`
-}
-
-func testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionUpdated() string {
-	return `
-	variable {
-		default_values = ["value"]
-		is_multi_selection = true
-		item {
-				title = "item"
-				value = "ITEM"
-		}
-		name = "variable_show_apply_updated"
-		nrql_query {
-				account_ids = [3806526]
-				query = "FROM Transaction SELECT average(duration) FACET appName"
-		}
-		replacement_strategy = "default"
-		title = "title"
-		type = "nrql"
-		options {
-				show_apply_action = false
-		}
-	}
-`
-}
-
 func testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionInvalid() string {
 	return `
-	variable {
-		is_multi_selection = false
-		item {
-				title = "item"
-				value = "ITEM"
-		}
-		name = "variable_show_apply_invalid"
-		replacement_strategy = "default"
-		title = "title"
-		type = "nrql"
-		nrql_query {
-				account_ids = [3806526]
-				query = "FROM Transaction SELECT average(duration) FACET appName"
-		}
-		options {
-				show_apply_action = true
-		}
+  variable {
+    default_values = ["value"]
+	is_multi_selection = false
+	item {
+		title = "item"
+		value = "ITEM"
 	}
+    name = "variableUpdated"
+	nrql_query {
+		account_ids = [3806526, 3814156]
+		query = "FROM Transaction SELECT average(duration) FACET appName"
+	}
+	replacement_strategy = "default"
+	title = "title"
+	type = "nrql"
+	options {
+		excluded = false
+		ignore_time_range = false
+		show_apply_action = true
+	}
+  }
 `
 }
 
