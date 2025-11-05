@@ -1,3 +1,8 @@
+<a name="v3.75.1"></a>
+## [v3.75.1] - 2025-11-05
+### Bug Fixes
+- **dashboards:** add support for `showApplyAction` in variable options ([#2964](https://github.com/newrelic/terraform-provider-newrelic/issues/2964))
+
 <a name="v3.75.0"></a>
 ## [v3.75.0] - 2025-11-03
 ### Features
@@ -2519,7 +2524,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.1...HEAD
+[v3.75.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.0...v3.75.1
 [v3.75.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.74.0...v3.75.0
 [v3.74.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.73.0...v3.74.0
 [v3.73.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.72.3...v3.73.0
