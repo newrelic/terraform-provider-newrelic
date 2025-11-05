@@ -582,6 +582,11 @@ func TestAccNewRelicOneDashboard_VariablesNRQL(t *testing.T) {
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
+			// Test: Invalid show_apply_action configuration (expects error)
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(rName),
+				ExpectError: regexp.MustCompile("`show_apply_action` can only be set to true when `is_multi_selection` is true"),
+			},
 			// Import
 			{
 				ResourceName:      "newrelic_one_dashboard.bar",
@@ -984,6 +989,7 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	options {
 		excluded = true
 		ignore_time_range = true
+		show_apply_action = true
 	}
   }
 `
@@ -1009,6 +1015,44 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	options {
 		excluded = false
 		ignore_time_range = false
+		show_apply_action = false
+	}
+  }
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+	name = "` + dashboardName + `"
+	permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
+` + testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionInvalid() + `
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionInvalid() string {
+	return `
+  variable {
+    default_values = ["value"]
+	is_multi_selection = false
+	item {
+		title = "item"
+		value = "ITEM"
+	}
+    name = "variableUpdated"
+	nrql_query {
+		account_ids = [3806526, 3814156]
+		query = "FROM Transaction SELECT average(duration) FACET appName"
+	}
+	replacement_strategy = "default"
+	title = "title"
+	type = "nrql"
+	options {
+		excluded = false
+		ignore_time_range = false
+		show_apply_action = true
 	}
   }
 `
