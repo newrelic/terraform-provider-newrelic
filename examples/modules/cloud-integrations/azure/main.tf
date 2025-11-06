@@ -77,4 +77,6 @@ resource "newrelic_cloud_azure_integrations" "foo" {
   virtual_networks {}
   vms {}
   vpn_gateway {}
+  // NOTE: auto_discovery integration requires extra entitlement in New Relic. Contact sales for More info
+  // auto_discovery {}
 }

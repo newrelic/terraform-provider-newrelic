@@ -261,6 +261,9 @@ EOT
       replacement_strategy = "default"
       title                = "title"
       type                 = "nrql"
+      options {
+        show_apply_action = true
+      }
   }
 }
 ```
@@ -570,6 +573,7 @@ The following arguments are supported:
   * `options` - (Optional) Specifies additional options to be added to dashboard variables. Supports the following nested attribute(s) -
     * `ignore_time_range` - (Optional) An argument with a boolean value that is supported only by variables of `type` _nrql_ - when true, the time range specified in the query will override the time picker on dashboards and other pages.
     * `excluded` - (Optional) An argument with a boolean value. With this turned on, the query condition defined with the variable will not be included in the query. Defaults to `false`.
+    * `show_apply_action` - (Optional) When multi-selection is enabled (`is_multi_selection = true`), displays an "Apply" button that allows users to confirm and apply their selected values to the dashboard.
 
 ### Nested `nrql_query` blocks (for Variables)
 
