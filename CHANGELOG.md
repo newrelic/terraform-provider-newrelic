@@ -1,3 +1,8 @@
+<a name="v3.75.3"></a>
+## [v3.75.3] - 2025-11-11
+### Bug Fixes
+- **deps:** update Go Client to v2.73.2 to support OCI Schema Change ([#2969](https://github.com/newrelic/terraform-provider-newrelic/issues/2969))
+
 <a name="v3.75.2"></a>
 ## [v3.75.2] - 2025-11-06
 ### Bug Fixes
@@ -2529,7 +2534,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.3...HEAD
+[v3.75.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.2...v3.75.3
 [v3.75.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.1...v3.75.2
 [v3.75.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.0...v3.75.1
 [v3.75.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.74.0...v3.75.0
