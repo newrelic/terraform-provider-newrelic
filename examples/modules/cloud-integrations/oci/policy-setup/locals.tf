@@ -9,6 +9,11 @@ locals {
   ][0]
   is_home_region = var.region == local.home_region || lower(var.region) == lower(local.home_region_key)
 
+  is_user_vault_key_present = var.user_key_secret_ocid != ""
+  is_ingest_vault_key_present = var.ingest_key_secret_ocid != ""
+  create_vault = !local.is_user_vault_key_present || !local.is_ingest_vault_key_present
+  user_api_key = local.is_user_vault_key_present ? base64decode(data.oci_secrets_secretbundle.user_api_key[0].secret_bundle_content[0].content) : var.newrelic_user_api_key
+
   freeform_tags = {
     newrelic-terraform = "true"
   }
