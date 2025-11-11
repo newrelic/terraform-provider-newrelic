@@ -8,6 +8,7 @@ resource "oci_identity_compartment" "newrelic_compartment" {
 
 #Key Vault and Secret for New Relic Ingest and User API Key
 resource "oci_kms_vault" "newrelic_vault" {
+  count = local.create_vault ? 1 : 0
   compartment_id = oci_identity_compartment.newrelic_compartment.id
   display_name   = "newrelic-vault-${local.terraform_suffix}"
   vault_type     = "DEFAULT"
@@ -20,13 +21,14 @@ resource "oci_kms_vault" "newrelic_vault" {
 }
 
 resource "oci_kms_key" "newrelic_key" {
+  count = local.create_vault ? 1 : 0
   compartment_id = oci_identity_compartment.newrelic_compartment.id
   display_name   = "newrelic-key-${local.terraform_suffix}"
   key_shape {
     algorithm = "AES"
     length    = 32
   }
-  management_endpoint = oci_kms_vault.newrelic_vault.management_endpoint
+  management_endpoint = oci_kms_vault.newrelic_vault[count.index].management_endpoint
   freeform_tags       = local.freeform_tags
   timeouts {
     create = "30m"
@@ -36,9 +38,10 @@ resource "oci_kms_key" "newrelic_key" {
 }
 
 resource "oci_vault_secret" "ingest_api_key" {
+  count = local.is_ingest_vault_key_present ? 0 : 1
   compartment_id = oci_identity_compartment.newrelic_compartment.id
-  vault_id       = oci_kms_vault.newrelic_vault.id
-  key_id         = oci_kms_key.newrelic_key.id
+  vault_id       = oci_kms_vault.newrelic_vault[count.index].id
+  key_id         = oci_kms_key.newrelic_key[count.index].id
   secret_name    = "NewRelicIngestAPIKey"
   secret_content {
     content_type = "BASE64"
@@ -53,9 +56,10 @@ resource "oci_vault_secret" "ingest_api_key" {
 }
 
 resource "oci_vault_secret" "user_api_key" {
+  count = local.is_user_vault_key_present ? 0 : 1
   compartment_id = oci_identity_compartment.newrelic_compartment.id
-  vault_id       = oci_kms_vault.newrelic_vault.id
-  key_id         = oci_kms_key.newrelic_key.id
+  vault_id       = oci_kms_vault.newrelic_vault[count.index].id
+  key_id         = oci_kms_key.newrelic_key[count.index].id
   secret_name    = "NewRelicUserAPIKey"
   secret_content {
     content_type = "BASE64"
@@ -128,8 +132,8 @@ resource "newrelic_cloud_oci_link_account" "linkAccount" {
   compartment_ocid     = oci_identity_compartment.newrelic_compartment.id
   oci_home_region      = local.home_region
   tenant_id            = var.tenancy_ocid
-  ingest_vault_ocid    = oci_vault_secret.ingest_api_key.id
-  user_vault_ocid      = oci_vault_secret.user_api_key.id
+  ingest_vault_ocid    = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
+  user_vault_ocid      = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
   oci_client_id        = var.client_id
   oci_client_secret    = var.client_secret
   oci_domain_url       = var.oci_domain_url
@@ -141,9 +145,13 @@ output "compartment_ocid" {
 }
 
 output "ingest_vault_ocid" {
-  value = oci_vault_secret.ingest_api_key.id
+  value = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
 }
 
 output "user_vault_ocid" {
-  value = oci_vault_secret.user_api_key.id
+  value = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
+}
+
+output "provider_account_id" {
+  value = newrelic_cloud_oci_link_account.linkAccount.id
 }

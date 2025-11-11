@@ -74,3 +74,20 @@ variable "secret_ocid" {
   type        = string
   description = "OCI Vault Secret OCID that contains the New Relic License Key. Use the secret OCID already created as part of Policy Setup module."
 }
+
+variable "user_api_secret_ocid" {
+  type        = string
+  description = "The OCID of the vault storing the user key for secure access."
+}
+
+variable "newrelic_account_id" {
+  type        = string
+  sensitive   = true
+  description = "The New Relic account ID for sending metrics to New Relic endpoints"
+}
+
+variable "provider_account_id" {
+  type        = string
+  sensitive   = true
+  description = "The Provider Account ID that has been linked with New Relic"
+}
