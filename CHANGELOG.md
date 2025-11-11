@@ -1,3 +1,8 @@
+<a name="v3.75.4"></a>
+## [v3.75.4] - 2025-11-11
+### Bug Fixes
+- **oci:** store Region and Terraform Details Post Metrics and Logs Instrumentation ([#2961](https://github.com/newrelic/terraform-provider-newrelic/issues/2961))
+
 <a name="v3.75.3"></a>
 ## [v3.75.3] - 2025-11-11
 ### Bug Fixes
@@ -2534,7 +2539,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.4...HEAD
+[v3.75.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.3...v3.75.4
 [v3.75.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.2...v3.75.3
 [v3.75.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.1...v3.75.2
 [v3.75.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.75.0...v3.75.1
