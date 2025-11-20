@@ -4,23 +4,63 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
-func TestAccNewRelicAccountManagement(t *testing.T) {
+func TestAccNewRelicAccountManagement_Basic(t *testing.T) {
+	resourceName := "newrelic_account_management.foo"
+	rName := acctest.RandString(7)
+	rNameUpdated := acctest.RandString(7)
+	
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicAccountCreateConfig("Test " + rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAccountExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", "Test "+rName),
+					resource.TestCheckResourceAttr(resourceName, "region", "us01"),
+				),
+			},
+			// Test: Update
+			{
+				Config: testAccNewRelicAccountUpdateConfig("Updated " + rNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAccountExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", "Updated "+rNameUpdated),
+					resource.TestCheckResourceAttr(resourceName, "region", "us01"),
+				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccNewRelicAccountManagement_Import(t *testing.T) {
 	resourceName := "newrelic_account_management.foo"
 	rName := acctest.RandString(7)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			//Import
+			// Test: Import
 			{
 				ImportState:        true,
 				Config:             testAccNewRelicAccountImportConfig(),
@@ -29,7 +69,7 @@ func TestAccNewRelicAccountManagement(t *testing.T) {
 				ImportStateCheck:   testAccCheckNewRelicAccountImportCheck(resourceName),
 				ImportStatePersist: true,
 			},
-			//update
+			// Test: Update after import
 			{
 				Config: testAccNewRelicAccountUpdateConfig("Dont Delete " + rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -78,6 +118,15 @@ resource "newrelic_account_management" "foo" {
 `)
 }
 
+func testAccNewRelicAccountCreateConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_account_management" "foo"{
+	name=  "%[1]s"
+	region= "us01"
+}
+`, name)
+}
+
 func testAccNewRelicAccountUpdateConfig(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo"{
@@ -98,15 +147,55 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("no ID is set")
 		}
 
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		client := providerConfig.NewClient
 
-		account, err := getCreatedAccountByID(client, rs.Primary.ID)
+		// Convert account ID from string to int
+		accountID, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to convert account ID to integer: %v", err)
 		}
-		if account == nil {
-			return fmt.Errorf("account not found")
+
+		// Get organization ID
+		organization, err := client.Organization.GetOrganization()
+		if err != nil {
+			return fmt.Errorf("failed to fetch organization information: %v", err)
 		}
+
+		// Fetch account using customeradministration package
+		ctx := context.Background()
+		getAccountsResponse, err := client.CustomerAdministration.GetAccounts(
+			"",
+			customeradministration.OrganizationAccountFilterInput{
+				OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
+					Eq: organization.ID,
+				},
+				ID: customeradministration.OrganizationAccountIdFilterInput{
+					Eq: accountID,
+				},
+			},
+			[]customeradministration.OrganizationAccountSortInput{},
+		)
+		
+		if err != nil {
+			return fmt.Errorf("failed to fetch account details: %v", err)
+		}
+
+		accounts := getAccountsResponse.Items
+		if len(accounts) == 0 {
+			return fmt.Errorf("account not found: %d", accountID)
+		}
+
+		if len(accounts) != 1 {
+			return fmt.Errorf("expected 1 account, found %d", len(accounts))
+		}
+
+		if accounts[0].ID != accountID {
+			return fmt.Errorf("expected account ID %d, got %d", accountID, accounts[0].ID)
+		}
+
+		// Suppress unused variable warning
+		_ = ctx
 
 		return nil
 	}
