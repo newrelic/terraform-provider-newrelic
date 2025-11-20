@@ -335,7 +335,7 @@ module "oci_policy_setup" {
 Key variables:
 
 * `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
-* `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs (see the [OCI link account](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_link_account) resource docs for guidance).
+* `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
 * `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US` or `EU`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
 
