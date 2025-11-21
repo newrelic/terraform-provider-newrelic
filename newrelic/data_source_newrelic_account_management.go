@@ -97,6 +97,11 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 		accounts := getAccountsResponse.Items
 
 		if len(accounts) == 0 {
+			// For name-based searches, account genuinely doesn't exist - no need to retry
+			if nameOk {
+				return resource.NonRetryableError(fmt.Errorf("no accounts found matching the criteria"))
+			}
+			// For ID-based searches, retry for eventual consistency
 			return resource.RetryableError(fmt.Errorf("no accounts found matching the criteria"))
 		}
 

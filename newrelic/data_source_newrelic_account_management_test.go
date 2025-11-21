@@ -143,9 +143,6 @@ func testAccCheckNewRelicAccountDataSourceExists(n string) resource.TestCheckFun
 			return fmt.Errorf("expected account ID %d, got %d", accountID, accounts[0].ID)
 		}
 
-		// Suppress unused variable warning
-		_ = ctx
-
 		return nil
 	}
 }
