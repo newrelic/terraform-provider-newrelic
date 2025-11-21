@@ -5,25 +5,17 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/accounts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
 func dataSourceNewRelicAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicAccountRead,
 		Schema: map[string]*schema.Schema{
-			"scope": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      string(accounts.RegionScopeTypes.IN_REGION),
-				Description:  `The scope of the account in New Relic.  Valid values are "global" and "in_region".  Defaults to "in_region".`,
-				ValidateFunc: validation.StringInSlice([]string{"global", "in_region"}, true),
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -33,6 +25,11 @@ func dataSourceNewRelicAccount() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The ID of the account in New Relic.",
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The region code of the account (e.g., us01, eu01).",
 			},
 		},
 	}
@@ -44,21 +41,22 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 
 	log.Printf("[INFO] Reading New Relic accounts")
 
-	scope := accounts.RegionScope(strings.ToUpper(d.Get("scope").(string)))
+	var diags diag.Diagnostics
+
+	// Get organization ID
+	organization, err := client.Organization.GetOrganization()
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("failed to fetch organization information: %v", err),
+		})
+		return diags
+	}
+
+	organizationID := organization.ID
 
 	id, idOk := d.GetOk("account_id")
 	name, nameOk := d.GetOk("name")
-
-	params := accounts.ListAccountsParams{
-		Scope: &scope,
-	}
-
-	accts, err := client.Accounts.ListAccountsWithContext(ctx, params)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	var account *accounts.AccountOutline
 
 	if !idOk && !nameOk {
 		// Default to the provider's AccountID if no lookup attributes are provided.
@@ -69,36 +67,77 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf(`exactly one of "name" or "account_id" is required to locate a New Relic account`))
 	}
 
-	if nameOk {
-		for _, a := range accts {
-			if a.Name == name.(string) {
-				account = &a
-				break
-			}
-		}
+	var account *customeradministration.OrganizationAccount
 
-		if account == nil {
-			return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic accounts", name))
-		}
+	// Build filter input based on whether we're searching by ID or name
+	filterInput := customeradministration.OrganizationAccountFilterInput{
+		OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
+			Eq: organizationID,
+		},
 	}
 
 	if idOk {
-		for _, a := range accts {
-			if a.ID == id.(int) {
-				account = &a
-				break
-			}
+		// If searching by ID, add ID filter
+		filterInput.ID = customeradministration.OrganizationAccountIdFilterInput{
+			Eq: id.(int),
+		}
+	}
+
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		getAccountsResponse, err := client.CustomerAdministration.GetAccounts(
+			"",
+			filterInput,
+			[]customeradministration.OrganizationAccountSortInput{},
+		)
+
+		if err != nil {
+			return resource.NonRetryableError(err)
 		}
 
-		if account == nil {
-			return diag.FromErr(fmt.Errorf("the id '%d' does not match any New Relic accounts", id))
+		accounts := getAccountsResponse.Items
+
+		if len(accounts) == 0 {
+			// For name-based searches, account genuinely doesn't exist - no need to retry
+			if nameOk {
+				return resource.NonRetryableError(fmt.Errorf("no accounts found matching the criteria"))
+			}
+			// For ID-based searches, retry for eventual consistency
+			return resource.RetryableError(fmt.Errorf("no accounts found matching the criteria"))
 		}
+
+		// If searching by name, filter client-side
+		if nameOk {
+			var matchedAccount *customeradministration.OrganizationAccount
+			for _, a := range accounts {
+				if a.Name == name.(string) {
+					matchedAccount = &a
+					break
+				}
+			}
+
+			if matchedAccount == nil {
+				return resource.NonRetryableError(fmt.Errorf("the name '%s' does not match any New Relic accounts", name))
+			}
+			account = matchedAccount
+		} else {
+			// If searching by ID, we should have exactly one result
+			if len(accounts) != 1 {
+				return resource.RetryableError(fmt.Errorf("expected 1 account, found %d", len(accounts)))
+			}
+			account = &accounts[0]
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
 	}
 
 	return diag.FromErr(flattenAccountData(account, d))
 }
 
-func flattenAccountData(a *accounts.AccountOutline, d *schema.ResourceData) error {
+func flattenAccountData(a *customeradministration.OrganizationAccount, d *schema.ResourceData) error {
 	d.SetId(strconv.Itoa(a.ID))
 	var err error
 
@@ -108,6 +147,11 @@ func flattenAccountData(a *accounts.AccountOutline, d *schema.ResourceData) erro
 	}
 
 	err = d.Set("account_id", a.ID)
+	if err != nil {
+		return err
+	}
+
+	err = d.Set("region", a.RegionCode)
 	if err != nil {
 		return err
 	}
