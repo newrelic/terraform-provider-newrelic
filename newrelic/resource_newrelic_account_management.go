@@ -14,8 +14,8 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
-const NewRelicAccountManagementSchema_Name string = "name"
-const NewRelicAccountManagementSchema_Region string = "region"
+const NewRelicAccountManagementSchemaName string = "name"
+const NewRelicAccountManagementSchemaRegion string = "region"
 
 func resourceNewRelicAccountManagement() *schema.Resource {
 	return &schema.Resource{
@@ -27,12 +27,12 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			NewRelicAccountManagementSchema_Name: {
+			NewRelicAccountManagementSchemaName: {
 				Type:        schema.TypeString,
 				Description: "Name of the account to be created",
 				Required:    true,
 			},
-			NewRelicAccountManagementSchema_Region: {
+			NewRelicAccountManagementSchemaRegion: {
 				Type:         schema.TypeString,
 				Description:  "A description of what this parsing rule represents.",
 				ValidateFunc: validation.StringInSlice([]string{"us01", "eu01"}, false),
@@ -47,8 +47,8 @@ func resourceNewRelicAccountCreate(ctx context.Context, d *schema.ResourceData, 
 	client := providerConfig.NewClient
 
 	createAccountInput := accountmanagement.AccountManagementCreateInput{
-		Name:       d.Get(NewRelicAccountManagementSchema_Name).(string),
-		RegionCode: d.Get(NewRelicAccountManagementSchema_Region).(string),
+		Name:       d.Get(NewRelicAccountManagementSchemaName).(string),
+		RegionCode: d.Get(NewRelicAccountManagementSchemaRegion).(string),
 	}
 	created, err := client.AccountManagement.AccountManagementCreateAccount(createAccountInput)
 
@@ -128,8 +128,8 @@ func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, me
 
 		account := accountsInOrganizationResponse[0]
 
-		_ = d.Set(NewRelicAccountManagementSchema_Name, account.Name)
-		_ = d.Set(NewRelicAccountManagementSchema_Region, account.RegionCode)
+		_ = d.Set(NewRelicAccountManagementSchemaName, account.Name)
+		_ = d.Set(NewRelicAccountManagementSchemaRegion, account.RegionCode)
 
 		return nil
 	})
@@ -148,7 +148,7 @@ func resourceNewRelicAccountUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	updateAccountInput := accountmanagement.AccountManagementUpdateInput{
-		Name: d.Get(NewRelicAccountManagementSchema_Name).(string),
+		Name: d.Get(NewRelicAccountManagementSchemaName).(string),
 		ID:   accountID,
 	}
 	updated, err := client.AccountManagement.AccountManagementUpdateAccount(updateAccountInput)
@@ -199,7 +199,7 @@ func resourceNewRelicAccountDelete(ctx context.Context, d *schema.ResourceData, 
 		return diags
 	}
 
-	if cancelAccountResponse.ID == accountID && cancelAccountResponse.IsCanceled == true {
+	if cancelAccountResponse.ID == accountID && cancelAccountResponse.IsCanceled {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary: fmt.Sprintf(`Please note that the 'terraform destroy' operation performed on this resource has resulted in the 'cancellation' of account %d, meaning it is no longer active. 
