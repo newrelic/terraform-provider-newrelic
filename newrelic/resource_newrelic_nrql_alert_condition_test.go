@@ -726,6 +726,46 @@ func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_OutlierConfiguration(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	epsilon := 0.5
+	minimumPoints := 4
+	evaluationGroupFacet := "hostname"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create outlier condition with all parameters
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithOutlierConfiguration(
+					rName,
+					epsilon,
+					minimumPoints,
+					&evaluationGroupFacet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Create outlier condition without evaluation_group_facet
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithOutlierConfiguration(
+					rName,
+					epsilon,
+					minimumPoints,
+					nil,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNrqlAlertCondition_TargetEntity(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -1551,6 +1591,55 @@ resource "newrelic_nrql_alert_condition" "foo" {
 }
 
 	`, name, signalSeasonality)
+}
+
+func testAccNewRelicNrqlAlertConditionWithOutlierConfiguration(
+	name string,
+	epsilon float64,
+	minimumPoints int,
+	evaluationGroupFacet *string,
+) string {
+	var evalGroupFacetStr string
+	if evaluationGroupFacet != nil && *evaluationGroupFacet != "" {
+		evalGroupFacetStr = fmt.Sprintf("evaluation_group_facet = \"%s\"", *evaluationGroupFacet)
+	}
+
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "outlier"
+	enabled                        = false
+	violation_time_limit_seconds   = 3600
+	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+
+	outlier_configuration {
+		dbscan {
+			epsilon = %[2]f
+			minimum_points = %[3]d
+			%[4]s
+		}
+	}
+}
+
+	`, name, epsilon, minimumPoints, evalGroupFacetStr)
 }
 
 func testAccNewRelicNrqlAlertConditionStaticWithDisableHealthStatusReporting(
