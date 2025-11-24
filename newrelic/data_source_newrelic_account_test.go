@@ -6,6 +6,7 @@ package newrelic
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -14,7 +15,7 @@ import (
 
 func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -28,12 +29,8 @@ func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
-	if !nrInternalAccount {
-		t.Skipf("New Relic internal testing account required")
-	}
-
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -48,7 +45,7 @@ func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 
 func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -63,12 +60,12 @@ func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
 
 func TestAccNewRelicAccountDataSource_ConflictingAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAccountDataSourceConfigConflictingAttributes(),
-				ExpectError: regexp.MustCompile("exactly one of"),
+				ExpectError: regexp.MustCompile("conflicts with"),
 			},
 		},
 	})
@@ -92,6 +89,22 @@ func testAccCheckNewRelicAccountDataSourceExists(n string) resource.TestCheckFun
 			return fmt.Errorf("expected to get an account ID from New Relic")
 		}
 
+		if a["region"] == "" {
+			return fmt.Errorf("expected to get an region code from New Relic")
+		}
+
+		if a["name"] != testAccountName {
+			return fmt.Errorf("expected account name to be %s, got %s", testAccountName, a["name"])
+		}
+
+		if a["account_id"] != strconv.Itoa(testAccountID) {
+			return fmt.Errorf("expected account ID to be %d, got %s", testAccountID, a["account_id"])
+		}
+
+		if a["region"] != "us01" {
+			return fmt.Errorf("expected region code to be us01, got %s", a["region"])
+		}
+
 		return nil
 	}
 }
@@ -99,7 +112,6 @@ func testAccCheckNewRelicAccountDataSourceExists(n string) resource.TestCheckFun
 func testAccNewRelicAccountDataSourceConfigByID() string {
 	return fmt.Sprintf(`
 data "newrelic_account" "acc" {
-	scope = "global"
 	account_id = "%d"
 }
 `, testAccountID)
