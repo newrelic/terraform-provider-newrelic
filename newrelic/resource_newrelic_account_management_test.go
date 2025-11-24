@@ -20,7 +20,7 @@ func TestAccNewRelicAccountManagement_Basic(t *testing.T) {
 	resourceName := "newrelic_account_management.foo"
 	rName := acctest.RandString(7)
 	rNameUpdated := acctest.RandString(7)
-	
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
@@ -82,7 +82,7 @@ func TestAccNewRelicAccountManagementInvalidRegion(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedErrorMsg := regexp.MustCompile(`expected region to be one of \[us01 eu01\], got abcd01`)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			//create
@@ -97,7 +97,7 @@ func TestAccNewRelicAccountManagementInCorrectRegion(t *testing.T) {
 	rName := acctest.RandString(7)
 	expectedErrorMsg := regexp.MustCompile(`An error occurred resolving this field|cannot create account -- no configured parent account`)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			//create
@@ -176,7 +176,7 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 			},
 			[]customeradministration.OrganizationAccountSortInput{},
 		)
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to fetch account details: %v", err)
 		}
