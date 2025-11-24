@@ -15,7 +15,7 @@ import (
 
 func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -30,7 +30,7 @@ func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
 
 func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -45,7 +45,7 @@ func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
 
 func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -60,7 +60,7 @@ func TestAccNewRelicAccountDataSource_MissingAttributes(t *testing.T) {
 
 func TestAccNewRelicAccountDataSource_ConflictingAttributes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

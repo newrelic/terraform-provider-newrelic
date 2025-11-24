@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/accounts"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
@@ -30,6 +32,14 @@ func dataSourceNewRelicAccount() *schema.Resource {
 				Optional:      true,
 				Description:   "The ID of the account in New Relic.",
 				ConflictsWith: []string{NewRelicAccountManagementSchemaName},
+			},
+			// deprecated and no longer used by the data source, just adding this here for feature parity
+			"scope": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      string(accounts.RegionScopeTypes.IN_REGION),
+				Description:  `The scope of the account in New Relic.  Valid values are "global" and "in_region".  Defaults to "in_region".`,
+				ValidateFunc: validation.StringInSlice([]string{"global", "in_region"}, true),
 			},
 		},
 	}
