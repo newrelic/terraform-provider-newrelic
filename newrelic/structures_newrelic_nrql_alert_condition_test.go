@@ -90,6 +90,80 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				BaselineDirection: &alerts.NrqlBaselineDirections.LowerOnly,
 			},
 		},
+		"outlier condition, requires outlier_configuration attr": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+			},
+			ExpectErr:    true,
+			ExpectReason: "`outlier_configuration` is required and must contain the algorithm configuration",
+		},
+		"outlier condition, requires outlier_configuration.dbscan attr": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+				"outlier_configuration": []interface{}{
+					map[string]interface{}{},
+				},
+			},
+			ExpectErr:    true,
+			ExpectReason: "`outlier_configuration` is required and must contain the algorithm configuration",
+		},
+		"outlier condition, valid outlier_configuration": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+				"outlier_configuration": []interface{}{
+					map[string]interface{}{
+						"dbscan": []interface{}{
+							map[string]interface{}{
+								"epsilon":                0.15,
+								"minimum_points":         5,
+								"evaluation_group_facet": "host",
+							},
+						},
+					},
+				},
+			},
+			ExpectErr:    false,
+			ExpectReason: "",
+			Expanded: func() *alerts.NrqlConditionCreateInput {
+				x := alerts.NrqlConditionCreateInput{}
+				facet := "host"
+				x.OutlierConfiguration = &alerts.NrqlOutlierConfigurationInput{
+					DBSCAN: alerts.NrqlOutlierDbScanConfigurationInput{
+						Epsilon:              0.15,
+						MinimumPoints:        5,
+						EvaluationGroupFacet: &facet,
+					},
+				}
+				return &x
+			}(),
+		},
+		"outlier condition, valid outlier_configuration without evaluation facet group": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+				"outlier_configuration": []interface{}{
+					map[string]interface{}{
+						"dbscan": []interface{}{
+							map[string]interface{}{
+								"epsilon":        0.15,
+								"minimum_points": 5,
+							},
+						},
+					},
+				},
+			},
+			ExpectErr:    false,
+			ExpectReason: "",
+			Expanded: func() *alerts.NrqlConditionCreateInput {
+				x := alerts.NrqlConditionCreateInput{}
+				x.OutlierConfiguration = &alerts.NrqlOutlierConfigurationInput{
+					DBSCAN: alerts.NrqlOutlierDbScanConfigurationInput{
+						Epsilon:       0.15,
+						MinimumPoints: 5,
+					},
+				}
+				return &x
+			}(),
+		},
 		"critical term": {
 			Data: map[string]interface{}{
 				"nrql":     []interface{}{nrql},
@@ -656,6 +730,19 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionBaseline.EntityGUID = common.EntityGUID("NDAwMzA0fEFPTkRJVElPTnwxNDMzNjc3")
 	nrqlConditionBaseline.SignalSeasonality = &alerts.NrqlSignalSeasonalities.Daily
 
+	// Outlier
+	nrqlConditionOutlier := nrqlCondition
+	nrqlConditionOutlier.Type = alerts.NrqlConditionTypes.Outlier
+	{
+		facet := "host"
+		nrqlConditionOutlier.OutlierConfiguration = &alerts.NrqlOutlierConfigurationOutput{
+			Algorithm:            "DBSCAN",
+			Epsilon:              0.15,
+			MinimumPoints:        5,
+			EvaluationGroupFacet: &facet, // omit or set to nil if not grouping
+		}
+	}
+
 	// Static
 	nrqlConditionStatic := nrqlCondition
 	nrqlConditionStatic.Type = alerts.NrqlConditionTypes.Static
@@ -664,6 +751,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	conditions := []*alerts.NrqlAlertCondition{
 		&nrqlConditionBaseline,
 		&nrqlConditionStatic,
+		&nrqlConditionOutlier,
 	}
 
 	// Use the API object above to construct a "user-configured" critical term.
@@ -749,6 +837,25 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
 			require.Equal(t, 60, d.Get("evaluation_delay").(int))
 			require.Equal(t, nrqlConditionStatic.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
+
+		case alerts.NrqlConditionTypes.Outlier:
+			require.Zero(t, d.Get("baseline_direction").(string))
+			require.Equal(t, 120, d.Get("expiration_duration").(int))
+			require.True(t, d.Get("open_violation_on_expiration").(bool))
+			require.True(t, d.Get("close_violations_on_expiration").(bool))
+			require.Equal(t, "last_value", d.Get("fill_option").(string))
+			require.Zero(t, d.Get("fill_value").(float64))
+			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
+			require.Equal(t, "60", d.Get("aggregation_delay").(string))
+			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, 60, d.Get("evaluation_delay").(int))
+			require.Equal(t, nrqlConditionOutlier.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
+			require.NotNil(t, d.Get("outlier_configuration"))
+			outlierConfig := d.Get("outlier_configuration").([]interface{})[0].(map[string]interface{})
+			dbscan := outlierConfig["dbscan"].([]interface{})[0].(map[string]interface{})
+			require.Equal(t, 0.15, dbscan["epsilon"])
+			require.Equal(t, 5, dbscan["minimum_points"])
+			require.Equal(t, "host", dbscan["evaluation_group_facet"])
 		}
 	}
 }
