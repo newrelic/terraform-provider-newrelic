@@ -4,7 +4,6 @@
 package newrelic
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
 func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
@@ -31,10 +29,6 @@ func TestAccNewRelicAccountDataSource_Basic(t *testing.T) {
 }
 
 func TestAccNewRelicAccountDataSource_ByName(t *testing.T) {
-	if !nrInternalAccount {
-		t.Skipf("New Relic internal testing account required")
-	}
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -71,7 +65,7 @@ func TestAccNewRelicAccountDataSource_ConflictingAttributes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicAccountDataSourceConfigConflictingAttributes(),
-				ExpectError: regexp.MustCompile("exactly one of"),
+				ExpectError: regexp.MustCompile("conflicts with"),
 			},
 		},
 	})
@@ -95,52 +89,20 @@ func testAccCheckNewRelicAccountDataSourceExists(n string) resource.TestCheckFun
 			return fmt.Errorf("expected to get an account ID from New Relic")
 		}
 
-		// Verify the account exists using the customeradministration package
-		providerConfig := testAccProvider.Meta().(*ProviderConfig)
-		client := providerConfig.NewClient
-
-		// Convert account ID from string to int
-		accountID, err := strconv.Atoi(a["account_id"])
-		if err != nil {
-			return fmt.Errorf("failed to convert account ID to integer: %v", err)
+		if a["region"] == "" {
+			return fmt.Errorf("expected to get an region code from New Relic")
 		}
 
-		// Get organization ID
-		organization, err := client.Organization.GetOrganization()
-		if err != nil {
-			return fmt.Errorf("failed to fetch organization information: %v", err)
+		if a["name"] != testAccountName {
+			return fmt.Errorf("expected account name to be %s, got %s", testAccountName, a["name"])
 		}
 
-		// Fetch account using customeradministration package
-		ctx := context.Background()
-		getAccountsResponse, err := client.CustomerAdministration.GetAccounts(
-			"",
-			customeradministration.OrganizationAccountFilterInput{
-				OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
-					Eq: organization.ID,
-				},
-				ID: customeradministration.OrganizationAccountIdFilterInput{
-					Eq: accountID,
-				},
-			},
-			[]customeradministration.OrganizationAccountSortInput{},
-		)
-
-		if err != nil {
-			return fmt.Errorf("failed to fetch account details: %v", err)
+		if a["account_id"] != strconv.Itoa(testAccountID) {
+			return fmt.Errorf("expected account ID to be %d, got %s", testAccountID, a["account_id"])
 		}
 
-		accounts := getAccountsResponse.Items
-		if len(accounts) == 0 {
-			return fmt.Errorf("account not found: %d", accountID)
-		}
-
-		if len(accounts) != 1 {
-			return fmt.Errorf("expected 1 account, found %d", len(accounts))
-		}
-
-		if accounts[0].ID != accountID {
-			return fmt.Errorf("expected account ID %d, got %d", accountID, accounts[0].ID)
+		if a["region"] != "us01" {
+			return fmt.Errorf("expected region code to be us01, got %s", a["region"])
 		}
 
 		return nil

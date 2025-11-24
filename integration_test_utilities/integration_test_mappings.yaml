@@ -1,7 +1,7 @@
-data_source_newrelic_account_management.go:
+data_source_newrelic_account.go:
   test: false
   product_mapping: AUTH
-data_source_newrelic_account_management_test.go:
+data_source_newrelic_account_test.go:
   test: true
   product_mapping: AUTH
 data_source_newrelic_alert_channel.go:
