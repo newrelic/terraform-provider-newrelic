@@ -45,10 +45,10 @@ data_source_newrelic_entity_unit_test.go:
   product_mapping: ENTITY
 data_source_newrelic_fleet_role.go:
   test: false
-  product_mapping: UNKNOWN
+  product_mapping: FLEET
 data_source_newrelic_fleet_role_test.go:
   test: true
-  product_mapping: UNKNOWN
+  product_mapping: FLEET
 data_source_newrelic_group_management.go:
   test: false
   product_mapping: AUTH

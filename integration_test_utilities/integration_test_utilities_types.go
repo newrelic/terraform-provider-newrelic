@@ -77,7 +77,7 @@ var productMappings = map[ProductMapping][]string{
 		"event",
 	},
 	ProductMappingTypes.FLEET: {
-		"fleet",
+		"fleet_role",
 	},
 	ProductMappingTypes.KeyTransactions: {
 		"key_transaction",
