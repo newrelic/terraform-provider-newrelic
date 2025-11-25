@@ -9,7 +9,7 @@ resource "oci_identity_domains_group" "newrelic_service_group" {
   attribute_sets = ["all"]
 
   lifecycle {
-    create_before_destroy = true
+    ignore_changes = [schemas]
   }
 }
 

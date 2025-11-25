@@ -34,7 +34,7 @@ resource "oci_identity_domains_app" "admin_app" {
   attribute_sets = ["all"]
 
   lifecycle {
-    ignore_changes = [active]
+    ignore_changes = [schemas]
   }
 }
 
@@ -62,6 +62,10 @@ resource "oci_identity_domains_app" "token_exchange_app" {
   bypass_consent = true
 
   attribute_sets = ["all"]
+
+  lifecycle {
+    ignore_changes = [schemas]
+  }
 }
 
 # Grants the Identity Domain Administrator role to the admin OAuth app

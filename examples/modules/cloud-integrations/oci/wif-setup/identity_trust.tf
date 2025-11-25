@@ -15,6 +15,7 @@ data "external" "ida_oauth_token" {
       else
         ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.error_description // .error // "Unknown error occurred"')
         echo {\"error\":\"$ERROR_MESSAGE\"}
+        exit 1
       fi
   EOT
   ]
@@ -31,6 +32,7 @@ locals {
 resource "null_resource" "trust_setup" {
   provisioner "local-exec" {
     command = <<EOT
+      sleep 20
       RESPONSE=$(curl --location '${local.identity_domain_url}/admin/v1/IdentityPropagationTrusts' \
       --header 'Content-Type: application/json' \
       --header 'Authorization: Bearer ${local.ida_oauth_token}' \
@@ -49,7 +51,15 @@ resource "null_resource" "trust_setup" {
         "type": "JWT",
         "schemas": ["urn:ietf:params:scim:schemas:oracle:idcs:IdentityPropagationTrust"]
       }')
-      echo $RESPONSE
+      TRUST_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
+      sleep 20
+      if [ -n "$TRUST_ID" ] && [ "$TRUST_ID" != "null" ]; then
+        echo $RESPONSE
+      else
+        ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.detail // .error // "Unknown error occurred"')
+        echo {\"error\":\"$ERROR_MESSAGE\"}
+        exit 1
+      fi
     EOT
   }
 

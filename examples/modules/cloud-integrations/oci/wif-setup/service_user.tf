@@ -8,6 +8,9 @@ resource "oci_identity_domains_user" "svc_user" {
   urnietfparamsscimschemasoracleidcsextensionuser_user {
     service_user = true
   }
+  lifecycle {
+    ignore_changes = [schemas]
+  }
 }
 
 # Adds the service user to the New Relic service group
