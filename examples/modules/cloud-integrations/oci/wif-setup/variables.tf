@@ -59,8 +59,8 @@ variable "activate_oauth_apps" {
   default     = true
 }
 
-variable "region" {
-  description = "The OCI region where resources will be created (e.g., us-ashburn-1, us-phoenix-1)"
+variable "home_region" {
+  description = "The OCI home region where identity domain resources will be created (e.g., us-ashburn-1, us-phoenix-1)"
   type        = string
 }
 

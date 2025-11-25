@@ -206,6 +206,8 @@ The following OCI namespaces are supported by New Relic for metrics/logs collect
 
 The modular approach allows you to deploy only the specific OCI integration components you need, with clear separation between policy setup and data collection integrations. This design enables flexible deployment strategies where policy configuration can be managed independently from metrics and logging integrations.
 
+-> **NOTE:** All OCI modules require API key authentication credentials (`fingerprint` and `private_key`). If you need to generate these credentials, follow the instructions in the [OCI API Signing Key documentation](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/apisigningkey.htm).
+
 The following composable modules are available under `examples/modules/cloud-integrations/oci/` so you can provision only what you need:
 
 * `wif-setup` – Creates Workload Identity Federation (WIF) prerequisites in OCI Identity Domain, including OAuth applications, identity propagation trust, service user, and IAM policies. This module sets up the foundation for secure, passwordless authentication between New Relic and OCI.
@@ -238,7 +240,7 @@ module "oci_wif_setup" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/wif-setup"
 
   tenancy_ocid = "ocid1.tenancy.oc1..aaaaaaaaexampletenancy"
-  region       = "us-ashburn-1"
+  home_region  = "us-ashburn-1"
   fingerprint  = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
   private_key  = "USER_PVT_KEY"
 
@@ -269,7 +271,7 @@ output "wif_credentials" {
 Key variables:
 
 * `tenancy_ocid` – The OCID of your OCI tenancy where the integration will be configured.
-* `region` – The OCI region where resources will be created (for example: `us-ashburn-1`, `us-phoenix-1`, `eu-frankfurt-1`). Use the full region identifier.
+* `home_region` – The OCI home region where identity domain resources will be created (for example: `us-ashburn-1`, `us-phoenix-1`, `eu-frankfurt-1`). Use the full region identifier.
 * `fingerprint` / `private_key` – API key credentials for OCI authentication.
 * `identity_domain_name` (Optional) – Name of the identity domain to use (defaults to `Default`).
 * `newrelic_region` – New Relic region context (`US` or `EU`). This determines which New Relic issuer and JWKS URL are used for the identity propagation trust.
