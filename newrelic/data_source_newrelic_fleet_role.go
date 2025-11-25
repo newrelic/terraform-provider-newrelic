@@ -45,6 +45,7 @@ func dataSourceNewRelicFleetRoleRead(ctx context.Context, d *schema.ResourceData
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	var diags diag.Diagnostics
+	var err error
 
 	name := d.Get("name").(string)
 	roleType := d.Get("type").(string)
@@ -101,18 +102,21 @@ func dataSourceNewRelicFleetRoleRead(ctx context.Context, d *schema.ResourceData
 	role := roles.Items[0]
 
 	d.SetId(strconv.Itoa(role.ID))
-	if err := d.Set("name", role.Name); err != nil {
+	if err = d.Set("name", role.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("scope", role.Scope); err != nil {
+	if err = d.Set("scope", role.Scope); err != nil {
 		return diag.FromErr(err)
 	}
 
 	if role.Type == "" || !strings.HasPrefix(role.Type, "Role::V2::") {
-		// do nothing, do not set the role.Type to "type" the state
+		// do nothing, set an empty string "" to "type" the state
 		// this should not happen though; just adding this to prevent errors
+		if err = d.Set("type", ""); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	if err := d.Set("type", strings.ToUpper(strings.TrimPrefix(role.Type, "Role::V2::"))); err != nil {
+	if err = d.Set("type", strings.ToUpper(strings.TrimPrefix(role.Type, "Role::V2::"))); err != nil {
 		return diag.FromErr(err)
 	}
 
