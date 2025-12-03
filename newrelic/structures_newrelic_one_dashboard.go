@@ -1334,7 +1334,7 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 	}
 
 	if dashboard.Pages != nil && len(dashboard.Pages) > 0 {
-		pages := flattenDashboardPage(&dashboard.Pages)
+		pages := flattenDashboardPage(&dashboard.Pages, d)
 		if err := d.Set("page", pages); err != nil {
 			return err
 		}
@@ -1370,7 +1370,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	}
 
 	if dashboard.Pages != nil && len(dashboard.Pages) > 0 {
-		pages := flattenDashboardPage(&dashboard.Pages)
+		pages := flattenDashboardPage(&dashboard.Pages, d)
 		if err := d.Set("page", pages); err != nil {
 			return err
 		}
@@ -1485,10 +1485,10 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 }
 
 // return []interface{} because Page is a SetList
-func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
+func flattenDashboardPage(in *[]entities.DashboardPage, d *schema.ResourceData) []interface{} {
 	out := make([]interface{}, len(*in))
 
-	for i, p := range *in {
+	for pageIndex, p := range *in {
 		m := make(map[string]interface{})
 
 		m["guid"] = p.GUID
@@ -1498,8 +1498,11 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 			m["description"] = p.Description
 		}
 
+		// Track widget indices per widget type
+		widgetIndices := make(map[string]int)
+
 		for _, widget := range p.Widgets {
-			widgetType, w := flattenDashboardWidget(&widget, string(p.GUID))
+			widgetType, w := flattenDashboardWidget(&widget, string(p.GUID), d, pageIndex, widgetIndices)
 
 			if widgetType != "" {
 				if _, ok := m[widgetType]; !ok {
@@ -1510,7 +1513,7 @@ func flattenDashboardPage(in *[]entities.DashboardPage) []interface{} {
 			}
 		}
 
-		out[i] = m
+		out[pageIndex] = m
 	}
 
 	return out
@@ -1527,7 +1530,7 @@ func flattenLinkedEntityGUIDs(linkedEntities []entities.EntityOutlineInterface) 
 }
 
 // nolint:gocyclo
-func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (string, map[string]interface{}) {
+func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string, d *schema.ResourceData, pageIndex int, widgetIndices map[string]int) (string, map[string]interface{}) {
 	var widgetType string
 	out := make(map[string]interface{})
 
@@ -1609,25 +1612,28 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 		out["filter_current_dashboard"] = filterCurrentDashboard
 	case "viz.billboard":
 		widgetType = "widget_billboard"
-		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
-		if rawCfg.Thresholds != nil {
-			rawCfgThresholdsFetched := rawCfg.Thresholds.([]interface{})
-			if len(rawCfgThresholdsFetched) > 0 {
-				for _, t := range rawCfgThresholdsFetched {
-					thresholdFetched := t.(map[string]interface{})
-					if thresholdFetched["value"] == nil {
-						continue
-					}
+		widgetIndex := widgetIndices[widgetType]
+		widgetIndices[widgetType] = widgetIndex + 1
 
-					switch thresholdFetched["alertSeverity"].(string) {
-					case string(entities.DashboardAlertSeverityTypes.CRITICAL):
-						out["critical"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
-					case string(entities.DashboardAlertSeverityTypes.WARNING):
-						out["warning"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
-					}
-				}
-			}
-		}
+		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+		// if rawCfg.Thresholds != nil {
+		// 	rawCfgThresholdsFetched := rawCfg.Thresholds.([]interface{})
+		// 	if len(rawCfgThresholdsFetched) > 0 {
+		// 		for _, t := range rawCfgThresholdsFetched {
+		// 			thresholdFetched := t.(map[string]interface{})
+		// 			if thresholdFetched["value"] == nil {
+		// 				continue
+		// 			}
+
+		// 			switch thresholdFetched["alertSeverity"].(string) {
+		// 			case string(entities.DashboardAlertSeverityTypes.CRITICAL):
+		// 				out["critical"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+		// 			case string(entities.DashboardAlertSeverityTypes.WARNING):
+		// 				out["warning"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		if rawCfg.DataFormat != nil {
 			dataformat := flattenDashboardWidgetDataFormat(rawCfg.DataFormat)
@@ -1640,9 +1646,52 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			out["billboard_settings"] = flattenDashboardWidgetBillboardSettings(rawCfg.BillboardSettings)
 		}
 
+		// reverse-translate to legacy warning/critical when possible
+		// But ONLY if the user's config uses legacy format (not the new structured block)
 		if rawCfg.ThresholdsWithSeriesOverrides != nil {
-			out["thresholds_with_series_overrides"] = flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(rawCfg.ThresholdsWithSeriesOverrides)
+			// Check if user's config has legacy warning/critical or new thresholds_with_series_overrides
+			warningPath := fmt.Sprintf("page.%d.%s.%d.warning", pageIndex, widgetType, widgetIndex)
+			criticalPath := fmt.Sprintf("page.%d.%s.%d.critical", pageIndex, widgetType, widgetIndex)
+			// Check for thresholds block INSIDE thresholds_with_series_overrides
+			thresholdsBlockPath := fmt.Sprintf("page.%d.%s.%d.thresholds_with_series_overrides.0.thresholds", pageIndex, widgetType, widgetIndex)
+
+			_, hasWarning := d.GetOk(warningPath)
+			_, hasCritical := d.GetOk(criticalPath)
+			_, hasThresholdsBlock := d.GetOk(thresholdsBlockPath)
+
+			// User uses new format if they configured thresholds inside thresholds_with_series_overrides
+			userUsesNewFormat := hasThresholdsBlock
+			userUsesLegacyFormat := (hasWarning || hasCritical) && !userUsesNewFormat
+
+			log.Printf("[DEBUG] flattenDashboardWidget: page=%d widget=%d hasWarning=%v hasCritical=%v hasThresholdsBlock=%v userUsesLegacyFormat=%v",
+				pageIndex, widgetIndex, hasWarning, hasCritical, hasThresholdsBlock, userUsesLegacyFormat)
+
+			if userUsesLegacyFormat {
+				// User configured legacy format, try to reverse-translate
+				warning, critical, canReverseToLegacy := reverseBillboardThresholdsToLegacy(rawCfg.ThresholdsWithSeriesOverrides)
+
+				if canReverseToLegacy {
+					// Store as legacy warning/critical to match user config
+					log.Printf("[DEBUG] flattenDashboardWidget: reverse-translating thresholds to legacy format: warning=%s critical=%s", warning, critical)
+					if warning != "" {
+						out["warning"] = warning
+					}
+					if critical != "" {
+						out["critical"] = critical
+					}
+				} else {
+					// Can't reverse-translate, store as structured block
+					log.Printf("[DEBUG] flattenDashboardWidget: cannot reverse-translate, storing as structured block")
+					out["thresholds_with_series_overrides"] = flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(rawCfg.ThresholdsWithSeriesOverrides)
+				}
+			} else {
+				// User configured new format, store as structured block
+				log.Printf("[DEBUG] flattenDashboardWidget: user uses new format, storing as structured block")
+				out["thresholds_with_series_overrides"] = flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(rawCfg.ThresholdsWithSeriesOverrides)
+			}
 		}
+
+		log.Printf("[DEBUG] flattenDashboardWidget: %v", out["thresholds_with_series_overrides"])
 
 	case "viz.bullet":
 		widgetType = "widget_bullet"
@@ -2036,6 +2085,14 @@ func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{
 func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []string
 
+	// NOTE: We intentionally defer billboard legacy threshold drift suppression
+	// until AFTER conflict validation so the validator sees the user's original
+	// intent (legacy fields without an injected structured block). This avoids
+	// any chance of a false conflict arising from provider mutation. The
+	// suppression call is now placed just before thresholds_with_series_overrides
+	// structural validation so that, if we inject the translated block, it can be
+	// validated for internal consistency in the same pass.
+
 	err := validateDashboardVariableOptions(d)
 	if err != nil {
 		errorsList = append(errorsList, err.Error())
@@ -2055,6 +2112,13 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 
 	// Add validation for conflicting billboard threshold configurations
 	validateBillboardLegacyThresholdConflicts(d, &errorsList)
+
+	// No longer needed with reverse-translation in flatten
+	// Now perform suppression of synthetic legacy threshold drift. At this point
+	// conflict checks have executed on the unmodified diff. Any injected block
+	// should strictly represent a deterministic translation of legacy values.
+	// log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: post-conflict-validation")
+	// suppressBillboardLegacyThresholdDrift(d)
 
 	// Add validation for thresholds_with_series_overrides
 	validateThresholdsWithSeriesOverrides(d, &errorsList)
@@ -2506,7 +2570,102 @@ func flattenDashboardWidgetBillboardSettings(billboardSettings *dashboards.Dashb
 	return billboardSettingsFetchedInterface
 }
 
+// reverseBillboardThresholdsToLegacy attempts to reverse-translate a thresholdsWithSeriesOverrides
+// block back to simple warning/critical string values. Returns (warning, critical, canReverse).
+// Returns canReverse=true only if the thresholds match the exact pattern created by legacy translation.
+func reverseBillboardThresholdsToLegacy(twso *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides) (warning, critical string, canReverse bool) {
+	log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: called")
+
+	if twso == nil {
+		return "", "", false
+	}
+
+	// If there are series_overrides, we can't reverse-translate (not a simple legacy pattern)
+	if len(twso.SeriesOverrides) > 0 {
+		log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: has series_overrides, cannot reverse")
+		return "", "", false
+	}
+
+	// Must have 2 or 3 thresholds for legacy pattern
+	// 2 thresholds: SUCCESS + WARNING/CRITICAL
+	// 3 thresholds: SUCCESS + WARNING + CRITICAL
+	if len(twso.Thresholds) < 2 || len(twso.Thresholds) > 3 {
+		log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: has %d thresholds (need 2 or 3 for legacy pattern), cannot reverse", len(twso.Thresholds))
+		return "", "", false
+	}
+
+	// Check if this matches the legacy translation pattern
+	// Pattern 1: [SUCCESS (null->warning), WARNING (warning->null)]
+	// Pattern 2: [SUCCESS (null->critical), CRITICAL (critical->null)]
+	// Pattern 3: [SUCCESS (null->warning), WARNING (warning->critical), CRITICAL (critical->null)]
+
+	t1 := twso.Thresholds[0]
+	t2 := twso.Thresholds[1]
+
+	// Handle 2-threshold patterns (WARNING-only or CRITICAL-only)
+	if len(twso.Thresholds) == 2 {
+		// Pattern for WARNING only: [SUCCESS: from=0 to=X, WARNING: from=X to=0]
+		if t1.Severity == "success" && t2.Severity == "warning" {
+			if t1.From == 0 && t1.To != 0 && t2.From != 0 && t2.To == 0 {
+				if t1.To == t2.From {
+					warning = strconv.FormatFloat(t1.To, 'f', -1, 64)
+					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected WARNING-only pattern: %s", warning)
+					return warning, "", true
+				}
+			}
+		}
+
+		// Pattern for CRITICAL only: [SUCCESS: from=0 to=X, CRITICAL: from=X to=0]
+		if t1.Severity == "success" && t2.Severity == "critical" {
+			if t1.From == 0 && t1.To != 0 && t2.From != 0 && t2.To == 0 {
+				if t1.To == t2.From {
+					critical = strconv.FormatFloat(t1.To, 'f', -1, 64)
+					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected CRITICAL-only pattern: %s", critical)
+					return "", critical, true
+				}
+			}
+		}
+	}
+
+	// Check for both WARNING and CRITICAL (3 thresholds)
+	if len(twso.Thresholds) == 3 {
+		t3 := twso.Thresholds[2]
+		// Pattern: [SUCCESS: from=0 to=W, WARNING: from=W to=C, CRITICAL: from=C to=0]
+		if t1.Severity == "success" && t2.Severity == "warning" && t3.Severity == "critical" {
+			if t1.From == 0 && t1.To != 0 &&
+				t2.From != 0 && t2.To != 0 &&
+				t3.From != 0 && t3.To == 0 {
+				if t1.To == t2.From && t2.To == t3.From {
+					warning = strconv.FormatFloat(t1.To, 'f', -1, 64)
+					critical = strconv.FormatFloat(t2.To, 'f', -1, 64)
+					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected both WARNING and CRITICAL pattern: warning=%s critical=%s", warning, critical)
+					return warning, critical, true
+				}
+			}
+		}
+		// Pattern: [SUCCESS: from=0 to=C, CRITICAL: from=C to=W, WARNING: from=W to=0] (reverse order)
+		if t1.Severity == "success" && t2.Severity == "critical" && t3.Severity == "warning" {
+			if t1.From == 0 && t1.To != 0 &&
+				t2.From != 0 && t2.To != 0 &&
+				t3.From != 0 && t3.To == 0 {
+				if t1.To == t2.From && t2.To == t3.From {
+					critical = strconv.FormatFloat(t1.To, 'f', -1, 64)
+					warning = strconv.FormatFloat(t2.To, 'f', -1, 64)
+					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected both CRITICAL and WARNING pattern (reverse): warning=%s critical=%s", warning, critical)
+					return warning, critical, true
+				}
+			}
+		}
+	}
+
+	log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: no matching legacy pattern found")
+	return "", "", false
+}
+
 func flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(thresholdsWithSeriesOverrides *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides) []interface{} {
+
+	log.Printf("[DEBUG] flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides: called")
+
 	if thresholdsWithSeriesOverrides == nil {
 		return nil
 	}
@@ -2604,3 +2763,291 @@ func validateBillboardLegacyThresholdConflicts(d *schema.ResourceDiff, errorsLis
 		}
 	}
 }
+
+// These CustomizeDiff functions are no longer needed with reverse-translation in flatten.
+// The flatten operation now converts thresholds_with_series_overrides back to warning/critical when possible,
+// eliminating the drift at the source.
+
+// suppressBillboardLegacyThresholdDrift detects cases where the prior state contains a
+// thresholds_with_series_overrides block that is a deterministic translation of the
+// legacy warning / critical values, while the new configuration only specifies the
+// legacy attributes. In such a scenario Terraform would otherwise plan to remove
+// the thresholds_with_series_overrides block, showing a perpetual diff. We mutate
+// the planned new value to retain the translated block so that no diff is shown.
+/*
+func suppressBillboardLegacyThresholdDrift(d *schema.ResourceDiff) {
+	log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: called")
+	// local helper to serialize any interface{} deterministically for diff inspection
+	debugSerialize := func(v interface{}) string {
+		b, err := json.Marshal(v)
+		if err != nil {
+			return fmt.Sprintf("<marshal error: %v>", err)
+		}
+		return string(b)
+	}
+	// Get old (state) and new (desired config) values for pages.
+	oldRaw, newRaw := d.GetChange("page")
+	if oldRaw == nil || newRaw == nil {
+		log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: old or new page is nil; skipping")
+		return
+	}
+	oldPages, okOld := oldRaw.([]interface{})
+	newPages, okNew := newRaw.([]interface{})
+	if !okOld || !okNew {
+		log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: page type assertion failed (okOld=%v okNew=%v)", okOld, okNew)
+		return
+	}
+
+	mutated := false
+
+	for pageIndex := range newPages {
+		if pageIndex >= len(oldPages) || oldPages[pageIndex] == nil || newPages[pageIndex] == nil {
+			continue
+		}
+		oldPage, oldOk := oldPages[pageIndex].(map[string]interface{})
+		newPage, newOk := newPages[pageIndex].(map[string]interface{})
+		if !oldOk || !newOk {
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: page %d map assertion failed (oldOk=%v newOk=%v)", pageIndex, oldOk, newOk)
+			continue
+		}
+		oldWidgetsRaw, oldWidgetsOk := oldPage["widget_billboard"]
+		newWidgetsRaw, newWidgetsOk := newPage["widget_billboard"]
+		if !oldWidgetsOk || !newWidgetsOk {
+			continue
+		}
+		oldWidgets, okOW := oldWidgetsRaw.([]interface{})
+		newWidgets, okNW := newWidgetsRaw.([]interface{})
+		if !okOW || !okNW {
+			continue
+		}
+
+		for widgetIndex := range newWidgets {
+			if widgetIndex >= len(oldWidgets) || oldWidgets[widgetIndex] == nil || newWidgets[widgetIndex] == nil {
+				continue
+			}
+			oldWidget, okOldWidget := oldWidgets[widgetIndex].(map[string]interface{})
+			newWidget, okNewWidget := newWidgets[widgetIndex].(map[string]interface{})
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: %v %v", oldWidget, newWidget)
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: oldWidget=%s", debugSerialize(oldWidget))
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: newWidget=%s", debugSerialize(newWidget))
+
+			if !okOldWidget || !okNewWidget {
+				log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: widget %d map assertion failed (oldOk=%v newOk=%v)", widgetIndex, okOldWidget, okNewWidget)
+				continue
+			}
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: 1")
+
+			// If the new config already has thresholds_with_series_overrides the user explicitly adopted it; no need to synthesize.
+			if _, alreadyHasNewBlock := newWidget["thresholds_with_series_overrides"]; alreadyHasNewBlock && len(newWidget["thresholds_with_series_overrides"].([]interface{})) > 0 {
+				log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: 11 %v %v", newWidget["thresholds_with_series_overrides"], alreadyHasNewBlock)
+				continue
+			}
+
+			// We only consider suppression if the user's config still uses legacy warning/critical.
+			warningStr, warningPresent := newWidget["warning"].(string)
+			criticalStr, criticalPresent := newWidget["critical"].(string)
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: page=%d widget=%d warningPresent=%v warning=%q criticalPresent=%v critical=%q", pageIndex, widgetIndex, warningPresent, warningStr, criticalPresent, criticalStr)
+			if !warningPresent && !criticalPresent {
+				continue
+			}
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: 2")
+
+			// Old state must have a translated thresholds_with_series_overrides block to compare against.
+			oldTwsRaw, hasOldBlock := oldWidget["thresholds_with_series_overrides"]
+			if !hasOldBlock {
+				continue
+			}
+			oldTwsSlice, okSlice := oldTwsRaw.([]interface{})
+			if !okSlice || len(oldTwsSlice) == 0 || oldTwsSlice[0] == nil {
+				continue
+			}
+			oldTwsBlock, okBlock := oldTwsSlice[0].(map[string]interface{})
+			if !okBlock {
+				continue
+			}
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: 3")
+
+			// Extract thresholds list from old state block.
+			oldThresholdsRaw, hasThresholds := oldTwsBlock["thresholds"]
+			if !hasThresholds {
+				continue // If no thresholds list, nothing to compare; treat as real diff.
+			}
+			oldThresholdsList, okThresh := oldThresholdsRaw.([]interface{})
+			if !okThresh {
+				log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: thresholds list assertion failed page=%d widget=%d", pageIndex, widgetIndex)
+				continue
+			}
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: oldThresholdsList: %v", oldThresholdsList)
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: oldThresholdsList=%s", debugSerialize(oldThresholdsList))
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: 4")
+
+			// Translate legacy warning/critical from CONFIG (newWidget) to expected thresholds.
+			expectedThresholds := computeBillboardThresholdsFromLegacyStrings(warningStr, criticalStr)
+			if expectedThresholds == nil {
+				continue // Nothing meaningful to compare (both empty strings)
+			}
+
+			// Compare expected translation with thresholds stored in state.
+			match := billboardThresholdsEqual(expectedThresholds, oldThresholdsList)
+
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: 5")
+			log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: compare page=%d widget=%d match=%v expectedLen=%d oldLen=%d expected=%s old=%s", pageIndex, widgetIndex, match, len(expectedThresholds), len(oldThresholdsList), debugSerialize(expectedThresholds), debugSerialize(oldThresholdsList))
+			if match {
+				// They match: suppress drift by injecting the old block into the desired plan.
+				newWidget["thresholds_with_series_overrides"] = []interface{}{map[string]interface{}{"thresholds": oldThresholdsList, "series_overrides": []interface{}{}}}
+				newWidget["warning"] = ""
+				newWidget["critical"] = ""
+				log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: %v", oldThresholdsList)
+				log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: %v", newWidget["thresholds_with_series_overrides"])
+				mutated = true
+			} else {
+				log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: not suppressing page=%d widget=%d", pageIndex, widgetIndex)
+				// Mismatch: do NOT inject; plan will show diff (legacy values will update remote thresholds via expansion).
+			}
+		}
+	}
+
+	if mutated {
+		log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: mutation performed; updating new pages")
+		log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: newPages.preCommit=%s", debugSerialize(newPages))
+		_ = d.SetNew("page", newPages)
+		latestNew, _ := d.GetChange("page")
+		log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: newPages.postCommit=%s", debugSerialize(latestNew))
+	} else {
+		log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: no mutations applied")
+	}
+
+	log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: oldPages: %v", oldPages)
+	log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: final newPages.raw=%s", debugSerialize(newPages))
+}
+
+// computeBillboardThresholdsFromLegacyStrings replicates the translation logic from
+// expandDashboardBillboardWidgetThresholdsFromWarningCritical but works on string inputs and
+// returns a simplified []interface{} of map[string]any comparable to the flattened state.
+func computeBillboardThresholdsFromLegacyStrings(warningStr, criticalStr string) []interface{} {
+	log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: warning=%q critical=%q", warningStr, criticalStr)
+	var warningValPtr, criticalValPtr *float64
+	if warningStr != "" {
+		if parsed, err := strconv.ParseFloat(warningStr, 64); err == nil {
+			warningValPtr = &parsed
+		}
+	}
+	if criticalStr != "" {
+		if parsed, err := strconv.ParseFloat(criticalStr, 64); err == nil {
+			criticalValPtr = &parsed
+		}
+	}
+	if warningValPtr == nil && criticalValPtr == nil {
+		log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: both nil -> nil result")
+		return nil
+	}
+	build := func(from, to *float64, severity string) map[string]interface{} {
+		m := map[string]interface{}{"severity": severity}
+		if from != nil {
+			m["from"] = *from
+		}
+		if to != nil {
+			m["to"] = *to
+		}
+		return m
+	}
+	var result []interface{}
+	// Only warning
+	if warningValPtr != nil && criticalValPtr == nil {
+		log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: only warning=%f", *warningValPtr)
+		result = []interface{}{build(nil, warningValPtr, "success"), build(warningValPtr, nil, "warning")}
+		return result
+	}
+	// Only critical
+	if criticalValPtr != nil && warningValPtr == nil {
+		log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: only critical=%f", *criticalValPtr)
+		result = []interface{}{build(nil, criticalValPtr, "success"), build(criticalValPtr, nil, "critical")}
+		return result
+	}
+	// Both
+	w := *warningValPtr
+	c := *criticalValPtr
+	if w < c { // warning < critical
+		log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: warning < critical (%f < %f)", w, c)
+		result = []interface{}{build(nil, warningValPtr, "success"), build(warningValPtr, criticalValPtr, "warning"), build(criticalValPtr, nil, "critical")}
+	} else if w == c { // warning == critical
+		log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: warning == critical (%f == %f)", w, c)
+		// Matches logic: warning, critical, success (as implemented earlier)
+		result = []interface{}{build(nil, warningValPtr, "warning"), build(warningValPtr, criticalValPtr, "critical"), build(criticalValPtr, nil, "success")}
+	} else { // critical < warning
+		log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: critical < warning (%f < %f)", c, w)
+		result = []interface{}{build(nil, criticalValPtr, "critical"), build(criticalValPtr, warningValPtr, "warning"), build(warningValPtr, nil, "success")}
+	}
+	log.Printf("[DEBUG] computeBillboardThresholdsFromLegacyStrings: result=%v", result)
+	return result
+}
+
+// billboardThresholdsEqual compares two threshold lists (slice of interface{} each containing map[string]interface{}).
+func billboardThresholdsEqual(a, b []interface{}) bool {
+	log.Printf("[DEBUG] billboardThresholdsEqual: expected=%v actual=%v", a, b)
+	if len(a) != len(b) {
+		log.Printf("[DEBUG] billboardThresholdsEqual: length mismatch %d vs %d", len(a), len(b))
+		return false
+	}
+	for i := range a {
+		ma, okA := a[i].(map[string]interface{})
+		mb, okB := b[i].(map[string]interface{})
+		if !okA || !okB {
+			log.Printf("[DEBUG] billboardThresholdsEqual: element %d type assertion failed (okA=%v okB=%v)", i, okA, okB)
+			return false
+		}
+		fromEq := floatFieldEqual(ma, mb, "from")
+		toEq := floatFieldEqual(ma, mb, "to")
+		sevEq := ma["severity"] == mb["severity"]
+		log.Printf("[DEBUG] billboardThresholdsEqual: idx=%d fromEq=%v toEq=%v sevEq=%v", i, fromEq, toEq, sevEq)
+		if !(fromEq && toEq && sevEq) {
+			return false
+		}
+	}
+	log.Printf("[DEBUG] billboardThresholdsEqual: thresholds are equal")
+	return true
+}
+
+func floatFieldEqual(a, b map[string]interface{}, key string) bool {
+	av, aok := a[key]
+	bv, bok := b[key]
+	log.Printf("[DEBUG] floatFieldEqual: key=%s aok=%v bok=%v av=%v bv=%v", key, aok, bok, av, bv)
+	if !aok && !bok {
+		log.Printf("[DEBUG] floatFieldEqual: both missing -> equal for key=%s", key)
+		return true
+	}
+	// Treat missing key vs present zero as equal (flattened state always includes 0 defaults for absent From/To)
+	if !aok && bok {
+		if bf, ok := bv.(float64); ok && bf == 0 {
+			log.Printf("[DEBUG] floatFieldEqual: missing vs zero(b) -> equal key=%s", key)
+			return true
+		}
+		log.Printf("[DEBUG] floatFieldEqual: missing vs non-zero(b) -> not equal key=%s", key)
+		return false
+	}
+	if aok && !bok {
+		if af, ok := av.(float64); ok && af == 0 {
+			log.Printf("[DEBUG] floatFieldEqual: zero(a) vs missing -> equal key=%s", key)
+			return true
+		}
+		log.Printf("[DEBUG] floatFieldEqual: non-zero(a) vs missing -> not equal key=%s", key)
+		return false
+	}
+	// Both present; compare floats or generic equality
+	af, aIsFloat := av.(float64)
+	bf, bIsFloat := bv.(float64)
+	if aIsFloat && bIsFloat {
+		log.Printf("[DEBUG] floatFieldEqual: floats af=%f bf=%f eq=%v key=%s", af, bf, af == bf, key)
+		return af == bf
+	}
+	log.Printf("[DEBUG] floatFieldEqual: non-float eq=%v key=%s", av == bv, key)
+	return av == bv
+}
+*/
