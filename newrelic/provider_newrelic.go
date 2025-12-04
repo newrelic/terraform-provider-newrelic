@@ -161,6 +161,7 @@ func Provider() *schema.Provider {
 			"newrelic_data_partition_rule":                      resourceNewRelicDataPartition(),
 			"newrelic_entity_tags":                              resourceNewRelicEntityTags(),
 			"newrelic_events_to_metrics_rule":                   resourceNewRelicEventsToMetricsRule(),
+			"newrelic_fleet_grant":                              resourceNewRelicFleetGrant(),
 			"newrelic_group":                                    resourceNewRelicGroup(),
 			"newrelic_infra_alert_condition":                    resourceNewRelicInfraAlertCondition(),
 			"newrelic_insights_event":                           resourceNewRelicInsightsEvent(),
