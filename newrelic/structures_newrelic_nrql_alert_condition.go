@@ -86,6 +86,15 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
+	if conditionType == "outlier" {
+		outlierConfig, err := expandOutlierConfiguration(d)
+		if err != nil {
+			return nil, err
+		}
+
+		input.OutlierConfiguration = outlierConfig
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -163,6 +172,15 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
+	if conditionType == "outlier" {
+		outlierConfig, err := expandOutlierConfiguration(d)
+		if err != nil {
+			return nil, err
+		}
+
+		input.OutlierConfiguration = outlierConfig
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -206,6 +224,39 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 	}
 
 	return &input, nil
+}
+
+// NerdGraph
+func expandOutlierConfiguration(d *schema.ResourceData) (*alerts.NrqlOutlierConfigurationInput, error) {
+	configMapRaw, ok := d.GetOk("outlier_configuration.0.dbscan.0")
+	configMap, isMap := configMapRaw.(map[string]interface{})
+	if !ok || !isMap {
+		return nil, fmt.Errorf("`outlier_configuration` is required and must contain the algorithm configuration")
+	}
+
+	dbscan := alerts.NrqlOutlierDbScanConfigurationInput{}
+
+	epsilon, epsilonOk := configMap["epsilon"].(float64)
+	if !epsilonOk {
+		return nil, fmt.Errorf("`epsilon` is required and must be a float64")
+	}
+	dbscan.Epsilon = epsilon
+
+	minPoints, minPointsOk := configMap["minimum_points"].(int)
+	if !minPointsOk {
+		return nil, fmt.Errorf("`minimum_points` is required and must be an int")
+	}
+	dbscan.MinimumPoints = minPoints
+
+	if evalGroupFacet, evalGroupFacetOk := configMap["evaluation_group_facet"].(string); evalGroupFacetOk && evalGroupFacet != "" {
+		dbscan.EvaluationGroupFacet = &evalGroupFacet
+	}
+
+	outlierConfig := alerts.NrqlOutlierConfigurationInput{
+		DBSCAN: dbscan,
+	}
+
+	return &outlierConfig, nil
 }
 
 // NerdGraph
@@ -617,6 +668,12 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 		}
 	}
 
+	if conditionType == "outlier" {
+		if err := flattenOutlierConfiguration(d, condition.OutlierConfiguration); err != nil {
+			return err
+		}
+	}
+
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
 	if err := d.Set("nrql", flattenNrql(condition.Nrql, configuredNrql)); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `nrql`: %v", err)
@@ -749,6 +806,33 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
 		}
 
+	}
+
+	return nil
+}
+
+func flattenOutlierConfiguration(d *schema.ResourceData, outlierConfiguration *alerts.NrqlOutlierConfigurationOutput) error {
+	if outlierConfiguration == nil {
+		return nil
+	}
+
+	dbscan := map[string]interface{}{
+		"minimum_points": outlierConfiguration.MinimumPoints,
+		"epsilon":        outlierConfiguration.Epsilon,
+	}
+
+	if outlierConfiguration.EvaluationGroupFacet != nil {
+		dbscan["evaluation_group_facet"] = *outlierConfiguration.EvaluationGroupFacet
+	}
+
+	outlierConfig := []interface{}{
+		map[string]interface{}{
+			"dbscan": []interface{}{dbscan},
+		},
+	}
+
+	if err := d.Set("outlier_configuration", outlierConfig); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `outlier_configuration`: %v", err)
 	}
 
 	return nil
