@@ -206,13 +206,102 @@ The following OCI namespaces are supported by New Relic for metrics/logs collect
 
 The modular approach allows you to deploy only the specific OCI integration components you need, with clear separation between policy setup and data collection integrations. This design enables flexible deployment strategies where policy configuration can be managed independently from metrics and logging integrations.
 
+-> **NOTE:** All OCI modules require API key authentication credentials (`fingerprint` and `private_key`). If you need to generate these credentials, follow the instructions in the [OCI API Signing Key documentation](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/apisigningkey.htm).
+
 The following composable modules are available under `examples/modules/cloud-integrations/oci/` so you can provision only what you need:
 
+* `wif-setup` – Creates Workload Identity Federation (WIF) prerequisites in OCI Identity Domain, including OAuth applications, identity propagation trust, service user, and IAM policies. This module sets up the foundation for secure, passwordless authentication between New Relic and OCI.
 * `policy-setup` – Creates IAM policies and identity trust / configuration prerequisites (including workload identity federation inputs) required to link an OCI tenancy to New Relic.
 * `metrics-integration` – Creates Service Connector Hub resources, optional networking (VCN / subnets), and supporting artifacts that export metrics (and optionally logs) to New Relic.
 * `logs-integration` – Creates connector hubs, function and function app to export logs from Oracle Cloud to New Relic.
 
-Use them independently or combine them in the same configuration. In all cases, the `policy-setup` module must be applied successfully before the `metrics-integration` or `logging-integration` module, because the latter depends on IAM policies, dynamic groups / identity trust, and (if configured) workload identity federation artifacts created by the former.
+Use them independently or combine them in the same configuration. When using Workload Identity Federation, the `wif-setup` module must be applied first to create the OAuth credentials and trust relationship. The `policy-setup` module must be applied successfully before the `metrics-integration` or `logging-integration` module, because the latter depends on IAM policies, dynamic groups / identity trust, and (if configured) workload identity federation artifacts created by the former.
+
+#### Example: Workload Identity Federation setup module
+
+The `wif-setup` module creates the foundational components required for Workload Identity Federation (WIF) between New Relic and OCI. This module must be applied before the `policy-setup` module when using WIF authentication.
+
+**What this module does:**
+
+This module automates the creation of a secure, passwordless authentication mechanism that allows New Relic to access your OCI resources without storing long-lived credentials. It sets up the identity propagation trust that enables New Relic to exchange JWT tokens for temporary OCI access tokens.
+
+**Resources created:**
+
+* **Service User** – An OCI IAM user (`newrelic-svc-user`) that will be impersonated by New Relic through the WIF trust
+* **OAuth Applications** – Two confidential OAuth client applications:
+  * Admin app (`newrelic-ida-app`) – Used during initial setup to create the identity propagation trust (requires Identity Domain Administrator role)
+  * Token exchange app (`newrelic-token-exchange-app`) – Used by New Relic for routine token exchange operations
+* **Identity Propagation Trust** – The core WIF configuration that links New Relic's JWT issuer to your OCI identity domain, enabling secure token exchange and user impersonation
+* **IAM Policy** – A policy granting the service user read access to OCI resources for monitoring purposes
+* **Role Grant** – Assigns the Identity Domain Administrator role to the admin OAuth app to enable trust creation
+
+```hcl
+module "oci_wif_setup" {
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/wif-setup"
+
+  tenancy_ocid = "ocid1.tenancy.oc1..aaaaaaaaexampletenancy"
+  home_region  = "us-ashburn-1"
+  fingerprint  = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
+  private_key  = "USER_PVT_KEY"
+
+  # Identity Domain Configuration
+  identity_domain_name = "Default"
+
+  # New Relic Configuration
+  newrelic_region = "US" # or "EU"
+
+  # Optional: Resource naming
+  resource_prefix = "newrelic"
+  trust_name      = "newrelic-wif-trust"
+
+  # Optional: OAuth apps activation
+  activate_oauth_apps = true
+}
+
+# Output the credentials needed for policy-setup
+output "wif_credentials" {
+  value = {
+    client_id      = module.oci_wif_setup.newrelic_integration_details.token_exchange_client_id
+    client_secret  = module.oci_wif_setup.newrelic_integration_details.token_exchange_client_secret
+    oci_domain_url = module.oci_wif_setup.newrelic_integration_details.iam_domain_url
+  }
+}
+```
+
+Key variables:
+
+* `tenancy_ocid` – The OCID of your OCI tenancy where the integration will be configured.
+* `home_region` – The OCI home region where identity domain resources will be created (for example: `us-ashburn-1`, `us-phoenix-1`, `eu-frankfurt-1`). Use the full region identifier.
+* `fingerprint` / `private_key` – API key credentials for OCI authentication.
+* `identity_domain_name` (Optional) – Name of the identity domain to use (defaults to `Default`).
+* `newrelic_region` – New Relic region context (`US` or `EU`). This determines which New Relic issuer and JWKS URL are used for the identity propagation trust.
+* `resource_prefix` (Optional) – Prefix for all created resources (defaults to `newrelic`).
+* `trust_name` (Optional) – Name for the identity propagation trust (defaults to `newrelic-wif-trust`).
+* `activate_oauth_apps` (Optional) – Whether to activate OAuth applications (defaults to `true`).
+
+The module outputs `newrelic_integration_details` containing:
+* `iam_domain_url` – The IAM domain URL required by New Relic
+* `token_exchange_client_id` – OAuth client ID for token exchange
+* `token_exchange_client_secret` – OAuth client secret for token exchange
+
+These outputs should be provided to the `policy-setup` module as the `oci_domain_url`, `client_id`, and `client_secret` variables respectively.
+
+**Important limitations:**
+
+* **Only one identity propagation trust per New Relic issuer** – OCI allows only one identity propagation trust configuration per account based on the New Relic issuer. If you need to recreate the integration, you must manually delete the existing trust before applying this module again.
+* **Manual cleanup required** – To destroy this module, you must manually delete the identity propagation trust and OAuth applications. Terraform cannot automatically remove these resources. Follow these steps using OCI Cloud Shell:
+
+  1. List the identity domain (skip if ID is already known):
+     ```bash
+     oci identity-domains identity-propagation-trusts list --all --endpoint $DOMAIN_URL
+     ```
+
+  2. Delete the trust configuration using its ID (be CAUTIOUS with this command):
+     ```bash
+     oci identity-domains identity-propagation-trust delete --endpoint $DOMAIN_URL --identity-propagation-trust-id $TRUST_CONFIGURATION_ID
+     ```
+
+  After deleting the trust, you can remove the OAuth applications through the OCI Console or CLI before running `terraform destroy`.
 
 #### Example: Policy setup module
 
@@ -248,7 +337,7 @@ module "oci_policy_setup" {
 Key variables:
 
 * `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
-* `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs (see the [OCI link account](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_link_account) resource docs for guidance).
+* `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
 * `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US` or `EU`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
 
@@ -396,6 +485,6 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 ]
 ```
 
-> When implementing the New Relic OCI integration, the `policy-setup` module must always be applied before the `metrics-integration` or `logging-integration` modules. These modules can be run together in a single Terraform configuration only if the dependency graph can be successfully resolved. For example, this can be achieved by referencing outputs from the `policy-setup` module in the other integration modules. Failure to apply the necessary policies first will result in authorization errors when creating Service Connector Hub resources or invoking functions.
+> When implementing the New Relic OCI integration with Workload Identity Federation, the modules must be applied in this order: `wif-setup` (to create OAuth credentials) → `policy-setup` (to configure IAM policies and vault secrets) → `metrics-integration` or `logging-integration` (to set up data collection). The `wif-setup` module outputs (`client_id`, `client_secret`, `oci_domain_url`) must be provided as inputs to the `policy-setup` module. These modules can be run together in a single Terraform configuration if the dependency graph can be successfully resolved by referencing outputs from earlier modules. Failure to apply modules in the correct order will result in authorization errors when creating Service Connector Hub resources or invoking functions.
 
 [*Browse the OCI module source code on GitHub*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci)
