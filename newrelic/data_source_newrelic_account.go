@@ -33,7 +33,7 @@ func dataSourceNewRelicAccount() *schema.Resource {
 				Description:   "The ID of the account in New Relic.",
 				ConflictsWith: []string{NewRelicAccountManagementSchemaName},
 			},
-			// deprecated and no longer used by the data source, just adding this here for feature parity
+			// deprecated and no longer used by the data source; just adding this here for feature parity
 			"scope": {
 				Type:         schema.TypeString,
 				Optional:     true,
