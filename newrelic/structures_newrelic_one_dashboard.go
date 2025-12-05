@@ -512,43 +512,43 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 	return expanded, nil
 }
 
-func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i map[string]interface{}, meta interface{}, pageIndex int, widgetIndex int) []dashboards.DashboardBillboardWidgetThresholdInput {
-	// optional, order is important (API returns them sorted alpha)
-	var thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
-	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)); ok {
-		value := data.(string)
-		if value != "" {
-			floatValue, _ := strconv.ParseFloat(value, 64)
-			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-				Value:         &floatValue,
-			})
-		} else {
-			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
-				Value:         nil,
-			})
-		}
-	}
-
-	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)); ok {
-		value := data.(string)
-		if value != "" {
-			floatValue, _ := strconv.ParseFloat(value, 64)
-			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-				Value:         &floatValue,
-			})
-		} else {
-			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
-				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
-				Value:         nil,
-			})
-		}
-	}
-
-	return thresholds
-}
+// func expandDashboardBillboardWidgetConfigurationInput(d *schema.ResourceData, i map[string]interface{}, meta interface{}, pageIndex int, widgetIndex int) []dashboards.DashboardBillboardWidgetThresholdInput {
+// 	// optional, order is important (API returns them sorted alpha)
+// 	var thresholds = []dashboards.DashboardBillboardWidgetThresholdInput{}
+// 	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.critical", pageIndex, widgetIndex)); ok {
+// 		value := data.(string)
+// 		if value != "" {
+// 			floatValue, _ := strconv.ParseFloat(value, 64)
+// 			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+// 				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+// 				Value:         &floatValue,
+// 			})
+// 		} else {
+// 			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+// 				AlertSeverity: entities.DashboardAlertSeverityTypes.CRITICAL,
+// 				Value:         nil,
+// 			})
+// 		}
+// 	}
+//
+// 	if data, ok := d.GetOk(fmt.Sprintf("page.%d.widget_billboard.%d.warning", pageIndex, widgetIndex)); ok {
+// 		value := data.(string)
+// 		if value != "" {
+// 			floatValue, _ := strconv.ParseFloat(value, 64)
+// 			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+// 				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+// 				Value:         &floatValue,
+// 			})
+// 		} else {
+// 			thresholds = append(thresholds, dashboards.DashboardBillboardWidgetThresholdInput{
+// 				AlertSeverity: entities.DashboardAlertSeverityTypes.WARNING,
+// 				Value:         nil,
+// 			})
+// 		}
+// 	}
+//
+// 	return thresholds
+// }
 
 func expandDashboardBillboardWidgetThresholdsWithSeriesOverridesInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardBillboardWidgetThresholdsWithSeriesOverrides {
 	thresholdsPath := fmt.Sprintf("page.%d.widget_billboard.%d.thresholds_with_series_overrides", pageIndex, widgetIndex)
@@ -2805,10 +2805,6 @@ func validateBillboardLegacyThresholdConflicts(d *schema.ResourceDiff, errorsLis
 		}
 	}
 }
-
-// These CustomizeDiff functions are no longer needed with reverse-translation in flatten.
-// The flatten operation now converts thresholds_with_series_overrides back to warning/critical when possible,
-// eliminating the drift at the source.
 
 // suppressBillboardLegacyThresholdDrift detects cases where the prior state contains a
 // thresholds_with_series_overrides block that is a deterministic translation of the
