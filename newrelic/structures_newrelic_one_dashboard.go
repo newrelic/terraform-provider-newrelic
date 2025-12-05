@@ -2656,6 +2656,32 @@ func reverseBillboardThresholdsToLegacy(twso *dashboards.DashboardBillboardWidge
 				}
 			}
 		}
+
+		// Pattern: [WARNING: from=0 to=W, CRITICAL: from=W to=W, SUCCESS: from=W to=0] (warning == critical)
+		if t1.Severity == "warning" && t2.Severity == "critical" && t3.Severity == "success" {
+			if t1.From == 0 && t1.To != 0 &&
+				t2.From != 0 && t2.From == t1.To && t2.To != 0 && t2.To == t1.To &&
+				t3.From != 0 && t3.From == t2.To && t3.To == 0 {
+				warning = strconv.FormatFloat(t1.To, 'f', -1, 64)
+				critical = strconv.FormatFloat(t2.To, 'f', -1, 64)
+				log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected WARNING == CRITICAL pattern: warning=%s critical=%s", warning, critical)
+				return warning, critical, true
+			}
+		}
+
+		// Pattern: [CRITICAL: from=0 to=C, WARNING: from=C to=W, SUCCESS: from=W to=0] (critical < warning)
+		if t1.Severity == "critical" && t2.Severity == "warning" && t3.Severity == "success" {
+			if t1.From == 0 && t1.To != 0 &&
+				t2.From != 0 && t2.To != 0 &&
+				t3.From != 0 && t3.To == 0 {
+				if t1.To == t2.From && t2.To == t3.From {
+					critical = strconv.FormatFloat(t1.To, 'f', -1, 64)
+					warning = strconv.FormatFloat(t2.To, 'f', -1, 64)
+					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected CRITICAL < WARNING pattern: warning=%s critical=%s", warning, critical)
+					return warning, critical, true
+				}
+			}
+		}
 	}
 
 	log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: no matching legacy pattern found")
