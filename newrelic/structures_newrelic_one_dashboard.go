@@ -1616,25 +1616,6 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string, d *sc
 		widgetIndices[widgetType] = widgetIndex + 1
 
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
-		// if rawCfg.Thresholds != nil {
-		// 	rawCfgThresholdsFetched := rawCfg.Thresholds.([]interface{})
-		// 	if len(rawCfgThresholdsFetched) > 0 {
-		// 		for _, t := range rawCfgThresholdsFetched {
-		// 			thresholdFetched := t.(map[string]interface{})
-		// 			if thresholdFetched["value"] == nil {
-		// 				continue
-		// 			}
-
-		// 			switch thresholdFetched["alertSeverity"].(string) {
-		// 			case string(entities.DashboardAlertSeverityTypes.CRITICAL):
-		// 				out["critical"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
-		// 			case string(entities.DashboardAlertSeverityTypes.WARNING):
-		// 				out["warning"] = strconv.FormatFloat(thresholdFetched["value"].(float64), 'f', -1, 64)
-		// 			}
-		// 		}
-		// 	}
-		// }
-
 		if rawCfg.DataFormat != nil {
 			dataformat := flattenDashboardWidgetDataFormat(rawCfg.DataFormat)
 			if len(dataformat) > 0 {
@@ -1646,9 +1627,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string, d *sc
 			out["billboard_settings"] = flattenDashboardWidgetBillboardSettings(rawCfg.BillboardSettings)
 		}
 
-		// reverse-translate to legacy warning/critical when possible
-		// But ONLY if the user's config uses legacy format (not the new structured block)
+		// Handle thresholds - check both NEW and OLD formats for backward compatibility
+		// NEW format: ThresholdsWithSeriesOverrides (current)
+		// OLD format: Thresholds (legacy, for dashboards created with old provider)
 		if rawCfg.ThresholdsWithSeriesOverrides != nil {
+			// NEW format: reverse-translate to legacy warning/critical when possible
+			// But ONLY if the user's config uses legacy format (not the new structured block)
 			// Check if user's config has legacy warning/critical or new thresholds_with_series_overrides
 			warningPath := fmt.Sprintf("page.%d.%s.%d.warning", pageIndex, widgetType, widgetIndex)
 			criticalPath := fmt.Sprintf("page.%d.%s.%d.critical", pageIndex, widgetType, widgetIndex)
@@ -1688,6 +1672,38 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string, d *sc
 				// User configured new format, store as structured block
 				log.Printf("[DEBUG] flattenDashboardWidget: user uses new format, storing as structured block")
 				out["thresholds_with_series_overrides"] = flattenDashboardBillboardWidgetThresholdsWithSeriesOverrides(rawCfg.ThresholdsWithSeriesOverrides)
+			}
+		} else if rawCfg.Thresholds != nil {
+			// OLD format: Handle dashboards created with old provider that used Thresholds field
+			// Extract warning/critical from old Thresholds array and store as legacy format
+			log.Printf("[DEBUG] flattenDashboardWidget: found OLD Thresholds format (backward compatibility)")
+			rawCfgThresholdsFetched, ok := rawCfg.Thresholds.([]interface{})
+			if ok && len(rawCfgThresholdsFetched) > 0 {
+				for _, t := range rawCfgThresholdsFetched {
+					thresholdFetched, ok := t.(map[string]interface{})
+					if !ok || thresholdFetched["value"] == nil {
+						continue
+					}
+
+					alertSeverity, ok := thresholdFetched["alertSeverity"].(string)
+					if !ok {
+						continue
+					}
+
+					value, ok := thresholdFetched["value"].(float64)
+					if !ok {
+						continue
+					}
+
+					switch alertSeverity {
+					case "CRITICAL":
+						out["critical"] = strconv.FormatFloat(value, 'f', -1, 64)
+						log.Printf("[DEBUG] flattenDashboardWidget: extracted OLD critical=%s", out["critical"])
+					case "WARNING":
+						out["warning"] = strconv.FormatFloat(value, 'f', -1, 64)
+						log.Printf("[DEBUG] flattenDashboardWidget: extracted OLD warning=%s", out["warning"])
+					}
+				}
 			}
 		}
 
@@ -2113,12 +2129,12 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 	// Add validation for conflicting billboard threshold configurations
 	validateBillboardLegacyThresholdConflicts(d, &errorsList)
 
-	// No longer needed with reverse-translation in flatten
-	// Now perform suppression of synthetic legacy threshold drift. At this point
-	// conflict checks have executed on the unmodified diff. Any injected block
+	// Perform suppression of legacy threshold drift for backward compatibility.
+	// This handles the migration case when users switch from old provider to new provider.
+	// At this point conflict checks have executed on the unmodified diff. Any injected block
 	// should strictly represent a deterministic translation of legacy values.
-	// log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: post-conflict-validation")
-	// suppressBillboardLegacyThresholdDrift(d)
+	log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: post-conflict-validation")
+	suppressBillboardLegacyThresholdDrift(d)
 
 	// Add validation for thresholds_with_series_overrides
 	validateThresholdsWithSeriesOverrides(d, &errorsList)
@@ -2800,7 +2816,6 @@ func validateBillboardLegacyThresholdConflicts(d *schema.ResourceDiff, errorsLis
 // legacy attributes. In such a scenario Terraform would otherwise plan to remove
 // the thresholds_with_series_overrides block, showing a perpetual diff. We mutate
 // the planned new value to retain the translated block so that no diff is shown.
-/*
 func suppressBillboardLegacyThresholdDrift(d *schema.ResourceDiff) {
 	log.Printf("[DEBUG] suppressBillboardLegacyThresholdDrift: called")
 	// local helper to serialize any interface{} deterministically for diff inspection
@@ -3076,4 +3091,3 @@ func floatFieldEqual(a, b map[string]interface{}, key string) bool {
 	log.Printf("[DEBUG] floatFieldEqual: non-float eq=%v key=%s", av == bv, key)
 	return av == bv
 }
-*/
