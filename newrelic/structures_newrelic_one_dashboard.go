@@ -2610,93 +2610,57 @@ func reverseBillboardThresholdsToLegacy(twso *dashboards.DashboardBillboardWidge
 		return "", "", false
 	}
 
-	// Check if this matches the legacy translation pattern
-	// Pattern 1: [SUCCESS (null->warning), WARNING (warning->null)]
-	// Pattern 2: [SUCCESS (null->critical), CRITICAL (critical->null)]
-	// Pattern 3: [SUCCESS (null->warning), WARNING (warning->critical), CRITICAL (critical->null)]
-
-	t1 := twso.Thresholds[0]
-	t2 := twso.Thresholds[1]
-
-	// Handle 2-threshold patterns (WARNING-only or CRITICAL-only)
-	if len(twso.Thresholds) == 2 {
-		// Pattern for WARNING only: [SUCCESS: from=0 to=X, WARNING: from=X to=0]
-		if t1.Severity == "success" && t2.Severity == "warning" {
-			if t1.From == 0 && t1.To != 0 && t2.From != 0 && t2.To == 0 {
-				if t1.To == t2.From {
-					warning = strconv.FormatFloat(t1.To, 'f', -1, 64)
-					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected WARNING-only pattern: %s", warning)
-					return warning, "", true
-				}
-			}
-		}
-
-		// Pattern for CRITICAL only: [SUCCESS: from=0 to=X, CRITICAL: from=X to=0]
-		if t1.Severity == "success" && t2.Severity == "critical" {
-			if t1.From == 0 && t1.To != 0 && t2.From != 0 && t2.To == 0 {
-				if t1.To == t2.From {
-					critical = strconv.FormatFloat(t1.To, 'f', -1, 64)
-					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected CRITICAL-only pattern: %s", critical)
-					return "", critical, true
-				}
-			}
-		}
+	// Extract warning/critical boundaries by analyzing threshold severities
+	// Build a map for quick lookup by severity
+	severityMap := make(map[string]dashboards.DashboardBillboardWidgetThreshold)
+	for _, t := range twso.Thresholds {
+		severityMap[t.Severity] = t
 	}
 
-	// Check for both WARNING and CRITICAL (3 thresholds)
-	if len(twso.Thresholds) == 3 {
-		t3 := twso.Thresholds[2]
-		// Pattern: [SUCCESS: from=0 to=W, WARNING: from=W to=C, CRITICAL: from=C to=0]
-		if t1.Severity == "success" && t2.Severity == "warning" && t3.Severity == "critical" {
-			if t1.From == 0 && t1.To != 0 &&
-				t2.From != 0 && t2.To != 0 &&
-				t3.From != 0 && t3.To == 0 {
-				if t1.To == t2.From && t2.To == t3.From {
-					warning = strconv.FormatFloat(t1.To, 'f', -1, 64)
-					critical = strconv.FormatFloat(t2.To, 'f', -1, 64)
-					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected both WARNING and CRITICAL pattern: warning=%s critical=%s", warning, critical)
-					return warning, critical, true
-				}
-			}
-		}
-		// Pattern: [SUCCESS: from=0 to=C, CRITICAL: from=C to=W, WARNING: from=W to=0] (reverse order)
-		if t1.Severity == "success" && t2.Severity == "critical" && t3.Severity == "warning" {
-			if t1.From == 0 && t1.To != 0 &&
-				t2.From != 0 && t2.To != 0 &&
-				t3.From != 0 && t3.To == 0 {
-				if t1.To == t2.From && t2.To == t3.From {
-					critical = strconv.FormatFloat(t1.To, 'f', -1, 64)
-					warning = strconv.FormatFloat(t2.To, 'f', -1, 64)
-					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected both CRITICAL and WARNING pattern (reverse): warning=%s critical=%s", warning, critical)
-					return warning, critical, true
-				}
-			}
-		}
+	warningT, hasWarning := severityMap["warning"]
+	criticalT, hasCritical := severityMap["critical"]
 
-		// Pattern: [WARNING: from=0 to=W, CRITICAL: from=W to=W, SUCCESS: from=W to=0] (warning == critical)
-		if t1.Severity == "warning" && t2.Severity == "critical" && t3.Severity == "success" {
-			if t1.From == 0 && t1.To != 0 &&
-				t2.From != 0 && t2.From == t1.To && t2.To != 0 && t2.To == t1.To &&
-				t3.From != 0 && t3.From == t2.To && t3.To == 0 {
-				warning = strconv.FormatFloat(t1.To, 'f', -1, 64)
-				critical = strconv.FormatFloat(t2.To, 'f', -1, 64)
-				log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected WARNING == CRITICAL pattern: warning=%s critical=%s", warning, critical)
-				return warning, critical, true
-			}
-		}
+	// Case 1: WARNING-only (2 thresholds)
+	// Expand creates: [SUCCESS: to=W, WARNING: from=W]
+	// Extract: warning = WARNING.From
+	if hasWarning && !hasCritical && len(twso.Thresholds) == 2 {
+		warning = strconv.FormatFloat(warningT.From, 'f', -1, 64)
+		log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected WARNING-only: warning=%s", warning)
+		return warning, "", true
+	}
 
-		// Pattern: [CRITICAL: from=0 to=C, WARNING: from=C to=W, SUCCESS: from=W to=0] (critical < warning)
-		if t1.Severity == "critical" && t2.Severity == "warning" && t3.Severity == "success" {
-			if t1.From == 0 && t1.To != 0 &&
-				t2.From != 0 && t2.To != 0 &&
-				t3.From != 0 && t3.To == 0 {
-				if t1.To == t2.From && t2.To == t3.From {
-					critical = strconv.FormatFloat(t1.To, 'f', -1, 64)
-					warning = strconv.FormatFloat(t2.To, 'f', -1, 64)
-					log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected CRITICAL < WARNING pattern: warning=%s critical=%s", warning, critical)
-					return warning, critical, true
-				}
-			}
+	// Case 2: CRITICAL-only (2 thresholds)
+	// Expand creates: [SUCCESS: to=C, CRITICAL: from=C]
+	// Extract: critical = CRITICAL.From
+	if hasCritical && !hasWarning && len(twso.Thresholds) == 2 {
+		critical = strconv.FormatFloat(criticalT.From, 'f', -1, 64)
+		log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected CRITICAL-only: critical=%s", critical)
+		return "", critical, true
+	}
+
+	// Case 3: Both WARNING and CRITICAL (3 thresholds)
+	if hasWarning && hasCritical && len(twso.Thresholds) == 3 {
+		// Determine order by checking the first threshold's severity
+		firstSeverity := twso.Thresholds[0].Severity
+
+		if firstSeverity == "success" || firstSeverity == "warning" {
+			// Normal order: warning <= critical
+			// Patterns:
+			//   - warning < critical: [SUCCESS: to=W, WARNING: from=W to=C, CRITICAL: from=C]
+			//   - warning == critical: [WARNING: to=W, CRITICAL: from=W to=W, SUCCESS: from=W]
+			// Extract: warning = WARNING.From, critical = CRITICAL.From
+			warning = strconv.FormatFloat(warningT.From, 'f', -1, 64)
+			critical = strconv.FormatFloat(criticalT.From, 'f', -1, 64)
+			log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected normal order (warning <= critical): warning=%s critical=%s", warning, critical)
+			return warning, critical, true
+		} else if firstSeverity == "critical" {
+			// Reversed order: critical < warning
+			// Pattern: [CRITICAL: to=C, WARNING: from=C to=W, SUCCESS: from=W]
+			// Extract: critical = CRITICAL.To, warning = WARNING.To
+			critical = strconv.FormatFloat(criticalT.To, 'f', -1, 64)
+			warning = strconv.FormatFloat(warningT.To, 'f', -1, 64)
+			log.Printf("[DEBUG] reverseBillboardThresholdsToLegacy: detected reversed order (critical < warning): warning=%s critical=%s", warning, critical)
+			return warning, critical, true
 		}
 	}
 
