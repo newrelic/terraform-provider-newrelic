@@ -2387,37 +2387,38 @@ func validateThresholdsWithSeriesOverrides(d *schema.ResourceDiff, errorsList *[
 }
 
 // Helper function to check if a threshold has content
-func hasThresholdContent(thresholdMap map[string]interface{}) bool {
-	if _, ok := thresholdMap["from"]; ok {
-		return true
-	}
-	if _, ok := thresholdMap["to"]; ok {
-		return true
-	}
-	if _, ok := thresholdMap["severity"]; ok {
-		return true
-	}
-
-	return false
-}
+//func hasThresholdContent(thresholdMap map[string]interface{}) bool {
+//	if _, ok := thresholdMap["from"]; ok {
+//		return true
+//	}
+//	if _, ok := thresholdMap["to"]; ok {
+//		return true
+//	}
+//	if _, ok := thresholdMap["severity"]; ok {
+//		return true
+//	}
+//
+//	return false
+//}
+//
 
 // Helper function to check if a series override has content
-func hasSeriesOverrideContent(overrideMap map[string]interface{}) bool {
-	if _, ok := overrideMap["from"]; ok {
-		return true
-	}
-	if _, ok := overrideMap["to"]; ok {
-		return true
-	}
-	if _, ok := overrideMap["series_name"]; ok {
-		return true
-	}
-	if _, ok := overrideMap["severity"]; ok {
-		return true
-	}
-
-	return false
-}
+//func hasSeriesOverrideContent(overrideMap map[string]interface{}) bool {
+//	if _, ok := overrideMap["from"]; ok {
+//		return true
+//	}
+//	if _, ok := overrideMap["to"]; ok {
+//		return true
+//	}
+//	if _, ok := overrideMap["series_name"]; ok {
+//		return true
+//	}
+//	if _, ok := overrideMap["severity"]; ok {
+//		return true
+//	}
+//
+//	return false
+//}
 
 func expandDashboardWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
 
