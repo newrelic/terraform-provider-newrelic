@@ -43,7 +43,7 @@ func TestExpandDashboardBillboardThreshold(t *testing.T) {
 		}
 		`),
 	}
-	widgetType, out := flattenDashboardWidget(&dashboard, "abcde")
+	widgetType, out := flattenDashboardWidget(&dashboard, "abcde", nil, 0, make(map[string]int))
 	assert.Equal(t, "widget_billboard", widgetType)
 	assert.Contains(t, out, "nrql_query")
 	assert.Contains(t, out, "critical")
@@ -85,7 +85,7 @@ func TestExpandDashboardBillboardThresholdNullValue(t *testing.T) {
 		}
 		`),
 	}
-	widgetType, out := flattenDashboardWidget(&dashboard, "abcde")
+	widgetType, out := flattenDashboardWidget(&dashboard, "abcde", nil, 0, make(map[string]int))
 	assert.Equal(t, "widget_billboard", widgetType)
 	assert.Contains(t, out, "nrql_query")
 	assert.Contains(t, out, "critical")
