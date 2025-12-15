@@ -10,6 +10,12 @@ data_source_newrelic_alert_channel.go:
 data_source_newrelic_alert_channel_test.go:
   test: true
   product_mapping: ALERTS
+data_source_newrelic_alert_compound_condition.go:
+  test: false
+  product_mapping: ALERTS
+data_source_newrelic_alert_compound_condition_test.go:
+  test: true
+  product_mapping: ALERTS
 data_source_newrelic_alert_policy.go:
   test: false
   product_mapping: ALERTS
@@ -119,6 +125,18 @@ resource_newrelic_alert_condition_test.go:
   test: true
   product_mapping: ALERTS
 resource_newrelic_alert_condition_unit_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition_integration_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition_test.go:
+  test: true
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition_unit_test.go:
   test: true
   product_mapping: ALERTS
 resource_newrelic_alert_muting_rule.go:
