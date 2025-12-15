@@ -1,12 +1,12 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_alert_compound_condition"
+page_title: "New Relic: newrelic_alert_compound_condition (BETA PREVIEW)"
 sidebar_current: "docs-newrelic-resource-compound-alert-condition"
 description: |-
-  Create and manage compound alert conditions in New Relic.
+  Create and manage compound alert conditions in New Relic. This feature is in Beta Preview.
 ---
 
-# Resource: newrelic_compound_alert_condition
+# Resource: newrelic_compound_alert_condition (BETA PREVIEW)
 
 Use this resource to create and manage compound alert conditions in New Relic. Compound conditions allow you to combine multiple alert conditions using logical expressions (AND, OR) to create more sophisticated alerting logic.
 
