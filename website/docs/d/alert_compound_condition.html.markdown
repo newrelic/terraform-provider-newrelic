@@ -1,12 +1,12 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_alert_compound_condition"
+page_title: "New Relic: newrelic_alert_compound_condition (BETA PREVIEW)"
 sidebar_current: "docs-newrelic-datasource-alert-compound-condition"
 description: |-
-  Looks up a compound alert condition in New Relic.
+  Looks up a compound alert condition in New Relic. This feature is in Beta Preview.
 ---
 
-# Data Source: newrelic_alert_compound_condition
+# Data Source: newrelic_alert_compound_condition (BETA PREVIEW)
 
 Use this data source to retrieve information about a specific compound alert condition in New Relic.
 
