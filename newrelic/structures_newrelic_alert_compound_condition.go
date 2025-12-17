@@ -25,15 +25,18 @@ func expandAlertCompoundConditionCreateInput(d *schema.ResourceData) (*alerts.Co
 
 	// Optional fields
 	if v, ok := d.GetOk("facet_matching_behavior"); ok {
-		input.FacetMatchingBehavior = v.(string)
+		val := v.(string)
+		input.FacetMatchingBehavior = &val
 	}
 
 	if v, ok := d.GetOk("runbook_url"); ok {
-		input.RunbookURL = v.(string)
+		val := v.(string)
+		input.RunbookURL = &val
 	}
 
 	if v, ok := d.GetOk("threshold_duration"); ok {
-		input.ThresholdDuration = v.(int)
+		val := v.(int)
+		input.ThresholdDuration = &val
 	}
 
 	return &input, nil
@@ -41,10 +44,13 @@ func expandAlertCompoundConditionCreateInput(d *schema.ResourceData) (*alerts.Co
 
 // expandAlertCompoundConditionUpdateInput builds the update input from Terraform schema
 func expandAlertCompoundConditionUpdateInput(d *schema.ResourceData) (*alerts.CompoundConditionUpdateInput, error) {
+	policyID := strconv.Itoa(d.Get("policy_id").(int))
+
 	input := alerts.CompoundConditionUpdateInput{
 		Name:              d.Get("name").(string),
 		Enabled:           d.Get("enabled").(bool),
 		TriggerExpression: d.Get("trigger_expression").(string),
+		PolicyID:          &policyID,
 	}
 
 	// Expand component conditions
@@ -56,15 +62,18 @@ func expandAlertCompoundConditionUpdateInput(d *schema.ResourceData) (*alerts.Co
 
 	// Optional fields
 	if v, ok := d.GetOk("facet_matching_behavior"); ok {
-		input.FacetMatchingBehavior = v.(string)
+		val := v.(string)
+		input.FacetMatchingBehavior = &val
 	}
 
 	if v, ok := d.GetOk("runbook_url"); ok {
-		input.RunbookURL = v.(string)
+		val := v.(string)
+		input.RunbookURL = &val
 	}
 
 	if v, ok := d.GetOk("threshold_duration"); ok {
-		input.ThresholdDuration = v.(int)
+		val := v.(int)
+		input.ThresholdDuration = &val
 	}
 
 	return &input, nil
