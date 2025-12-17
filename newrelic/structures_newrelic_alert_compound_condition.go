@@ -45,11 +45,14 @@ func expandAlertCompoundConditionCreateInput(d *schema.ResourceData) (*alerts.Co
 // expandAlertCompoundConditionUpdateInput builds the update input from Terraform schema
 func expandAlertCompoundConditionUpdateInput(d *schema.ResourceData) (*alerts.CompoundConditionUpdateInput, error) {
 	policyID := strconv.Itoa(d.Get("policy_id").(int))
+	name := d.Get("name").(string)
+	enabled := d.Get("enabled").(bool)
+	triggerExpression := d.Get("trigger_expression").(string)
 
 	input := alerts.CompoundConditionUpdateInput{
-		Name:              d.Get("name").(string),
-		Enabled:           d.Get("enabled").(bool),
-		TriggerExpression: d.Get("trigger_expression").(string),
+		Name:              &name,
+		Enabled:           &enabled,
+		TriggerExpression: &triggerExpression,
 		PolicyID:          &policyID,
 	}
 
