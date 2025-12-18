@@ -124,7 +124,6 @@ func Provider() *schema.Provider {
 			"newrelic_alert_channel":                dataSourceNewRelicAlertChannel(),
 			"newrelic_alert_policy":                 dataSourceNewRelicAlertPolicy(),
 			"newrelic_application":                  dataSourceNewRelicApplication(),
-			"newrelic_alert_compound_condition":     dataSourceNewRelicAlertCompoundCondition(),
 			"newrelic_authentication_domain":        dataSourceNewRelicAuthenticationDomain(),
 			"newrelic_cloud_account":                dataSourceNewRelicCloudAccount(),
 			"newrelic_entity":                       dataSourceNewRelicEntity(),
