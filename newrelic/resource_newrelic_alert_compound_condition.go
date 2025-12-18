@@ -3,14 +3,12 @@ package newrelic
 import (
 	"context"
 	"log"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
@@ -34,7 +32,6 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 			"policy_id": {
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The ID of the policy where this condition should be used.",
 			},
 			"name": {
@@ -69,10 +66,6 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The identifier that will be used in the compound alert condition's trigger_expression (e.g., 'A', 'B', 'C').",
-							ValidateFunc: validation.StringMatch(
-								regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_]*$`),
-								"alias must start with a letter and contain only letters, numbers, and underscores",
-							),
 						},
 					},
 				},
@@ -88,7 +81,6 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				Optional:     true,
 				Default:      "FACETS_IGNORED",
 				Description:  "How the compound condition will take into account the component conditions' facets during evaluation. Valid values: 'FACETS_IGNORED' (default) - facets are not taken into consideration when determining when the compound alert condition activates; 'FACETS_MATCH' - the compound alert condition will activate only when shared facets have matching values.",
-				ValidateFunc: validation.StringInSlice([]string{"FACETS_MATCH", "FACETS_IGNORED"}, false),
 			},
 			"runbook_url": {
 				Type:        schema.TypeString,
@@ -100,9 +92,6 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-1440 seconds.",
-				ValidateFunc: validation.All(
-					validation.IntBetween(30, 1440),
-				),
 			},
 			"entity_guid": {
 				Type:        schema.TypeString,
