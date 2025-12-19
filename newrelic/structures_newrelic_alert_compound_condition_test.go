@@ -52,12 +52,12 @@ func TestExpandAlertCompoundConditionCreateInput(t *testing.T) {
 		},
 		"with optional fields": {
 			Data: map[string]interface{}{
-				"name":                     "test-compound-condition",
-				"enabled":                  false,
-				"trigger_expression":       "(A AND B) OR C",
-				"runbook_url":              "https://example.com/runbook",
-				"threshold_duration":       120,
-				"facet_matching_behavior":  "FACETS_MATCH",
+				"name":                    "test-compound-condition",
+				"enabled":                 false,
+				"trigger_expression":      "(A AND B) OR C",
+				"runbook_url":             "https://example.com/runbook",
+				"threshold_duration":      120,
+				"facet_matching_behavior": "FACETS_MATCH",
 				"component_conditions": []interface{}{
 					map[string]interface{}{
 						"id":    "123",

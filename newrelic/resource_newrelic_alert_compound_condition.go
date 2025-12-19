@@ -77,10 +77,10 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				},
 			},
 			"facet_matching_behavior": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "FACETS_IGNORED",
-				Description:  "How the compound condition will take into account the component conditions' facets during evaluation. Valid values: 'FACETS_IGNORED' (default) - facets are not taken into consideration when determining when the compound alert condition activates; 'FACETS_MATCH' - the compound alert condition will activate only when shared facets have matching values.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "FACETS_IGNORED",
+				Description: "How the compound condition will take into account the component conditions' facets during evaluation. Valid values: 'FACETS_IGNORED' (default) - facets are not taken into consideration when determining when the compound alert condition activates; 'FACETS_MATCH' - the compound alert condition will activate only when shared facets have matching values.",
 			},
 			"runbook_url": {
 				Type:        schema.TypeString,
