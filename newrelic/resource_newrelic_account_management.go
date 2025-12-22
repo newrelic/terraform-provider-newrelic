@@ -16,6 +16,7 @@ import (
 
 const NewRelicAccountManagementSchemaName string = "name"
 const NewRelicAccountManagementSchemaRegion string = "region"
+const NewRelicAccountManagementSchemaStatus string = "status"
 
 func resourceNewRelicAccountManagement() *schema.Resource {
 	return &schema.Resource{
@@ -42,6 +43,15 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 				Description:  "A description of what this parsing rule represents.",
 				ValidateFunc: validation.StringInSlice([]string{"us01", "eu01"}, false),
 				Required:     true,
+			},
+			NewRelicAccountManagementSchemaStatus: {
+				Type:        schema.TypeString,
+				Description: "Status of the account - active or canceled",
+				//ValidateFunc: validation.StringInSlice([]string{
+				//	string(customeradministration.OrganizationAccountStatusTypes.ACTIVE),
+				//	string(customeradministration.OrganizationAccountStatusTypes.CANCELED),
+				//}, false),
+				Computed: true,
 			},
 		},
 	}
@@ -103,17 +113,11 @@ func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		getAccountsInOrganizationResponse, getAccountsInOrganizationError := client.CustomerAdministration.GetAccounts(
-			"",
-			customeradministration.OrganizationAccountFilterInput{
-				OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
-					Eq: organizationID,
-				},
-				ID: customeradministration.OrganizationAccountIdFilterInput{
-					Eq: accountID,
-				},
-			},
-			[]customeradministration.OrganizationAccountSortInput{},
+
+		getAccountsInOrganizationResponse, accountStatus, getAccountsInOrganizationError := fetchAccountsInOrganization(
+			meta,
+			organizationID,
+			accountID,
 		)
 
 		if getAccountsInOrganizationError != nil {
@@ -135,6 +139,7 @@ func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, me
 
 		_ = d.Set(NewRelicAccountManagementSchemaName, account.Name)
 		_ = d.Set(NewRelicAccountManagementSchemaRegion, account.RegionCode)
+		_ = d.Set(NewRelicAccountManagementSchemaStatus, accountStatus)
 
 		return nil
 	})
@@ -214,4 +219,63 @@ For more details, please refer to https://docs.newrelic.com/docs/apis/nerdgraph/
 	}
 
 	return nil
+}
+
+func fetchAccountsInOrganization(
+	meta interface{},
+	organizationID string,
+	accountID int,
+) (*customeradministration.OrganizationAccountCollection, string, error) {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	matchCurrentAccountWithActiveAccountsResponse, matchActiveAccountsError := client.CustomerAdministration.GetAccountsMinimized(
+		"",
+		customeradministration.OrganizationAccountFilterInput{
+			OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
+				Eq: organizationID,
+			},
+			ID: customeradministration.OrganizationAccountIdFilterInput{
+				Eq: accountID,
+			},
+			Status: customeradministration.OrganizationAccountStatusFilterInput{
+				Eq: customeradministration.OrganizationAccountStatusTypes.ACTIVE,
+			},
+		},
+		[]customeradministration.OrganizationAccountSortInput{},
+	)
+
+	if matchActiveAccountsError != nil {
+		return nil, "", matchActiveAccountsError
+	}
+
+	if len(matchCurrentAccountWithActiveAccountsResponse.Items) == 0 {
+		matchCurrentAccountWithCanceledAccountsResponse, matchCanceledAccountsError := client.CustomerAdministration.GetAccountsMinimized(
+			"",
+			customeradministration.OrganizationAccountFilterInput{
+				OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
+					Eq: organizationID,
+				},
+				ID: customeradministration.OrganizationAccountIdFilterInput{
+					Eq: accountID,
+				},
+				Status: customeradministration.OrganizationAccountStatusFilterInput{
+					Eq: customeradministration.OrganizationAccountStatusTypes.CANCELED,
+				},
+			},
+			[]customeradministration.OrganizationAccountSortInput{},
+		)
+
+		if matchCanceledAccountsError != nil {
+			return nil, "", matchCanceledAccountsError
+		}
+
+		if len(matchCurrentAccountWithCanceledAccountsResponse.Items) == 0 {
+			return nil, "", nil
+		}
+
+		return matchCurrentAccountWithCanceledAccountsResponse, string(customeradministration.OrganizationAccountStatusTypes.CANCELED), nil
+	}
+
+	return matchCurrentAccountWithActiveAccountsResponse, string(customeradministration.OrganizationAccountStatusTypes.ACTIVE), nil
 }
