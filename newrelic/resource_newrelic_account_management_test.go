@@ -160,7 +160,7 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 
 		// Fetch account using customeradministration package
 		ctx := context.Background()
-		getAccountsResponse, err := client.CustomerAdministration.GetAccounts(
+		getAccountsResponse, err := client.CustomerAdministration.GetAccountsMinimized(
 			"",
 			customeradministration.OrganizationAccountFilterInput{
 				OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{

@@ -88,7 +88,7 @@ func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, 
 		// To ensure accuracy, additional steps are required to identify the exact match from the results.
 	}
 
-	getAccountsResponse, err := client.CustomerAdministration.GetAccounts(
+	getAccountsResponse, err := client.CustomerAdministration.GetAccountsMinimized(
 		"",
 		filterInput,
 		[]customeradministration.OrganizationAccountSortInput{},
