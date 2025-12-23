@@ -41,8 +41,7 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
+				Required:    true,
 				Description: "Whether or not to enable the alert condition.",
 			},
 			"trigger_expression": {
@@ -54,13 +53,13 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				Type:        schema.TypeSet,
 				Required:    true,
 				MinItems:    2,
-				Description: "The list of NRQL conditions to be combined. Each component condition must be enabled. Must have at least 2 components.",
+				Description: "The list of conditions to be combined. Each component condition must be enabled. Must have at least 2 components.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The ID of the existing NRQL alert condition to use as a component.",
+							Description: "The ID of the existing alert condition to use as a component.",
 						},
 						"alias": {
 							Type:        schema.TypeString,
@@ -79,7 +78,7 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 			"facet_matching_behavior": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "FACETS_IGNORED",
+				Computed:    true,
 				Description: "How the compound condition will take into account the component conditions' facets during evaluation. Valid values: 'FACETS_IGNORED' (default) - facets are not taken into consideration when determining when the compound alert condition activates; 'FACETS_MATCH' - the compound alert condition will activate only when shared facets have matching values.",
 			},
 			"runbook_url": {
@@ -91,12 +90,7 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-1440 seconds.",
-			},
-			"entity_guid": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique entity identifier of the alert compound condition in New Relic.",
+				Description: "The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-86400 seconds.",
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{

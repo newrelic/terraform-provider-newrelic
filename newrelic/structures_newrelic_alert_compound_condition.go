@@ -130,14 +130,10 @@ func flattenAlertCompoundCondition(accountID int, condition *alerts.CompoundCond
 		return fmt.Errorf("error setting component_conditions: %v", err)
 	}
 
-	// Note: entity_guid might be available in the API response if needed
-	// For now, we're leaving it unset as it's not at the top level of AlertCompoundCondition
-
 	return nil
 }
 
 // flattenComponentConditions converts API component conditions to Terraform state
-// Only includes ID and Alias - ignores nested NRQL condition details per user requirement
 func flattenComponentConditions(components []alerts.ComponentCondition) *schema.Set {
 	result := make([]interface{}, 0, len(components))
 

@@ -230,29 +230,28 @@ The following arguments are supported:
 
 - `policy_id` - (Required) The ID of the policy where this alert compound condition should be used.
 - `name` - (Required) The title of the compound alert condition.
-- `trigger_expression` - (Required) Expression that defines how component condition evaluations are combined. Valid operators are 'AND', 'OR', 'NOT'. For more complex expressions, use parentheses. Use the aliases from `component_conditions` to build expressions like `"A AND B"`, `"A OR B"`, `"(A AND B) OR C"`, or `"A AND NOT B"`.
-- `component_conditions` - (Required) The list of NRQL conditions to be combined. Each component condition must be enabled. Must include at least 2 components. See [Component Conditions](#component-conditions) below for details.
+- `trigger_expression` - (Required) Expression that defines how component condition evaluations are combined. Valid operators are 'AND', 'OR', 'NOT'. For more complex expressions, use parentheses. Use the aliases from `component_conditions` to build expressions like `"A AND B"`, `"A OR B"`, `"(A AND B) OR C"`, or `"A AND (B OR C) AND NOT (D AND E)"`.
+- `component_conditions` - (Required) The list of conditions to be combined. Each component condition must be enabled. Must include at least 2. See [Component Conditions](#component-conditions) below for details.
 - `enabled` - (Optional) Whether or not the compound alert condition is enabled. Defaults to `true`.
 - `account_id` - (Optional) The New Relic account ID for managing your compound alert conditions. Defaults to the account ID set in your environment variable `NEW_RELIC_ACCOUNT_ID`.
 - `facet_matching_behavior` - (Optional) How the compound condition will take into account the component conditions' facets during evaluation. Valid values are:
   - `FACETS_IGNORED` - (Default) Facets are not taken into consideration when determining when the compound alert condition activates
   - `FACETS_MATCH` - The compound alert condition will activate only when shared facets have matching values
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
-- `threshold_duration` - (Optional) The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-1440 seconds.
+- `threshold_duration` - (Optional) The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-86400 seconds.
 
 ### Component Conditions
 
 The `component_conditions` block supports the following arguments:
 
-- `id` - (Required) The ID of the existing NRQL alert condition to use as a component.
-- `alias` - (Required) The identifier that will be used in the compound alert condition's `trigger_expression` (e.g., 'A', 'B', 'C'). Must start with a letter and contain only letters, numbers, and underscores. Must be unique within the alert compound condition.
+- `id` - (Required) The ID of the existing alert condition to use as a component.
+- `alias` - (Required) The identifier that will be used in the compound alert condition's `trigger_expression` (e.g., 'b', 'b', 'c', 'd', 'e').
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the compound alert condition.
-- `entity_guid` - The unique entity identifier of the alert compound condition in New Relic.
 
 ## Import
 
