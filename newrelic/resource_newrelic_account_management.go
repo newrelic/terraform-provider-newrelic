@@ -28,9 +28,9 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Read:   schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(60 * time.Second),
+			Read:   schema.DefaultTimeout(60 * time.Second),
+			Update: schema.DefaultTimeout(60 * time.Second),
 		},
 		Schema: map[string]*schema.Schema{
 			NewRelicAccountManagementSchemaName: {
@@ -112,8 +112,7 @@ func resourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, me
 		return diags
 	}
 
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		getAccountsInOrganizationResponse, accountStatus, getAccountsInOrganizationError := fetchAccountsInOrganization(
 			meta,
 			organizationID,
@@ -271,7 +270,10 @@ func fetchAccountsInOrganization(
 		}
 
 		if len(matchCurrentAccountWithCanceledAccountsResponse.Items) == 0 {
-			return nil, "", nil
+			// if we return a nil response, we cause an issue at the read level as .items would be inaccessible
+			// an alternative to counter this would be to return an error in the third argument, but the idea
+			// is to have every error returning scenario to cause a RetryableError, and everything else, a NonRetryableError
+			return matchCurrentAccountWithCanceledAccountsResponse, "", nil
 		}
 
 		return matchCurrentAccountWithCanceledAccountsResponse, string(customeradministration.OrganizationAccountStatusTypes.CANCELED), nil
