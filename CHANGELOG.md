@@ -1,3 +1,8 @@
+<a name="v3.76.5"></a>
+## [v3.76.5] - 2026-01-05
+### Bug Fixes
+- **accountmanagement:** minor bug fix to the active-canceled account read mechanism ([#2997](https://github.com/newrelic/terraform-provider-newrelic/issues/2997))
+
 <a name="v3.76.4"></a>
 ## [v3.76.4] - 2025-12-23
 ### Bug Fixes
@@ -2564,7 +2569,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.5...HEAD
+[v3.76.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.4...v3.76.5
 [v3.76.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.3...v3.76.4
 [v3.76.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.2...v3.76.3
 [v3.76.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.1...v3.76.2
