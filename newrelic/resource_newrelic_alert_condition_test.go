@@ -1,5 +1,4 @@
 //go:build integration || unit || ALERTS
-// +build integration unit ALERTS
 
 //
 // Test helpers
