@@ -29,7 +29,7 @@ func resourceNewRelicNRQLDropRule() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(90 * time.Second),
 		},
-		DeprecationMessage: `The "newrelic_nrql_drop_rule" resource is deprecated and will be removed in a future major release after January 7, 2026. 
+		DeprecationMessage: `The "newrelic_nrql_drop_rule" resource is deprecated and will be removed in a future major release after June 30, 2026. 
 This aligns with the official end-of-life (EOL) for this feature by New Relic. 
 Please migrate to its replacement, Pipeline Cloud Rules, using the "newrelic_pipeline_cloud_rule" resource: https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule. 
 For more details, see the EOL announcement: https://docs.newrelic.com/eol/2025/05/drop-rule-filter/`,
@@ -68,7 +68,7 @@ For more details, see the EOL announcement: https://docs.newrelic.com/eol/2025/0
 			"pipeline_cloud_rule_entity_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The GUID of the Pipeline Cloud Rule that will replace the Drop Rule after its EOL on January 7, 2026.",
+				Description: "The GUID of the Pipeline Cloud Rule that will replace the Drop Rule after its EOL on June 30, 2026.",
 			},
 		},
 	}
