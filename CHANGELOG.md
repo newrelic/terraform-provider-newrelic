@@ -1,3 +1,8 @@
+<a name="v3.76.7"></a>
+## [v3.76.7] - 2026-01-07
+### Bug Fixes
+- **deps:** bump up versions of key vulnerabilities, New Relic Go Client ([#3003](https://github.com/newrelic/terraform-provider-newrelic/issues/3003))
+
 <a name="v3.76.6"></a>
 ## [v3.76.6] - 2026-01-06
 ### Bug Fixes
@@ -2574,7 +2579,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.6...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.7...HEAD
+[v3.76.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.6...v3.76.7
 [v3.76.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.5...v3.76.6
 [v3.76.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.4...v3.76.5
 [v3.76.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.3...v3.76.4
