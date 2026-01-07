@@ -219,6 +219,7 @@ resource "aws_cloudwatch_metric_stream" "newrelic_metric_stream" {
 }
 
 resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
+  count                  = local.should_create_pull_mode ? 1 : 0
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
   metric_collection_mode = "PULL"
@@ -227,8 +228,9 @@ resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_pull" {
 }
 
 resource "newrelic_cloud_aws_integrations" "newrelic_cloud_integration_pull" {
+  count             = local.should_create_pull_mode ? 1 : 0
   account_id        = var.newrelic_account_id
-  linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull.id
+  linked_account_id = newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull[0].id
   billing {}
   cloudtrail {}
   health {}
@@ -290,6 +292,7 @@ resource "aws_s3_bucket" "newrelic_configuration_recorder_s3" {
 
 locals {
   should_create_recorder = var.enable_config_recorder
+  should_create_pull_mode = var.enable_pull_mode
 }
 
 resource "aws_iam_role" "newrelic_configuration_recorder" {
