@@ -471,7 +471,7 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 	}
 
 	if len(errs) > 0 {
-		err = fmt.Errorf(strings.Join(errs, ", "))
+		err = fmt.Errorf("%s", strings.Join(errs, ", "))
 		return expandedTerms, err
 	}
 

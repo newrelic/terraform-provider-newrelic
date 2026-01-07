@@ -1,5 +1,4 @@
 //go:build integration || APIKS
-// +build integration APIKS
 
 package newrelic
 

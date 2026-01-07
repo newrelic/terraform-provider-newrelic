@@ -1,5 +1,4 @@
 //go:build integration || CLOUD
-// +build integration CLOUD
 
 package newrelic
 
@@ -119,7 +118,7 @@ func testAccNewRelicAwsLinkAccountConfig(AWSLinkAccountTestConfig map[string]str
 		AWSLinkAccountTestConfig["name"] += "_updated"
 	}
 
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
 		account_id = "` + AWSLinkAccountTestConfig["account_id"] + `"
 		alias      = "cloud-integration-provider"
@@ -131,5 +130,5 @@ func testAccNewRelicAwsLinkAccountConfig(AWSLinkAccountTestConfig map[string]str
 		metric_collection_mode = "PULL"
 		name                   = "` + AWSLinkAccountTestConfig["name"] + `"
 		account_id			   = "` + AWSLinkAccountTestConfig["account_id"] + `"
-	}`)
+		}`
 }

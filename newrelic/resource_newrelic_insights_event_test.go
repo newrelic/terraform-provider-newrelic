@@ -1,5 +1,4 @@
 //go:build integration || EVENTS
-// +build integration EVENTS
 
 package newrelic
 

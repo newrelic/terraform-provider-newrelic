@@ -17,7 +17,7 @@ FILES        ?= $(shell find $(SRCDIR) -type f | grep -v -e '.git/')
 PROJECT_MODULE ?= $(shell $(GO) list -m)
 
 # Set a few vars and run the test suite
-LDFLAGS_TEST ?= "-X=$(PROJECT_MODULE)/version.ProviderVersion=acc"
+LDFLAGS_TEST ?= "-X=main.ProviderVersion=acc"
 
 TEST_MAPPER_SCRIPT ?= ./integration_test_utilities/integration_test_utilities_tag_mapper.sh
 TEST_MAPPER_SCRIPT_OUTPUT ?= $(shell bash $(TEST_MAPPER_SCRIPT) | tail -n 1)

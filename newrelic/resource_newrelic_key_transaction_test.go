@@ -1,5 +1,4 @@
 //go:build integration || KEY_TRANSACTIONS
-// +build integration KEY_TRANSACTIONS
 
 package newrelic
 
@@ -95,7 +94,7 @@ func testAccNewRelicCheckKeyTransactionExists(resourceName string) resource.Test
 		time.Sleep(5 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return err
 		}
 
 		x, foundOk := (*found).(*entities.KeyTransactionEntity)
