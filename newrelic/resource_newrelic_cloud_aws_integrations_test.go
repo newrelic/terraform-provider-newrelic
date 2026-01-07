@@ -121,7 +121,7 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 }
 
 func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -414,11 +414,11 @@ func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]s
 		  metrics_polling_interval = 6000
 		}
 	  }
-`)
+`
 }
 
 func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -714,5 +714,5 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 			metrics_polling_interval = 6000
 		}
 	  }
-`)
+`
 }

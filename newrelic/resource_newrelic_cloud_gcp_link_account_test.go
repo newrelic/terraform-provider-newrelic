@@ -117,7 +117,7 @@ func testAccNewRelicCloudGcpLinkAccountConfig(GCPLinkAccountTestConfig map[strin
 		GCPLinkAccountTestConfig["name"] += "_updated"
 	}
 
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + GCPLinkAccountTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -129,5 +129,5 @@ func testAccNewRelicCloudGcpLinkAccountConfig(GCPLinkAccountTestConfig map[strin
             account_id  = "` + GCPLinkAccountTestConfig["account_id"] + `"
 			project_id  = "` + GCPLinkAccountTestConfig["project_id"] + `"
 	}
-	`)
+	`
 }

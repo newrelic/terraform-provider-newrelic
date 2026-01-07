@@ -117,7 +117,7 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 }
 
 func testAccNewRelicCloudGcpIntegrationsConfig(GCPIntegrationTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -216,11 +216,11 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
   vpc_access {
     metrics_polling_interval = 400
   }
-}`)
+}`
 }
 
 func testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -317,5 +317,5 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig m
 			metrics_polling_interval = 1400
 		  }
 	}
-`)
+`
 }
