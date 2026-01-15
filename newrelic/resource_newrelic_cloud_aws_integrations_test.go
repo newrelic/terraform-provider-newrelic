@@ -416,7 +416,7 @@ func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]s
 		}
 		security_hub {
 		  aws_regions              = ["us-east-1"]
-		  metrics_polling_interval = 6000
+		  metrics_polling_interval = 86400
 		}
 	  }
 `)
