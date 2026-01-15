@@ -1,5 +1,4 @@
 //go:build integration || CLOUD
-// +build integration CLOUD
 
 package newrelic
 
@@ -147,7 +146,7 @@ func testAccNewRelicAzureLinkAccountConfig(azureLinkAccountTestConfig map[string
 		azureLinkAccountTestConfig["name"] += "-updated"
 	}
 
-	return fmt.Sprintf(`
+	return `
 provider "newrelic" {
   account_id = "` + azureLinkAccountTestConfig["account_id"] + `"
   alias      = "cloud-integration-provider"
@@ -162,5 +161,5 @@ resource "newrelic_cloud_azure_link_account" "foo" {
   name            = "` + azureLinkAccountTestConfig["name"] + `"
   account_id      = "` + azureLinkAccountTestConfig["account_id"] + `"
 }
-`)
+`
 }

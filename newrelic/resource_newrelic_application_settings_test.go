@@ -1,5 +1,4 @@
 //go:build integration || APM
-// +build integration APM
 
 package newrelic
 
@@ -213,7 +212,7 @@ func testAccCheckNewRelicApplicationExists(resourceName string) resource.TestChe
 		time.Sleep(2 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return err
 		}
 
 		res, foundOk := (*found).(*entities.ApmApplicationEntity)

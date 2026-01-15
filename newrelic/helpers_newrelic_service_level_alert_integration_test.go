@@ -1,5 +1,4 @@
 //go:build integration || WORKLOADS
-// +build integration WORKLOADS
 
 package newrelic
 
