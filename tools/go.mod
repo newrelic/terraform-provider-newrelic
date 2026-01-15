@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.11
 
 require (
-	github.com/bflad/tfproviderlint v0.29.0
+	github.com/bflad/tfproviderlint v0.31.0
 	github.com/client9/misspell v0.3.4
 	github.com/git-chglog/git-chglog v0.15.4
 	github.com/golangci/golangci-lint/v2 v2.1.2
