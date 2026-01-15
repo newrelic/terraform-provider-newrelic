@@ -1,5 +1,4 @@
 //go:build integration || CLOUD
-// +build integration CLOUD
 
 package newrelic
 
@@ -122,7 +121,7 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 }
 
 func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -419,11 +418,11 @@ func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]s
 		  metrics_polling_interval = 86400
 		}
 	  }
-`)
+`
 }
 
 func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -723,5 +722,5 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 		  metrics_polling_interval = 86400
 		}
 	  }
-`)
+`
 }

@@ -1,5 +1,4 @@
 //go:build integration || AUTH
-// +build integration AUTH
 
 package newrelic
 
@@ -114,7 +113,7 @@ func testAccNewRelicCheckUserExists(resourceName string) resource.TestCheckFunc 
 
 		resp, err := client.UserManagement.UserManagementGetUsers([]string{authenticationDomainId}, []string{rs.Primary.ID}, "", "")
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return err
 		}
 
 		for _, authDomain := range resp.AuthenticationDomains {

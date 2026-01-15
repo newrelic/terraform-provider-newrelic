@@ -1,5 +1,4 @@
 //go:build AUTH
-// +build AUTH
 
 package newrelic
 

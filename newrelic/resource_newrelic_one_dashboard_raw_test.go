@@ -1,5 +1,4 @@
 //go:build integration || DASHBOARDS
-// +build integration DASHBOARDS
 
 package newrelic
 

@@ -1,5 +1,4 @@
 //go:build integration || NGEP
-// +build integration NGEP
 
 package newrelic
 
