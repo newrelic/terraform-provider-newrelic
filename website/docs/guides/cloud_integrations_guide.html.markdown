@@ -41,10 +41,10 @@ The following AWS services may be integrated via API Polling, using the New Reli
 | `MQ`                | `MSK`               | `Neptune`          |
 | `QLDB`              | `RDS`               | `Redshift`         |
 | `Route53`           | `Route53 Resolver`  | `S3`               |
-| `SES`               | `SNS`               | `SQS`              |
-| `States`            | `Transit Gateway`   | `Trusted Advisor`  |
-| `VPC`               | `WAF`               | `WAFv2`            |
-| `X-Ray`             | 
+| `SES`               | `Security Hub`      | `SNS`              |
+| `SQS`               | `States`            | `Transit Gateway`  |
+| `Trusted Advisor`   | `VPC`               | `WAF`              | 
+| `WAFv2`             | `X-Ray`             | 
 
 
 
