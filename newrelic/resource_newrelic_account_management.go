@@ -28,9 +28,9 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Second),
-			Read:   schema.DefaultTimeout(60 * time.Second),
-			Update: schema.DefaultTimeout(60 * time.Second),
+			Create: schema.DefaultTimeout(90 * time.Second),
+			Read:   schema.DefaultTimeout(90 * time.Second),
+			Update: schema.DefaultTimeout(90 * time.Second),
 		},
 		Schema: map[string]*schema.Schema{
 			NewRelicAccountManagementSchemaName: {
