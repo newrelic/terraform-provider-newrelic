@@ -121,6 +121,12 @@ resource_newrelic_alert_condition_test.go:
 resource_newrelic_alert_condition_unit_test.go:
   test: true
   product_mapping: ALERTS
+resource_newrelic_alert_compound_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition_test.go:
+  test: true
+  product_mapping: ALERTS
 resource_newrelic_alert_muting_rule.go:
   test: false
   product_mapping: ALERTS
@@ -407,6 +413,12 @@ structures_newrelic_alert_channel.go:
   test: false
   product_mapping: ALERTS
 structures_newrelic_alert_channel_test.go:
+  test: true
+  product_mapping: ALERTS
+structures_newrelic_alert_compound_condition.go:
+  test: false
+  product_mapping: ALERTS
+structures_newrelic_alert_compound_condition_test.go:
   test: true
   product_mapping: ALERTS
 structures_newrelic_alert_condition.go:
