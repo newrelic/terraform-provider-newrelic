@@ -1,3 +1,11 @@
+<a name="v3.77.0"></a>
+## [v3.77.0] - 2026-01-15
+### Bug Fixes
+- **deps:** fix vulnerabilities, January 2026 edition ([#3002](https://github.com/newrelic/terraform-provider-newrelic/issues/3002))
+
+### Features
+- **cloud:** add AWS security hub integration in terraform provider ([#3008](https://github.com/newrelic/terraform-provider-newrelic/issues/3008))
+
 <a name="v3.76.7"></a>
 ## [v3.76.7] - 2026-01-07
 ### Bug Fixes
@@ -2579,7 +2587,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.7...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.77.0...HEAD
+[v3.77.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.7...v3.77.0
 [v3.76.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.6...v3.76.7
 [v3.76.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.5...v3.76.6
 [v3.76.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.4...v3.76.5
