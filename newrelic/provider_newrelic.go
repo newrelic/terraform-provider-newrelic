@@ -148,6 +148,8 @@ func Provider() *schema.Provider {
 			"newrelic_api_access_key":                           resourceNewRelicAPIAccessKey(),
 			"newrelic_application_settings":                     resourceNewRelicApplicationSettings(),
 			"newrelic_browser_application":                      resourceNewRelicBrowserApplication(),
+			"newrelic_cloud_aws_eu_sovereign_link_account":      resourceNewRelicCloudAwsEuSovereignLinkAccount(),
+			"newrelic_cloud_aws_eu_sovereign_integrations":      resourceNewRelicCloudAwsEuSovereignIntegrations(),
 			"newrelic_cloud_aws_govcloud_link_account":          resourceNewRelicAwsGovCloudLinkAccount(),
 			"newrelic_cloud_aws_govcloud_integrations":          resourceNewRelicAwsGovCloudIntegrations(),
 			"newrelic_cloud_aws_integrations":                   resourceNewRelicCloudAwsIntegrations(),
