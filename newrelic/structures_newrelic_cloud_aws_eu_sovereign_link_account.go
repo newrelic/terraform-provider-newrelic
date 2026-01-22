@@ -47,8 +47,4 @@ func expandAwsEuSovereignLinkAccountInputForUpdate(d *schema.ResourceData, linke
 	return input
 }
 
-// getAwsEuSovereignLinkedAccountIDFromState extracts the linked account ID from the terraform state
-func getAwsEuSovereignLinkedAccountIDFromState(d *schema.ResourceData) int {
-	linkedAccountID, _ := parseIDs(d.Id(), 1)
-	return linkedAccountID[0]
-}
+
