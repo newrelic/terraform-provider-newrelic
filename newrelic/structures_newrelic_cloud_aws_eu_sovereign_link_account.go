@@ -46,5 +46,3 @@ func expandAwsEuSovereignLinkAccountInputForUpdate(d *schema.ResourceData, linke
 
 	return input
 }
-
-
