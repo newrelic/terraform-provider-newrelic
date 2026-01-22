@@ -163,6 +163,18 @@ resource_newrelic_application_settings.go:
 resource_newrelic_application_settings_test.go:
   test: true
   product_mapping: APM
+resource_newrelic_cloud_aws_eu_sovereign_integrations.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_eu_sovereign_integrations_test.go:
+  test: true
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_eu_sovereign_link_account.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_aws_eu_sovereign_link_account_test.go:
+  test: true
+  product_mapping: CLOUD
 resource_newrelic_cloud_aws_govcloud_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -448,6 +460,9 @@ structures_newrelic_api_access_key.go:
 structures_newrelic_application_settings.go:
   test: false
   product_mapping: APM
+structures_newrelic_cloud_aws_eu_sovereign_link_account.go:
+  test: false
+  product_mapping: CLOUD
 structures_newrelic_cloud_aws_govcloud_link_account.go:
   test: false
   product_mapping: CLOUD
