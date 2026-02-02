@@ -1,3 +1,8 @@
+<a name="v3.79.0"></a>
+## [v3.79.0] - 2026-02-02
+### Features
+- **cloud:** add AWS EU Sovereign cloud integration support ([#3019](https://github.com/newrelic/terraform-provider-newrelic/issues/3019))
+
 <a name="v3.78.0"></a>
 ## [v3.78.0] - 2026-01-15
 ### Features
@@ -2592,7 +2597,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.78.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.79.0...HEAD
+[v3.79.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.78.0...v3.79.0
 [v3.78.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.77.0...v3.78.0
 [v3.77.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.7...v3.77.0
 [v3.76.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.6...v3.76.7
