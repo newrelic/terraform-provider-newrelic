@@ -7,8 +7,10 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -73,6 +75,9 @@ func resourceNewRelicBrowserApplication() *schema.Resource {
 				Description: "JavaScript configuration of the browser application encoded into a string.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(180 * time.Second),
+		},
 	}
 }
 
@@ -109,7 +114,26 @@ func resourceNewRelicBrowserApplicationCreate(ctx context.Context, d *schema.Res
 	_ = d.Set("loader_type", string(resp.Settings.LoaderType))
 	_ = d.Set("guid", string(resp.GUID))
 
-	return resourceNewRelicBrowserApplicationRead(ctx, d, meta)
+	// Retry read to handle eventual consistency in New Relic's entity indexing
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		diag := resourceNewRelicBrowserApplicationRead(ctx, d, meta)
+		if diag.HasError() {
+			return resource.RetryableError(fmt.Errorf("browser application entity not yet available after creation"))
+		}
+
+		// Verify that critical computed fields are populated
+		if d.Get("application_id").(string) == "" {
+			return resource.RetryableError(fmt.Errorf("browser application entity exists but application_id not yet populated"))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		return diag.FromErr(retryErr)
+	}
+
+	return nil
 }
 
 func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
