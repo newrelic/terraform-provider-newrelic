@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
     principals {
       type = "AWS"
       # This is the unique identifier for New Relic account on AWS EU Sovereign Cloud
-      identifiers = ["049749093707"]
+      identifiers = ["093926027544"]
     }
 
     condition {
