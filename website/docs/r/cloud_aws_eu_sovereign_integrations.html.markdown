@@ -102,7 +102,7 @@ In order to find the right set of arguments which go with each integration, and 
         | `billing`         | `cloudtrail`      | `health`          |
         | `trusted_advisor` | `x_ray`           |                   |
 
--> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/aws-integrations/aws-eu-sovereign-cloud-integrations/). You may also find the range of metric polling intervals of an integration under the [Integration Blocks](#integration-blocks) section.
+-> **NOTE** You may find the range of metric polling intervals of an integration under the [Integration Blocks](#integration-blocks) section.
 
 * `aws_regions` - (Optional) Specify each AWS EU Sovereign region that includes the resources that you want to monitor.
   * The following integration blocks support the usage of this argument:
@@ -128,7 +128,7 @@ As specified above in the [Arguments to be Specified with Integration Blocks](#a
 *  Valid `metrics_polling_interval` values: 3600, 21600 (seconds)
 ```hcl
      billing {
-        metrics_polling_interval = 300
+        metrics_polling_interval = 3600
      }
 ```
   </details>
