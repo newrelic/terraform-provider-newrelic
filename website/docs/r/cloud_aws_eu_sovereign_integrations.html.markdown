@@ -18,7 +18,7 @@ The New Relic AWS EU Sovereign integration relies on two mechanisms to get data 
 
 * **CloudWatch Metric Streams (PUSH)**: This is the supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/) to set up a metric stream.
 
-* **API Polling (PULL)**: Required for services that are **not supported** by CloudWatch Metric Streams. The following five services must be integrated via API Polling: **Billing**, **CloudTrail**, **Health**, **Trusted Advisor**, and **X-Ray**. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/).
+* **API Polling (PULL)**: Required for services that are **not supported** by CloudWatch Metric Streams. The following five services must be integrated via API Polling: **Billing**, **CloudTrail** and **X-Ray**. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/).
 
 This resource is used to configure API Polling integrations for those five services that are not available through AWS CloudWatch Metric Streams.
 
@@ -49,14 +49,6 @@ resource "newrelic_cloud_aws_eu_sovereign_integrations" "bar" {
     aws_regions              = ["eusc-de-east-1"]
   }
 
-  health {
-    metrics_polling_interval = 300
-  }
-
-  trusted_advisor {
-    metrics_polling_interval = 3600
-  }
-
   x_ray {
     metrics_polling_interval = 300
     aws_regions              = ["eusc-de-east-1"]
@@ -71,13 +63,11 @@ resource "newrelic_cloud_aws_eu_sovereign_integrations" "bar" {
 <details>
   <summary>Expand this section to view all supported AWS EU Sovereign services that may be integrated via this resource.</summary>
 
-| Block                   | Description                   |
-|-------------------------|-------------------------------|
-| `billing`               | Billing Integration           |
-| `cloudtrail`            | CloudTrail Integration        |
-| `health`                | Health Integration            |
-| `trusted_advisor`       | Trusted Advisor Integration   |
-| `x_ray`                 | X-Ray Integration             |
+| Block                  | Description                   |
+|------------------------|-------------------------------|
+| `billing`              | Billing Integration           |
+| `cloudtrail`           | CloudTrail Integration        |
+| `x_ray`                | X-Ray Integration             |
 
 </details>
 
@@ -99,8 +89,7 @@ In order to find the right set of arguments which go with each integration, and 
 
         |                   |                   |                   |
         |-------------------|-------------------|-------------------|
-        | `billing`         | `cloudtrail`      | `health`          |
-        | `trusted_advisor` | `x_ray`           |                   |
+        | `billing`         | `cloudtrail`      | `x_ray`           |
 
 -> **NOTE** You may find the range of metric polling intervals of an integration under the [Integration Blocks](#integration-blocks) section.
 
@@ -145,28 +134,6 @@ As specified above in the [Arguments to be Specified with Integration Blocks](#a
 ```
   </details>
   <details>
-    <summary>health</summary>
-
-*  Supported Arguments: `metrics_polling_interval`
-*  Valid `metrics_polling_interval` values: 300, 900, 1800, 3600 (seconds)
-```hcl
-     health {
-        metrics_polling_interval = 300
-     }
-```
-  </details>
-  <details>
-    <summary>trusted_advisor</summary>
-
-*  Supported Arguments: `metrics_polling_interval`
-*  Valid `metrics_polling_interval` values: 3600, 21600 (seconds)
-```hcl
-     trusted_advisor {
-        metrics_polling_interval = 3600
-     }
-```
-  </details>
-  <details>
     <summary>x_ray</summary>
 
 *  Supported Arguments: `aws_regions`, `metrics_polling_interval`
@@ -199,14 +166,6 @@ resource "newrelic_cloud_aws_eu_sovereign_integrations" "bar" {
   cloudtrail {
     metrics_polling_interval = 900
     aws_regions              = ["eusc-de-east-1"]
-  }
-
-  health {
-    metrics_polling_interval = 300
-  }
-
-  trusted_advisor {
-    metrics_polling_interval = 3600
   }
 
   x_ray {

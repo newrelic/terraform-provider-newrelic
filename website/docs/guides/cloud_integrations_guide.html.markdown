@@ -93,7 +93,7 @@ New Relic provides monitoring of resources in the EU Sovereign cloud but does NO
 The New Relic AWS EU Sovereign integration relies on two mechanisms to get data into New Relic:
 
 * **Metric Streams:** The **only** supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services.
-* **API Polling:** Required for services **not supported** by CloudWatch Metric Streams: `Billing`, `CloudTrail`, `Health`, `Trusted Advisor`, and `X-Ray`.
+* **API Polling:** Required for services **not supported** by CloudWatch Metric Streams: `Billing`, `CloudTrail` and `X-Ray`.
 
 Check out the [AWS EU Sovereign Cloud integrations documentation](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic) before continuing with the steps below.
 

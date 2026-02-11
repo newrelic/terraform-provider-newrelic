@@ -16,7 +16,7 @@ Setup is required in AWS EU Sovereign for this resource to work properly. To lin
 
 Using a metric stream to New Relic is the only supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/) to set up a metric stream.
 
-To pull data from AWS EU Sovereign for services not supported by CloudWatch Metric Streams (Billing, CloudTrail, Health, Trusted Advisor, and X-Ray), complete the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/).
+To pull data from AWS EU Sovereign for services not supported by CloudWatch Metric Streams (Billing, CloudTrail and X-Ray), complete the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/).
 
 ## Example Usage
 
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID to operate on. This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`, if not specified in the configuration.
 * `arn` - (Required) The Amazon Resource Name (ARN) of the IAM role.
-* `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for metric stream, `PULL` for API polling of the 5 services not supported by metric streams (Billing, CloudTrail, Health, Trusted Advisor, and X-Ray), or `BOTH` for both methods. Defaults to `BOTH`, if not specified in the configuration.
+* `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for metric stream, `PULL` for API polling of the 3 services not supported by metric streams (Billing, CloudTrail and X-Ray), or `BOTH` for both methods. Defaults to `BOTH`, if not specified in the configuration.
 * `name` - (Required) The name/identifier of the AWS EU Sovereign - New Relic 'linked' account.
 
 -> **WARNING:** Updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_aws_eu_sovereign_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
