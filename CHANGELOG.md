@@ -1,3 +1,14 @@
+<a name="v3.80.0"></a>
+## [v3.80.0] - 2026-02-12
+### Bug Fixes
+- **cloud:** change IAM Policy Document Identifier, AWS EU Sovereign ([#3022](https://github.com/newrelic/terraform-provider-newrelic/issues/3022))
+
+### Documentation Updates
+- **cloud:** add AWS EU Sovereign cloud integration documentation ([#3014](https://github.com/newrelic/terraform-provider-newrelic/issues/3014))
+
+### Features
+- **cloud:** updated default metric collection mode to PUSH ([#3028](https://github.com/newrelic/terraform-provider-newrelic/issues/3028))
+
 <a name="v3.79.0"></a>
 ## [v3.79.0] - 2026-02-02
 ### Features
@@ -2597,7 +2608,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.79.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.0...HEAD
+[v3.80.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.79.0...v3.80.0
 [v3.79.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.78.0...v3.79.0
 [v3.78.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.77.0...v3.78.0
 [v3.77.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.76.7...v3.77.0
