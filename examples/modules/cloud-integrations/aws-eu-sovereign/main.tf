@@ -46,21 +46,7 @@ resource "aws_iam_policy" "newrelic_aws_permissions" {
   "Statement": [
     {
       "Action": [
-        "budgets:ViewBudget",
-        "cloudtrail:LookupEvents",
-        "config:BatchGetResourceConfig",
-        "config:ListDiscoveredResources",
-        "health:DescribeAffectedEntities",
-        "health:DescribeEventDetails",
-        "health:DescribeEvents",
-        "support:DescribeTrustedAdvisorCheckRefreshStatuses",
-        "support:DescribeTrustedAdvisorCheckResult",
-        "support:DescribeTrustedAdvisorCheckSummaries",
-        "support:DescribeTrustedAdvisorChecks",
-        "support:RefreshTrustedAdvisorCheck",
-        "tag:GetResources",
-        "xray:BatchGet*",
-        "xray:Get*"
+        "budgets:ViewBudget"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -76,10 +62,16 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
   policy_arn = aws_iam_policy.newrelic_aws_permissions.arn
 }
 
+# Attach ReadOnlyAccess policy for comprehensive monitoring
+resource "aws_iam_role_policy_attachment" "readonly_access_policy_attach" {
+  role       = aws_iam_role.newrelic_aws_role.name
+  policy_arn = "arn:aws-eusc:iam::aws:policy/ReadOnlyAccess"
+}
+
 # Wait for IAM role to propagate in EU Sovereign region
 # EU Sovereign has slower IAM propagation than standard AWS/GovCloud
 resource "terraform_data" "wait_for_iam" {
-  depends_on = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach]
+  depends_on = [aws_iam_role_policy_attachment.newrelic_aws_policy_attach, aws_iam_role_policy_attachment.readonly_access_policy_attach]
 
   provisioner "local-exec" {
     command = "sleep 10"
