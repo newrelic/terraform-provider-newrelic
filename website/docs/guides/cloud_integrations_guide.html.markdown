@@ -87,7 +87,7 @@ Variables:
 
 ### AWS EU Sovereign
 
-AWS European (EU) Sovereign Cloud is a new independent AWS Cloud located within the European Union.
+AWS European Sovereign Cloud (EU SC) is a new independent AWS Cloud located within the European Union.
 New Relic provides monitoring of resources in the EU Sovereign cloud but does NOT store the telemetry data within the EU Sovereign Cloud. They are stored in our existing New Relic EU (non-sovereign) data center.
 
 The New Relic AWS EU Sovereign integration relies on two mechanisms to get data into New Relic:
@@ -103,6 +103,8 @@ The GitHub repository of the Terraform Provider also has an AWS EU Sovereign Clo
 
 -> **NOTE:** This module assumes you've already set up the New Relic and AWS provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [AWS instructions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration). Note that the AWS provider requires version `~> 6.30` for AWS EU Sovereign support.
 
+-> **IMPORTANT:** Review the scope of access and monitoring carefully and edit it further as necessary to ensure only the data that can leave your AWS EU Sovereign Cloud, does so to a non-sovereign cloud environment.
+
 ```hcl
 module "newrelic-aws-eu-sovereign-cloud-integrations" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/aws-eu-sovereign"
@@ -111,7 +113,7 @@ module "newrelic-aws-eu-sovereign-cloud-integrations" {
   newrelic_region         = "EU"
   name                    = "production"
   output_format           = "opentelemetry1.0"
-  metric_collection_mode  = "BOTH" # Options: "PUSH", "PULL", or "BOTH"
+  metric_collection_mode  = "PUSH" # Options: "PUSH", "PULL", or "BOTH"
   enable_config_recorder  = true
 }
 ```

@@ -26,7 +26,7 @@ You can also use the [full example, including the AWS set up, found in our guide
 resource "newrelic_cloud_aws_eu_sovereign_link_account" "foo" {
   account_id             = 1234567
   name                   = "My New Relic - AWS EU Sovereign Linked Account"
-  metric_collection_mode = "BOTH" # Options: "PUSH", "PULL", or "BOTH"
+  metric_collection_mode = "PUSH" # Options: "PUSH", "PULL", or "BOTH"
   arn                    = "arn:aws-eusc:iam::123456789012:role/NewRelicInfrastructure-Integrations"
 }
 ```
@@ -37,7 +37,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The New Relic account ID to operate on. This allows the user to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`, if not specified in the configuration.
 * `arn` - (Required) The Amazon Resource Name (ARN) of the IAM role.
-* `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for metric stream, `PULL` for API polling of the 3 services not supported by metric streams (Billing, CloudTrail and X-Ray), or `BOTH` for both methods. Defaults to `BOTH`, if not specified in the configuration.
+* `metric_collection_mode` - (Optional) How metrics will be collected. Use `PUSH` for metric stream, `PULL` for API polling of the 3 services not supported by metric streams (Billing, CloudTrail and X-Ray), or `BOTH` for both methods. Defaults to `PUSH`, if not specified in the configuration.
 * `name` - (Required) The name/identifier of the AWS EU Sovereign - New Relic 'linked' account.
 
 -> **WARNING:** Updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_aws_eu_sovereign_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
