@@ -85,21 +85,12 @@ The following arguments are intended to be used within certain ["integration blo
 In order to find the right set of arguments which go with each integration, and samples on the usage of these arguments "within" integration blocks, **check out the [Integration Blocks](#integration-blocks) section below.**
 
 * `metrics_polling_interval` - (Optional) The data polling interval **in seconds**.
-  * The following integration blocks support the usage of this argument:
-
-        |                   |                   |                   |
-        |-------------------|-------------------|-------------------|
-        | `billing`         | `cloudtrail`      | `x_ray`           |
+  * Supported by: `billing`, `cloudtrail`, `x_ray`
 
 -> **NOTE** You may find the range of metric polling intervals of an integration under the [Integration Blocks](#integration-blocks) section.
 
 * `aws_regions` - (Optional) Specify each AWS EU Sovereign region that includes the resources that you want to monitor.
-  * The following integration blocks support the usage of this argument:
-
-        |                   |                   |                   |
-        |-------------------|-------------------|-------------------|
-        | `cloudtrail`      | `x_ray`           |                   |
-
+  * Supported by: `cloudtrail`, `x_ray`
   * Valid regions: `eusc-de-east-1`
 
 ## Integration Blocks
