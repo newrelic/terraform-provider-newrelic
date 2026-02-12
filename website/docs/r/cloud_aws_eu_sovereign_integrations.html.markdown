@@ -16,11 +16,11 @@ Setup is required for this resource to work properly. This resource assumes you 
 
 The New Relic AWS EU Sovereign integration relies on two mechanisms to get data into New Relic:
 
-* **CloudWatch Metric Streams (PUSH)**: This is the supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/) to set up a metric stream.
+* **CloudWatch Metric Streams (PUSH)**: This is the supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services. Follow the [steps outlined here](https://docs-preview.newrelic.com/docs/aws-eu-sovereign-cloud-integration) to set up a metric stream.
 
-* **API Polling (PULL)**: Required for services that are **not supported** by CloudWatch Metric Streams. The following five services must be integrated via API Polling: **Billing**, **CloudTrail** and **X-Ray**. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/).
+* **API Polling (PULL)**: Required for services that are **not supported** by CloudWatch Metric Streams. The following three services must be integrated via API Polling: **Billing**, **CloudTrail** and **X-Ray**. Follow the [steps outlined here](https://docs-preview.newrelic.com/docs/aws-eu-sovereign-cloud-integration).
 
-This resource is used to configure API Polling integrations for those five services that are not available through AWS CloudWatch Metric Streams.
+This resource is used to configure API Polling integrations for those three services that are not available through AWS CloudWatch Metric Streams.
 
 ## Example Usage
 
@@ -58,7 +58,7 @@ resource "newrelic_cloud_aws_eu_sovereign_integrations" "bar" {
 
 ## Supported AWS EU Sovereign Integrations
 
--> **NOTE:** CloudWatch Metric Streams is the only supported method for AWS EU Sovereign Cloud. The following five integrations are for services **not supported by CloudWatch Metric Streams** and must be configured via API Polling using this resource.
+-> **NOTE:** CloudWatch Metric Streams is the only supported method for AWS EU Sovereign Cloud. The following three integrations are for services **not supported by CloudWatch Metric Streams** and must be configured via API Polling using this resource.
 
 <details>
   <summary>Expand this section to view all supported AWS EU Sovereign services that may be integrated via this resource.</summary>

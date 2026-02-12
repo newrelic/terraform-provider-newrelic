@@ -14,9 +14,9 @@ Use this resource to link an AWS EU Sovereign account to New Relic.
 
 Setup is required in AWS EU Sovereign for this resource to work properly. To link an AWS EU Sovereign account to New Relic, you need an AWS EU Sovereign Cloud account.
 
-Using a metric stream to New Relic is the only supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services. Follow the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/) to set up a metric stream.
+Using a metric stream to New Relic is the only supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services. Follow the [steps outlined here](https://docs-preview.newrelic.com/docs/aws-eu-sovereign-cloud-integration) to set up a metric stream.
 
-To pull data from AWS EU Sovereign for services not supported by CloudWatch Metric Streams (Billing, CloudTrail and X-Ray), complete the [steps outlined here](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/connect-aws-eu-sovereign-new-relic/).
+To pull data from AWS EU Sovereign for services not supported by CloudWatch Metric Streams (Billing, CloudTrail and X-Ray), complete the [steps outlined here](https://docs-preview.newrelic.com/docs/aws-eu-sovereign-cloud-integration).
 
 ## Example Usage
 
