@@ -87,7 +87,7 @@ Variables:
 
 ### AWS EU Sovereign
 
-AWS European Sovereign Cloud (EU SC) is a new independent AWS Cloud located within the European Union.
+AWS European Sovereign Cloud (EU SC) is a new independent AWS Cloud Partition located within the European Union.
 New Relic provides monitoring of resources in the EU Sovereign cloud but does NOT store the telemetry data within the EU Sovereign Cloud. They are stored in our existing New Relic EU (non-sovereign) data center.
 
 The New Relic AWS EU Sovereign integration relies on two mechanisms to get data into New Relic:
