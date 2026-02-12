@@ -1,18 +1,19 @@
 ---
 layout: "newrelic"
-page_title: "New Relic Terraform Provider Cloud integrations example for AWS, GCP, Azure, and OCI"
+page_title: "New Relic Terraform Provider Cloud integrations example for AWS, AWS EU Sovereign, GCP, Azure, and OCI"
 sidebar_current: "docs-newrelic-provider-cloud-integrations-guide"
 description: |-
   Use this guide to set up the New Relic cloud integrations fully automated through Terraform.
 ---
 
-## New Relic Terraform Provider Cloud integrations example for AWS, GCP, Azure, and OCI
+## New Relic Terraform Provider Cloud integrations example for AWS, AWS EU Sovereign, GCP, Azure, and OCI
 
 The [New Relic Cloud integrations](https://docs.newrelic.com/docs/infrastructure/infrastructure-integrations/get-started/introduction-infrastructure-integrations/) collect data from cloud platform services and accounts. There's no installation process for cloud integrations and they do not require the use of our infrastructure agent: you simply connect your New Relic account to your cloud provider account. This guide describes the process of enabling the New Relic cloud integrations fully automated through Terraform.
 
 We have different instructions for each cloud provider, use the links below to go the relevant sections:
 
 - [AWS](#aws)
+- [AWS EU Sovereign](#aws-eu-sovereign)
 - [Azure](#azure)
 - [Google Cloud Platform](#gcp)
 - [Oracle Cloud Infrastructure](#oci)
@@ -80,6 +81,52 @@ Variables:
 * `newrelic_account_region` (Optional): The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
 * `name` (Optional): A unique name used throughout the module to name the resources. (Default `production`)
 * `output_format` (Optional): The output format for telemetry data. Supported values are `opentelemetry0.7` and `opentelemetry1.0`. (Default `opentelemetry0.7`)
+* `exclude_metric_filters` (Optional): a map of namespaces and metric names to exclude from the Cloudwatch metric stream. `Conflicts with include_metric_filters`.
+* `include_metric_filters` (Optional): a map of namespaces and metric names to include in the Cloudwatch metric stream. `Conflicts with exclude_metric_filters`.
+* `enable_config_recorder` (Optional): Set to `true` to enable creation of an [AWS Config Configuration Recorder](https://docs.aws.amazon.com/config/latest/developerguide/stop-start-recorder.html) in your AWS account. Only one recorder is allowed per region per account. Default is `false`.
+
+### AWS EU Sovereign
+
+AWS European Sovereign Cloud (EU SC) is a new independent AWS Cloud Partition located within the European Union.
+New Relic provides monitoring of resources in the EU Sovereign cloud but does NOT store the telemetry data within the EU Sovereign Cloud. They are stored in our existing New Relic EU (non-sovereign) data center.
+
+The New Relic AWS EU Sovereign integration relies on two mechanisms to get data into New Relic:
+
+* **Metric Streams:** The **only** supported method for AWS EU Sovereign Cloud to get metrics into New Relic for the majority of AWS services.
+* **API Polling:** Required for services **not supported** by CloudWatch Metric Streams: `Billing`, `CloudTrail` and `X-Ray`.
+
+Check out the [AWS EU Sovereign Cloud integrations documentation](https://docs-preview.newrelic.com/docs/aws-eu-sovereign-cloud-integration) before continuing with the steps below.
+
+-> **NOTE:** This integration requires the New Relic provider to be configured with `region = "EU"` or the `NEW_RELIC_REGION=EU` environment variable.
+
+The GitHub repository of the Terraform Provider also has an AWS EU Sovereign Cloud Integrations 'module' that can be used to simplify setting up an AWS EU Sovereign integration; both via metric streams and with API polling. To use this module, add the following to your Terraform code, and set the variables to your desired values.
+
+-> **NOTE:** This module assumes you've already set up the New Relic and AWS provider with the correct credentials. If you haven't done so, you can find the instructions here: [New Relic instructions](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started), [AWS instructions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration). Note that the AWS provider requires version `~> 6.30` for AWS EU Sovereign support.
+
+-> **IMPORTANT:** Review the scope of access and monitoring carefully and edit it further as necessary to ensure only the data that can leave your AWS EU Sovereign Cloud, does so to a non-sovereign cloud environment.
+
+```hcl
+module "newrelic-aws-eu-sovereign-cloud-integrations" {
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/aws-eu-sovereign"
+
+  newrelic_account_id     = 1234567
+  newrelic_region         = "EU"
+  name                    = "production"
+  output_format           = "opentelemetry1.0"
+  metric_collection_mode  = "PUSH" # Options: "PUSH", "PULL", or "BOTH"
+  enable_config_recorder  = true
+}
+```
+
+[*You can find the source code for the module on Github.*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/aws-eu-sovereign)
+
+Variables:
+
+* `newrelic_account_id`: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
+* `newrelic_region` (Optional): The region of your New Relic account, this is `EU` for Europe.
+* `name` (Optional): A unique name used throughout the module to name the resources. (Default `production`)
+* `output_format` (Optional): The output format for telemetry data. Supported values are `opentelemetry0.7` and `opentelemetry1.0`. (Default `opentelemetry1.0`)
+* `metric_collection_mode` (Optional): The mode by which metric data is to be collected. Options are `PUSH` for Metric Streams, `PULL` for API Polling, or `BOTH` for both methods.
 * `exclude_metric_filters` (Optional): a map of namespaces and metric names to exclude from the Cloudwatch metric stream. `Conflicts with include_metric_filters`.
 * `include_metric_filters` (Optional): a map of namespaces and metric names to include in the Cloudwatch metric stream. `Conflicts with exclude_metric_filters`.
 * `enable_config_recorder` (Optional): Set to `true` to enable creation of an [AWS Config Configuration Recorder](https://docs.aws.amazon.com/config/latest/developerguide/stop-start-recorder.html) in your AWS account. Only one recorder is allowed per region per account. Default is `false`.
