@@ -21,7 +21,7 @@ variable "name" {
 variable "metric_collection_mode" {
   description = "How metrics are collected. PUSH (metric streams), PULL (API polling), or BOTH"
   type        = string
-  default     = "BOTH"
+  default     = "PUSH"
 
   validation {
     condition     = contains(["PUSH", "PULL", "BOTH"], var.metric_collection_mode)
