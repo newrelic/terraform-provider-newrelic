@@ -1,6 +1,6 @@
 # AWS EU Sovereign Cloud Integration Module
 # This module creates a New Relic AWS EU Sovereign cloud integration
-# EU Sovereign only supports: billing, cloudtrail, health, trusted_advisor, x_ray
+# EU Sovereign only supports: billing, cloudtrail, x_ray
 
 locals {
   # EU Sovereign only supports EU region
@@ -244,15 +244,13 @@ resource "newrelic_cloud_aws_eu_sovereign_link_account" "newrelic_cloud_integrat
 }
 
 # Configure AWS EU Sovereign integrations
-# EU Sovereign only supports: billing, cloudtrail, health, trusted_advisor, and x_ray
+# EU Sovereign only supports: billing, cloudtrail and x_ray
 resource "newrelic_cloud_aws_eu_sovereign_integrations" "newrelic_cloud_integration_pull" {
   count             = local.create_pull ? 1 : 0
   account_id        = var.newrelic_account_id
   linked_account_id = newrelic_cloud_aws_eu_sovereign_link_account.newrelic_cloud_integration_pull[0].id
   billing {}
   cloudtrail {}
-  health {}
-  trusted_advisor {}
   x_ray {}
 }
 
