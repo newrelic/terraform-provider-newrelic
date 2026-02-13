@@ -2,7 +2,7 @@ module github.com/newrelic/terraform-provider-newrelic/v3
 
 go 1.24.0
 
-toolchain go1.24.11
+toolchain go1.26.0
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
