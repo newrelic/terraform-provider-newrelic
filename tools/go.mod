@@ -1,6 +1,6 @@
 module github.com/newrelic/terraform-provider-newrelic/v3/tools
 
-go 1.25.5
+go 1.26.0
 
 require (
 	github.com/bflad/tfproviderlint v0.29.0
