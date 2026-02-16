@@ -124,14 +124,6 @@ resource "newrelic_cloud_aws_eu_sovereign_integrations" "foo" {
     aws_regions              = ["eusc-de-east-1"]
   }
 
-  health {
-    metrics_polling_interval = 3600
-  }
-
-  trusted_advisor {
-    metrics_polling_interval = 3600
-  }
-
   x_ray {
     metrics_polling_interval = 3600
     aws_regions              = ["eusc-de-east-1"]
@@ -157,14 +149,6 @@ resource "newrelic_cloud_aws_eu_sovereign_integrations" "foo" {
   cloudtrail {
     metrics_polling_interval = 7200
     aws_regions              = ["eusc-de-east-1"]
-  }
-
-  health {
-    metrics_polling_interval = 7200
-  }
-
-  trusted_advisor {
-    metrics_polling_interval = 7200
   }
 
   x_ray {

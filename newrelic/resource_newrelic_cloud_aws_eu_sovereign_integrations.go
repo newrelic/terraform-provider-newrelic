@@ -33,7 +33,7 @@ func resourceNewRelicCloudAwsEuSovereignIntegrations() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of the linked AWS EU Sovereign account in New Relic.",
 			},
-			// EU Sovereign only supports 5 integrations: billing, cloudtrail, xray, health, trustedadvisor
+			// EU Sovereign only supports 5 integrations: billing, cloudtrail, xray
 			"billing": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -47,20 +47,6 @@ func resourceNewRelicCloudAwsEuSovereignIntegrations() *schema.Resource {
 				MaxItems:    1,
 				Description: "CloudTrail integration",
 				Elem:        cloudAwsEuSovereignIntegrationsCloudtrailElem(),
-			},
-			"health": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Health integration",
-				Elem:        cloudAwsEuSovereignIntegrationsHealthElem(),
-			},
-			"trusted_advisor": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Trusted Advisor integration",
-				Elem:        cloudAwsEuSovereignIntegrationsTrustedAdvisorElem(),
 			},
 			"x_ray": {
 				Type:        schema.TypeList,
@@ -222,32 +208,6 @@ func cloudAwsEuSovereignIntegrationsCloudtrailElem() *schema.Resource {
 	}
 }
 
-// Health integration schema
-func cloudAwsEuSovereignIntegrationsHealthElem() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"metrics_polling_interval": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The data polling interval in seconds",
-			},
-		},
-	}
-}
-
-// Trusted Advisor integration schema
-func cloudAwsEuSovereignIntegrationsTrustedAdvisorElem() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"metrics_polling_interval": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The data polling interval in seconds",
-			},
-		},
-	}
-}
-
 // X-Ray integration schema
 func cloudAwsEuSovereignIntegrationsXRayElem() *schema.Resource {
 	return &schema.Resource{
@@ -268,7 +228,7 @@ func cloudAwsEuSovereignIntegrationsXRayElem() *schema.Resource {
 }
 
 // expandCloudAwsEuSovereignIntegrationsInput expands the schema data for configuring integrations
-// EU Sovereign only supports: billing, cloudtrail, xray, health, trustedadvisor
+// EU Sovereign only supports: billing, cloudtrail, xray
 func expandCloudAwsEuSovereignIntegrationsInput(d *schema.ResourceData, linkedAccountID int) cloud.CloudIntegrationsInput {
 	awsEuSovereignInput := cloud.CloudAwsEuSovereignIntegrationsInput{}
 
@@ -286,22 +246,6 @@ func expandCloudAwsEuSovereignIntegrationsInput(d *schema.ResourceData, linkedAc
 		cloudtrailList := cloudtrailRaw.([]interface{})
 		if len(cloudtrailList) > 0 {
 			awsEuSovereignInput.Cloudtrail = expandCloudAwsEuSovereignIntegrationCloudtrail(cloudtrailList, linkedAccountID)
-		}
-	}
-
-	// Health Integration
-	if healthRaw := d.Get("health"); healthRaw != nil {
-		healthList := healthRaw.([]interface{})
-		if len(healthList) > 0 {
-			awsEuSovereignInput.Health = expandCloudAwsEuSovereignIntegrationHealth(healthList, linkedAccountID)
-		}
-	}
-
-	// Trusted Advisor Integration
-	if trustedAdvisorRaw := d.Get("trusted_advisor"); trustedAdvisorRaw != nil {
-		trustedAdvisorList := trustedAdvisorRaw.([]interface{})
-		if len(trustedAdvisorList) > 0 {
-			awsEuSovereignInput.Trustedadvisor = expandCloudAwsEuSovereignIntegrationTrustedAdvisor(trustedAdvisorList, linkedAccountID)
 		}
 	}
 
@@ -333,14 +277,6 @@ func expandCloudAwsEuSovereignDisableIntegrationsInput(d *schema.ResourceData, l
 		awsEuSovereignInput.Cloudtrail = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
-	if v := d.Get("health"); v != nil && len(v.([]interface{})) > 0 {
-		awsEuSovereignInput.Health = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
-	if v := d.Get("trusted_advisor"); v != nil && len(v.([]interface{})) > 0 {
-		awsEuSovereignInput.Trustedadvisor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
-	}
-
 	if v := d.Get("x_ray"); v != nil && len(v.([]interface{})) > 0 {
 		awsEuSovereignInput.AwsXray = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -363,10 +299,6 @@ func flattenCloudAwsEuSovereignIntegrations(linkedAccount *cloud.CloudLinkedAcco
 			_ = d.Set("billing", flattenCloudAwsEuSovereignIntegrationBilling(t))
 		case *cloud.CloudCloudtrailIntegration:
 			_ = d.Set("cloudtrail", flattenCloudAwsEuSovereignIntegrationCloudtrail(t))
-		case *cloud.CloudHealthIntegration:
-			_ = d.Set("health", flattenCloudAwsEuSovereignIntegrationHealth(t))
-		case *cloud.CloudTrustedadvisorIntegration:
-			_ = d.Set("trusted_advisor", flattenCloudAwsEuSovereignIntegrationTrustedAdvisor(t))
 		case *cloud.CloudAwsXrayIntegration:
 			_ = d.Set("x_ray", flattenCloudAwsEuSovereignIntegrationXRay(t))
 		}
@@ -444,70 +376,6 @@ func flattenCloudAwsEuSovereignIntegrationCloudtrail(t *cloud.CloudCloudtrailInt
 	result := make(map[string]interface{})
 	result["metrics_polling_interval"] = t.MetricsPollingInterval
 	result["aws_regions"] = t.AwsRegions
-	return []interface{}{result}
-}
-
-// Health expand/flatten
-func expandCloudAwsEuSovereignIntegrationHealth(b []interface{}, linkedAccountID int) []cloud.CloudHealthIntegrationInput {
-	expanded := make([]cloud.CloudHealthIntegrationInput, len(b))
-
-	for i, health := range b {
-		var healthInput cloud.CloudHealthIntegrationInput
-
-		if health == nil {
-			healthInput.LinkedAccountId = linkedAccountID
-			expanded[i] = healthInput
-			return expanded
-		}
-
-		cfg := health.(map[string]interface{})
-		healthInput.LinkedAccountId = linkedAccountID
-
-		if v, ok := cfg["metrics_polling_interval"]; ok {
-			healthInput.MetricsPollingInterval = v.(int)
-		}
-
-		expanded[i] = healthInput
-	}
-
-	return expanded
-}
-
-func flattenCloudAwsEuSovereignIntegrationHealth(t *cloud.CloudHealthIntegration) []interface{} {
-	result := make(map[string]interface{})
-	result["metrics_polling_interval"] = t.MetricsPollingInterval
-	return []interface{}{result}
-}
-
-// Trusted Advisor expand/flatten
-func expandCloudAwsEuSovereignIntegrationTrustedAdvisor(b []interface{}, linkedAccountID int) []cloud.CloudTrustedadvisorIntegrationInput {
-	expanded := make([]cloud.CloudTrustedadvisorIntegrationInput, len(b))
-
-	for i, ta := range b {
-		var taInput cloud.CloudTrustedadvisorIntegrationInput
-
-		if ta == nil {
-			taInput.LinkedAccountId = linkedAccountID
-			expanded[i] = taInput
-			return expanded
-		}
-
-		cfg := ta.(map[string]interface{})
-		taInput.LinkedAccountId = linkedAccountID
-
-		if v, ok := cfg["metrics_polling_interval"]; ok {
-			taInput.MetricsPollingInterval = v.(int)
-		}
-
-		expanded[i] = taInput
-	}
-
-	return expanded
-}
-
-func flattenCloudAwsEuSovereignIntegrationTrustedAdvisor(t *cloud.CloudTrustedadvisorIntegration) []interface{} {
-	result := make(map[string]interface{})
-	result["metrics_polling_interval"] = t.MetricsPollingInterval
 	return []interface{}{result}
 }
 
