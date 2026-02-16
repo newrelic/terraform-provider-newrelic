@@ -1,3 +1,9 @@
+<a name="v3.80.1"></a>
+## [v3.80.1] - 2026-02-16
+### Bug Fixes
+- add missing newline at EOF in cloud test file ([#3033](https://github.com/newrelic/terraform-provider-newrelic/issues/3033))
+- **cloud:** rollback health and trusted advisor in the AWS EU Sovereign integrations resource ([#3034](https://github.com/newrelic/terraform-provider-newrelic/issues/3034))
+
 <a name="v3.80.0"></a>
 ## [v3.80.0] - 2026-02-12
 ### Bug Fixes
@@ -2608,7 +2614,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.1...HEAD
+[v3.80.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.0...v3.80.1
 [v3.80.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.79.0...v3.80.0
 [v3.79.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.78.0...v3.79.0
 [v3.78.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.77.0...v3.78.0
