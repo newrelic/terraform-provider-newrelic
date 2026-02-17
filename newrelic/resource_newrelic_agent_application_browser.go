@@ -76,7 +76,8 @@ func resourceNewRelicBrowserApplication() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(180 * time.Second),
+			Create: schema.DefaultTimeout(30 * time.Second),
+			Read:   schema.DefaultTimeout(30 * time.Second),
 		},
 	}
 }
@@ -124,14 +125,14 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 	guid := d.Id()
 
 	// Retry to handle eventual consistency in New Relic's entity indexing
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(guid))
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
 
 		if resp == nil {
-			return resource.RetryableError(fmt.Errorf("entity with GUID %s not yet available", guid))
+			return resource.RetryableError(fmt.Errorf("entity with GUID %s not found", guid))
 		}
 
 		// Try to populate fields and verify critical data is available
@@ -168,7 +169,7 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 				return resource.RetryableError(fmt.Errorf("application_id field not populated after setting"))
 			}
 		default:
-			return resource.RetryableError(fmt.Errorf("entity type is not BrowserApplicationEntity"))
+			return resource.NonRetryableError(fmt.Errorf("entity with GUID %s is not a BrowserApplicationEntity", guid))
 		}
 
 		return nil
