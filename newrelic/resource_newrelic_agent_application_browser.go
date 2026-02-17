@@ -131,7 +131,7 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 			return resource.NonRetryableError(err)
 		}
 
-		if resp == nil {
+		if resp == nil || *resp == nil {
 			return resource.RetryableError(fmt.Errorf("entity with GUID %s not found", guid))
 		}
 
