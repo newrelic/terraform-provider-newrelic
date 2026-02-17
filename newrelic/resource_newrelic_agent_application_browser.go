@@ -169,7 +169,7 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 				return resource.RetryableError(fmt.Errorf("application_id field not populated after setting"))
 			}
 		default:
-			return resource.NonRetryableError(fmt.Errorf("entity with GUID %s is not a BrowserApplicationEntity", guid))
+			return resource.RetryableError(fmt.Errorf("entity with GUID %s is not a BrowserApplicationEntity", guid))
 		}
 
 		return nil
