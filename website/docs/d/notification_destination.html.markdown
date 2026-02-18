@@ -33,10 +33,11 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
-## Name Example Usage
+## Name Example Usage (Contains Match)
 
 ```hcl
-# Data source
+# Data source - uses contains match
+# Searching for "webhook" would match "webhook-destination", "my-webhook", etc.
 data "newrelic_notification_destination" "foo" {
   name = "webhook-destination"
 }
@@ -52,6 +53,56 @@ resource "newrelic_notification_channel" "foo-channel" {
     key   = "payload"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
+  }
+}
+```
+
+## Exact Name Example Usage (Exact Match)
+
+```hcl
+# Data source - uses exact match
+# Searching for "webhook-destination" would only match "webhook-destination", not "my-webhook-destination"
+data "newrelic_notification_destination" "foo" {
+  exact_name = "webhook-destination"
+}
+
+# Resource
+resource "newrelic_notification_channel" "foo-channel" {
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  destination_id = data.newrelic_notification_destination.foo.id
+  product        = "IINT"
+
+  property {
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+}
+```
+
+
+Use this data source to create cross account destination.
+
+## Cross Account Destination Example Usage
+
+```hcl
+
+# Resource
+resource "newrelic_notification_channel" "foo-channel" {
+  name           = "webhook-example-cross-account-destination"
+  type           = "WEBHOOK"
+  destination_id = data.newrelic_notification_destination.foo.id
+  product        = "IINT"
+
+  property {
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+  scope {
+    type = "ORGANIZATION" (type of scope)
+    id   = "00000000-0000-0000-0000-000000000000" (Organization UUID)
   }
 }
 ```
@@ -77,7 +128,8 @@ In addition to all arguments above, the following attributes are exported:
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.
 * `guid` - The unique entity identifier of the destination in New Relic.
-* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret. 
+* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret.
+* `scope` - A nested block of scope of destination which has two parameters scope type and ID.
 
 
 ```
