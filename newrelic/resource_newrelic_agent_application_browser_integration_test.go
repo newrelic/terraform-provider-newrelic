@@ -39,6 +39,7 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "application_id"),
 				),
 			},
 			{
@@ -50,6 +51,7 @@ func TestAccNewRelicAgentApplicationBrowser(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAgentApplicationBrowserExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "application_id"),
 				),
 			},
 			// Test: Import
@@ -111,6 +113,12 @@ func testAccCheckNewRelicAgentApplicationBrowserExists(n string) resource.TestCh
 			if string((*result).GetGUID()) != rs.Primary.ID {
 				return fmt.Errorf("the browser agent application was not found %v - %v", (*result).GetGUID(), rs.Primary.ID)
 			}
+		}
+
+		// Check that application_id is populated in Terraform state
+		applicationID := rs.Primary.Attributes["application_id"]
+		if applicationID == "" {
+			return fmt.Errorf("application_id is not set in the resource state")
 		}
 
 		return nil
