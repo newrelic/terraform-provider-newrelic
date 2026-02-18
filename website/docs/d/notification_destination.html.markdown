@@ -33,37 +33,12 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
-## Name Example Usage (Contains Match)
+## Name Example Usage
 
 ```hcl
-# Data source - uses contains match
-# Searching for "webhook" would match "webhook-destination", "my-webhook", etc.
+# Data source
 data "newrelic_notification_destination" "foo" {
   name = "webhook-destination"
-}
-
-# Resource
-resource "newrelic_notification_channel" "foo-channel" {
-  name           = "webhook-example"
-  type           = "WEBHOOK"
-  destination_id = data.newrelic_notification_destination.foo.id
-  product        = "IINT"
-
-  property {
-    key   = "payload"
-    value = "{\n\t\"name\": \"foo\"\n}"
-    label = "Payload Template"
-  }
-}
-```
-
-## Exact Name Example Usage (Exact Match)
-
-```hcl
-# Data source - uses exact match
-# Searching for "webhook-destination" would only match "webhook-destination", not "my-webhook-destination"
-data "newrelic_notification_destination" "foo" {
-  exact_name = "webhook-destination"
 }
 
 # Resource
@@ -85,10 +60,9 @@ resource "newrelic_notification_channel" "foo-channel" {
 
 The following arguments are supported:
 
-Exactly one of the following attributes is required:
+Either of the following two attributes are required, and not both:
 * `id` - (Optional) The id of the notification destination in New Relic.
-* `name` - (Optional) The name of the notification destination. Uses a **contains** match, so searching for "foo" would match "foobar", "myfoo", etc.
-* `exact_name` - (Optional) The exact name of the notification destination. Uses an **exact** match, so searching for "foo" would only match "foo", not "foobar".
+* `name` - (Optional) The name of the notification destination.
 
 Optional:
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
