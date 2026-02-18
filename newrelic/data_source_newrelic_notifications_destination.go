@@ -76,6 +76,24 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 					},
 				},
 			},
+			"scope": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Scope of the destination",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: fmt.Sprintf("The scope type of the destination. One of: (%s).", strings.Join(listValidNotificationsScopeTypes(), ", ")),
+						},
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }

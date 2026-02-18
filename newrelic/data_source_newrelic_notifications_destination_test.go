@@ -74,6 +74,26 @@ func TestAccNewRelicNotificationDestinationDataSource_WithSecureURL(t *testing.T
 	})
 }
 
+func TestAccNewRelicNotificationDestinationDataSource_WithScope(t *testing.T) {
+	dataSourceName := "data.newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithScope(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicNotificationDestination(dataSourceName),
+					resource.TestCheckResourceAttr(dataSourceName, "scope.0.type", "ORGANIZATION"),
+				),
+			},
+		},
+	})
+}
+
 func testAccNewRelicNotificationsDestinationDataSourceConfigById(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
@@ -130,6 +150,35 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name s
 	  }
 	}
 	
+	data "newrelic_notification_destination" "foo" {
+	  name = newrelic_notification_destination.foo.name
+	}
+`, name)
+}
+
+func testAccNewRelicNotificationsDestinationDataSourceConfigWithScope(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+
+	  property {
+		key = "url"
+		value = "https://webhook.site/"
+	  }
+
+	  property {
+		key = "source"
+		value = "terraform"
+	  }
+
+	  scope {
+		type = "ORGANIZATION"
+		id   = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+	  }
+	}
+
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
 	}
