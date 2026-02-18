@@ -12,7 +12,13 @@ func expandNotificationChannel(d *schema.ResourceData) notifications.AiNotificat
 		Type:          notifications.AiNotificationsChannelType(d.Get("type").(string)),
 		Product:       notifications.AiNotificationsProduct(d.Get("product").(string)),
 	}
-	channel.Properties = expandNotificationChannelProperties(d.Get("property").(*schema.Set).List())
+	
+	// SERVICE_NOW_APP requires an empty properties array, not null
+	properties := expandNotificationChannelProperties(d.Get("property").(*schema.Set).List())
+	if properties == nil {
+		properties = []notifications.AiNotificationsPropertyInput{}
+	}
+	channel.Properties = properties
 
 	return channel
 }
