@@ -46,3 +46,4 @@ In addition to all arguments above, the following attributes are exported:
   * `PER_CONDITION_AND_TARGET` - Represents the incident grouping preference **One issue per condition and signal**. Refer to [this page](https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-policies/specify-when-alerts-create-incidents/#preference-signal) for more details on this incident grouping preference.
 * `created_at` - The time the policy was created.
 * `updated_at` -  The time the policy was last updated.
+* `entity_guid` - The unique entity identifier of the alert policy in New Relic.

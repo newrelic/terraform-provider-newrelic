@@ -25,6 +25,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 			// Test: Update
@@ -32,6 +33,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 			// Test: Import
@@ -96,6 +98,7 @@ func TestAccNewRelicAlertPolicy_WithChannels(t *testing.T) {
 				Config: testAccNewRelicAccAlertPolicyConfigWithChannels(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 		},

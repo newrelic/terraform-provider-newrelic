@@ -37,6 +37,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the policy.
+  * `entity_guid` - The unique entity identifier of the alert policy in New Relic.
 
 ## Additional Examples
 
@@ -75,6 +76,28 @@ resource "newrelic_alert_policy" "policy_with_channels" {
     newrelic_alert_channel.slack_channel.id,
     newrelic_alert_channel.email_channel.id,
   ]
+}
+```
+<br>
+
+##### Tagging an alert policy using entity tags
+```hcl
+resource "newrelic_alert_policy" "foo" {
+  name = "example"
+}
+
+resource "newrelic_entity_tags" "my_policy_entity_tags" {
+  guid = newrelic_alert_policy.foo.entity_guid
+
+  tag {
+    key = "my-key"
+    values = ["my-value", "my-other-value"]
+  }
+
+  tag {
+    key = "my-key-2"
+    values = ["my-value-2"]
+  }
 }
 ```
 <br>

@@ -41,6 +41,11 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The time the policy was last updated.",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the alert policy in New Relic.",
+			},
 		},
 	}
 }
@@ -76,5 +81,5 @@ func dataSourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(policy.ID)
 
-	return diag.FromErr(flattenAlertPolicy(policy, d, accountID))
+	return diag.FromErr(flattenAlertPolicyWithEntityGUID(ctx, client, policy, d, accountID))
 }

@@ -60,6 +60,11 @@ func resourceNewRelicAlertPolicy() *schema.Resource {
 				Description: "An array of channel IDs (integers) to assign to the policy. Adding or removing channel IDs from this array will result in a new alert policy resource being created and the old one being destroyed. Also note that channel IDs cannot be imported via terraform import.",
 				Deprecated:  "The `channel_ids` attribute is deprecated and will be removed in the next major release of the provider.",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the alert policy in New Relic.",
+			},
 		},
 	}
 }
@@ -90,7 +95,7 @@ func resourceNewRelicAlertPolicyCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(createResult.ID)
-	if err = flattenAlertPolicy(createResult, d, accountID); err != nil {
+	if err = flattenAlertPolicyWithEntityGUID(ctx, client, createResult, d, accountID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -157,7 +162,7 @@ func resourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(queryErr)
 	}
 
-	return diag.FromErr(flattenAlertPolicy(queryPolicy, d, accountID))
+	return diag.FromErr(flattenAlertPolicyWithEntityGUID(ctx, client, queryPolicy, d, accountID))
 }
 
 func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -185,7 +190,7 @@ func resourceNewRelicAlertPolicyUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(updateErr)
 	}
 
-	return diag.FromErr(flattenAlertPolicy(updateResult, d, accountID))
+	return diag.FromErr(flattenAlertPolicyWithEntityGUID(ctx, client, updateResult, d, accountID))
 }
 
 func resourceNewRelicAlertPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
