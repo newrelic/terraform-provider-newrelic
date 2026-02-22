@@ -50,62 +50,15 @@ func validateSyntheticMonitorLegacyRuntimeAttributesOnCreate(d *schema.ResourceD
 	_, runtimeTypeVersionInConfig := d.GetChange(SyntheticsRuntimeTypeVersionAttrLabel)
 	isRuntimeTypeVersionNil := runtimeTypeVersionInConfig == ""
 
-	_, useLegacyRuntimeInConfig := d.GetChange(SyntheticsUseLegacyRuntimeAttrLabel)
-	useLegacyRuntime := useLegacyRuntimeInConfig == true
-
 	_, monitorType := d.GetChange("type")
 	isSimpleMonitor := monitorType == "SIMPLE"
 
-	// in this first condition, we're trying to make sure 'use_unsupported_legacy_runtime' is only being used with the legacy runtime
-	// and not with any sort of runtime values which signify the new runtime (since the intent of using this attribute
-	// is to skip Terraform validation to use new/existing monitors in the legacy runtime after the October 22 '24 EOL if exempt by the API)
-	if useLegacyRuntime {
-		if !syntheticMonitorConfigHasObsoleteRuntime(runtimeTypeInConfig, runtimeTypeVersionInConfig) &&
-			(!isRuntimeTypeNil || !isRuntimeTypeVersionNil) {
-			return []error{
-				fmt.Errorf(
-					`'%s' is intended to be used with legacy runtime values of '%s' and '%s' to skip restrictions on using
-the legacy runtime, after the EOL of the Synthetics Legacy Runtime, if you have been granted an exemption to use the legacy runtime.
-However, the configuration of the current resource seems to comprise values of these runtime attributes corresponding to the new runtime.
-Please use '%s' only with runtime attributes with values corresponding to the legacy runtime.
-							`,
-					SyntheticsUseLegacyRuntimeAttrLabel,
-					SyntheticsRuntimeTypeAttrLabel,
-					SyntheticsRuntimeTypeVersionAttrLabel,
-					SyntheticsUseLegacyRuntimeAttrLabel,
-				),
-			}
-		}
-	}
-
-	// apply further validation to block usage of the legacy runtime with monitors owing to the EOL, ONLY if 'use_unsupported_legacy_runtime' is false
-	// (which it is, by default, unless made true by the customer) and for both new and existing monitors, as the October 22 '24 EOL disallows usage
-	// of the Legacy Runtime by all kinds of monitors.
-
-	// Validation would include checking if runtime attribute values are nil or if they are not nil and comprise values corresponding to the legacy runtime;
-	// as they would lead to creating/updating monitors in the legacy runtime either way, and in both of these cases, create/update requests of monitors
-	// would be blocked by the API via an error; which we're trying to reflect in Terraform.
+	// Validation would include checking if runtime attribute values comprise values corresponding to the legacy runtime;
+	// create/update requests of monitors would be blocked by the API via an error; which we're trying to reflect in Terraform.
 	// also, this error scenario should not apply to SIMPLE Synthetic Monitors, as they do not support using runtime attributes.
-	if !useLegacyRuntime && !isSimpleMonitor {
+	if !isSimpleMonitor {
 
-		// if 'use_unsupported_legacy_runtime' is false (which it is, by default), check if 'runtime_type' and 'runtime_type_version' are nil
-		// if either of these two runtime attributes are nil, throw a relevant error to explain that this is no longer allowed
-		// owing to the Legacy Runtime EOL.
-		if isRuntimeTypeNil {
-			runtimeAttributesValidationErrors = append(
-				runtimeAttributesValidationErrors,
-				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeAttrLabel),
-			)
-		}
-
-		if isRuntimeTypeVersionNil {
-			runtimeAttributesValidationErrors = append(
-				runtimeAttributesValidationErrors,
-				buildSyntheticsLegacyEmptyRuntimeError(SyntheticsRuntimeTypeVersionAttrLabel),
-			)
-		}
-
-		// if 'use_unsupported_legacy_runtime' is false (which it is, by default) and neither 'runtime_type' nor 'runtime_type_version' is nil,
+		// if neither 'runtime_type' nor 'runtime_type_version' is nil,
 		// check if either of these attributes are not nil and actually comprise values which signify the legacy runtime instead,
 		// NODE_API 10 or CHROME_BROWSER 72; in which case, a similar error explaining the restriction would be thrown.
 		if !isRuntimeTypeNil && !isRuntimeTypeVersionNil {
