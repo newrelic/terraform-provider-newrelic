@@ -333,7 +333,8 @@ All nested `widget` blocks support the following common arguments:
   * `units` - (Optional) A nested block that describes units on your Y axis. See [Nested Units blocks](#nested-units-blocks) below for details.
   * `colors` - (Optional) A nested block that describes colors of your charts per series. See [Nested Colors blocks](#nested-colors-blocks) below for details.
   *  `refresh_rate` - (Optional) This attribute determines the frequency for data refresh specified in milliseconds. Accepted values are `auto` for default value, `0` for no refresh, `5000` for 5 seconds, `30000` for 30 seconds, `60000` for 60 seconds, `300000` for 5 minutes, `1800000` for 30 minutes, `3600000` for 60 minute, `10800000` for 3 hours, `43200000` for 12 hours and `86400000` for 24 hours.
-  * `tooltip` - (Optional) A nested block that describes tooltip configuration for area, line, and stacked bar widgets. See [Nested tooltip blocks](#nested-tooltip-blocks) below for details. 
+  * `tooltip` - (Optional) A nested block that describes tooltip configuration for area, line, and stacked bar widgets. See [Nested tooltip blocks](#nested-tooltip-blocks) below for details.
+  * `chart_styles` - (Optional) A nested block that describes chart styling configuration including line interpolation and gradient settings. See [Nested chart_styles blocks](#nested-chart_styles-blocks) below for details. 
 
 Each widget type supports an additional set of arguments:
 
@@ -661,6 +662,63 @@ The following arguments are supported:
   * `all` - Show tooltip for all data points.
   * `single` - Show tooltip for a single data point.
   * `hidden` - Hide tooltips completely.
+
+### Nested `chart_styles` blocks
+
+The `chart_styles` block allows customization of chart appearance including line interpolation and gradient effects. Widget support varies by type:
+
+**Supported widgets:**
+* `widget_line` - Supports `line_interpolation` only
+* `widget_area` - Supports both `line_interpolation` and `gradient`
+* `widget_billboard` - Supports `line_interpolation` only
+* `widget_pie` - Supports `gradient` only
+* `widget_histogram` - Supports `gradient` only
+* `widget_stacked_bar` - Supports `gradient` only
+
+The following arguments are supported:
+
+* `line_interpolation` - (Optional) Controls how data points are connected in line/area charts. Valid values are: `linear`, `smooth`, `stepBefore`, `stepAfter`
+* `gradient` - (Optional) A nested block that enables gradient effects on charts. Contains a single required attribute:
+  * `enabled` - (Required) Boolean value to enable or disable gradient effect.
+
+**Examples:**
+
+Line widget with smooth interpolation:
+```hcl
+widget_line {
+  title = "CPU Usage"
+  row    = 1
+  column = 1
+
+  nrql_query {
+    query = "FROM SystemSample SELECT average(cpuPercent) TIMESERIES"
+  }
+
+  chart_styles {
+    line_interpolation = "smooth"
+  }
+}
+```
+
+Area widget with both line interpolation and gradient:
+```hcl
+widget_area {
+  title = "Memory Usage"
+  row    = 1
+  column = 1
+
+  nrql_query {
+    query = "FROM SystemSample SELECT average(memoryUsedBytes) TIMESERIES"
+  }
+
+  chart_styles {
+    line_interpolation = "linear"
+    gradient {
+      enabled = true
+    }
+  }
+}
+```
 
 ### Important: `nrql_query` Blocks: Schema Differences
 
