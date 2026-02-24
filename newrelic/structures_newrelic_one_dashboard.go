@@ -254,8 +254,18 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				// Set tooltip
 				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
-				// Set chart styles
-				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
+				// Set chart styles (area widget supports both line_interpolation and gradient)
+				lineStyles := expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
+				gradientStyles := expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
+				if lineStyles != nil || gradientStyles != nil {
+					rawConfiguration.ChartStyles = &dashboards.DashboardWidgetChartStyles{}
+					if lineStyles != nil {
+						rawConfiguration.ChartStyles.LineInterpolation = lineStyles.LineInterpolation
+					}
+					if gradientStyles != nil {
+						rawConfiguration.ChartStyles.Gradient = gradientStyles.Gradient
+					}
+				}
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -295,6 +305,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 				// Set billboard settings
 				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles (billboard widget supports line_interpolation only)
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
