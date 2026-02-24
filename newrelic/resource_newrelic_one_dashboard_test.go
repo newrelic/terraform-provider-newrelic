@@ -807,6 +807,13 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 51 TIMESERIES"
       }
+
+      chart_styles {
+        line_interpolation = "smooth"
+        gradient {
+          enabled = true
+        }
+      }
     }
 
     widget_bar {
@@ -832,6 +839,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
       warning = 0
       critical = 2
+
+      chart_styles {
+        line_interpolation = "stepBefore"
+      }
     }
 
     widget_bullet {
@@ -870,6 +881,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         query = "FROM Transaction SELECT histogram(duration * 100, buckets: 500, width: 1)"
       }
+
+      chart_styles {
+        gradient {
+          enabled = true
+        }
+      }
     }
 
     widget_line {
@@ -890,10 +907,14 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
 	  threshold {
         name     = "Duration Threshold"
-        from     = 10.8 
+        from     = 10.8
         to       = 30.7
         severity = "critical"
-      }	  	
+      }
+
+      chart_styles {
+        line_interpolation = "linear"
+      }
     }
 
     widget_markdown {
@@ -911,6 +932,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+
+      chart_styles {
+        gradient {
+          enabled = false
+        }
+      }
     }
 
     widget_log_table {
@@ -962,6 +989,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		column = 1
 		nrql_query {
 		  query      = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+		}
+
+		chart_styles {
+		  gradient {
+			enabled = true
+		  }
 		}
 	}
   }

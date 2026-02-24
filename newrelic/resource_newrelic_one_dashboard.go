@@ -383,6 +383,13 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Optional: true,
 			Elem:     dashboardWidgetColorSchemaElem(),
 		},
+		"chart_styles": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Chart styling configuration including line interpolation and gradient settings.",
+			Elem:        dashboardWidgetChartStylesSchemaElem(),
+		},
 	}
 }
 
@@ -407,6 +414,39 @@ func dashboardWidgetColorSchemaElem() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Series name",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetChartStylesSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"line_interpolation": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Line interpolation style. Valid values: 'linear', 'smooth', 'stepBefore', 'stepAfter'. Applicable to line widgets.",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(dashboards.DashboardLineInterpolationTypes.LINEAR),
+					string(dashboards.DashboardLineInterpolationTypes.SMOOTH),
+					string(dashboards.DashboardLineInterpolationTypes.STEPBEFORE),
+					string(dashboards.DashboardLineInterpolationTypes.STEPAFTER),
+				}, false),
+			},
+			"gradient": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Gradient configuration for area, stacked bar, pie, histogram widgets, etc.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enable or disable gradient effect.",
 						},
 					},
 				},
