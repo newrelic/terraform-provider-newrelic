@@ -21,7 +21,7 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 			"id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ExactlyOneOf: []string{"id", "name"},
+				ExactlyOneOf: []string{"id", "name", "exact_name"},
 				Description:  "The ID of the destination.",
 			},
 			"guid": {
@@ -32,8 +32,14 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ExactlyOneOf: []string{"id", "name"},
-				Description:  "The name of the destination.",
+				ExactlyOneOf: []string{"id", "name", "exact_name"},
+				Description:  "The name of the destination. Uses a contains match.",
+			},
+			"exact_name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name", "exact_name"},
+				Description:  "The exact name of the destination. Uses an exact match.",
 			},
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -95,6 +101,10 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 	if nameOk && nameValue != "" {
 		filters = ai.AiNotificationsDestinationFilter{Name: nameValue}
 	}
+	exactNameValue, exactNameOk := d.Get("exact_name").(string)
+	if exactNameOk && exactNameValue != "" {
+		filters = ai.AiNotificationsDestinationFilter{ExactName: exactNameValue}
+	}
 	idValue, idOk := d.Get("id").(string)
 	if idOk && idValue != "" {
 		filters = ai.AiNotificationsDestinationFilter{ID: idValue}
@@ -112,11 +122,14 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	if len(destinationResponse.Entities) == 0 {
 		d.SetId("")
-		if idValue != "" && nameValue == "" {
+		if idValue != "" {
 			return diag.FromErr(fmt.Errorf("the id provided does not match any New Relic notification destination"))
 		}
-		if nameValue != "" && idValue == "" {
+		if nameValue != "" {
 			return diag.FromErr(fmt.Errorf("the name provided does not match any New Relic notification destination"))
+		}
+		if exactNameValue != "" {
+			return diag.FromErr(fmt.Errorf("the exact_name provided does not match any New Relic notification destination"))
 		}
 	}
 
