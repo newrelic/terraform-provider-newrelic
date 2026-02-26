@@ -53,6 +53,27 @@ func TestAccNewRelicNotificationDestinationDataSource_ByName(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNotificationDestinationDataSource_ByExactName(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigByExactName(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicNotificationDestination("data.newrelic_notification_destination.foo"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "type", "WEBHOOK"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNotificationDestinationDataSource_WithSecureURL(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
@@ -99,15 +120,34 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) 
 	  name   = "%s"
 	  type   = "WEBHOOK"
 	  active = true
-	
+
 	  property {
 		key   = "url"
 		value = "https://webhook.site/"
 	  }
 	}
-	
+
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
+	}
+`, name)
+}
+
+func testAccNewRelicNotificationsDestinationDataSourceConfigByExactName(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+
+	  property {
+		key   = "url"
+		value = "https://webhook.site/"
+	  }
+	}
+
+	data "newrelic_notification_destination" "foo" {
+	  exact_name = newrelic_notification_destination.foo.name
 	}
 `, name)
 }
