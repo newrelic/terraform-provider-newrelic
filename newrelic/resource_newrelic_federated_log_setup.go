@@ -72,6 +72,20 @@ func resourceNewRelicFederatedLogSetup() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"scope_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The scope ID (account ID or organization ID) for the entity.",
+			},
+			"scope_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "ACCOUNT",
+				Description: "The scope type: ACCOUNT or ORGANIZATION.",
+			},
 		},
 	}
 }
@@ -81,6 +95,12 @@ func resourceNewRelicFederatedLogSetupCreate(ctx context.Context, d *schema.Reso
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
+
+	scopeType := pipelinecontrol.EntityManagementEntityScope(d.Get("scope_type").(string))
+	scopeID := d.Get("scope_id").(string)
+	if scopeID == "" {
+		scopeID = strconv.Itoa(accountID)
+	}
 
 	input := pipelinecontrol.EntityManagementFederatedLogSetupEntityCreateInput{
 		CloudProvider:              pipelinecontrol.EntityManagementCloudProvider(d.Get("cloud_provider").(string)),
@@ -93,8 +113,8 @@ func resourceNewRelicFederatedLogSetupCreate(ctx context.Context, d *schema.Reso
 		QueryConnectionId:          d.Get("query_connection_id").(string),
 		Status:                     pipelinecontrol.EntityManagementFederatedLogSetupStatus(d.Get("status").(string)),
 		Scope: pipelinecontrol.EntityManagementScopedReferenceInput{
-			Type: pipelinecontrol.EntityManagementEntityScopeTypes.ACCOUNT,
-			ID:   strconv.Itoa(accountID),
+			Type: scopeType,
+			ID:   scopeID,
 		},
 	}
 
@@ -151,6 +171,12 @@ func resourceNewRelicFederatedLogSetupRead(ctx context.Context, d *schema.Resour
 		}
 
 		if err := d.Set("account_id", accountIDInt); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("scope_id", entity.Scope.ID); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("scope_type", string(entity.Scope.Type)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := d.Set("name", entity.Name); err != nil {
