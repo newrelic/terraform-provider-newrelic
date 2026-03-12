@@ -253,6 +253,9 @@ resource_newrelic_fleet.go:
 resource_newrelic_fleet_test.go:
   test: true
   product_mapping: FLEET
+resource_newrelic_federated_log_setup.go:
+  test: false
+  product_mapping: NGEP
 resource_newrelic_group_management.go:
   test: false
   product_mapping: AUTH
