@@ -109,6 +109,12 @@ resource_newrelic_alert_channel.go:
 resource_newrelic_alert_channel_test.go:
   test: true
   product_mapping: ALERTS
+resource_newrelic_alert_compound_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition_test.go:
+  test: true
+  product_mapping: ALERTS
 resource_newrelic_alert_condition.go:
   test: false
   product_mapping: ALERTS
@@ -119,12 +125,6 @@ resource_newrelic_alert_condition_test.go:
   test: true
   product_mapping: ALERTS
 resource_newrelic_alert_condition_unit_test.go:
-  test: true
-  product_mapping: ALERTS
-resource_newrelic_alert_compound_condition.go:
-  test: false
-  product_mapping: ALERTS
-resource_newrelic_alert_compound_condition_test.go:
   test: true
   product_mapping: ALERTS
 resource_newrelic_alert_muting_rule.go:
@@ -247,6 +247,9 @@ resource_newrelic_events_to_metrics_rule.go:
 resource_newrelic_events_to_metrics_rule_test.go:
   test: true
   product_mapping: EVENTS
+resource_newrelic_federated_log_setup.go:
+  test: false
+  product_mapping: NGEP
 resource_newrelic_group_management.go:
   test: false
   product_mapping: AUTH
