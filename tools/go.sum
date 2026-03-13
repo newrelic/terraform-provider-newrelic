@@ -771,8 +771,8 @@ github.com/maratori/testableexamples v1.0.0 h1:dU5alXRrD8WKSjOUnmJZuzdxWOEQ57+7s
 github.com/maratori/testableexamples v1.0.0/go.mod h1:4rhjL1n20TUTT4vdh3RDqSizKLyXp7K2u6HgraZCGzE=
 github.com/maratori/testpackage v1.1.1 h1:S58XVV5AD7HADMmD0fNnziNHqKvSdDuEKdPD1rNTU04=
 github.com/maratori/testpackage v1.1.1/go.mod h1:s4gRK/ym6AMrqpOa/kEbQTV4Q4jb7WeLZzVhVVVOQMc=
-github.com/masahiro331/go-commitlinter v0.0.0-20230912111648-dd369c40beae h1:oz/k1U2fd/lgeVzIWwFixTsbcQpVIouBItNn+1wQT2E=
-github.com/masahiro331/go-commitlinter v0.0.0-20230912111648-dd369c40beae/go.mod h1:y5FnwWvGbGTWD1ObWpVPnMH7WXp1ne13WLP5q/Nt7fo=
+github.com/masahiro331/go-commitlinter v0.0.0-20251121064513-1a278451d578 h1:a5aGFrnWbbuEbfQe3XMTxlmJrcZj/Tbw+v5bqPG113Q=
+github.com/masahiro331/go-commitlinter v0.0.0-20251121064513-1a278451d578/go.mod h1:y5FnwWvGbGTWD1ObWpVPnMH7WXp1ne13WLP5q/Nt7fo=
 github.com/matoous/godox v1.1.0 h1:W5mqwbyWrwZv6OQ5Z1a/DHGMOvXYCBP3+Ht7KMoJhq4=
 github.com/matoous/godox v1.1.0/go.mod h1:jgE/3fUXiTurkdHOLT5WEkThTSuE7yxHv5iWPa80afs=
 github.com/matryer/is v1.4.0 h1:sosSmIWwkYITGrxZ25ULNDeKiMNzFSr4V/eqBQP0PeE=
