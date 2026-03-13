@@ -304,12 +304,17 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 		return newDiagErr
 	}
 
+	// Always persist the destination ID to state if the backend created it, even if the
+	// response also contains errors. This prevents orphaned resources when the API
+	// creates the destination successfully but also returns errors in the response.
+	if destinationResponse.Destination.ID != "" {
+		d.SetId(destinationResponse.Destination.ID)
+	}
+
 	errors := buildAiNotificationsErrors(destinationResponse.Errors)
 	if len(errors) > 0 {
 		return errors
 	}
-
-	d.SetId(destinationResponse.Destination.ID)
 
 	return resourceNewRelicNotificationDestinationRead(updatedContext, d, meta)
 }
