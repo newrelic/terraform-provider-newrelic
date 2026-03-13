@@ -1,3 +1,8 @@
+<a name="v3.81.0"></a>
+## [v3.81.0] - 2026-03-13
+### Features
+- **dashboard:** add ChartStyles support for widget configuration ([#3027](https://github.com/newrelic/terraform-provider-newrelic/issues/3027))
+
 <a name="v3.80.3"></a>
 ## [v3.80.3] - 2026-03-12
 ### Bug Fixes
@@ -2624,7 +2629,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.81.0...HEAD
+[v3.81.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.3...v3.81.0
 [v3.80.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.2...v3.80.3
 [v3.80.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.1...v3.80.2
 [v3.80.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.0...v3.80.1
