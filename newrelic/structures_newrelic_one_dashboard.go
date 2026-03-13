@@ -254,6 +254,19 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				// Set tooltip
 				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
 
+				// Set chart styles (area widget supports both line_interpolation and gradient)
+				lineStyles := expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
+				gradientStyles := expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
+				if lineStyles != nil || gradientStyles != nil {
+					rawConfiguration.ChartStyles = &dashboards.DashboardWidgetChartStyles{}
+					if lineStyles != nil {
+						rawConfiguration.ChartStyles.LineInterpolation = lineStyles.LineInterpolation
+					}
+					if gradientStyles != nil {
+						rawConfiguration.ChartStyles.Gradient = gradientStyles.Gradient
+					}
+				}
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -292,6 +305,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
 				// Set billboard settings
 				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles (billboard widget supports line_interpolation only)
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -357,6 +373,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 					return nil, err
 				}
 
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -378,6 +397,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set tooltip
 				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -410,6 +432,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				if err != nil {
 					return nil, err
 				}
+
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -484,6 +509,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set tooltip
 				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -1023,6 +1051,50 @@ func expandDashboardWidgetNullValuesInput(w map[string]interface{}, cfg dashboar
 	return cfg
 }
 
+// expandDashboardWidgetChartStylesLineInterpolation expands chart styles for line widgets (lineInterpolation only)
+func expandDashboardWidgetChartStylesLineInterpolation(w map[string]interface{}) *dashboards.DashboardWidgetChartStyles {
+	if chartStylesInterface, ok := w["chart_styles"]; ok {
+		chartStylesList := chartStylesInterface.([]interface{})
+		if len(chartStylesList) > 0 && chartStylesList[0] != nil {
+			chartStylesMap := chartStylesList[0].(map[string]interface{})
+
+			// Handle lineInterpolation (only for line widgets)
+			if lineInterpolation, ok := chartStylesMap["line_interpolation"]; ok && lineInterpolation.(string) != "" {
+				return &dashboards.DashboardWidgetChartStyles{
+					LineInterpolation: dashboards.DashboardLineInterpolationType(lineInterpolation.(string)),
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// expandDashboardWidgetChartStylesGradient expands chart styles for gradient-supporting widgets (gradient only)
+func expandDashboardWidgetChartStylesGradient(w map[string]interface{}) *dashboards.DashboardWidgetChartStyles {
+	if chartStylesInterface, ok := w["chart_styles"]; ok {
+		chartStylesList := chartStylesInterface.([]interface{})
+		if len(chartStylesList) > 0 && chartStylesList[0] != nil {
+			chartStylesMap := chartStylesList[0].(map[string]interface{})
+
+			// Handle gradient (for area, stacked_bar, pie, histogram, etc.)
+			if gradientInterface, ok := chartStylesMap["gradient"]; ok {
+				gradientList := gradientInterface.([]interface{})
+				if len(gradientList) > 0 && gradientList[0] != nil {
+					gradientMap := gradientList[0].(map[string]interface{})
+					if enabled, ok := gradientMap["enabled"]; ok {
+						return &dashboards.DashboardWidgetChartStyles{
+							Gradient: &dashboards.DashboardWidgetChartStylesGradient{
+								Enabled: enabled.(bool),
+							},
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func expandLinkedEntityGUIDs(guids []interface{}) []common.EntityGUID {
 	out := make([]common.EntityGUID, len(guids))
 
@@ -1369,6 +1441,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	}
 	if rawCfg.Colors != nil {
 		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
+	}
+	if rawCfg.ChartStyles != nil {
+		chartStyles := flattenDashboardWidgetChartStyles(rawCfg.ChartStyles)
+		if chartStyles != nil {
+			out["chart_styles"] = chartStyles
+		}
 	}
 	if rawCfg.RefreshRate != nil {
 		// Since schema for refresh_rate is defined as string
@@ -1813,6 +1891,37 @@ func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{
 	}
 	k["series_overrides"] = seriesOverrides
 	out[0] = k
+	return out
+}
+
+func flattenDashboardWidgetChartStyles(in *dashboards.DashboardWidgetChartStyles) interface{} {
+	if in == nil {
+		return nil
+	}
+
+	out := make([]interface{}, 1)
+	chartStylesMap := make(map[string]interface{})
+
+	// Handle lineInterpolation
+	if in.LineInterpolation != "" {
+		chartStylesMap["line_interpolation"] = string(in.LineInterpolation)
+	}
+
+	// Handle gradient
+	if in.Gradient != nil {
+		gradientList := make([]interface{}, 1)
+		gradientConfigMap := make(map[string]interface{})
+		gradientConfigMap["enabled"] = in.Gradient.Enabled
+		gradientList[0] = gradientConfigMap
+		chartStylesMap["gradient"] = gradientList
+	}
+
+	// Only return if we have any chart styles
+	if len(chartStylesMap) == 0 {
+		return nil
+	}
+
+	out[0] = chartStylesMap
 	return out
 }
 
