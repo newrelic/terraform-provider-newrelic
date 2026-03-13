@@ -400,3 +400,79 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 
 	return nil
 }
+
+// expandNotificationDestinationScope expands the scope block from terraform config
+func expandNotificationDestinationScope(d *schema.ResourceData) *notifications.EntityScopeInput {
+	scopeList, ok := d.GetOk("scope")
+	if !ok {
+		return nil
+	}
+
+	scopes := scopeList.([]interface{})
+	if len(scopes) == 0 {
+		return nil
+	}
+
+	scopeMap := scopes[0].(map[string]interface{})
+
+	return &notifications.EntityScopeInput{
+		Type: notifications.EntityScopeTypeInput(scopeMap["type"].(string)),
+		ID:   scopeMap["id"].(string),
+	}
+}
+
+// flattenNotificationDestinationScope flattens the scope from API response
+func flattenNotificationDestinationScope(scope *notifications.EntityScope) []map[string]interface{} {
+	if scope == nil || scope.Type == "" {
+		return nil
+	}
+
+	return []map[string]interface{}{
+		{
+			"type": string(scope.Type),
+			"id":   scope.ID,
+		},
+	}
+}
+
+// flattenNotificationDestinationWithScope flattens destination with scope for resource
+func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	// Flatten the base destination fields
+	if err := flattenNotificationDestination(&destination.AiNotificationsDestination, d); err != nil {
+		return err
+	}
+
+	// Flatten the scope
+	if destination.Scope != nil {
+		if err := d.Set("scope", flattenNotificationDestinationScope(destination.Scope)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// flattenNotificationDestinationWithScopeForDataSource flattens destination with scope for data source
+func flattenNotificationDestinationWithScopeForDataSource(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	// Flatten the base destination fields
+	if err := flattenNotificationDestinationDataSource(&destination.AiNotificationsDestination, d); err != nil {
+		return err
+	}
+
+	// Flatten the scope
+	if destination.Scope != nil {
+		if err := d.Set("scope", flattenNotificationDestinationScope(destination.Scope)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

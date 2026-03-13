@@ -152,6 +152,27 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 					},
 				},
 			},
+			"scope": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				Description:   "Scope of the destination",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(listValidNotificationsScopeTypes(), false),
+							Description:  fmt.Sprintf("(Required) The scope type of the destination. One of: (%s).", strings.Join(listValidNotificationsScopeTypes(), ", ")),
+						},
+						"id": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
