@@ -10,6 +10,13 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 )
 
+func listValidNotificationsScopeTypes() []string {
+	return []string{
+		string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+		string(notifications.EntityScopeTypeInputTypes.ORGANIZATION),
+	}
+}
+
 // migrateStateNewRelicNotificationDestinationV0toV1 currently facilitates migrating:
 // remove is_user_authenticated argument
 func migrateStateNewRelicNotificationDestinationV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
@@ -401,7 +408,6 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 	return nil
 }
 
-// expandNotificationDestinationScope expands the scope block from terraform config
 func expandNotificationDestinationScope(d *schema.ResourceData) *notifications.EntityScopeInput {
 	scopeList, ok := d.GetOk("scope")
 	if !ok {
@@ -421,7 +427,6 @@ func expandNotificationDestinationScope(d *schema.ResourceData) *notifications.E
 	}
 }
 
-// flattenNotificationDestinationScope flattens the scope from API response
 func flattenNotificationDestinationScope(scope *notifications.EntityScope) []map[string]interface{} {
 	if scope == nil || scope.Type == "" {
 		return nil
@@ -435,7 +440,6 @@ func flattenNotificationDestinationScope(scope *notifications.EntityScope) []map
 	}
 }
 
-// flattenNotificationDestinationWithScope flattens destination with scope for resource
 func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
@@ -456,7 +460,6 @@ func flattenNotificationDestinationWithScope(destination *notifications.AiNotifi
 	return nil
 }
 
-// flattenNotificationDestinationWithScopeForDataSource flattens destination with scope for data source
 func flattenNotificationDestinationWithScopeForDataSource(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil

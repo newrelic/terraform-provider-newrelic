@@ -311,8 +311,14 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-
-	destinationResponse, err := client.Notifications.AiNotificationsCreateDestinationWithContext(updatedContext, accountID, *destinationInput)
+	
+	scope := expandNotificationDestinationScope(d)
+	var destinationResponse *notifications.AiNotificationsDestinationResponse
+	if scope != nil {
+		destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, scope)
+	} else {
+		destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithContext(updatedContext, accountID, *destinationInput)
+	}
 	if err != nil {
 		diagErr := diag.FromErr(err)
 		newDiagErr := diag.Diagnostics{
@@ -346,7 +352,7 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	sorter := notifications.AiNotificationsDestinationSorter{}
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
+	destinationResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -366,7 +372,7 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return errors
 	}
 
-	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
+	return diag.FromErr(flattenNotificationDestinationWithScope(&destinationResponse.Entities[0], d))
 }
 
 func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
