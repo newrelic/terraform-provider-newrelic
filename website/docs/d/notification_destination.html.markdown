@@ -81,7 +81,6 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
-
 Use this data source to create cross account destination.
 
 ## Cross Account Destination Creation Example 
@@ -103,13 +102,9 @@ resource "newrelic_notification_destination" "foo-destination" {
     id   = "00000000-0000-0000-0000-000000000000" (Organization UUID)
   }
 }
-```
 
-## Cross Account Destination Read Example 
 
-```hcl
-
-# Resource
+# Data Source 
 data "newrelic_notification_destination" "foo-destination" {
   id = "destination_id"
 
