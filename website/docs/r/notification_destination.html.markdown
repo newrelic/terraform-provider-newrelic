@@ -49,6 +49,7 @@ The following arguments are supported:
 * `auth_custom_header` - (Optional) A nested block that describes a custom header authentication credentials. This field is required when the destination type is WORKFLOW_AUTOMATION and optional for other destination types. Multiple blocks are permitted per notification destination definition. [Nested auth_custom_header blocks](#nested-authcustomheader-blocks) below for details.
 * `secure_url` - (Optional) A nested block that describes a URL that contains sensitive data at the path or parameters. Only one secure_url block is permitted per notification destination definition. See [Nested secure_url blocks](#nested-secureurl-blocks) below for details.
 * `property` - (Required) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
+* 
 
 ### Nested `auth_basic` blocks
 
@@ -279,9 +280,43 @@ resource "newrelic_notification_destination" "foo" {
 
 #### [Slack](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#slack)
 
+
 In order to create a Slack destination, you have to grant our application access to your workspace. This process is [based on OAuth](https://api.slack.com/authentication/oauth-v2) and can only be done through a browser.
 As a result, you cannot set up a Slack destination purely with Terraform code.
 However, if you would like to use Slack-based destinations with other resources in the New Relic Terraform Provider, the [data source `newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination) may be used to fetch the ID of the destination; alternatively, you might want to source the ID of the destination from  NerdGraph, or from the New Relic One UI.
+
+
+
+#### [Cross Account Destinations](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/cross-account-destinations/)
+```hcl
+# Resource
+resource "newrelic_notification_destination" "foo-destination" {
+  name = "webhook-example-cross-account-destination"
+  type = "WEBHOOK"
+
+  secure_url {
+    prefix = "https://webhook.mywebhook.com/"
+    secure_suffix = "service_id/123456"
+  }
+
+  property {
+    key = "source"
+    value = "terraform"
+  }
+
+  auth_custom_header {
+    key = "API_KEY"
+    value = "test-api-key"
+  }
+  scope {
+    type = "ORGANIZATION" (type of scope)
+    id   = "00000000-0000-0000-0000-000000000000" (Organization UUID)
+  }
+}
+
+```
+Cross account destinations are destinations that can be used by multiple accounts. They are created in a specific account and then shared with other accounts in the same organization. To create a cross account destination, you need to specify the `scope` block in your resource definition, with the type of scope type (Organization and Account supported) and the ID value.
+
 
 ## Import
 
