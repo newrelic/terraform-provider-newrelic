@@ -89,14 +89,12 @@ Use this data source to create cross account destination.
 ```hcl
 
 # Resource
-resource "newrelic_notification_channel" "foo-channel" {
+resource "newrelic_notification_destination" "foo-destination" {
   name           = "webhook-example-cross-account-destination"
   type           = "WEBHOOK"
-  destination_id = data.newrelic_notification_destination.foo.id
-  product        = "IINT"
 
   property {
-    key   = "payload"
+    key   = "source"
     value = "{\n\t\"name\": \"foo\"\n}"
     label = "Payload Template"
   }
@@ -112,7 +110,7 @@ resource "newrelic_notification_channel" "foo-channel" {
 ```hcl
 
 # Resource
-data "newrelic_notification_destination" "org_destination" {
+data "newrelic_notification_destination" "foo-destination" {
   id = "destination_id"
 
   scope {
