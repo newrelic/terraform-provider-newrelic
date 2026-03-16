@@ -84,7 +84,7 @@ resource "newrelic_notification_channel" "foo-channel" {
 
 Use this data source to create cross account destination.
 
-## Cross Account Destination Example Usage
+## Cross Account Destination Creation Example 
 
 ```hcl
 
@@ -106,6 +106,22 @@ resource "newrelic_notification_channel" "foo-channel" {
   }
 }
 ```
+
+## Cross Account Destination Read Example 
+
+```hcl
+
+# Resource
+data "newrelic_notification_destination" "org_destination" {
+  id = "destination_id"
+
+  scope {
+    type = "ORGANIZATION"
+    id   = "organization_id"
+  }
+}
+```
+
 
 ## Argument Reference
 
