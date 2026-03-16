@@ -165,10 +165,10 @@ resource_newrelic_application_settings_test.go:
   product_mapping: APM
 resource_newrelic_aws_connection.go:
   test: false
-  product_mapping: UNKNOWN
+  product_mapping: NGEP
 resource_newrelic_aws_connection_test.go:
   test: true
-  product_mapping: UNKNOWN
+  product_mapping: NGEP
 resource_newrelic_cloud_aws_eu_sovereign_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -253,14 +253,11 @@ resource_newrelic_events_to_metrics_rule.go:
 resource_newrelic_events_to_metrics_rule_test.go:
   test: true
   product_mapping: EVENTS
+resource_newrelic_federated_log_partition.go:
+  test: false
+  product_mapping: NGEP
 resource_newrelic_federated_log_setup.go:
   test: false
-  product_mapping: NGEP
-resource_newrelic_aws_connection.go:
-  test: false
-  product_mapping: NGEP
-resource_newrelic_aws_connection_test.go:
-  test: true
   product_mapping: NGEP
 resource_newrelic_group_management.go:
   test: false
