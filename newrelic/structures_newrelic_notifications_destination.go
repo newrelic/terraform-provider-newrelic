@@ -241,8 +241,12 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
+	// Only set account_id for non-org-scoped destinations
+	scope := expandNotificationDestinationScope(d)
+	if scope == nil || scope.Type != notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+		if err := d.Set("account_id", destination.AccountID); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("status", destination.Status); err != nil {
@@ -393,8 +397,12 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
+	// Only set account_id for non-org-scoped destinations
+	scope := expandNotificationDestinationScope(d)
+	if scope == nil || scope.Type != notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+		if err := d.Set("account_id", destination.AccountID); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("status", destination.Status); err != nil {
