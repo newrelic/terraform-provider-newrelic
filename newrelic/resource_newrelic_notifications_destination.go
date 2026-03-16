@@ -372,7 +372,7 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return errors
 	}
 
-	return diag.FromErr(flattenNotificationDestinationWithScope(&destinationResponse.Entities[0], d))
+	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0].AiNotificationsDestination, d))
 }
 
 func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
