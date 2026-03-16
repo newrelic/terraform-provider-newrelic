@@ -128,6 +128,52 @@ func TestExpandNotificationDestination(t *testing.T) {
 				Auth: customHeadersAuthType,
 			},
 		},
+		"valid webhook destination with organization scope": {
+			Data: map[string]interface{}{
+				"name":     "webhook-test",
+				"type":     "WEBHOOK",
+				"property": []interface{}{webhookProperty},
+				"scope": []interface{}{
+					map[string]interface{}{
+						"type": "ORGANIZATION",
+						"id":   "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+					},
+				},
+			},
+			Expanded: &notifications.AiNotificationsDestination{
+				Name: "webhook-test",
+				Type: notifications.AiNotificationsDestinationTypeTypes.WEBHOOK,
+				Properties: []notifications.AiNotificationsProperty{
+					{
+						Key:   "url",
+						Value: "https://webhook.com",
+					},
+				},
+			},
+		},
+		"valid webhook destination with account scope": {
+			Data: map[string]interface{}{
+				"name":     "webhook-test",
+				"type":     "WEBHOOK",
+				"property": []interface{}{webhookProperty},
+				"scope": []interface{}{
+					map[string]interface{}{
+						"type": "ACCOUNT",
+						"id":   "12345678",
+					},
+				},
+			},
+			Expanded: &notifications.AiNotificationsDestination{
+				Name: "webhook-test",
+				Type: notifications.AiNotificationsDestinationTypeTypes.WEBHOOK,
+				Properties: []notifications.AiNotificationsProperty{
+					{
+						Key:   "url",
+						Value: "https://webhook.com",
+					},
+				},
+			},
+		},
 	}
 
 	r := resourceNewRelicNotificationDestination()

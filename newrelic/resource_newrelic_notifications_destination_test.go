@@ -250,6 +250,84 @@ func TestNewRelicNotificationDestination_secureURL_update(t *testing.T) {
 	})
 }
 
+func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	orgUUID := "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create with ORGANIZATION scope (requires UUID)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(testAccountID, rName, "ORGANIZATION", orgUUID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
+				),
+			},
+			// Update name only (scope remains unchanged)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(testAccountID, fmt.Sprintf("%s-updated", rName), "ORGANIZATION", orgUUID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"scope.0.id",
+				},
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationDestination_AccountScope(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	accountNumber := "12345678"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create with ACCOUNT scope (requires number)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(testAccountID, rName, "ACCOUNT", accountNumber),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ACCOUNT"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", accountNumber),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"scope.0.id",
+				},
+			},
+		},
+	})
+}
+
 func testNewRelicNotificationDestinationConfig(accountID int, name string, auth string, url string) string {
 	var usedUrl string
 	if url == "" {
@@ -280,6 +358,33 @@ resource "newrelic_notification_destination" "foo" {
 }
 `, accountID, name, auth, usedUrl)
 	return sprintf
+}
+
+func testNewRelicNotificationDestinationConfigWithScope(accountID int, name string, scopeType string, scopeID string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+	account_id = %[1]d
+	name = "%[2]s"
+	type = "WEBHOOK"
+	active = true
+
+	property {
+		key = "url"
+		value = "https://webhook.site/"
+	}
+
+	property {
+		key = "source"
+		value = "terraform"
+		label = "terraform-integration-test"
+	}
+
+	scope {
+		type = "%[3]s"
+		id   = "%[4]s"
+	}
+}
+`, accountID, name, scopeType, scopeID)
 }
 
 func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {

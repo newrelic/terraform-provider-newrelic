@@ -81,6 +81,41 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
+Use this data source to create cross account destination.
+
+## Cross Account Destination Creation Example 
+
+```hcl
+
+# Resource
+resource "newrelic_notification_destination" "foo-destination" {
+  name           = "webhook-example-cross-account-destination"
+  type           = "WEBHOOK"
+
+  property {
+    key   = "source"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+  scope {
+    type = "ORGANIZATION" (type of scope)
+    id   = "00000000-0000-0000-0000-000000000000" (Organization UUID)
+  }
+}
+
+
+# Data Source 
+data "newrelic_notification_destination" "foo-destination" {
+  id = "destination_id"
+
+  scope {
+    type = "ORGANIZATION"
+    id   = "organization_id"
+  }
+}
+```
+
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -92,7 +127,6 @@ Exactly one of the following attributes is required:
 
 Optional:
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -103,7 +137,8 @@ In addition to all arguments above, the following attributes are exported:
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.
 * `guid` - The unique entity identifier of the destination in New Relic.
-* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret. 
+* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret.
+* `scope` - A nested block of scope of destination which has two parameters scope type and ID.
 
 
 ```

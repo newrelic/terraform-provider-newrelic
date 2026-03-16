@@ -10,6 +10,13 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 )
 
+func listValidNotificationsScopeTypes() []string {
+	return []string{
+		string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+		string(notifications.EntityScopeTypeInputTypes.ORGANIZATION),
+	}
+}
+
 // migrateStateNewRelicNotificationDestinationV0toV1 currently facilitates migrating:
 // remove is_user_authenticated argument
 func migrateStateNewRelicNotificationDestinationV0toV1(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
@@ -234,8 +241,12 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
+	// Only set account_id for non-org-scoped destinations
+	scope := expandNotificationDestinationScope(d)
+	if scope == nil || scope.Type != notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+		if err := d.Set("account_id", destination.AccountID); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("status", destination.Status); err != nil {
@@ -386,8 +397,12 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
+	// Only set account_id for non-org-scoped destinations
+	scope := expandNotificationDestinationScope(d)
+	if scope == nil || scope.Type != notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+		if err := d.Set("account_id", destination.AccountID); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("status", destination.Status); err != nil {
@@ -396,6 +411,78 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 
 	if err := d.Set("guid", destination.GUID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func expandNotificationDestinationScope(d *schema.ResourceData) *notifications.EntityScopeInput {
+	scopeList, ok := d.GetOk("scope")
+	if !ok {
+		return nil
+	}
+
+	scopes := scopeList.([]interface{})
+	if len(scopes) == 0 {
+		return nil
+	}
+
+	scopeMap := scopes[0].(map[string]interface{})
+
+	return &notifications.EntityScopeInput{
+		Type: notifications.EntityScopeTypeInput(scopeMap["type"].(string)),
+		ID:   scopeMap["id"].(string),
+	}
+}
+
+func flattenNotificationDestinationScope(scope *notifications.EntityScope) []map[string]interface{} {
+	if scope == nil || scope.Type == "" {
+		return nil
+	}
+
+	return []map[string]interface{}{
+		{
+			"type": string(scope.Type),
+			"id":   scope.ID,
+		},
+	}
+}
+
+func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	// Flatten the base destination fields
+	if err := flattenNotificationDestination(&destination.AiNotificationsDestination, d); err != nil {
+		return err
+	}
+
+	// Flatten the scope
+	if destination.Scope != nil {
+		if err := d.Set("scope", flattenNotificationDestinationScope(destination.Scope)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func flattenNotificationDestinationWithScopeForDataSource(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	// Flatten the base destination fields
+	if err := flattenNotificationDestinationDataSource(&destination.AiNotificationsDestination, d); err != nil {
+		return err
+	}
+
+	// Flatten the scope
+	if destination.Scope != nil {
+		if err := d.Set("scope", flattenNotificationDestinationScope(destination.Scope)); err != nil {
+			return err
+		}
 	}
 
 	return nil
