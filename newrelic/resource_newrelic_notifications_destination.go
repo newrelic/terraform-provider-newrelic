@@ -27,11 +27,12 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The account ID under which to put the destination.",
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"scope"},
+				Description:   "The account ID under which to put the destination.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -156,6 +157,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 				Type:          schema.TypeList,
 				Optional:      true,
 				MaxItems:      1,
+				ConflictsWith: []string{"account_id"},
 				Description:   "Scope of the destination",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
