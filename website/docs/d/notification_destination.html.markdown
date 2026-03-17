@@ -33,11 +33,11 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
-## Name Example Usage (Contains Match)
+## Name Example Usage
 
 ```hcl
-# Data source - uses contains match
-# Searching for "webhook" would match "webhook-destination", "my-webhook", etc.
+# Data source (uses contains match)
+# Searching for "webhook-destination" would match "webhook-destination", "webhook-destination-1", etc.
 data "newrelic_notification_destination" "foo" {
   name = "webhook-destination"
 }
@@ -57,10 +57,10 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
-## Exact Name Example Usage (Exact Match)
+## Exact Name Example Usage
 
 ```hcl
-# Data source - uses exact match
+# Data source (uses exact match)
 # Searching for "webhook-destination" would only match "webhook-destination", not "my-webhook-destination"
 data "newrelic_notification_destination" "foo" {
   exact_name = "webhook-destination"
