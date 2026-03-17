@@ -313,7 +313,7 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
-	
+
 	scope := expandNotificationDestinationScope(d)
 	var destinationResponse *notifications.AiNotificationsDestinationResponse
 	if scope != nil {
@@ -435,9 +435,9 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 		filters := ai.AiNotificationsDestinationFilter{ID: d.Id()}
 		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		destResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
-		if err != nil {
-			return diag.FromErr(err)
+		destResponse, lookupErr := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
+		if lookupErr != nil {
+			return diag.FromErr(lookupErr)
 		}
 
 		// Find destination matching the org scope
@@ -484,9 +484,9 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 		filters := ai.AiNotificationsDestinationFilter{ID: d.Id()}
 		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		destResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
-		if err != nil {
-			return diag.FromErr(err)
+		destResponse, lookupErr := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
+		if lookupErr != nil {
+			return diag.FromErr(lookupErr)
 		}
 
 		// Find destination matching the org scope

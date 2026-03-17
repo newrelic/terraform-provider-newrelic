@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 )
 
 func dataSourceNewRelicNotificationDestination() *schema.Resource {
@@ -137,31 +138,24 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	// Case 1: No scope provided OR Case 2: ACCOUNT scope - use regular query (no scopeTypes filter)
 	if scope == nil || scope.Type == notifications.EntityScopeTypeInputTypes.ACCOUNT {
-		destinationResponse, err := client.Notifications.GetDestinationsWithContext(updatedContext, accountID, "", filters, sorter)
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
-		}
-
-		if len(destinationResponse.Entities) == 0 {
-			d.SetId("")
-			return diag.FromErr(fmt.Errorf("no destination found. accountID=%d, filters={id=%s, name=%s, exactName=%s}",
-				accountID, filters.ID, filters.Name, filters.ExactName))
-		}
-
-		respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
-		if len(respErrors) > 0 {
-			return respErrors
-		}
-
-		return diag.FromErr(flattenNotificationDestinationDataSource(&destinationResponse.Entities[0], d))
+		return getDestinationWithAccountScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, d)
 	}
 
 	// Case 3: ORGANIZATION scope - use scope-aware query
-	destinationResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
+	return getDestinationWithOrganizationScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
+}
+
+// getDestinationWithAccountScope handles retrieval for no scope or ACCOUNT scope destinations
+func getDestinationWithAccountScope(
+	ctx context.Context,
+	client *nr.NewRelic,
+	accountID int,
+	filters ai.AiNotificationsDestinationFilter,
+	sorter notifications.AiNotificationsDestinationSorter,
+	idValue, nameValue, exactNameValue string,
+	d *schema.ResourceData,
+) diag.Diagnostics {
+	destinationResponse, err := client.Notifications.GetDestinationsWithContext(ctx, accountID, "", filters, sorter)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -172,8 +166,46 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	if len(destinationResponse.Entities) == 0 {
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf("no destination found. accountID=%d, filters={id=%s, name=%s, exactName=%s}, totalCount=%d",
-			accountID, filters.ID, filters.Name, filters.ExactName, destinationResponse.TotalCount))
+		if err := getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue); err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
+	}
+
+	respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
+	if len(respErrors) > 0 {
+		return respErrors
+	}
+
+	return diag.FromErr(flattenNotificationDestinationDataSource(&destinationResponse.Entities[0], d))
+}
+
+// getDestinationWithOrganizationScope handles retrieval for ORGANIZATION scope destinations
+func getDestinationWithOrganizationScope(
+	ctx context.Context,
+	client *nr.NewRelic,
+	accountID int,
+	filters ai.AiNotificationsDestinationFilter,
+	sorter notifications.AiNotificationsDestinationSorter,
+	idValue, nameValue, exactNameValue string,
+	scope *notifications.EntityScopeInput,
+	d *schema.ResourceData,
+) diag.Diagnostics {
+	destinationResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(ctx, accountID, "", filters, sorter)
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	if len(destinationResponse.Entities) == 0 {
+		d.SetId("")
+		if err := getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue); err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
 	}
 
 	respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
@@ -190,4 +222,23 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	d.SetId("")
 	return diag.FromErr(fmt.Errorf("no destination found matching the provided scope type %s and id %s", scope.Type, scope.ID))
+}
+
+// getNotificationDestinationNotFoundError returns an appropriate error message based on which filter attribute was provided
+func getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue string) error {
+	filterAttributes := []struct {
+		value string
+		name  string
+	}{
+		{idValue, "id"},
+		{nameValue, "name"},
+		{exactNameValue, "exact_name"},
+	}
+
+	for _, attr := range filterAttributes {
+		if attr.value != "" {
+			return fmt.Errorf("the %s provided does not match any New Relic notification destination", attr.name)
+		}
+	}
+	return nil
 }

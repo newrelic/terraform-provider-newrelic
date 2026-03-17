@@ -215,7 +215,7 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithScope(name strin
 
 	  scope {
 		type = "ORGANIZATION"
-		id   = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+		id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 	  }
 	}
 
