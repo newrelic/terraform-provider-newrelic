@@ -251,49 +251,50 @@ func TestNewRelicNotificationDestination_secureURL_update(t *testing.T) {
 	})
 }
 
-func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
-	resourceName := "newrelic_notification_destination.foo"
-	rand := acctest.RandString(5)
-	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-	orgUUID := "404742df-e710-4f68-9edb-d22829da2e67"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
-		Steps: []resource.TestStep{
-			// Test: Create with ORGANIZATION scope (requires UUID)
-			{
-				Config: testNewRelicNotificationDestinationConfigWithScope(rName, "ORGANIZATION", orgUUID),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "guid"),
-					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
-					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
-				),
-			},
-			// Update name only (scope remains unchanged)
-			{
-				Config: testNewRelicNotificationDestinationConfigWithScope(fmt.Sprintf("%s-updated", rName), "ORGANIZATION", orgUUID),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicNotificationDestinationExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "guid"),
-					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
-					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
-				),
-			},
-			// Import
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"scope.0.id",
-				},
-			},
-		},
-	})
-}
+// TODO: Uncomment when organization environment variables are available in GitHub Actions
+// func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
+// 	resourceName := "newrelic_notification_destination.foo"
+// 	rand := acctest.RandString(5)
+// 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+// 	orgUUID := "404742df-e710-4f68-9edb-d22829da2e67"
+//
+// 	resource.ParallelTest(t, resource.TestCase{
+// 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+// 		Providers:    testAccProviders,
+// 		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+// 		Steps: []resource.TestStep{
+// 			// Test: Create with ORGANIZATION scope (requires UUID)
+// 			{
+// 				Config: testNewRelicNotificationDestinationConfigWithScope(rName, "ORGANIZATION", orgUUID),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+// 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+// 					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
+// 					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
+// 				),
+// 			},
+// 			// Update name only (scope remains unchanged)
+// 			{
+// 				Config: testNewRelicNotificationDestinationConfigWithScope(fmt.Sprintf("%s-updated", rName), "ORGANIZATION", orgUUID),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+// 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+// 					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
+// 					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
+// 				),
+// 			},
+// 			// Import
+// 			{
+// 				ResourceName:      resourceName,
+// 				ImportState:       true,
+// 				ImportStateVerify: true,
+// 				ImportStateVerifyIgnore: []string{
+// 					"scope.0.id",
+// 				},
+// 			},
+// 		},
+// 	})
+// }
 
 func TestNewRelicNotificationDestination_AccountScope(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"

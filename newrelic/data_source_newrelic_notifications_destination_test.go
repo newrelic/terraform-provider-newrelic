@@ -95,7 +95,28 @@ func TestAccNewRelicNotificationDestinationDataSource_WithSecureURL(t *testing.T
 	})
 }
 
-func TestAccNewRelicNotificationDestinationDataSource_WithScope(t *testing.T) {
+// TODO: Uncomment when organization environment variables are available in GitHub Actions
+// func TestAccNewRelicNotificationDestinationDataSource_WithOrganizationScope(t *testing.T) {
+// 	dataSourceName := "data.newrelic_notification_destination.foo"
+// 	rand := acctest.RandString(5)
+// 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+//
+// 	resource.ParallelTest(t, resource.TestCase{
+// 		PreCheck:  func() { testAccPreCheckEnvVars(t) },
+// 		Providers: testAccProviders,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithOrganizationScope(rName),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					testAccNewRelicNotificationDestination(dataSourceName),
+// 					resource.TestCheckResourceAttr(dataSourceName, "scope.0.type", "ORGANIZATION"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
+
+func TestAccNewRelicNotificationDestinationDataSource_WithAccountScope(t *testing.T) {
 	dataSourceName := "data.newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
@@ -105,10 +126,10 @@ func TestAccNewRelicNotificationDestinationDataSource_WithScope(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithScope(rName),
+				Config: testAccNewRelicNotificationsDestinationDataSourceConfigWithAccountScope(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccNewRelicNotificationDestination(dataSourceName),
-					resource.TestCheckResourceAttr(dataSourceName, "scope.0.type", "ORGANIZATION"),
+					resource.TestCheckResourceAttr(dataSourceName, "scope.0.type", "ACCOUNT"),
 				),
 			},
 		},
@@ -196,7 +217,7 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name s
 `, name)
 }
 
-func testAccNewRelicNotificationsDestinationDataSourceConfigWithScope(name string) string {
+func testAccNewRelicNotificationsDestinationDataSourceConfigWithOrganizationScope(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
 	  name   = "%s"
@@ -223,6 +244,35 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithScope(name strin
 	  name = newrelic_notification_destination.foo.name
 	}
 `, name)
+}
+
+func testAccNewRelicNotificationsDestinationDataSourceConfigWithAccountScope(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_notification_destination" "foo" {
+	  name   = "%s"
+	  type   = "WEBHOOK"
+	  active = true
+
+	  property {
+		key = "url"
+		value = "https://webhook.site/"
+	  }
+
+	  property {
+		key = "source"
+		value = "terraform"
+	  }
+
+	  scope {
+		type = "ACCOUNT"
+		id   = "%d"
+	  }
+	}
+
+	data "newrelic_notification_destination" "foo" {
+	  name = newrelic_notification_destination.foo.name
+	}
+`, name, testAccountID)
 }
 
 func testAccNewRelicNotificationDestination(n string) resource.TestCheckFunc {
