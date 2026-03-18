@@ -379,10 +379,9 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 				if len(errs) > 0 {
 					return errs
 				}
-				return diag.FromErr(flattenNotificationDestination(&dest.AiNotificationsDestination, d))
+				return diag.FromErr(flattenNotificationDestinationWithScope(&dest, d))
 			}
 		}
-
 		d.SetId("")
 		return nil
 	}
@@ -398,7 +397,32 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
+	// If regular API returns no results, check scope-aware API for org-scoped destinations
+	// This handles import of org-scoped destinations which aren't visible via regular API
 	if len(destinationResponse.Entities) == 0 {
+		scopeResponse, scopeErr := client.Notifications.GetDestinationsWithScopeWithContext(updatedContext, accountID, "", filters, sorter)
+		if scopeErr != nil {
+			if _, ok := scopeErr.(*errors.NotFound); ok {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(scopeErr)
+		}
+
+		// Look for an org-scoped destination with matching ID
+		for _, scopedDest := range scopeResponse.Entities {
+			if scopedDest.ID == d.Id() && scopedDest.Scope != nil &&
+				scopedDest.Scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+				// Found org-scoped destination, set scope and flatten
+				errs := buildAiNotificationsResponseErrors(scopeResponse.Errors)
+				if len(errs) > 0 {
+					return errs
+				}
+				return diag.FromErr(flattenNotificationDestinationWithScope(&scopedDest, d))
+			}
+		}
+
+		// No matching destination found
 		d.SetId("")
 		return nil
 	}

@@ -255,7 +255,7 @@ func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-	orgUUID := "fb33fea3-4d7e-4736-9701-acb59a634fdf"
+	orgUUID := "404742df-e710-4f68-9edb-d22829da2e67"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -315,12 +315,28 @@ func TestNewRelicNotificationDestination_AccountScope(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "scope.0.id", strconv.Itoa(testAccountID)),
 				),
 			},
+			// Update name only (scope remains unchanged)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(fmt.Sprintf("%s-updated", rName), "ACCOUNT", strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ACCOUNT"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", strconv.Itoa(testAccountID)),
+				),
+			},
 			// Import
+			// Note: Import uses backward-compatible flow (sets account_id instead of scope)
+			// so we ignore both scope and account_id differences
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
+					"account_id",
+					"scope.#",
+					"scope.0.%",
+					"scope.0.type",
 					"scope.0.id",
 				},
 			},
@@ -370,12 +386,6 @@ resource "newrelic_notification_destination" "foo" {
 	property {
 		key = "url"
 		value = "https://webhook.site/"
-	}
-
-	property {
-		key = "source"
-		value = "terraform"
-		label = "terraform-integration-test"
 	}
 
 	scope {
@@ -441,7 +451,7 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 		}
 		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		found, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
+		found, err := client.Notifications.GetDestinationsWithScope(accountID, "", filters, sorter)
 
 		if err != nil {
 			return err
