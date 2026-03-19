@@ -473,6 +473,70 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 	return nil
 }
 
+func flattenNotificationDestinationDataSourceWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	var err error
+
+	d.SetId(destination.ID)
+
+	if err = d.Set("name", destination.Name); err != nil {
+		return err
+	}
+
+	if err = d.Set("type", destination.Type); err != nil {
+		return err
+	}
+
+	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
+		return err
+	}
+
+	if err := d.Set("secure_url", flattenNotificationDestinationSecureURLForDataSource(&destination.SecureURL)); err != nil {
+		return err
+	}
+
+	if err := d.Set("active", destination.Active); err != nil {
+		return err
+	}
+
+	if err := d.Set("status", destination.Status); err != nil {
+		return err
+	}
+
+	if err := d.Set("guid", destination.GUID); err != nil {
+		return err
+	}
+
+	// Set scope based on the destination's scope info
+	if destination.Scope != nil {
+		scopeData := []map[string]interface{}{
+			{
+				"type": string(destination.Scope.Type),
+				"id":   destination.Scope.ID,
+			},
+		}
+		if err := d.Set("scope", scopeData); err != nil {
+			return err
+		}
+	} else {
+		// For backward compatible destinations without scope, set ACCOUNT scope with account_id
+		scopeData := []map[string]interface{}{
+			{
+				"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+				"id":   fmt.Sprintf("%d", destination.AccountID),
+			},
+		}
+		if err := d.Set("scope", scopeData); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func expandNotificationDestinationScope(d *schema.ResourceData) *notifications.EntityScopeInput {
 	scopeList, ok := d.GetOk("scope")
 	if !ok {

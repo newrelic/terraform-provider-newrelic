@@ -217,34 +217,35 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name s
 `, name)
 }
 
-func testAccNewRelicNotificationsDestinationDataSourceConfigWithOrganizationScope(name string) string {
-	return fmt.Sprintf(`
-	resource "newrelic_notification_destination" "foo" {
-	  name   = "%s"
-	  type   = "WEBHOOK"
-	  active = true
-
-	  property {
-		key = "url"
-		value = "https://webhook.site/"
-	  }
-
-	  property {
-		key = "source"
-		value = "terraform"
-	  }
-
-	  scope {
-		type = "ORGANIZATION"
-		id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
-	  }
-	}
-
-	data "newrelic_notification_destination" "foo" {
-	  name = newrelic_notification_destination.foo.name
-	}
-`, name)
-}
+// TODO: Uncomment when organization environment variables are available in GitHub Actions
+// func testAccNewRelicNotificationsDestinationDataSourceConfigWithOrganizationScope(name string) string {
+// 	return fmt.Sprintf(`
+// 	resource "newrelic_notification_destination" "foo" {
+// 	  name   = "%s"
+// 	  type   = "WEBHOOK"
+// 	  active = true
+//
+// 	  property {
+// 		key = "url"
+// 		value = "https://webhook.site/"
+// 	  }
+//
+// 	  property {
+// 		key = "source"
+// 		value = "terraform"
+// 	  }
+//
+// 	  scope {
+// 		type = "ORGANIZATION"
+// 		id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
+// 	  }
+// 	}
+//
+// 	data "newrelic_notification_destination" "foo" {
+// 	  name = newrelic_notification_destination.foo.name
+// 	}
+// `, name)
+// }
 
 func testAccNewRelicNotificationsDestinationDataSourceConfigWithAccountScope(name string) string {
 	return fmt.Sprintf(`
