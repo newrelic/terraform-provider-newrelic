@@ -428,51 +428,6 @@ func flattenNotificationDestinationSecureURLForDataSource(url *notifications.AiN
 	return secureURLResult
 }
 
-func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
-	if destination == nil {
-		return nil
-	}
-
-	var err error
-
-	d.SetId(destination.ID)
-
-	if err = d.Set("name", destination.Name); err != nil {
-		return err
-	}
-
-	if err = d.Set("type", destination.Type); err != nil {
-		return err
-	}
-
-	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
-		return err
-	}
-
-	if err := d.Set("secure_url", flattenNotificationDestinationSecureURLForDataSource(&destination.SecureURL)); err != nil {
-		return err
-	}
-
-	if err := d.Set("active", destination.Active); err != nil {
-		return err
-	}
-
-	// Backward compatible: set account_id for data source
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
-	}
-
-	if err := d.Set("status", destination.Status); err != nil {
-		return err
-	}
-
-	if err := d.Set("guid", destination.GUID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func flattenNotificationDestinationDataSourceWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
@@ -510,28 +465,41 @@ func flattenNotificationDestinationDataSourceWithScope(destination *notification
 		return err
 	}
 
-	// Set scope based on the destination's scope info
-	if destination.Scope != nil {
-		scopeData := []map[string]interface{}{
-			{
-				"type": string(destination.Scope.Type),
-				"id":   destination.Scope.ID,
-			},
+	// Check if user explicitly configured scope in their data source config
+	userConfiguredScope := expandNotificationDestinationScope(d)
+
+	// Only set scope if user explicitly configured it in their data source config
+	// This ensures backward compatibility - users who don't use scope won't see it in state
+	if userConfiguredScope != nil {
+		// Set scope based on the destination's scope info from API, or derive from account_id
+		if destination.Scope != nil {
+			scopeData := []map[string]interface{}{
+				{
+					"type": string(destination.Scope.Type),
+					"id":   destination.Scope.ID,
+				},
+			}
+			if err := d.Set("scope", scopeData); err != nil {
+				return err
+			}
+		} else {
+			// Destination doesn't have scope from API - set ACCOUNT scope with account_id
+			scopeData := []map[string]interface{}{
+				{
+					"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+					"id":   fmt.Sprintf("%d", destination.AccountID),
+				},
+			}
+			if err := d.Set("scope", scopeData); err != nil {
+				return err
+			}
 		}
-		if err := d.Set("scope", scopeData); err != nil {
-			return err
-		}
-	} else {
-		// For backward compatible destinations without scope, set ACCOUNT scope with account_id
-		scopeData := []map[string]interface{}{
-			{
-				"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
-				"id":   fmt.Sprintf("%d", destination.AccountID),
-			},
-		}
-		if err := d.Set("scope", scopeData); err != nil {
-			return err
-		}
+	}
+	// If user didn't configure scope, don't set scope (backward compatible)
+
+	// Set account_id for backward compatibility
+	if err := d.Set("account_id", destination.AccountID); err != nil {
+		return err
 	}
 
 	return nil

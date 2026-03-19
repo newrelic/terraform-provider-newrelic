@@ -257,7 +257,7 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 		Data         map[string]interface{}
 		ExpectErr    bool
 		ExpectReason string
-		Flattened    *notifications.AiNotificationsDestination
+		Flattened    *notifications.AiNotificationsDestinationWithScope
 	}{
 		"minimal": {
 			Data: map[string]interface{}{
@@ -265,10 +265,12 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 				"type": "WEBHOOK",
 				"guid": "testdestinationentityguid",
 			},
-			Flattened: &notifications.AiNotificationsDestination{
-				Name: "testing123",
-				Type: "WEBHOOK",
-				GUID: guid,
+			Flattened: &notifications.AiNotificationsDestinationWithScope{
+				AiNotificationsDestination: notifications.AiNotificationsDestination{
+					Name: "testing123",
+					Type: "WEBHOOK",
+					GUID: guid,
+				},
 			},
 		},
 	}
@@ -276,7 +278,7 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 	for _, tc := range cases {
 		if tc.Flattened != nil {
 			d := r.TestResourceData()
-			err := flattenNotificationDestinationDataSource(tc.Flattened, d)
+			err := flattenNotificationDestinationDataSourceWithScope(tc.Flattened, d)
 			assert.NoError(t, err)
 
 			for k, v := range tc.Data {

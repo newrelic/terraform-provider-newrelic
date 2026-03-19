@@ -272,8 +272,12 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithAccountScope(nam
 
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
+	  scope {
+		type = "ACCOUNT"
+		id   = "%d"
+	  }
 	}
-`, name, testAccountID)
+`, name, testAccountID, testAccountID)
 }
 
 func testAccNewRelicNotificationDestination(n string) resource.TestCheckFunc {
