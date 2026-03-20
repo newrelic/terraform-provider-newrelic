@@ -168,9 +168,8 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 							Description:  fmt.Sprintf("(Required) The scope type of the destination. One of: (%s).", strings.Join(listValidNotificationsScopeTypes(), ", ")),
 						},
 						"id": {
-							Type:      schema.TypeString,
-							Required:  true,
-							Sensitive: true,
+							Type:     schema.TypeString,
+							Required: true,
 						},
 					},
 				},

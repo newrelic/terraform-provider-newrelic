@@ -102,7 +102,6 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Sensitive:   true,
 							Description: "The ID of the scope (Organization UUID for ORGANIZATION scope, Account ID for ACCOUNT scope)",
 						},
 					},
