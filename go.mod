@@ -14,6 +14,8 @@ require (
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 )
 
+replace github.com/newrelic/newrelic-client-go/v2 => ../newrelic-client-go
+
 require (
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
