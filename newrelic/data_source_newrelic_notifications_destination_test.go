@@ -243,6 +243,10 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithOrganizationScop
 
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
+	  scope {
+		type = "ORGANIZATION"
+		id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
+	  }
 	}
 `, name)
 }
