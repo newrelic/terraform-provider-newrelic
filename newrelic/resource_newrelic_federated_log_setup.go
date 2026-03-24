@@ -210,11 +210,60 @@ func resourceNewRelicFederatedLogSetupRead(ctx context.Context, d *schema.Resour
 }
 
 func resourceNewRelicFederatedLogSetupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Implement update logic if needed
+
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	entityID := d.Id()
+
+	resp, err := client.Pipelinecontrol.GetEntityWithContext(ctx, entityID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if resp == nil {
+		return diag.FromErr(fmt.Errorf("entity with ID %s was nil", entityID))
+	}
+
+	entity, ok := (*resp).(*pipelinecontrol.EntityManagementFederatedLogSetupEntity)
+	if !ok {
+		return diag.Errorf("unexpected entity type for ID %s", entityID)
+	}
+
+	version := entity.Metadata.Version
+
+	input := pipelinecontrol.EntityManagementFederatedLogSetupEntityUpdateInput{
+		CloudProvider:              pipelinecontrol.EntityManagementCloudProvider(d.Get("cloud_provider").(string)),
+		CloudProviderRegion:        d.Get("cloud_provider_region").(string),
+		DataLocationBucket:         d.Get("data_location_bucket").(string),
+		DataProcessingConnectionId: d.Get("data_processing_connection_id").(string),
+		Description:                d.Get("description").(string),
+		Name:                       d.Get("name").(string),
+		NrAccountId:                d.Get("nr_account_id").(string),
+		NrRegion:                   pipelinecontrol.EntityManagementNrRegion(d.Get("nr_region").(string)),
+		QueryConnectionId:          d.Get("query_connection_id").(string),
+		Status:                     pipelinecontrol.EntityManagementFederatedLogSetupStatus(d.Get("status").(string)),
+	}
+
+	if v, ok := d.GetOk("data_processing_component_id"); ok {
+		input.DataProcessingComponentId = v.(string)
+	}
+
+	_, err = client.Pipelinecontrol.EntityManagementUpdateFederatedLogSetupWithContext(ctx, input, entityID, version)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceNewRelicFederatedLogSetupRead(ctx, d, meta)
 }
 
 func resourceNewRelicFederatedLogSetupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Implement delete logic if needed
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	_, err := client.Pipelinecontrol.EntityManagementDeleteWithContext(ctx, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }

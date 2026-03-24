@@ -228,9 +228,61 @@ func resourceNewRelicFederatedLogPartitionRead(ctx context.Context, d *schema.Re
 }
 
 func resourceNewRelicFederatedLogPartitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	entityID := d.Id()
+
+	resp, err := client.Pipelinecontrol.GetEntityWithContext(ctx, entityID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if resp == nil {
+		return diag.FromErr(fmt.Errorf("entity with ID %s was nil", entityID))
+	}
+
+	entity, ok := (*resp).(*pipelinecontrol.EntityManagementFederatedLogPartitionEntity)
+	if !ok {
+		return diag.Errorf("unexpected entity type for ID %s", entityID)
+	}
+
+	version := entity.Metadata.Version
+
+	input := pipelinecontrol.EntityManagementFederatedLogPartitionEntityUpdateInput{
+		DataLocationUri:   d.Get("data_location_uri").(string),
+		Description:       d.Get("description").(string),
+		IsDefault:         d.Get("is_default").(bool),
+		Name:              d.Get("name").(string),
+		NrAccountId:       d.Get("nr_account_id").(string),
+		PartitionDatabase: d.Get("partition_database").(string),
+		PartitionTable:    d.Get("partition_table").(string),
+		SetupId:           d.Get("setup_id").(string),
+		Status:            pipelinecontrol.EntityManagementLogPartitionStatus(d.Get("status").(string)),
+	}
+
+	if v, ok := d.GetOk("retention_duration"); ok {
+		input.RetentionPolicy = pipelinecontrol.EntityManagementRetentionPolicyUpdateInput{
+			Duration: v.(int),
+			Unit:     pipelinecontrol.EntityManagementRetentionUnit(d.Get("retention_unit").(string)),
+		}
+	}
+
+	_, err = client.Pipelinecontrol.EntityManagementUpdateFederatedLogPartitionWithContext(ctx, input, entityID, version)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceNewRelicFederatedLogPartitionRead(ctx, d, meta)
 }
 
 func resourceNewRelicFederatedLogPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	_, err := client.Pipelinecontrol.EntityManagementDeleteWithContext(ctx, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
