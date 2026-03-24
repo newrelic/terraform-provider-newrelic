@@ -19,7 +19,7 @@ func TestAccNewRelicFederatedLogPartition_Basic(t *testing.T) {
 	t.Parallel()
 
 	var (
-		partitionResourceName = "newrelic_federated_log_partition.foo"
+		partitionResourceName = "newrelic_federated_logs_partition.foo"
 
 		nrAccountId = os.Getenv("NEW_RELIC_ACCOUNT_ID")
 
@@ -98,7 +98,7 @@ func testAccCheckNewRelicFederatedLogPartitionDestroy(s *terraform.State) error 
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "newrelic_federated_log_partition" {
+		if rs.Type != "newrelic_federated_logs_partition" {
 			continue
 		}
 
@@ -164,7 +164,7 @@ func testAccFederatedLogPartitionConfig(
 	}
 
 	return fmt.Sprintf(`
-resource "newrelic_federated_log_setup" "setup" {
+resource "newrelic_federated_logs_setup" "setup" {
   name                          = "%s"
   cloud_provider                = "AWS"
   cloud_provider_region         = "us-east-1"
@@ -176,8 +176,8 @@ resource "newrelic_federated_log_setup" "setup" {
   status                        = "ACTIVE"
 }
 
-resource "newrelic_federated_log_partition" "foo" {
-  setup_id           = newrelic_federated_log_setup.setup.id
+resource "newrelic_federated_logs_partition" "foo" {
+  setup_id           = newrelic_federated_logs_setup.setup.id
   name               = "%s"
 %s
   data_location_uri  = "%s"

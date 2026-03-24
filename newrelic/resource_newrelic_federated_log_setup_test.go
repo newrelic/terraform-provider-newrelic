@@ -19,7 +19,7 @@ func TestAccNewRelicFederatedLogSetup_Basic(t *testing.T) {
 	t.Parallel()
 
 	var (
-		resourceName = "newrelic_federated_log_setup.foo"
+		resourceName = "newrelic_federated_logs_setup.foo"
 
 		name                       = fmt.Sprintf("test-federated-log-setup-%s", acctest.RandString(8))
 		cloudProvider              = "AWS"
@@ -95,7 +95,7 @@ func testAccCheckNewRelicFederatedLogSetupDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "newrelic_federated_log_setup" {
+		if rs.Type != "newrelic_federated_logs_setup" {
 			continue
 		}
 
@@ -150,7 +150,7 @@ func testAccFederatedLogSetupConfig(
 	}
 
 	return fmt.Sprintf(`
-resource "newrelic_federated_log_setup" "foo" {
+resource "newrelic_federated_logs_setup" "foo" {
   name                          = "%s"
   %s
   cloud_provider                = "%s"
