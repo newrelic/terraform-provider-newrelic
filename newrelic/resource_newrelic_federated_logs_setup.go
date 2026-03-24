@@ -11,12 +11,12 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/pipelinecontrol"
 )
 
-func resourceNewRelicFederatedLogSetup() *schema.Resource {
+func resourceNewRelicFederatedLogsSetup() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicFederatedLogSetupCreate,
-		ReadContext:   resourceNewRelicFederatedLogSetupRead,
-		UpdateContext: resourceNewRelicFederatedLogSetupUpdate,
-		DeleteContext: resourceNewRelicFederatedLogSetupDelete,
+		CreateContext: resourceNewRelicFederatedLogsSetupCreate,
+		ReadContext:   resourceNewRelicFederatedLogsSetupRead,
+		UpdateContext: resourceNewRelicFederatedLogsSetupUpdate,
+		DeleteContext: resourceNewRelicFederatedLogsSetupDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -90,7 +90,9 @@ func resourceNewRelicFederatedLogSetup() *schema.Resource {
 	}
 }
 
-func resourceNewRelicFederatedLogSetupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsSetupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Printf("[INFO] Creating New Relic Federated Log Setup: name=%s", d.Get("name").(string))
+
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -137,10 +139,10 @@ func resourceNewRelicFederatedLogSetupCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(resp.Entity.ID)
 
-	return resourceNewRelicFederatedLogSetupRead(ctx, d, meta)
+	return resourceNewRelicFederatedLogsSetupRead(ctx, d, meta)
 }
 
-func resourceNewRelicFederatedLogSetupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsSetupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -209,7 +211,8 @@ func resourceNewRelicFederatedLogSetupRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceNewRelicFederatedLogSetupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsSetupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Printf("[INFO] Updating New Relic Federated Log Setup: id=%s name=%s", d.Id(), d.Get("name").(string))
 
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -253,12 +256,14 @@ func resourceNewRelicFederatedLogSetupUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicFederatedLogSetupRead(ctx, d, meta)
+	return resourceNewRelicFederatedLogsSetupRead(ctx, d, meta)
 }
 
-func resourceNewRelicFederatedLogSetupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+
+	log.Printf("[INFO] Deleting New Relic Federated Log Setup: id=%s", d.Id())
 
 	_, err := client.Pipelinecontrol.EntityManagementDeleteWithContext(ctx, d.Id())
 	if err != nil {

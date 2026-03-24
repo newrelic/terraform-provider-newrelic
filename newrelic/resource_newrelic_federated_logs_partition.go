@@ -11,12 +11,12 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/pipelinecontrol"
 )
 
-func resourceNewRelicFederatedLogPartition() *schema.Resource {
+func resourceNewRelicFederatedLogsPartition() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicFederatedLogPartitionCreate,
-		ReadContext:   resourceNewRelicFederatedLogPartitionRead,
-		UpdateContext: resourceNewRelicFederatedLogPartitionUpdate,
-		DeleteContext: resourceNewRelicFederatedLogPartitionDelete,
+		CreateContext: resourceNewRelicFederatedLogsPartitionCreate,
+		ReadContext:   resourceNewRelicFederatedLogsPartitionRead,
+		UpdateContext: resourceNewRelicFederatedLogsPartitionUpdate,
+		DeleteContext: resourceNewRelicFederatedLogsPartitionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -102,7 +102,9 @@ func resourceNewRelicFederatedLogPartition() *schema.Resource {
 	}
 }
 
-func resourceNewRelicFederatedLogPartitionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsPartitionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Printf("[INFO] Creating New Relic Federated Log Partition: name=%s", d.Get("name").(string))
+
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -149,10 +151,10 @@ func resourceNewRelicFederatedLogPartitionCreate(ctx context.Context, d *schema.
 
 	d.SetId(resp.Entity.ID)
 
-	return resourceNewRelicFederatedLogPartitionRead(ctx, d, meta)
+	return resourceNewRelicFederatedLogsPartitionRead(ctx, d, meta)
 }
 
-func resourceNewRelicFederatedLogPartitionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsPartitionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -227,7 +229,9 @@ func resourceNewRelicFederatedLogPartitionRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceNewRelicFederatedLogPartitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsPartitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Printf("[INFO] Updating New Relic Federated Log Partition: id=%s name=%s", d.Id(), d.Get("name").(string))
+
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -261,7 +265,7 @@ func resourceNewRelicFederatedLogPartitionUpdate(ctx context.Context, d *schema.
 	}
 
 	if v, ok := d.GetOk("retention_duration"); ok {
-		input.RetentionPolicy = pipelinecontrol.EntityManagementRetentionPolicyUpdateInput{
+		input.RetentionPolicy = &pipelinecontrol.EntityManagementRetentionPolicyUpdateInput{
 			Duration: v.(int),
 			Unit:     pipelinecontrol.EntityManagementRetentionUnit(d.Get("retention_unit").(string)),
 		}
@@ -272,12 +276,14 @@ func resourceNewRelicFederatedLogPartitionUpdate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicFederatedLogPartitionRead(ctx, d, meta)
+	return resourceNewRelicFederatedLogsPartitionRead(ctx, d, meta)
 }
 
-func resourceNewRelicFederatedLogPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+
+	log.Printf("[INFO] Deleting New Relic Federated Log Partition: id=%s", d.Id())
 
 	_, err := client.Pipelinecontrol.EntityManagementDeleteWithContext(ctx, d.Id())
 	if err != nil {

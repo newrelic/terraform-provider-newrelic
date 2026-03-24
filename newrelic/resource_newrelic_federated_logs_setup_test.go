@@ -15,7 +15,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/pipelinecontrol"
 )
 
-func TestAccNewRelicFederatedLogSetup_Basic(t *testing.T) {
+func TestAccNewRelicFederatedLogsSetup_Basic(t *testing.T) {
 	t.Parallel()
 
 	var (
@@ -43,17 +43,17 @@ func TestAccNewRelicFederatedLogSetup_Basic(t *testing.T) {
 			}
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFederatedLogSetupDestroy,
+		CheckDestroy: testAccCheckNewRelicFederatedLogsSetupDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccFederatedLogSetupConfig(
+				Config: testAccFederatedLogsSetupConfig(
 					name, "", cloudProvider, cloudProviderRegion,
 					dataLocationBucket, dataProcessingConnectionId,
 					nrAccountId, nrRegion, queryConnectionId, status,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFederatedLogSetupExists(resourceName),
+					testAccCheckNewRelicFederatedLogsSetupExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 					resource.TestCheckResourceAttr(resourceName, "cloud_provider", cloudProvider),
 					resource.TestCheckResourceAttr(resourceName, "cloud_provider_region", cloudProviderRegion),
@@ -68,13 +68,13 @@ func TestAccNewRelicFederatedLogSetup_Basic(t *testing.T) {
 			},
 			// Test: Update (name and description)
 			{
-				Config: testAccFederatedLogSetupConfig(
+				Config: testAccFederatedLogsSetupConfig(
 					nameUpdated, descriptionUpdated, cloudProvider, cloudProviderRegion,
 					dataLocationBucket, dataProcessingConnectionId,
 					nrAccountId, nrRegion, queryConnectionId, status,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFederatedLogSetupExists(resourceName),
+					testAccCheckNewRelicFederatedLogsSetupExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", nameUpdated),
 					resource.TestCheckResourceAttr(resourceName, "description", descriptionUpdated),
 					resource.TestCheckResourceAttr(resourceName, "status", status),
@@ -91,7 +91,7 @@ func TestAccNewRelicFederatedLogSetup_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckNewRelicFederatedLogSetupDestroy(s *terraform.State) error {
+func testAccCheckNewRelicFederatedLogsSetupDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 	for _, rs := range s.RootModule().Resources {
@@ -110,7 +110,7 @@ func testAccCheckNewRelicFederatedLogSetupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckNewRelicFederatedLogSetupExists(resourceName string) resource.TestCheckFunc {
+func testAccCheckNewRelicFederatedLogsSetupExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -131,15 +131,15 @@ func testAccCheckNewRelicFederatedLogSetupExists(resourceName string) resource.T
 			return fmt.Errorf("entity with ID %s returned nil response", rs.Primary.ID)
 		}
 
-		if _, ok := (*resp).(*pipelinecontrol.EntityManagementFederatedLogSetupEntity); !ok {
-			return fmt.Errorf("entity %s is not of type EntityManagementFederatedLogSetupEntity", rs.Primary.ID)
+		if _, ok := (*resp).(*pipelinecontrol.EntityManagementFederatedLogsSetupEntity); !ok {
+			return fmt.Errorf("entity %s is not of type EntityManagementFederatedLogsSetupEntity", rs.Primary.ID)
 		}
 
 		return nil
 	}
 }
 
-func testAccFederatedLogSetupConfig(
+func testAccFederatedLogsSetupConfig(
 	name, description, cloudProvider, cloudProviderRegion,
 	dataLocationBucket, dataProcessingConnectionId,
 	nrAccountId, nrRegion, queryConnectionId, status string,

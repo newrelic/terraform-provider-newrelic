@@ -256,8 +256,14 @@ resource_newrelic_events_to_metrics_rule_test.go:
 resource_newrelic_federated_logs_partition.go:
   test: false
   product_mapping: NGEP
+resource_newrelic_federated_logs_partition_test.go:
+  test: true
+  product_mapping: NGEP
 resource_newrelic_federated_logs_setup.go:
   test: false
+  product_mapping: NGEP
+resource_newrelic_federated_logs_setup_test.go:
+  test: true
   product_mapping: NGEP
 resource_newrelic_group_management.go:
   test: false

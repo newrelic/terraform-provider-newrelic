@@ -15,7 +15,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/pipelinecontrol"
 )
 
-func TestAccNewRelicFederatedLogPartition_Basic(t *testing.T) {
+func TestAccNewRelicFederatedLogsPartition_Basic(t *testing.T) {
 	t.Parallel()
 
 	var (
@@ -44,18 +44,18 @@ func TestAccNewRelicFederatedLogPartition_Basic(t *testing.T) {
 			}
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFederatedLogPartitionDestroy,
+		CheckDestroy: testAccCheckNewRelicFederatedLogsPartitionDestroy,
 		Steps: []resource.TestStep{
 			// Test: Create
 			{
-				Config: testAccFederatedLogPartitionConfig(
+				Config: testAccFederatedLogsPartitionConfig(
 					setupName, nrAccountId,
 					partitionName, "", dataLocationUri,
 					partitionDatabase, partitionTable,
 					status, 0, "",
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFederatedLogPartitionExists(partitionResourceName),
+					testAccCheckNewRelicFederatedLogsPartitionExists(partitionResourceName),
 					resource.TestCheckResourceAttr(partitionResourceName, "name", partitionName),
 					resource.TestCheckResourceAttr(partitionResourceName, "data_location_uri", dataLocationUri),
 					resource.TestCheckResourceAttr(partitionResourceName, "partition_database", partitionDatabase),
@@ -69,14 +69,14 @@ func TestAccNewRelicFederatedLogPartition_Basic(t *testing.T) {
 			},
 			// Test: Update (name, description, and retention policy)
 			{
-				Config: testAccFederatedLogPartitionConfig(
+				Config: testAccFederatedLogsPartitionConfig(
 					setupName, nrAccountId,
 					partitionNameUpdated, descriptionUpdated, dataLocationUri,
 					partitionDatabase, partitionTable,
 					status, retentionDurationUpdated, retentionUnitUpdated,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFederatedLogPartitionExists(partitionResourceName),
+					testAccCheckNewRelicFederatedLogsPartitionExists(partitionResourceName),
 					resource.TestCheckResourceAttr(partitionResourceName, "name", partitionNameUpdated),
 					resource.TestCheckResourceAttr(partitionResourceName, "description", descriptionUpdated),
 					resource.TestCheckResourceAttr(partitionResourceName, "retention_duration", fmt.Sprintf("%d", retentionDurationUpdated)),
@@ -94,7 +94,7 @@ func TestAccNewRelicFederatedLogPartition_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckNewRelicFederatedLogPartitionDestroy(s *terraform.State) error {
+func testAccCheckNewRelicFederatedLogsPartitionDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
 	for _, rs := range s.RootModule().Resources {
@@ -113,7 +113,7 @@ func testAccCheckNewRelicFederatedLogPartitionDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccCheckNewRelicFederatedLogPartitionExists(resourceName string) resource.TestCheckFunc {
+func testAccCheckNewRelicFederatedLogsPartitionExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -134,17 +134,17 @@ func testAccCheckNewRelicFederatedLogPartitionExists(resourceName string) resour
 			return fmt.Errorf("entity with ID %s returned nil response", rs.Primary.ID)
 		}
 
-		if _, ok := (*resp).(*pipelinecontrol.EntityManagementFederatedLogPartitionEntity); !ok {
-			return fmt.Errorf("entity %s is not of type EntityManagementFederatedLogPartitionEntity", rs.Primary.ID)
+		if _, ok := (*resp).(*pipelinecontrol.EntityManagementFederatedLogsPartitionEntity); !ok {
+			return fmt.Errorf("entity %s is not of type EntityManagementFederatedLogsPartitionEntity", rs.Primary.ID)
 		}
 
 		return nil
 	}
 }
 
-// testAccFederatedLogPartitionConfig generates HCL for a federated log partition along
+// testAccFederatedLogsPartitionConfig generates HCL for a federated log partition along
 // with the setup resource it depends on. Pass retentionDuration=0 to omit retention policy.
-func testAccFederatedLogPartitionConfig(
+func testAccFederatedLogsPartitionConfig(
 	setupName, nrAccountId,
 	partitionName, description, dataLocationUri,
 	partitionDatabase, partitionTable,
