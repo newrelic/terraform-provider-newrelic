@@ -25,6 +25,7 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		CustomizeDiff: resourceNewRelicNotificationChannelCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -60,7 +61,7 @@ func resourceNewRelicNotificationChannel() *schema.Resource {
 			},
 			"property": {
 				Type:        schema.TypeSet,
-				Required:    true,
+				Optional:    true,
 				Description: "Notification channel property type.",
 				Elem:        notificationsPropertySchema(),
 			},
@@ -91,7 +92,16 @@ func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.Re
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 	channelInput := expandNotificationChannel(d)
-	channelInput.Properties = append(channelInput.Properties, createMonitoringProperty())
+	
+	// SERVICE_NOW_APP doesn't accept properties, not even the monitoring property
+	if channelInput.Type != notifications.AiNotificationsChannelTypeTypes.SERVICE_NOW_APP {
+		channelInput.Properties = append(channelInput.Properties, createMonitoringProperty())
+	} else {
+		// Ensure we send an empty array, not null
+		if channelInput.Properties == nil {
+			channelInput.Properties = []notifications.AiNotificationsPropertyInput{}
+		}
+	}
 
 	log.Printf("[INFO] Creating New Relic notification channelResponse %s", channelInput.Name)
 
@@ -232,4 +242,18 @@ func listValidNotificationsProductTypes() []string {
 
 func isNotificationChannelNotFound(err diag.Diagnostic) bool {
 	return strings.Contains(err.Summary, "INVALID_PARAMETER") && strings.Contains(err.Summary, "does not correspond to any valid entity")
+}
+
+func resourceNewRelicNotificationChannelCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	channelType := d.Get("type").(string)
+	propertySet := d.Get("property").(*schema.Set)
+
+	// property is not required for SERVICE_NOW_APP
+	if channelType != string(notifications.AiNotificationsChannelTypeTypes.SERVICE_NOW_APP) {
+		if propertySet == nil || propertySet.Len() == 0 {
+			return fmt.Errorf("property is required for channel type %s", channelType)
+		}
+	}
+
+	return nil
 }
