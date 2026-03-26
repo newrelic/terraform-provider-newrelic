@@ -178,7 +178,9 @@ func resourceNewRelicWorkflowAutomationCreate(ctx context.Context, d *schema.Res
 
 	resourceNewRelicWorkflowAutomationSetValuesToState(d)
 	log.Printf("[INFO] Created workflow automation %s (scope: %s/%s)", name, scopeType, scopeID)
-	return nil
+
+	// Read the resource to populate computed fields like description and version
+	return resourceNewRelicWorkflowAutomationRead(ctx, d, meta)
 }
 
 func resourceNewRelicWorkflowAutomationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -317,7 +319,9 @@ func resourceNewRelicWorkflowAutomationUpdate(ctx context.Context, d *schema.Res
 	}
 
 	log.Printf("[INFO] Updated workflow automation %s (scope: %s/%s)", name, scopeType, scopeID)
-	return nil
+
+	// Read the resource to populate computed fields like description and version
+	return resourceNewRelicWorkflowAutomationRead(ctx, d, meta)
 }
 
 func resourceNewRelicWorkflowAutomationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
