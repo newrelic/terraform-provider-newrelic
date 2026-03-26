@@ -109,6 +109,12 @@ resource_newrelic_alert_channel.go:
 resource_newrelic_alert_channel_test.go:
   test: true
   product_mapping: ALERTS
+resource_newrelic_alert_compound_condition.go:
+  test: false
+  product_mapping: ALERTS
+resource_newrelic_alert_compound_condition_test.go:
+  test: true
+  product_mapping: ALERTS
 resource_newrelic_alert_condition.go:
   test: false
   product_mapping: ALERTS
@@ -119,12 +125,6 @@ resource_newrelic_alert_condition_test.go:
   test: true
   product_mapping: ALERTS
 resource_newrelic_alert_condition_unit_test.go:
-  test: true
-  product_mapping: ALERTS
-resource_newrelic_alert_compound_condition.go:
-  test: false
-  product_mapping: ALERTS
-resource_newrelic_alert_compound_condition_test.go:
   test: true
   product_mapping: ALERTS
 resource_newrelic_alert_muting_rule.go:
@@ -412,6 +412,12 @@ resource_newrelic_user_management_test.go:
 resource_newrelic_workflow.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
+resource_newrelic_workflow_automation.go:
+  test: false
+  product_mapping: WORKFLOW_AUTOMATION
+resource_newrelic_workflow_automation_test.go:
+  test: true
+  product_mapping: WORKFLOW_AUTOMATION
 resource_newrelic_workflow_test.go:
   test: true
   product_mapping: WORKFLOW_INTEGRATIONS

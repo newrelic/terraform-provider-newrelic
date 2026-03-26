@@ -12,6 +12,7 @@ require (
 	github.com/newrelic/newrelic-client-go/v2 v2.82.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -70,5 +71,4 @@ require (
 	google.golang.org/grpc v1.79.3 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

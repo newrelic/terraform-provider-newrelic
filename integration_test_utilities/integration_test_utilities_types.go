@@ -23,6 +23,7 @@ var ProductMappingTypes = struct {
 	LoggingIntegrations  ProductMapping
 	NGEP                 ProductMapping
 	SYNTHETICS           ProductMapping
+	WorkflowAutomation   ProductMapping
 	WorkflowIntegrations ProductMapping
 	WORKLOADS            ProductMapping
 }{
@@ -38,6 +39,7 @@ var ProductMappingTypes = struct {
 	LoggingIntegrations:  "LOGGING_INTEGRATIONS",
 	NGEP:                 "NGEP",
 	SYNTHETICS:           "SYNTHETICS",
+	WorkflowAutomation:   "WORKFLOW_AUTOMATION",
 	WorkflowIntegrations: "WORKFLOW_INTEGRATIONS",
 	WORKLOADS:            "WORKLOADS",
 }
@@ -90,6 +92,9 @@ var productMappings = map[ProductMapping][]string{
 	ProductMappingTypes.SYNTHETICS: {
 		"monitor_downtime",
 		"synthetics",
+	},
+	ProductMappingTypes.WorkflowAutomation: {
+		"workflow_automation",
 	},
 	ProductMappingTypes.WorkflowIntegrations: {
 		"notification",
