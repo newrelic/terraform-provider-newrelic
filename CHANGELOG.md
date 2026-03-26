@@ -1,3 +1,14 @@
+<a name="v3.82.0"></a>
+## [v3.82.0] - 2026-03-25
+### Bug Fixes
+- **notifications:** remove unused functions and fix linting issues ([#3047](https://github.com/newrelic/terraform-provider-newrelic/issues/3047))
+
+### Documentation Updates
+- **notifications:** adds `exact_name` documentation to destinations ([#3049](https://github.com/newrelic/terraform-provider-newrelic/issues/3049))
+
+### Features
+- **destinations:** Added global destinations support (scope of destination) ([#3045](https://github.com/newrelic/terraform-provider-newrelic/issues/3045))
+
 <a name="v3.81.0"></a>
 ## [v3.81.0] - 2026-03-13
 ### Features
@@ -2629,7 +2640,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.81.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.82.0...HEAD
+[v3.82.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.81.0...v3.82.0
 [v3.81.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.3...v3.81.0
 [v3.80.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.2...v3.80.3
 [v3.80.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.1...v3.80.2

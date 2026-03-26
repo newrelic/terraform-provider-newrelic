@@ -194,7 +194,68 @@ func expandNotificationDestinationProperty(cfg map[string]interface{}) notificat
 	return property
 }
 
+func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	// Check if this is an org-scoped destination
+	isOrgScoped := destination.Scope != nil && destination.Scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION
+
+	// Set scope based on the destination's scope info
+	// If org-scoped, use ORGANIZATION type with org ID; otherwise use ACCOUNT type with account ID
+	var scopeData []map[string]interface{}
+	if isOrgScoped {
+		scopeData = []map[string]interface{}{
+			{
+				"type": string(notifications.EntityScopeTypeInputTypes.ORGANIZATION),
+				"id":   destination.Scope.ID,
+			},
+		}
+	} else {
+		scopeData = []map[string]interface{}{
+			{
+				"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+				"id":   fmt.Sprintf("%d", destination.AccountID),
+			},
+		}
+	}
+	if err := d.Set("scope", scopeData); err != nil {
+		return err
+	}
+
+	// For ACCOUNT scope, also set account_id; for ORGANIZATION scope, don't set account_id
+	return flattenNotificationDestinationBase(&destination.AiNotificationsDestination, d, isOrgScoped)
+}
+
 func flattenNotificationDestination(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	// Check if user configured scope in their config (new flow)
+	existingScope := expandNotificationDestinationScope(d)
+
+	if existingScope != nil {
+		// User configured scope (ACCOUNT type) - set scope and account_id in state
+		scopeData := []map[string]interface{}{
+			{
+				"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+				"id":   fmt.Sprintf("%d", destination.AccountID),
+			},
+		}
+		if err := d.Set("scope", scopeData); err != nil {
+			return err
+		}
+		// For ACCOUNT scope, also set account_id
+		return flattenNotificationDestinationBase(destination, d, false)
+	}
+
+	// Backward compatible flow: User used account_id - set account_id, don't set scope
+	return flattenNotificationDestinationBase(destination, d, false)
+}
+
+func flattenNotificationDestinationBase(destination *notifications.AiNotificationsDestination, d *schema.ResourceData, isOrgScoped bool) error {
 	if destination == nil {
 		return nil
 	}
@@ -241,9 +302,8 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	// Only set account_id for non-org-scoped destinations
-	scope := expandNotificationDestinationScope(d)
-	if scope == nil || scope.Type != notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+	// Only set account_id for non-org-scoped destinations (preserves backward compatibility)
+	if !isOrgScoped {
 		if err := d.Set("account_id", destination.AccountID); err != nil {
 			return err
 		}
@@ -368,7 +428,7 @@ func flattenNotificationDestinationSecureURLForDataSource(url *notifications.AiN
 	return secureURLResult
 }
 
-func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
+func flattenNotificationDestinationDataSourceWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
 	}
@@ -397,19 +457,48 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
-	// Only set account_id for non-org-scoped destinations
-	scope := expandNotificationDestinationScope(d)
-	if scope == nil || scope.Type != notifications.EntityScopeTypeInputTypes.ORGANIZATION {
-		if err := d.Set("account_id", destination.AccountID); err != nil {
-			return err
-		}
-	}
-
 	if err := d.Set("status", destination.Status); err != nil {
 		return err
 	}
 
 	if err := d.Set("guid", destination.GUID); err != nil {
+		return err
+	}
+
+	// Check if user explicitly configured scope in their data source config
+	userConfiguredScope := expandNotificationDestinationScope(d)
+
+	// Only set scope if user explicitly configured it in their data source config
+	// This ensures backward compatibility - users who don't use scope won't see it in state
+	if userConfiguredScope != nil {
+		// Set scope based on the destination's scope info from API, or derive from account_id
+		if destination.Scope != nil {
+			scopeData := []map[string]interface{}{
+				{
+					"type": string(destination.Scope.Type),
+					"id":   destination.Scope.ID,
+				},
+			}
+			if err := d.Set("scope", scopeData); err != nil {
+				return err
+			}
+		} else {
+			// Destination doesn't have scope from API - set ACCOUNT scope with account_id
+			scopeData := []map[string]interface{}{
+				{
+					"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+					"id":   fmt.Sprintf("%d", destination.AccountID),
+				},
+			}
+			if err := d.Set("scope", scopeData); err != nil {
+				return err
+			}
+		}
+	}
+	// If user didn't configure scope, don't set scope (backward compatible)
+
+	// Set account_id for backward compatibility
+	if err := d.Set("account_id", destination.AccountID); err != nil {
 		return err
 	}
 
@@ -433,57 +522,4 @@ func expandNotificationDestinationScope(d *schema.ResourceData) *notifications.E
 		Type: notifications.EntityScopeTypeInput(scopeMap["type"].(string)),
 		ID:   scopeMap["id"].(string),
 	}
-}
-
-func flattenNotificationDestinationScope(scope *notifications.EntityScope) []map[string]interface{} {
-	if scope == nil || scope.Type == "" {
-		return nil
-	}
-
-	return []map[string]interface{}{
-		{
-			"type": string(scope.Type),
-			"id":   scope.ID,
-		},
-	}
-}
-
-func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
-	if destination == nil {
-		return nil
-	}
-
-	// Flatten the base destination fields
-	if err := flattenNotificationDestination(&destination.AiNotificationsDestination, d); err != nil {
-		return err
-	}
-
-	// Flatten the scope
-	if destination.Scope != nil {
-		if err := d.Set("scope", flattenNotificationDestinationScope(destination.Scope)); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func flattenNotificationDestinationWithScopeForDataSource(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
-	if destination == nil {
-		return nil
-	}
-
-	// Flatten the base destination fields
-	if err := flattenNotificationDestinationDataSource(&destination.AiNotificationsDestination, d); err != nil {
-		return err
-	}
-
-	// Flatten the scope
-	if destination.Scope != nil {
-		if err := d.Set("scope", flattenNotificationDestinationScope(destination.Scope)); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
