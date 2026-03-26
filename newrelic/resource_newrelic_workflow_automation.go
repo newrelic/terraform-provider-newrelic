@@ -144,8 +144,8 @@ func resourceNewRelicWorkflowAutomationCreate(ctx context.Context, d *schema.Res
 
 	// Get and validate scope type (required field)
 	scopeType := d.Get("scope_type").(string)
-	if err := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); err != nil {
-		return diag.FromErr(err)
+	if validationErr := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); validationErr != nil {
+		return diag.FromErr(validationErr)
 	}
 
 	// Get and validate scope ID (required field)
@@ -283,8 +283,8 @@ func resourceNewRelicWorkflowAutomationUpdate(ctx context.Context, d *schema.Res
 	}
 
 	scopeType := d.Get("scope_type").(string)
-	if err := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); err != nil {
-		return diag.FromErr(err)
+	if validationErr := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); validationErr != nil {
+		return diag.FromErr(validationErr)
 	}
 
 	scopeID := d.Get("scope_id").(string)
