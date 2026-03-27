@@ -13,6 +13,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	// Scope type constants for workflow automation
+	scopeTypeAccount      = "ACCOUNT"
+	scopeTypeOrganization = "ORGANIZATION"
+)
+
 func resourceNewRelicWorkflowAutomation() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicWorkflowAutomationCreate,
@@ -25,10 +31,9 @@ func resourceNewRelicWorkflowAutomation() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				ForceNew:    true,
-				Description: "The name of the workflow automation. If not specified, it will be extracted from the YAML definition.",
+				Description: "The name of the workflow automation. Must match the name in the YAML definition.",
 			},
 			"definition": {
 				Type:        schema.TypeString,
@@ -74,15 +79,30 @@ func resourceNewRelicWorkflowAutomation() *schema.Resource {
 func resourceNewRelicWorkflowAutomationValidateScopeType(scopeType string) error {
 	// Scope type is required and must not be empty
 	if scopeType == "" {
-		return fmt.Errorf("scope_type is required and must be specified. Supported values are: ACCOUNT, ORGANIZATION")
+		return fmt.Errorf("scope_type is required and must be specified. Supported values are: %s, %s", scopeTypeAccount, scopeTypeOrganization)
 	}
 
 	// Check if scope type is one of the supported values
-	if scopeType != "ACCOUNT" && scopeType != "ORGANIZATION" {
-		return fmt.Errorf("scope_type '%s' is not supported. Supported values are: ACCOUNT, ORGANIZATION", scopeType)
+	if scopeType != scopeTypeAccount && scopeType != scopeTypeOrganization {
+		return fmt.Errorf("scope_type '%s' is not supported. Supported values are: %s, %s", scopeType, scopeTypeAccount, scopeTypeOrganization)
 	}
 
 	return nil
+}
+
+// resourceNewRelicWorkflowAutomationValidateScope validates and returns the scope type and ID
+func resourceNewRelicWorkflowAutomationValidateScope(d *schema.ResourceData) (scopeType, scopeID string, err error) {
+	scopeType = d.Get("scope_type").(string)
+	if err := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); err != nil {
+		return "", "", err
+	}
+
+	scopeID = d.Get("scope_id").(string)
+	if scopeID == "" {
+		return "", "", fmt.Errorf("scope_id is required and must be specified")
+	}
+
+	return scopeType, scopeID, nil
 }
 
 func resourceNewRelicWorkflowAutomationParseNameFromYAML(yamlContent string) (string, error) {
@@ -98,28 +118,29 @@ func resourceNewRelicWorkflowAutomationParseNameFromYAML(yamlContent string) (st
 	return workflow.Name, nil
 }
 
-func resourceNewRelicWorkflowAutomationGetOrParseWorkflowName(d *schema.ResourceData) (string, error) {
-	// Get name from Terraform config if provided
+// resourceNewRelicWorkflowAutomationValidateAndGetName validates that the name
+// in the YAML definition matches the name specified in the resource configuration.
+// The resource name field is the source of truth.
+func resourceNewRelicWorkflowAutomationValidateAndGetName(d *schema.ResourceData) (string, error) {
+	// Get name from Terraform resource config (required field, source of truth)
 	name := d.Get("name").(string)
 
 	// Get the YAML definition
 	definition := d.Get("definition").(string)
 
-	// Parse name from YAML
-	parsedName, err := resourceNewRelicWorkflowAutomationParseNameFromYAML(definition)
+	// Parse name from YAML to validate it matches
+	yamlName, err := resourceNewRelicWorkflowAutomationParseNameFromYAML(definition)
 	if err != nil {
 		return "", err
 	}
 
-	// If name is provided in Terraform config, validate it matches the YAML
-	if name != "" && name != parsedName {
-		return "", fmt.Errorf("name in Terraform config (%s) does not match name in YAML definition (%s)", name, parsedName)
+	// Validate that YAML name matches the resource name
+	if name != yamlName {
+		return "", fmt.Errorf("name in resource configuration (%s) does not match name in YAML definition (%s). The name field in your YAML must match the resource name", name, yamlName)
 	}
 
-	// Use the parsed name from YAML and set it in the state
-	_ = d.Set("name", parsedName)
-
-	return parsedName, nil
+	// Return the resource name (source of truth)
+	return name, nil
 }
 
 func resourceNewRelicWorkflowAutomationParseID(id string) (scopeType string, scopeID string, name string, err error) {
@@ -134,25 +155,19 @@ func resourceNewRelicWorkflowAutomationCreate(ctx context.Context, d *schema.Res
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	// Parse and validate the workflow name from YAML
-	name, err := resourceNewRelicWorkflowAutomationGetOrParseWorkflowName(d)
+	// Validate that resource name matches YAML definition name
+	name, err := resourceNewRelicWorkflowAutomationValidateAndGetName(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Validate and get scope
+	scopeType, scopeID, err := resourceNewRelicWorkflowAutomationValidateScope(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	definition := d.Get("definition").(string)
-
-	// Get and validate scope type (required field)
-	scopeType := d.Get("scope_type").(string)
-	if validationErr := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); validationErr != nil {
-		return diag.FromErr(validationErr)
-	}
-
-	// Get and validate scope ID (required field)
-	scopeID := d.Get("scope_id").(string)
-	if scopeID == "" {
-		return diag.FromErr(fmt.Errorf("scope_id is required and must be specified"))
-	}
 
 	definitionInput := workflowautomation.WorkflowAutomationCreateWorkflowDefinitionInput{
 		Yaml: workflowautomation.SecureValue(definition),
@@ -181,6 +196,25 @@ func resourceNewRelicWorkflowAutomationCreate(ctx context.Context, d *schema.Res
 
 	// Read the resource to populate computed fields like description and version
 	return resourceNewRelicWorkflowAutomationRead(ctx, d, meta)
+}
+
+// setWorkflowStateFromAPI sets the workflow state from the API response
+func setWorkflowStateFromAPI(d *schema.ResourceData, yaml, description string, version int, name, scopeType, scopeID string) {
+	_ = d.Set("name", name)
+	_ = d.Set("scope_type", scopeType)
+	_ = d.Set("scope_id", scopeID)
+
+	if yaml != "" {
+		_ = d.Set("definition", yaml)
+	}
+	if description != "" {
+		_ = d.Set("description", description)
+	}
+	if version > 0 {
+		_ = d.Set("version", version)
+	}
+
+	resourceNewRelicWorkflowAutomationSetValuesToState(d)
 }
 
 func resourceNewRelicWorkflowAutomationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -219,7 +253,7 @@ func resourceNewRelicWorkflowAutomationRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if scopeType == "ORGANIZATION" {
+	if scopeType == scopeTypeOrganization {
 		workflow, err := client.Organization.GetWorkflow(name, 0)
 		if err != nil || workflow == nil {
 			log.Printf("[WARN] Workflow automation %s not found, removing from state", name)
@@ -227,25 +261,11 @@ func resourceNewRelicWorkflowAutomationRead(ctx context.Context, d *schema.Resou
 			return nil
 		}
 
-		_ = d.Set("name", name)
-		_ = d.Set("scope_type", scopeType)
-		_ = d.Set("scope_id", scopeID)
-
-		if workflow.Definition.Yaml != "" {
-			_ = d.Set("definition", string(workflow.Definition.Yaml))
-		}
-		if workflow.Definition.Description != "" {
-			_ = d.Set("description", workflow.Definition.Description)
-		}
-		if workflow.Definition.Version > 0 {
-			_ = d.Set("version", workflow.Definition.Version)
-		}
-
-		resourceNewRelicWorkflowAutomationSetValuesToState(d)
-	} else if scopeType == "ACCOUNT" {
+		setWorkflowStateFromAPI(d, string(workflow.Definition.Yaml), workflow.Definition.Description, workflow.Definition.Version, name, scopeType, scopeID)
+	} else if scopeType == scopeTypeAccount {
 		accountID, err := strconv.Atoi(scopeID)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("invalid scope_id format for ACCOUNT scope (must be numeric): %s", scopeID))
+			return diag.FromErr(fmt.Errorf("invalid scope_id format for %s scope (must be numeric): %s", scopeTypeAccount, scopeID))
 		}
 
 		workflow, err := client.WorkflowAutomation.GetWorkflow(accountID, name, 0)
@@ -255,21 +275,7 @@ func resourceNewRelicWorkflowAutomationRead(ctx context.Context, d *schema.Resou
 			return nil
 		}
 
-		_ = d.Set("name", name)
-		_ = d.Set("scope_type", scopeType)
-		_ = d.Set("scope_id", strconv.Itoa(accountID))
-
-		if workflow.Definition.Yaml != "" {
-			_ = d.Set("definition", string(workflow.Definition.Yaml))
-		}
-		if workflow.Definition.Description != "" {
-			_ = d.Set("description", workflow.Definition.Description)
-		}
-		if workflow.Definition.Version > 0 {
-			_ = d.Set("version", workflow.Definition.Version)
-		}
-
-		resourceNewRelicWorkflowAutomationSetValuesToState(d)
+		setWorkflowStateFromAPI(d, string(workflow.Definition.Yaml), workflow.Definition.Description, workflow.Definition.Version, name, scopeType, strconv.Itoa(accountID))
 	}
 
 	return nil
@@ -279,19 +285,16 @@ func resourceNewRelicWorkflowAutomationUpdate(ctx context.Context, d *schema.Res
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	name, err := resourceNewRelicWorkflowAutomationGetOrParseWorkflowName(d)
+	// Validate that resource name matches YAML definition name
+	name, err := resourceNewRelicWorkflowAutomationValidateAndGetName(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	scopeType := d.Get("scope_type").(string)
-	if validationErr := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); validationErr != nil {
-		return diag.FromErr(validationErr)
-	}
-
-	scopeID := d.Get("scope_id").(string)
-	if scopeID == "" {
-		return diag.FromErr(fmt.Errorf("scope_id is required and must be specified"))
+	// Validate and get scope
+	scopeType, scopeID, err := resourceNewRelicWorkflowAutomationValidateScope(d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	definitionInput := workflowautomation.WorkflowAutomationUpdateWorkflowDefinitionInput{
@@ -328,18 +331,20 @@ func resourceNewRelicWorkflowAutomationDelete(ctx context.Context, d *schema.Res
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	scopeType := d.Get("scope_type").(string)
-	if err := resourceNewRelicWorkflowAutomationValidateScopeType(scopeType); err != nil {
+	// Validate that resource name matches YAML definition name
+	name, err := resourceNewRelicWorkflowAutomationValidateAndGetName(d)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	scopeID := d.Get("scope_id").(string)
-	if scopeID == "" {
-		return diag.FromErr(fmt.Errorf("scope_id is required and must be specified"))
+	// Validate and get scope
+	scopeType, scopeID, err := resourceNewRelicWorkflowAutomationValidateScope(d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	deleteInput := workflowautomation.WorkflowAutomationDeleteWorkflowDefinitionInput{
-		Name: d.Get("name").(string),
+		Name: name,
 	}
 
 	scopeInput := workflowautomation.WorkflowAutomationScopeInput{
@@ -347,13 +352,13 @@ func resourceNewRelicWorkflowAutomationDelete(ctx context.Context, d *schema.Res
 		Type: workflowautomation.WorkflowAutomationScopeType(scopeType),
 	}
 
-	_, err := client.WorkflowAutomation.WorkflowAutomationDeleteWorkflowDefinition(
+	_, deleteErr := client.WorkflowAutomation.WorkflowAutomationDeleteWorkflowDefinition(
 		deleteInput,
 		scopeInput,
 	)
 
-	if err != nil {
-		return diag.FromErr(err)
+	if deleteErr != nil {
+		return diag.FromErr(deleteErr)
 	}
 
 	d.SetId("")

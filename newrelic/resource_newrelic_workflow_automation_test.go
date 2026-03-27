@@ -128,7 +128,7 @@ func TestAccNewRelicWorkflowAutomation_NameMismatch(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicWorkflowAutomationConfig_NameMismatch(testAccountID, rName),
-				ExpectError: regexp.MustCompile("name in Terraform config .* does not match name in YAML definition"),
+				ExpectError: regexp.MustCompile("name in resource configuration .* does not match name in YAML definition"),
 			},
 		},
 	})
@@ -308,6 +308,9 @@ func testAccCheckNewRelicWorkflowAutomationDestroy(s *terraform.State) error {
 func testAccNewRelicWorkflowAutomationConfig_Account(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
+  name = "%[2]s"
+
+  definition = 
   definition = <<-EOT
 name: %[2]s
 description: This is a test workflow created by terraform
@@ -328,6 +331,10 @@ EOT
 
 func testAccNewRelicWorkflowAutomationConfig_AccountUpdated(accountID int, name string) string {
 	return fmt.Sprintf(`
+ic_workflow_automation" "foo" {
+  name = "%[2]s"
+
+  definition = <<-E
 resource "newrelic_workflow_automation" "foo" {
   definition = <<-EOT
 name: %[2]s
@@ -396,6 +403,12 @@ EOT
 `, accountID, name)
 }
 
+tID int, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workflow_automation" "foo" {
+  name = "%[2]s"
+
+
 func testAccNewRelicWorkflowAutomationConfig_InvalidScopeType(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
@@ -413,6 +426,8 @@ EOT
 
   scope_id   = "%[1]d"
   scope_type = "INVALID_SCOPE"
+_automation" "foo" {
+
 }
 `, accountID, name)
 }
@@ -434,6 +449,9 @@ EOT
 
   scope_id   = "%[1]d"
   scope_type = ""
+  name = "%[1]s"
+
+  d
 }
 `, accountID, name)
 }
@@ -454,6 +472,8 @@ steps:
 EOT
 
   scope_id   = ""
+n" "foo" {
+  name = "test-
   scope_type = "ACCOUNT"
 }
 `, name)
@@ -465,6 +485,8 @@ resource "newrelic_workflow_automation" "foo" {
   definition = "this is not valid yaml: [[[{"
 
   scope_id   = "%[1]d"
+utomation" "foo" {
+  name
   scope_type = "ACCOUNT"
 }
 `, accountID)
