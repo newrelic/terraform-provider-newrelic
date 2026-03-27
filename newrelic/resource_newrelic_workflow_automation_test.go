@@ -308,9 +308,10 @@ func testAccCheckNewRelicWorkflowAutomationDestroy(s *terraform.State) error {
 func testAccNewRelicWorkflowAutomationConfig_Account(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
-  name = "%[2]s"
+  name       = "%[2]s"
+  scope_id   = "%[1]d"
+  scope_type = "ACCOUNT"
 
-  definition = 
   definition = <<-EOT
 name: %[2]s
 description: This is a test workflow created by terraform
@@ -322,20 +323,17 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = "ACCOUNT"
 }
 `, accountID, name)
 }
 
 func testAccNewRelicWorkflowAutomationConfig_AccountUpdated(accountID int, name string) string {
 	return fmt.Sprintf(`
-ic_workflow_automation" "foo" {
-  name = "%[2]s"
-
-  definition = <<-E
 resource "newrelic_workflow_automation" "foo" {
+  name       = "%[2]s"
+  scope_id   = "%[1]d"
+  scope_type = "ACCOUNT"
+
   definition = <<-EOT
 name: %[2]s
 description: This is an updated test workflow created by terraform
@@ -350,9 +348,6 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = "ACCOUNT"
 }
 `, accountID, name)
 }
@@ -360,7 +355,9 @@ EOT
 func testAccNewRelicWorkflowAutomationConfig_AccountWithName(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
-  name = "%[2]s"
+  name       = "%[2]s"
+  scope_id   = "%[1]d"
+  scope_type = "ACCOUNT"
 
   definition = <<-EOT
 name: %[2]s
@@ -373,9 +370,6 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = "ACCOUNT"
 }
 `, accountID, name)
 }
@@ -383,7 +377,9 @@ EOT
 func testAccNewRelicWorkflowAutomationConfig_NameMismatch(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
-  name = "wrong_name"
+  name       = "wrong_name"
+  scope_id   = "%[1]d"
+  scope_type = "ACCOUNT"
 
   definition = <<-EOT
 name: %[2]s
@@ -396,22 +392,17 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = "ACCOUNT"
 }
 `, accountID, name)
 }
 
-tID int, name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_workflow_automation" "foo" {
-  name = "%[2]s"
-
-
 func testAccNewRelicWorkflowAutomationConfig_InvalidScopeType(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
+  name       = "%[2]s"
+  scope_id   = "%[1]d"
+  scope_type = "INVALID_SCOPE"
+
   definition = <<-EOT
 name: %[2]s
 description: This is a test workflow created by terraform
@@ -423,11 +414,6 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = "INVALID_SCOPE"
-_automation" "foo" {
-
 }
 `, accountID, name)
 }
@@ -435,6 +421,10 @@ _automation" "foo" {
 func testAccNewRelicWorkflowAutomationConfig_EmptyScopeType(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
+  name       = "%[2]s"
+  scope_id   = "%[1]d"
+  scope_type = ""
+
   definition = <<-EOT
 name: %[2]s
 description: This is a test workflow created by terraform
@@ -446,12 +436,6 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = ""
-  name = "%[1]s"
-
-  d
 }
 `, accountID, name)
 }
@@ -459,6 +443,10 @@ EOT
 func testAccNewRelicWorkflowAutomationConfig_EmptyScopeId(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
+  name       = "%[1]s"
+  scope_id   = ""
+  scope_type = "ACCOUNT"
+
   definition = <<-EOT
 name: %[1]s
 description: This is a test workflow created by terraform
@@ -470,11 +458,6 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = ""
-n" "foo" {
-  name = "test-
-  scope_type = "ACCOUNT"
 }
 `, name)
 }
@@ -482,12 +465,11 @@ n" "foo" {
 func testAccNewRelicWorkflowAutomationConfig_InvalidYAML(accountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
-  definition = "this is not valid yaml: [[[{"
-
+  name       = "invalid_yaml_test"
   scope_id   = "%[1]d"
-utomation" "foo" {
-  name
   scope_type = "ACCOUNT"
+
+  definition = "this is not valid yaml: [[[{"
 }
 `, accountID)
 }
@@ -495,6 +477,10 @@ utomation" "foo" {
 func testAccNewRelicWorkflowAutomationConfig_YAMLWithoutName(accountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_workflow_automation" "foo" {
+  name       = "no_name_in_yaml"
+  scope_id   = "%[1]d"
+  scope_type = "ACCOUNT"
+
   definition = <<-EOT
 description: This is a test workflow created by terraform
 steps:
@@ -505,9 +491,6 @@ steps:
     type: wait
     seconds: 10
 EOT
-
-  scope_id   = "%[1]d"
-  scope_type = "ACCOUNT"
 }
 `, accountID)
 }
