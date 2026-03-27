@@ -68,57 +68,136 @@ YAML
 }
 ```
 
-### Advanced Workflow with Inputs and Slack Integration
+### Advanced Workflow: CCU Governance and Monitoring
 
-This example demonstrates a more complex workflow that queries NRDB, transforms results to CSV, and posts them to Slack:
+This example demonstrates a production-grade workflow for monitoring and governing Compute Capacity Unit (CCU) consumption with input validation, email notifications, and event tracking:
 
 ```hcl
-resource "newrelic_workflow_automation" "nrql_slack_report" {
-  name       = "nrqlSlackReport"
+resource "newrelic_workflow_automation" "ccu_governance" {
+  name       = "CCUGovernance"
   scope_id   = "1234567"
   scope_type = "ACCOUNT"
 
   definition = <<-YAML
-name: nrqlSlackReport
+name: CCUGovernance
+description: Workflow to review CCU consumption
 
 workflowInputs:
-  nrql:
-    type: String
-  accountIds:
+  skipUsers:
     type: List
-  channel:
+    defaultValue:
+      - "user1@example.com"
+      - "user2@example.com"
+  ccuThreshold:
+    type: Int
+    defaultValue: 5000
+    validations:
+      - type: minIntValue
+        errorMessage: "Minimum CCU must be at least 100"
+        minValue: 100
+      - type: maxIntValue
+        errorMessage: "Maximum CCU must be less than 10000"
+        maxValue: 10000
+  maxCcu:
+    type: Int
+    defaultValue: 15000
+    validations:
+      - type: minIntValue
+        errorMessage: "Minimum CCU must be at least 10"
+        minValue: 10
+      - type: maxIntValue
+        errorMessage: "Maximum CCU must be less than 100000"
+        maxValue: 100000
+  emailDestinationId:
     type: String
-  slackToken:
-    type: String
-    defaultValue: "${{ :secrets:slackToken }}"
+    required: false
+    validations:
+      - type: regex
+        errorMessage: "destinationId must be a valid UUID"
+        pattern: ^[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}$
 
 steps:
-  - name: queryForLog
+  - name: query1
     type: action
     action: newrelic.nrdb.query
     version: 1
     inputs:
-      accountIds: "${{ .workflowInputs.accountIds }}"
-      query: "${{ .workflowInputs.nrql }}"
+      query: >-
+        FROM (FROM NrConsumption SELECT sum(consumption) as dailyConsumption,
+        latest(toDateTime(timestamp,'MM-dd-yyyy')) as notificationDate,
+        latest(toDateTime(timestamp + 432000000,'MM-dd-yyyy')) as
+        terminationDate WHERE metric = 'CCU' AND dimension_productFeature != 'Cloud bytes received'
+        FACET dimension_email as email, dimension_userId as userId limit max)
+        SELECT dailyConsumption, email, notificationDate, terminationDate WHERE
+        dailyConsumption > ${{ .workflowInputs.ccuThreshold }} SINCE 24 hours ago limit max
+      selectors:
+        - name: results
+          expression: .results
 
-  - name: generateCSV
-    type: action
-    action: utils.transform.toCSV
-    version: 1
-    inputs:
-      data: '${{ .steps.queryForLog.outputs.results }}'
+  - name: ifCheck
+    type: switch
+    switch:
+      - condition: ${{ .steps.query1.outputs.results | length < 1 }}
+        next: end
 
-  - name: postCSV
-    type: action
-    action: slack.chat.postMessage
-    version: 1
-    inputs:
-      channel: ${{ .workflowInputs.channel }}
-      text: "NRQL Results"
-      attachment:
-        filename: 'results.csv'
-        content: "${{ .steps.generateCSV.outputs.csv }}"
-      token: ${{ .workflowInputs.slackToken }}
+  - name: loopStep
+    type: loop
+    for:
+      in: ${{ .steps.query1.outputs.results }}
+      steps:
+        - name: checkSkipUser
+          type: switch
+          switch:
+            - condition: >-
+                ${{ .workflowInputs.skipUsers | contains(.steps.loopStep.loop.element.email) and (.steps.loopStep.loop.element.dailyConsumption < .workflowInputs.maxCcu) }}
+              next: continue
+
+        - name: createEvent
+          type: action
+          action: newrelic.ingest.sendEvents
+          version: 1
+          inputs:
+            events:
+              - eventType: ccuTerminator
+                DailyConsumption: ${{ .steps.loopStep.loop.element.dailyConsumption }}
+                NotificationDate: ${{ .steps.loopStep.loop.element.notificationDate }}
+                TerminationDate: ${{ .steps.loopStep.loop.element.terminationDate }}
+                userId: ${{ .steps.loopStep.loop.element.userId }}
+            selectors:
+              - name: success
+                expression: .success
+
+        - name: ifEmail
+          type: switch
+          switch:
+            - condition: ${{ .workflowInputs.emailDestinationId | length > 0 }}
+              next: emailUser
+          next: logUser
+
+        - name: emailUser
+          type: action
+          action: newrelic.notification.sendEmail
+          version: 1
+          inputs:
+            destinationId: ${{ .workflowInputs.emailDestinationId }}
+            subject: CCU Consumption Alert ${{ .steps.loopStep.loop.element.userId }} - Action Required
+            message: >-
+              ${{ .steps.loopStep.loop.element.email }}
+              You are exceeding the daily CCU consumption limit within NewRelic.
+              Please reduce your CCU usage to avoid service termination.
+            selectors:
+              - name: success
+                expression: '.success'
+
+        - name: logUser
+          type: action
+          action: newrelic.ingest.sendLogs
+          version: 1
+          inputs:
+            logs:
+              - message: >-
+                  Sent email notification for ${{ .steps.loopStep.loop.element.userId }}
+                  success: ${{ .steps.emailUser.outputs.success }}
 YAML
 }
 ```
@@ -157,11 +236,53 @@ Workflows can define inputs that can be passed when the workflow is executed:
 ```yaml
 workflowInputs:
   inputName:
-    type: String       # Can be String, Number, Boolean, List, etc.
+    type: String       # Can be String, Int, Boolean, List, etc.
     defaultValue: "value"  # Optional default value
+    required: false    # Optional - whether input is required (default: true)
+    validations:       # Optional - input validation rules
+      - type: regex
+        errorMessage: "Custom error message"
+        pattern: ^[a-zA-Z0-9]+$
 ```
 
 Inputs can reference secrets using the syntax: `${{ :secrets:secretName }}`
+
+#### Input Validation
+
+Workflow inputs support various validation types to ensure data integrity:
+
+**Regex Validation:**
+```yaml
+emailDestinationId:
+  type: String
+  validations:
+    - type: regex
+      errorMessage: "Must be a valid UUID"
+      pattern: ^[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}$
+```
+
+**Integer Range Validation:**
+```yaml
+threshold:
+  type: Int
+  defaultValue: 5000
+  validations:
+    - type: minIntValue
+      errorMessage: "Minimum value must be at least 100"
+      minValue: 100
+    - type: maxIntValue
+      errorMessage: "Maximum value must be less than 10000"
+      maxValue: 10000
+```
+
+**List Type:**
+```yaml
+skipUsers:
+  type: List
+  defaultValue:
+    - "user1@example.com"
+    - "user2@example.com"
+```
 
 ### Step Types
 
@@ -188,6 +309,21 @@ Common actions include:
   * `seconds` - Number of seconds to wait
   * `signals` - Optional array of signals to wait for
   * `next` - Optional next step name (use "end" to terminate)
+
+#### Switch Steps
+
+* `type: switch` - Conditional branching based on expressions
+  * `switch` - Array of conditions to evaluate
+    * `condition` - Expression to evaluate (uses JQ syntax)
+    * `next` - Step to execute if condition is true
+  * `next` - Default step if no conditions match
+
+#### Loop Steps
+
+* `type: loop` - Repeats a set of steps
+  * `for.in` - Expression defining the iteration (e.g., `${{ [range(1; 30)] }}`)
+  * `steps` - Array of steps to execute in each iteration
+  * Steps can use `next: break` to exit the loop early
 
 ### Referencing Data in Workflows
 
@@ -253,7 +389,7 @@ $ terraform import newrelic_workflow_automation.test_query ACCOUNT#1234567#test_
 For workflows with complex names:
 
 ```bash
-$ terraform import newrelic_workflow_automation.nrql_slack_report ACCOUNT#1234567#nrqlSlackReport
+$ terraform import newrelic_workflow_automation.ccu_governance ACCOUNT#1234567#CCUGovernance
 ```
 
 For organization-scoped workflows:
