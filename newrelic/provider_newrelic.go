@@ -136,6 +136,7 @@ func Provider() *schema.Provider {
 			"newrelic_test_grok_pattern":            dataSourceNewRelicTestGrokPattern(),
 			"newrelic_service_level_alert_helper":   dataSourceNewRelicServiceLevelAlertHelper(),
 			"newrelic_user":                         dataSourceNewRelicUser(),
+			"newrelic_fleet_role":                   dataSourceNewRelicFleetRole(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -194,6 +195,11 @@ func Provider() *schema.Provider {
 			"newrelic_user":                                     resourceNewRelicUser(),
 			"newrelic_fleet":                                    resourceNewRelicFleet(),
 			"newrelic_workflow_automation":                      resourceNewRelicWorkflowAutomation(),
+			"newrelic_fleet_deployment":             resourceNewRelicFleetDeployment(),
+			"newrelic_fleet_grant":                  resourceNewRelicFleetGrant(),
+			"newrelic_fleet_configuration":          resourceNewRelicFleetConfiguration(),
+			"newrelic_fleet_configuration_version":  resourceNewRelicFleetConfigurationVersion(),
+			"newrelic_fleet_member":                 resourceNewRelicFleetMember(),
 		},
 	}
 
