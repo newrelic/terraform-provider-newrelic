@@ -62,11 +62,6 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 		return err
 	}
 
-	if len(fleet.Product) > 0 {
-		if err := d.Set("product", fleet.Product[0]); err != nil {
-			return err
-		}
-	}
 
 	if len(fleet.Tags) > 0 {
 		if err := d.Set("tags", flattenEntityManagementTags(fleet.Tags)); err != nil {
@@ -101,11 +96,6 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 		return err
 	}
 
-	if len(fleet.Product) > 0 && fleet.Product[0] != "" {
-		if err := d.Set("product", fleet.Product[0]); err != nil {
-			return err
-		}
-	}
 
 	if len(fleet.Tags) > 0 {
 		if err := d.Set("tags", flattenFleetControlTags(fleet.Tags)); err != nil {

@@ -147,28 +147,6 @@ func TestAccNewRelicFleet_WithTags(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicFleet_WithProduct(t *testing.T) {
-	resourceName := "newrelic_fleet.product"
-	rName := fmt.Sprintf("tf-test-prod-%s", acctest.RandString(5))
-
-	setupFleetTestCredentials(t)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccNewRelicFleetConfigWithProduct(rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFleetExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					resource.TestCheckResourceAttr(resourceName, "product", "INFRA"),
-				),
-			},
-		},
-	})
-}
 
 // Error case tests
 
@@ -337,18 +315,6 @@ resource "newrelic_fleet" "tags" {
   operating_system    = "LINUX"
   description         = "Test fleet with tags"
   tags                = ["environment:test", "team:platform"]
-}
-`, name)
-}
-
-func testAccNewRelicFleetConfigWithProduct(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet" "product" {
-  name                = "%s"
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-  description         = "Test fleet with product"
-  product             = "INFRA"
 }
 `, name)
 }

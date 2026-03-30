@@ -51,11 +51,6 @@ func resourceNewRelicFleet() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the fleet.",
 			},
-			"product": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The New Relic product associated with this fleet.",
-			},
 			"tags": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -122,9 +117,6 @@ func resourceNewRelicFleetCreate(ctx context.Context, d *schema.ResourceData, me
 		createInput.Description = desc.(string)
 	}
 
-	if product, ok := d.GetOk("product"); ok {
-		createInput.Product = product.(string)
-	}
 
 	// Add operating system if provided
 	if hasOS {
