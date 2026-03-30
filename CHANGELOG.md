@@ -1,3 +1,11 @@
+<a name="v3.83.0"></a>
+## [v3.83.0] - 2026-03-30
+### Bug Fixes
+- **security:** upgrade google.golang.org/grpc to v1.79.3 to fix CVE-2026-33186 ([#3052](https://github.com/newrelic/terraform-provider-newrelic/issues/3052))
+
+### Features
+- **workflowautomation:** adding workflow automation ([#3053](https://github.com/newrelic/terraform-provider-newrelic/issues/3053))
+
 <a name="v3.82.0"></a>
 ## [v3.82.0] - 2026-03-25
 ### Bug Fixes
@@ -2640,7 +2648,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.82.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.83.0...HEAD
+[v3.83.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.82.0...v3.83.0
 [v3.82.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.81.0...v3.82.0
 [v3.81.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.3...v3.81.0
 [v3.80.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.80.2...v3.80.3
