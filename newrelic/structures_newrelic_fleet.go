@@ -12,10 +12,7 @@ import (
 
 // flattenEntityManagementTags converts EntityManagementTag array to Terraform-friendly format
 func flattenEntityManagementTags(tags []fleetcontrol.EntityManagementTag) []string {
-	if len(tags) == 0 {
-		return nil
-	}
-
+	// Always return a slice (even if empty) for proper drift detection
 	result := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag.Values) > 0 {
@@ -28,10 +25,7 @@ func flattenEntityManagementTags(tags []fleetcontrol.EntityManagementTag) []stri
 
 // flattenFleetControlTags converts FleetControlTag array to Terraform-friendly format
 func flattenFleetControlTags(tags []fleetcontrol.FleetControlTag) []string {
-	if len(tags) == 0 {
-		return nil
-	}
-
+	// Always return a slice (even if empty) for proper drift detection
 	result := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag.Values) > 0 {
@@ -52,8 +46,14 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 		return err
 	}
 
+	// Always set operating_system (even if empty) to detect drift
+	// Empty string for KUBERNETESCLUSTER fleets is expected
 	if fleet.OperatingSystem.Type != "" {
 		if err := d.Set("operating_system", string(fleet.OperatingSystem.Type)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("operating_system", ""); err != nil {
 			return err
 		}
 	}
@@ -62,11 +62,9 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 		return err
 	}
 
-
-	if len(fleet.Tags) > 0 {
-		if err := d.Set("tags", flattenEntityManagementTags(fleet.Tags)); err != nil {
-			return err
-		}
+	// Always set tags (even if empty) to detect drift when tags are removed externally
+	if err := d.Set("tags", flattenEntityManagementTags(fleet.Tags)); err != nil {
+		return err
 	}
 
 	if err := d.Set("organization_id", organizationID); err != nil {
@@ -86,8 +84,14 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 		return err
 	}
 
+	// Always set operating_system (even if empty) to detect drift
+	// Empty string for KUBERNETESCLUSTER fleets is expected
 	if fleet.OperatingSystem.Type != "" {
 		if err := d.Set("operating_system", string(fleet.OperatingSystem.Type)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("operating_system", ""); err != nil {
 			return err
 		}
 	}
@@ -96,11 +100,9 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 		return err
 	}
 
-
-	if len(fleet.Tags) > 0 {
-		if err := d.Set("tags", flattenFleetControlTags(fleet.Tags)); err != nil {
-			return err
-		}
+	// Always set tags (even if empty) to detect drift when tags are removed externally
+	if err := d.Set("tags", flattenFleetControlTags(fleet.Tags)); err != nil {
+		return err
 	}
 
 	if err := d.Set("organization_id", organizationID); err != nil {
