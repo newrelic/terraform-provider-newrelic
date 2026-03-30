@@ -247,6 +247,12 @@ resource_newrelic_events_to_metrics_rule.go:
 resource_newrelic_events_to_metrics_rule_test.go:
   test: true
   product_mapping: EVENTS
+resource_newrelic_fleet.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_test.go:
+  test: true
+  product_mapping: FLEET
 resource_newrelic_group_management.go:
   test: false
   product_mapping: AUTH
@@ -475,6 +481,9 @@ structures_newrelic_cloud_aws_govcloud_link_account.go:
 structures_newrelic_cloud_aws_integrations.go:
   test: false
   product_mapping: CLOUD
+structures_newrelic_fleet.go:
+  test: false
+  product_mapping: FLEET
 structures_newrelic_infra_alert_condition.go:
   test: false
   product_mapping: ALERTS

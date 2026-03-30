@@ -1,4 +1,4 @@
-//go:build integration || unit || ALERTS || APIKS || APM || AUTH || CLOUD || DASHBOARDS || ENTITY || EVENTS || KEY_TRANSACTIONS || LOGGING_INTEGRATIONS || NGEP || SYNTHETICS || WORKFLOW_AUTOMATION || WORKFLOW_INTEGRATIONS || WORKLOADS
+//go:build integration || unit || ALERTS || APIKS || APM || AUTH || CLOUD || DASHBOARDS || ENTITY || EVENTS || FLEET || KEY_TRANSACTIONS || LOGGING_INTEGRATIONS || NGEP || SYNTHETICS || WORKFLOW_AUTOMATION || WORKFLOW_INTEGRATIONS || WORKLOADS
 
 // Test helpers
 //
@@ -36,6 +36,8 @@ var (
 	testAccAPIKey                              string
 	testAccProviders                           map[string]*schema.Provider
 	testAccProvider                            *schema.Provider
+	testFleetAPIKey                            string
+	testFleetAccountID                         int
 	testAccountID                              int
 	testSubAccountID                           int
 	testUserID                                 int
@@ -72,6 +74,18 @@ func init() {
 
 	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_TEST_USER_ID")); v != 0 {
 		testUserID = v
+	}
+
+	// Fleet test credentials
+	testFleetAPIKey = os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY")
+	if v := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY"); v == "" {
+		testFleetAPIKey = testAccAPIKey // Fallback to standard API key
+	}
+
+	if v, _ := strconv.Atoi(os.Getenv("NEW_RELIC_FLEET_TEST_ACCOUNT_ID")); v != 0 {
+		testFleetAccountID = v
+	} else {
+		testFleetAccountID = testAccountID // Fallback to standard account ID
 	}
 
 	// Used for cross-account scenarios if needed, such as dashboard widgets.
@@ -189,6 +203,20 @@ func testAccPreCheckEnvVars(t *testing.T) {
 
 	if v := os.Getenv("NEW_RELIC_ACCOUNT_ID"); v == "" {
 		t.Skipf("NEW_RELIC_ACCOUNT_ID must be set for acceptance tests")
+	}
+}
+
+func testAccPreCheckFleetEnvVars(t *testing.T) {
+	if v := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY"); v == "" {
+		t.Skipf("[WARN] NEW_RELIC_FLEET_TEST_API_KEY has not been set for fleet acceptance tests")
+	}
+
+	if v := os.Getenv("NEW_RELIC_FLEET_TEST_ACCOUNT_ID"); v == "" {
+		t.Skipf("NEW_RELIC_FLEET_TEST_ACCOUNT_ID must be set for fleet acceptance tests")
+	}
+
+	if v := os.Getenv("NEW_RELIC_LICENSE_KEY"); v == "" {
+		t.Skipf("NEW_RELIC_LICENSE_KEY must be set for acceptance tests")
 	}
 }
 

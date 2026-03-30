@@ -48,3 +48,4 @@ examples/modules/cloud-integrations/azure/*.json
 examples/modules/cloud-integrations/azure/*.pem
 examples/modules/cloud-integrations/gcp/*.json
 examples/modules/cloud-integrations/gcp/*.pem
+.env
