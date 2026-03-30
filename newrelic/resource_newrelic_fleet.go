@@ -31,8 +31,8 @@ func resourceNewRelicFleet() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"HOST",
-					"KUBERNETESCLUSTER",
+					string(fleetcontrol.EntityManagementManagedEntityTypeTypes.HOST),
+					string(fleetcontrol.EntityManagementManagedEntityTypeTypes.KUBERNETESCLUSTER),
 				}, false),
 				Description: "The type of entities this fleet will manage. Allowed values: HOST, KUBERNETESCLUSTER.",
 			},

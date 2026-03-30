@@ -10,6 +10,8 @@ description: |-
 
 Use this resource to create and manage New Relic fleets for centralized agent management.
 
+Fleets enable you to organize and manage New Relic agents across your infrastructure. You can create fleets for different types of infrastructure (HOST or KUBERNETESCLUSTER) and use them to centrally deploy agent configurations, manage updates, and organize your entities with tags.
+
 ## Example Usage
 
 ### Linux Host Fleet
@@ -20,10 +22,10 @@ resource "newrelic_fleet" "linux_hosts" {
   managed_entity_type = "HOST"
   operating_system    = "LINUX"
   description         = "Fleet for managing Linux production hosts"
-  product             = "Infrastructure"
+  product             = "INFRA"
 
   tags = [
-    "env:production",
+    "environment:production",
     "team:platform,ops"
   ]
 }
@@ -46,10 +48,10 @@ resource "newrelic_fleet" "windows_hosts" {
 resource "newrelic_fleet" "k8s_clusters" {
   name                = "Production Kubernetes Clusters"
   managed_entity_type = "KUBERNETESCLUSTER"
-  description         = "Fleet for managing K8s clusters"
+  description         = "Fleet for managing Kubernetes clusters"
 
   tags = [
-    "env:production"
+    "environment:production"
   ]
 }
 ```
@@ -58,13 +60,13 @@ resource "newrelic_fleet" "k8s_clusters" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the fleet.
-* `managed_entity_type` - (Required) The type of entities this fleet will manage. Allowed values: `HOST`, `KUBERNETESCLUSTER`. **Note**: This cannot be changed after creation.
-* `operating_system` - (Optional) The operating system type. **Required for HOST fleets**. Allowed values: `LINUX`, `WINDOWS`. **Must not be set for KUBERNETESCLUSTER fleets**. **Note**: This cannot be changed after creation.
-* `description` - (Optional) The description of the fleet.
-* `product` - (Optional) The New Relic product associated with this fleet.
-* `tags` - (Optional) A list of tags for the fleet in format `"key:value1,value2"`. Each tag can have multiple comma-separated values.
-* `organization_id` - (Optional) The organization ID. If not provided, it will be auto-fetched from the account. **Note**: This cannot be changed after creation.
+* `name` - (Required) The name of the fleet. This can be changed after creation.
+* `managed_entity_type` - (Required) The type of entities this fleet will manage. Valid values are `HOST` or `KUBERNETESCLUSTER`. **Note**: This cannot be changed after creation (forces new resource).
+* `operating_system` - (Optional) The operating system type for HOST fleets. **Required when `managed_entity_type` is `HOST`**. Valid values are `LINUX` or `WINDOWS`. **Must not be set when `managed_entity_type` is `KUBERNETESCLUSTER`**. **Note**: This cannot be changed after creation (forces new resource).
+* `description` - (Optional) A description of the fleet. This can be updated after creation.
+* `product` - (Optional) The New Relic product associated with this fleet (e.g., `INFRA`).
+* `tags` - (Optional) A list of tags for the fleet. Each tag should be in the format `"key:value1,value2"` where multiple values can be comma-separated.
+* `organization_id` - (Optional) The organization ID. If not provided, it will be automatically fetched from your account. **Note**: This cannot be changed after creation (forces new resource).
 
 ## Attributes Reference
 
