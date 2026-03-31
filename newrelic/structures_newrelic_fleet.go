@@ -47,14 +47,15 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 	}
 
 	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
-	// Always set it for HOST fleets to detect drift, even if API returns empty value
 	// Use string comparison to be defensive against type issues
 	if strings.ToUpper(string(fleet.ManagedEntityType)) == "HOST" {
 		osType := string(fleet.OperatingSystem.Type)
-		// For HOST fleets, always set operating_system (even if empty)
-		// This ensures drift detection works correctly
-		if err := d.Set("operating_system", osType); err != nil {
-			return err
+		// Only set if we have a non-empty value
+		// This prevents clearing a value that was set in config but not returned by API
+		if osType != "" {
+			if err := d.Set("operating_system", osType); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -85,14 +86,15 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 	}
 
 	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
-	// Always set it for HOST fleets to detect drift, even if API returns empty value
 	// Use string comparison to be defensive against type issues
 	if strings.ToUpper(string(fleet.ManagedEntityType)) == "HOST" {
 		osType := string(fleet.OperatingSystem.Type)
-		// For HOST fleets, always set operating_system (even if empty)
-		// This ensures drift detection works correctly
-		if err := d.Set("operating_system", osType); err != nil {
-			return err
+		// Only set if we have a non-empty value
+		// This prevents clearing a value that was set in config but not returned by API
+		if osType != "" {
+			if err := d.Set("operating_system", osType); err != nil {
+				return err
+			}
 		}
 	}
 
