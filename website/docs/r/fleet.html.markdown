@@ -22,7 +22,6 @@ resource "newrelic_fleet" "linux_hosts" {
   managed_entity_type = "HOST"
   operating_system    = "LINUX"
   description         = "Fleet for managing Linux production hosts"
-  product             = "INFRA"
 
   tags = [
     "environment:production",
@@ -64,7 +63,6 @@ The following arguments are supported:
 * `managed_entity_type` - (Required) The type of entities this fleet will manage. Valid values are `HOST` or `KUBERNETESCLUSTER`. **Note**: This cannot be changed after creation (forces new resource).
 * `operating_system` - (Optional) The operating system type for HOST fleets. **Required when `managed_entity_type` is `HOST`**. Valid values are `LINUX` or `WINDOWS`. **Must not be set when `managed_entity_type` is `KUBERNETESCLUSTER`**. **Note**: This cannot be changed after creation (forces new resource).
 * `description` - (Optional) A description of the fleet. This can be updated after creation.
-* `product` - (Optional) The New Relic product associated with this fleet (e.g., `INFRA`).
 * `tags` - (Optional) A list of tags for the fleet. Each tag should be in the format `"key:value1,value2"` where multiple values can be comma-separated.
 * `organization_id` - (Optional) The organization ID. If not provided, it will be automatically fetched from your account. **Note**: This cannot be changed after creation (forces new resource).
 

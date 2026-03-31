@@ -12,10 +12,7 @@ import (
 
 // flattenEntityManagementTags converts EntityManagementTag array to Terraform-friendly format
 func flattenEntityManagementTags(tags []fleetcontrol.EntityManagementTag) []string {
-	if len(tags) == 0 {
-		return nil
-	}
-
+	// Always return a slice (even if empty) for proper drift detection
 	result := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag.Values) > 0 {
@@ -28,10 +25,7 @@ func flattenEntityManagementTags(tags []fleetcontrol.EntityManagementTag) []stri
 
 // flattenFleetControlTags converts FleetControlTag array to Terraform-friendly format
 func flattenFleetControlTags(tags []fleetcontrol.FleetControlTag) []string {
-	if len(tags) == 0 {
-		return nil
-	}
-
+	// Always return a slice (even if empty) for proper drift detection
 	result := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag.Values) > 0 {
@@ -52,9 +46,16 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 		return err
 	}
 
-	if fleet.OperatingSystem.Type != "" {
-		if err := d.Set("operating_system", string(fleet.OperatingSystem.Type)); err != nil {
-			return err
+	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
+	// Use string comparison to be defensive against type issues
+	if strings.ToUpper(string(fleet.ManagedEntityType)) == "HOST" {
+		osType := string(fleet.OperatingSystem.Type)
+		// Only set if we have a non-empty value
+		// This prevents clearing a value that was set in config but not returned by API
+		if osType != "" {
+			if err := d.Set("operating_system", osType); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -62,16 +63,9 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 		return err
 	}
 
-	if len(fleet.Product) > 0 {
-		if err := d.Set("product", fleet.Product[0]); err != nil {
-			return err
-		}
-	}
-
-	if len(fleet.Tags) > 0 {
-		if err := d.Set("tags", flattenEntityManagementTags(fleet.Tags)); err != nil {
-			return err
-		}
+	// Always set tags (even if empty) to detect drift when tags are removed externally
+	if err := d.Set("tags", flattenEntityManagementTags(fleet.Tags)); err != nil {
+		return err
 	}
 
 	if err := d.Set("organization_id", organizationID); err != nil {
@@ -91,9 +85,16 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 		return err
 	}
 
-	if fleet.OperatingSystem.Type != "" {
-		if err := d.Set("operating_system", string(fleet.OperatingSystem.Type)); err != nil {
-			return err
+	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
+	// Use string comparison to be defensive against type issues
+	if strings.ToUpper(string(fleet.ManagedEntityType)) == "HOST" {
+		osType := string(fleet.OperatingSystem.Type)
+		// Only set if we have a non-empty value
+		// This prevents clearing a value that was set in config but not returned by API
+		if osType != "" {
+			if err := d.Set("operating_system", osType); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -101,16 +102,9 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 		return err
 	}
 
-	if len(fleet.Product) > 0 && fleet.Product[0] != "" {
-		if err := d.Set("product", fleet.Product[0]); err != nil {
-			return err
-		}
-	}
-
-	if len(fleet.Tags) > 0 {
-		if err := d.Set("tags", flattenFleetControlTags(fleet.Tags)); err != nil {
-			return err
-		}
+	// Always set tags (even if empty) to detect drift when tags are removed externally
+	if err := d.Set("tags", flattenFleetControlTags(fleet.Tags)); err != nil {
+		return err
 	}
 
 	if err := d.Set("organization_id", organizationID); err != nil {
