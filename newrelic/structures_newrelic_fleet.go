@@ -48,7 +48,7 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 
 	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
 	// Always set it for HOST fleets (even if empty) to detect drift
-	if string(fleet.ManagedEntityType) == "HOST" {
+	if fleet.ManagedEntityType == fleetcontrol.EntityManagementManagedEntityTypeTypes.HOST {
 		if err := d.Set("operating_system", string(fleet.OperatingSystem.Type)); err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 
 	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
 	// Always set it for HOST fleets (even if empty) to detect drift
-	if string(fleet.ManagedEntityType) == "HOST" {
+	if fleet.ManagedEntityType == fleetcontrol.FleetControlManagedEntityTypeTypes.HOST {
 		if err := d.Set("operating_system", string(fleet.OperatingSystem.Type)); err != nil {
 			return err
 		}
