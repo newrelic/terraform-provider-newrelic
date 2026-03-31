@@ -117,7 +117,6 @@ func resourceNewRelicFleetCreate(ctx context.Context, d *schema.ResourceData, me
 		createInput.Description = desc.(string)
 	}
 
-
 	// Add operating system if provided
 	if hasOS {
 		osType, osErr := mapOperatingSystemType(operatingSystem.(string))
