@@ -136,9 +136,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 		filters = ai.AiNotificationsDestinationFilter{ID: idValue}
 	}
 
-	scope := buildEntityScopeInput(d, accountID)
-
-	return getDestinationWithScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
+	return getDestinationWithScope(updatedContext, client, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
 }
 
 // getDestinationWithScope handles retrieval for all scope types (no scope, ACCOUNT, and ORGANIZATION)
@@ -148,31 +146,16 @@ func getDestinationWithScope(
 	filters ai.AiNotificationsDestinationFilter,
 	sorter notifications.AiNotificationsDestinationSorter,
 	idValue, nameValue, exactNameValue string,
-	scope notifications.EntityScopeInput,
+	scope *notifications.EntityScopeInput,
 	d *schema.ResourceData,
 ) diag.Diagnostics {
-	var destinationResponse *notifications.AiNotificationsDestinationsWithScopeResponse
-
-	if scope != nil && scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION {
-		resp, err := client.Notifications.GetDestinationsWithOrganizationScopeWithContext(ctx, "", filters, sorter)
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
+	destinationResponse, err := client.Notifications.GetDestinationsWithScope(ctx, "", filters, sorter, scope)
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
 		}
-		destinationResponse = resp
-	} else {
-		resp, err := client.Notifications.GetDestinationsWithAccountScopeWithContext(ctx, accountID, "", filters, sorter)
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
-		}
-		destinationResponse = resp
+		return diag.FromErr(err)
 	}
 
 	if len(destinationResponse.Entities) == 0 {
@@ -202,7 +185,6 @@ func getDestinationWithScope(
 	// No scope provided - return the first matching entity
 	return diag.FromErr(flattenNotificationDestinationDataSourceWithScope(&destinationResponse.Entities[0], d))
 }
-
 
 // getNotificationDestinationNotFoundError returns an appropriate error message based on which filter attribute was provided
 func getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue string) error {

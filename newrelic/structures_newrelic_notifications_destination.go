@@ -487,14 +487,14 @@ func flattenNotificationDestinationDataSourceWithScope(destination *notification
 	return nil
 }
 
-func buildEntityScopeInput(d *schema.ResourceData, accountID int) notifications.EntityScopeInput {
+func buildEntityScopeInput(d *schema.ResourceData, accountID int) *notifications.EntityScopeInput {
 	scopeList, ok := d.GetOk("scope")
 	if ok {
 		items, ok := scopeList.([]interface{})
 		if ok && len(items) > 0 {
 			scopeMap, ok := items[0].(map[string]interface{})
 			if ok {
-				return notifications.EntityScopeInput{
+				return &notifications.EntityScopeInput{
 					Type: notifications.EntityScopeTypeInput(scopeMap["type"].(string)),
 					ID:   scopeMap["id"].(string),
 				}
@@ -502,7 +502,7 @@ func buildEntityScopeInput(d *schema.ResourceData, accountID int) notifications.
 		}
 	}
 
-	return notifications.EntityScopeInput{
+	return &notifications.EntityScopeInput{
 		Type: notifications.EntityScopeTypeInputTypes.ACCOUNT,
 		ID:   strconv.Itoa(accountID),
 	}
