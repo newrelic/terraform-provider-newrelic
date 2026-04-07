@@ -313,13 +313,9 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	scope := expandNotificationDestinationScope(d)
+	scope := buildEntityScopeInput(d, accountID)
 	var destinationResponse *notifications.AiNotificationsDestinationResponse
-	if scope != nil {
-		destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, scope)
-	} else {
-		destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithContext(updatedContext, accountID, *destinationInput)
-	}
+	destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, &scope)
 	if err != nil {
 		diagErr := diag.FromErr(err)
 		newDiagErr := diag.Diagnostics{
@@ -353,11 +349,11 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	sorter := notifications.AiNotificationsDestinationSorter{}
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	scope := expandNotificationDestinationScope(d)
+	scope := buildEntityScopeInput(d, accountID)
 
 	var destinationResponse *notifications.AiNotificationsDestinationsWithScopeResponse
 
-	if scope != nil && scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+	if scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION {
 		resp, err := client.Notifications.GetDestinationsWithOrganizationScopeWithContext(updatedContext, "", filters, sorter)
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {
@@ -409,10 +405,10 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	scope := expandNotificationDestinationScope(d)
+	scope := buildEntityScopeInput(d, accountID)
 
 	// Use the regular update method (scope is passed in mutation for org-scoped)
-	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, d.Id(), scope)
+	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, d.Id(), &scope)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -434,7 +430,7 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 	accountID := selectAccountID(providerConfig, d)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	scope := expandNotificationDestinationScope(d)
+	scope := buildEntityScopeInput(d, accountID)
 
 	destinationResponse, err := client.Notifications.AiNotificationsDeleteDestinationWithScopeWithContext(updatedContext, accountID, d.Id(), scope)
 	if err != nil {
