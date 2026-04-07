@@ -48,7 +48,7 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"scope"},
-				Description:   "The account ID under which to put the destination.",
+				Description:   "The account ID under which the particular destination belong to.",
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -102,7 +102,7 @@ func dataSourceNewRelicNotificationDestination() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The ID of the scope (Organization UUID for ORGANIZATION scope, Account ID for ACCOUNT scope)",
+							Description: "The ID of the Scope (Organization UUID for ORGANIZATION scope, Account ID for ACCOUNT scope)",
 						},
 					},
 				},
@@ -118,6 +118,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
+	scope := buildEntityScopeInput(d, accountID)
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 	var filters ai.AiNotificationsDestinationFilter
 	sorter := notifications.AiNotificationsDestinationSorter{}
@@ -135,7 +136,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 		filters = ai.AiNotificationsDestinationFilter{ID: idValue}
 	}
 
-	scope := expandNotificationDestinationScope(d)
+	scope := buildEntityScopeInput(d, accountID)
 
 	return getDestinationWithScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
 }
@@ -144,11 +145,10 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 func getDestinationWithScope(
 	ctx context.Context,
 	client *nr.NewRelic,
-	accountID int,
 	filters ai.AiNotificationsDestinationFilter,
 	sorter notifications.AiNotificationsDestinationSorter,
 	idValue, nameValue, exactNameValue string,
-	scope *notifications.EntityScopeInput,
+	scope notifications.EntityScopeInput,
 	d *schema.ResourceData,
 ) diag.Diagnostics {
 	var destinationResponse *notifications.AiNotificationsDestinationsWithScopeResponse
