@@ -315,7 +315,7 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 
 	scope := buildEntityScopeInput(d, accountID)
 	var destinationResponse *notifications.AiNotificationsDestinationResponse
-	destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, &scope)
+	destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, scope)
 	if err != nil {
 		diagErr := diag.FromErr(err)
 		newDiagErr := diag.Diagnostics{
@@ -351,28 +351,13 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 
 	scope := buildEntityScopeInput(d, accountID)
 
-	var destinationResponse *notifications.AiNotificationsDestinationsWithScopeResponse
-
-	if scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION {
-		resp, err := client.Notifications.GetDestinationsWithOrganizationScopeWithContext(updatedContext, "", filters, sorter)
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
+	destinationResponse, err := client.Notifications.GetDestinationsWithScope(updatedContext, "", filters, sorter, scope)
+	if err != nil {
+		if _, ok := err.(*errors.NotFound); ok {
+			d.SetId("")
+			return nil
 		}
-		destinationResponse = resp
-	} else {
-		resp, err := client.Notifications.GetDestinationsWithAccountScopeWithContext(updatedContext, accountID, "", filters, sorter)
-		if err != nil {
-			if _, ok := err.(*errors.NotFound); ok {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
-		}
-		destinationResponse = resp
+		return diag.FromErr(err)
 	}
 
 	if len(destinationResponse.Entities) == 0 {
@@ -408,7 +393,7 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 	scope := buildEntityScopeInput(d, accountID)
 
 	// Use the regular update method (scope is passed in mutation for org-scoped)
-	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, d.Id(), &scope)
+	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, d.Id(), scope)
 	if err != nil {
 		return diag.FromErr(err)
 	}
