@@ -137,17 +137,11 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 
 	scope := expandNotificationDestinationScope(d)
 
-	// Case 1: No scope provided OR Case 2: ACCOUNT scope - use regular query (no scopeTypes filter)
-	if scope == nil || scope.Type == notifications.EntityScopeTypeInputTypes.ACCOUNT {
-		return getDestinationWithAccountScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
-	}
-
-	// Case 3: ORGANIZATION scope - use scope-aware query
-	return getDestinationWithOrganizationScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
+	return getDestinationWithScope(updatedContext, client, accountID, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
 }
 
-// getDestinationWithAccountScope handles retrieval for no scope or ACCOUNT scope destinations
-func getDestinationWithAccountScope(
+// getDestinationWithScope handles retrieval for all scope types (no scope, ACCOUNT, and ORGANIZATION)
+func getDestinationWithScope(
 	ctx context.Context,
 	client *nr.NewRelic,
 	accountID int,
@@ -157,9 +151,10 @@ func getDestinationWithAccountScope(
 	scope *notifications.EntityScopeInput,
 	d *schema.ResourceData,
 ) diag.Diagnostics {
-	// If ACCOUNT scope is explicitly provided, use scope-aware API to filter by scope type and id
-	if scope != nil && scope.Type == notifications.EntityScopeTypeInputTypes.ACCOUNT {
-		destinationResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(ctx, accountID, "", filters, sorter)
+	var destinationResponse *notifications.AiNotificationsDestinationsWithScopeResponse
+
+	if scope != nil && scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION {
+		resp, err := client.Notifications.GetDestinationsWithOrganizationScopeWithContext(ctx, "", filters, sorter)
 		if err != nil {
 			if _, ok := err.(*errors.NotFound); ok {
 				d.SetId("")
@@ -167,21 +162,34 @@ func getDestinationWithAccountScope(
 			}
 			return diag.FromErr(err)
 		}
-
-		if len(destinationResponse.Entities) == 0 {
-			d.SetId("")
-			if err := getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue); err != nil {
-				return diag.FromErr(err)
+		destinationResponse = resp
+	} else {
+		resp, err := client.Notifications.GetDestinationsWithAccountScopeWithContext(ctx, accountID, "", filters, sorter)
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				d.SetId("")
+				return nil
 			}
-			return nil
+			return diag.FromErr(err)
 		}
+		destinationResponse = resp
+	}
 
-		respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
-		if len(respErrors) > 0 {
-			return respErrors
+	if len(destinationResponse.Entities) == 0 {
+		d.SetId("")
+		if err := getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue); err != nil {
+			return diag.FromErr(err)
 		}
+		return nil
+	}
 
-		// Filter by ACCOUNT scope type and id
+	respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
+	if len(respErrors) > 0 {
+		return respErrors
+	}
+
+	// If scope is specified, filter results by matching scope type and id
+	if scope != nil {
 		for _, dest := range destinationResponse.Entities {
 			if dest.Scope != nil && string(dest.Scope.Type) == string(scope.Type) && dest.Scope.ID == scope.ID {
 				return diag.FromErr(flattenNotificationDestinationDataSourceWithScope(&dest, d))
@@ -191,75 +199,10 @@ func getDestinationWithAccountScope(
 		return diag.FromErr(fmt.Errorf("no destination found matching the provided scope type %s and id %s", scope.Type, scope.ID))
 	}
 
-	// No scope provided - use scope-aware API to get scope info for the destination
-	destinationResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(ctx, accountID, "", filters, sorter)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	if len(destinationResponse.Entities) == 0 {
-		d.SetId("")
-		if err := getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue); err != nil {
-			return diag.FromErr(err)
-		}
-		return nil
-	}
-
-	respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
-	if len(respErrors) > 0 {
-		return respErrors
-	}
-
+	// No scope provided - return the first matching entity
 	return diag.FromErr(flattenNotificationDestinationDataSourceWithScope(&destinationResponse.Entities[0], d))
 }
 
-// getDestinationWithOrganizationScope handles retrieval for ORGANIZATION scope destinations
-func getDestinationWithOrganizationScope(
-	ctx context.Context,
-	client *nr.NewRelic,
-	accountID int,
-	filters ai.AiNotificationsDestinationFilter,
-	sorter notifications.AiNotificationsDestinationSorter,
-	idValue, nameValue, exactNameValue string,
-	scope *notifications.EntityScopeInput,
-	d *schema.ResourceData,
-) diag.Diagnostics {
-	destinationResponse, err := client.Notifications.GetDestinationsWithScopeWithContext(ctx, accountID, "", filters, sorter)
-	if err != nil {
-		if _, ok := err.(*errors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	if len(destinationResponse.Entities) == 0 {
-		d.SetId("")
-		if err := getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue); err != nil {
-			return diag.FromErr(err)
-		}
-		return nil
-	}
-
-	respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
-	if len(respErrors) > 0 {
-		return respErrors
-	}
-
-	// Filter by ORGANIZATION scope
-	for _, dest := range destinationResponse.Entities {
-		if dest.Scope != nil && string(dest.Scope.Type) == string(scope.Type) && dest.Scope.ID == scope.ID {
-			return diag.FromErr(flattenNotificationDestinationDataSourceWithScope(&dest, d))
-		}
-	}
-
-	d.SetId("")
-	return diag.FromErr(fmt.Errorf("no destination found matching the provided scope type %s and id %s", scope.Type, scope.ID))
-}
 
 // getNotificationDestinationNotFoundError returns an appropriate error message based on which filter attribute was provided
 func getNotificationDestinationNotFoundError(idValue, nameValue, exactNameValue string) error {
