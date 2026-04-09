@@ -77,7 +77,7 @@ func TestAccNewRelicFleetConfigurationVersion_MissingConfiguration(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicFleetConfigurationVersionMissingConfig(rName),
-				ExpectError: regexp.MustCompile("one of configuration_file_path or configuration_content must be provided"),
+				ExpectError: regexp.MustCompile("one of `configuration_file_path,configuration_content` must be specified"),
 			},
 		},
 	})
@@ -95,7 +95,7 @@ func TestAccNewRelicFleetConfigurationVersion_BothConfigurations(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicFleetConfigurationVersionBothConfigs(rName),
-				ExpectError: regexp.MustCompile("conflicts with configuration_content|conflicts with configuration_file_path"),
+				ExpectError: regexp.MustCompile("only one of `configuration_file_path,configuration_content` can be specified"),
 			},
 		},
 	})
@@ -226,20 +226,14 @@ resource "newrelic_fleet_configuration_version" "v3" {
 }
 
 func testAccNewRelicFleetConfigurationVersionMissingConfig(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet_configuration" "test" {
-  name                = "%s"
-  agent_type          = "INFRASTRUCTURE"
-  managed_entity_type = "HOST"
-
-  configuration_content = "log: info"
-}
-
+	// Use a fake configuration_id to avoid creating actual resources
+	// This test only validates schema-level requirements
+	return `
 resource "newrelic_fleet_configuration_version" "error" {
-  configuration_id = newrelic_fleet_configuration.test.configuration_id
+  configuration_id = "fake-config-id-for-validation"
   # Missing both configuration_file_path and configuration_content
 }
-`, name)
+`
 }
 
 func testAccNewRelicFleetConfigurationVersionBothConfigs(name string) string {
