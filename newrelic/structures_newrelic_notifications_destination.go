@@ -203,27 +203,25 @@ func flattenNotificationDestinationWithScope(destination *notifications.AiNotifi
 	// Check if this is an org-scoped destination
 	isOrgScoped := destination.Scope.Type == notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION
 
-	// Only set scope in state if the request (terraform config) included scope
-	if _, ok := d.GetOk("scope"); ok {
-		var scopeData []map[string]interface{}
-		if isOrgScoped {
-			scopeData = []map[string]interface{}{
-				{
-					"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION),
-					"id":   destination.Scope.ID,
-				},
-			}
-		} else {
-			scopeData = []map[string]interface{}{
-				{
-					"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
-					"id":   fmt.Sprintf("%d", destination.AccountID),
-				},
-			}
+	// Always set scope in state from the NerdGraph response
+	var scopeData []map[string]interface{}
+	if isOrgScoped {
+		scopeData = []map[string]interface{}{
+			{
+				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION),
+				"id":   destination.Scope.ID,
+			},
 		}
-		if err := d.Set("scope", scopeData); err != nil {
-			return err
+	} else {
+		scopeData = []map[string]interface{}{
+			{
+				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
+				"id":   fmt.Sprintf("%d", destination.AccountID),
+			},
 		}
+	}
+	if err := d.Set("scope", scopeData); err != nil {
+		return err
 	}
 
 	// For ACCOUNT scope, also set account_id; for ORGANIZATION scope, don't set account_id
@@ -374,11 +372,6 @@ func flattenNotificationDestinationProperties(p []notifications.AiNotificationsP
 	properties := []map[string]interface{}{}
 
 	for _, property := range p {
-		// Skip the internal monitoring property; it is added automatically during create
-		// and should not appear in state to avoid unnecessary diffs.
-		if property.Key == "source" && property.Label == "terraform-source-internal" {
-			continue
-		}
 		properties = append(properties, flattenNotificationDestinationProperty(property))
 	}
 
