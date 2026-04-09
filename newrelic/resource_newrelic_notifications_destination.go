@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/organization"
 	"log"
 	"strconv"
 	"strings"
@@ -348,21 +349,38 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	accountID := selectAccountID(providerConfig, d)
 	filters := ai.AiNotificationsDestinationFilter{ID: d.Id()}
 	sorter := notifications.AiNotificationsDestinationSorter{}
-	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	scope := buildEntityScopeInput(d, accountID)
 
-	var destinationResponse *notifications.AiNotificationsDestinationsResponse
-	var err error
-	if scope.Type == notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION {
-		destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, "", filters, sorter)
-	} else {
-		scopeID, atoiErr := strconv.Atoi(scope.ID)
-		if atoiErr != nil {
-			return diag.FromErr(atoiErr)
+	if scope != nil && scope.Type == notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION {
+		orgFilters := organization.AiNotificationsDestinationFilter{
+			Name:      filters.Name,
+			ExactName: filters.ExactName,
+			ID:        filters.ID,
 		}
-		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, "", filters, sorter)
+		orgSorter := organization.AiNotificationsDestinationSorter{}
+		orgResponse, err := client.Organization.GetDestinations("", orgFilters, orgSorter)
+		if err != nil {
+			if _, ok := err.(*errors.NotFound); ok {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
+
+		if len(orgResponse.Entities) == 0 {
+			d.SetId("")
+			return nil
+		}
+
+		return diag.FromErr(flattenOrgNotificationDestinationDataSource(&orgResponse.Entities[0], d))
 	}
+
+	scopeID, atoiErr := strconv.Atoi(scope.ID)
+	if atoiErr != nil {
+		return diag.FromErr(atoiErr)
+	}
+	destinationResponse, err := client.Notifications.GetDestinations(scopeID, "", filters, sorter)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -376,12 +394,12 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return nil
 	}
 
-	errs := buildAiNotificationsResponseErrors(destinationResponse.Errors)
-	if len(errs) > 0 {
-		return errs
+	respErrors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
+	if len(respErrors) > 0 {
+		return respErrors
 	}
 
-	return diag.FromErr(flattenNotificationDestinationWithScope(&destinationResponse.Entities[0], d))
+	return diag.FromErr(flattenNotificationDestinationDataSource(&destinationResponse.Entities[0], *scope, d))
 }
 
 func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
