@@ -414,7 +414,7 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 		}
 		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		resp, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
+		resp, err := client.Notifications.GetDestinationsAccount(accountID, "", filters, sorter)
 
 		// fmt.Print("\n\n **************************** \n")
 		// fmt.Printf("\n DestinationDestroy:  %+v \n", toJSON(r.Primary.Attributes))
