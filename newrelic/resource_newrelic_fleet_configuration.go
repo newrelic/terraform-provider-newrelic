@@ -185,14 +185,17 @@ func resourceNewRelicFleetConfigurationRead(ctx context.Context, d *schema.Resou
 		return nil
 	}
 
-	// For Read, we only verify the configuration exists
-	// We don't update configuration_content or configuration_file_path
-	// as these are input-only fields and the API doesn't return them in the same format
-
+	// The API only returns the raw configuration content, not the metadata
+	// We need to preserve the values already in state
 	// Set organization_id if it was fetched
 	if err := d.Set("organization_id", organizationID); err != nil {
 		return diag.FromErr(err)
 	}
+
+	// Preserve other fields from state as API doesn't return them
+	// name, agent_type, managed_entity_type, configuration_content, configuration_file_path
+	// are already in state and don't need to be updated unless we got new data from API
+	// (which we don't for this API)
 
 	return nil
 }

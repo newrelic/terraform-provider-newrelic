@@ -163,10 +163,20 @@ func resourceNewRelicFleetConfigurationVersionRead(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+	// The API only returns the raw configuration content, not the metadata
+	// We need to preserve the values already in state
 	// Set organization_id if it was fetched
 	if err := d.Set("organization_id", organizationID); err != nil {
 		return diag.FromErr(err)
 	}
+
+	// Set configuration_id from state to ensure it's preserved
+	if err := d.Set("configuration_id", configurationID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// version_number is already in state and preserved
+	// configuration_content and configuration_file_path are input-only and not returned by API
 
 	return nil
 }
