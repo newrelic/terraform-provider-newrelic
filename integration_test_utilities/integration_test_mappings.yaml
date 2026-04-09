@@ -253,6 +253,18 @@ resource_newrelic_fleet.go:
 resource_newrelic_fleet_test.go:
   test: true
   product_mapping: FLEET
+resource_newrelic_fleet_configuration.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_configuration_test.go:
+  test: true
+  product_mapping: FLEET
+resource_newrelic_fleet_configuration_version.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_configuration_version_test.go:
+  test: true
+  product_mapping: FLEET
 resource_newrelic_group_management.go:
   test: false
   product_mapping: AUTH
@@ -482,6 +494,9 @@ structures_newrelic_cloud_aws_integrations.go:
   test: false
   product_mapping: CLOUD
 structures_newrelic_fleet.go:
+  test: false
+  product_mapping: FLEET
+structures_newrelic_fleet_configuration.go:
   test: false
   product_mapping: FLEET
 structures_newrelic_infra_alert_condition.go:

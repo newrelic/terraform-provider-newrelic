@@ -193,6 +193,8 @@ func Provider() *schema.Provider {
 			"newrelic_workload":                                 resourceNewRelicWorkload(),
 			"newrelic_user":                                     resourceNewRelicUser(),
 			"newrelic_fleet":                                    resourceNewRelicFleet(),
+			"newrelic_fleet_configuration":                      resourceNewRelicFleetConfiguration(),
+			"newrelic_fleet_configuration_version":              resourceNewRelicFleetConfigurationVersion(),
 			"newrelic_workflow_automation":                      resourceNewRelicWorkflowAutomation(),
 		},
 	}
