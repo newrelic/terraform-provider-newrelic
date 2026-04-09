@@ -28,3 +28,20 @@ func flattenFleetConfiguration(config *fleetcontrol.CreateConfigurationResponse,
 
 	return nil
 }
+
+// flattenFleetConfigurationVersion flattens a CreateConfigurationResponse (from adding a version) into Terraform state
+func flattenFleetConfigurationVersion(config *fleetcontrol.CreateConfigurationResponse, d *schema.ResourceData, organizationID string) error {
+	// Set version_number from the configuration version entity
+	if err := d.Set("version_number", config.ConfigurationVersion.ConfigurationVersionNumber); err != nil {
+		return err
+	}
+
+	// Set organization_id
+	if err := d.Set("organization_id", organizationID); err != nil {
+		return err
+	}
+
+	// Note: configuration_id is already set from the input, no need to set it again here
+
+	return nil
+}

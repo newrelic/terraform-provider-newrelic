@@ -54,11 +54,38 @@ resource "newrelic_fleet_configuration" "infra_config" {
   EOT
 }
 
-# Example: Kubernetes Agent Configuration
+# Example: Kubernetes Agent Configuration (v1)
 resource "newrelic_fleet_configuration" "k8s_config" {
   name                = "Production K8s Config"
   agent_type          = "KUBERNETES"
   managed_entity_type = "KUBERNETESCLUSTER"
+
+  configuration_content = <<-EOT
+    cluster:
+      enabled: true
+      name: production-cluster
+    version: 1
+  EOT
+}
+
+# Example: Add v2 with Prometheus
+resource "newrelic_fleet_configuration_version" "k8s_v2" {
+  configuration_id = newrelic_fleet_configuration.k8s_config.configuration_id
+
+  configuration_content = <<-EOT
+    cluster:
+      enabled: true
+      name: production-cluster
+    prometheus:
+      enabled: true
+      scrape_interval: 30s
+    version: 2
+  EOT
+}
+
+# Example: Add v3 with Enhanced Logging
+resource "newrelic_fleet_configuration_version" "k8s_v3" {
+  configuration_id = newrelic_fleet_configuration.k8s_config.configuration_id
 
   configuration_content = <<-EOT
     cluster:
@@ -70,6 +97,7 @@ resource "newrelic_fleet_configuration" "k8s_config" {
     logging:
       enabled: true
       level: info
+    version: 3
   EOT
 }
 
