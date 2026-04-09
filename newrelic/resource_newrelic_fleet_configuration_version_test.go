@@ -90,7 +90,7 @@ func TestAccNewRelicFleetConfigurationVersion_MissingConfiguration(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicFleetConfigurationVersionMissingConfig(rName),
-				ExpectError: regexp.MustCompile("one of `configuration_file_path,configuration_content` must be specified"),
+				ExpectError: regexp.MustCompile("one of.*configuration_content.*configuration_file_path.*must be specified"),
 			},
 		},
 	})
@@ -108,7 +108,7 @@ func TestAccNewRelicFleetConfigurationVersion_BothConfigurations(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicFleetConfigurationVersionBothConfigs(rName),
-				ExpectError: regexp.MustCompile("only one of `configuration_file_path,configuration_content` can be specified"),
+				ExpectError: regexp.MustCompile("only one of.*configuration_content.*configuration_file_path.*can be specified"),
 			},
 		},
 	})
