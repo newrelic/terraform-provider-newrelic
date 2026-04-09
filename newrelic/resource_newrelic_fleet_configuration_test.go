@@ -111,7 +111,7 @@ func TestAccNewRelicFleetConfiguration_BothConfigurations(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicFleetConfigurationConfigBothConfigurations(rName),
-				ExpectError: regexp.MustCompile("configuration_file_path and configuration_content are mutually exclusive"),
+				ExpectError: regexp.MustCompile("conflicts with configuration_content|conflicts with configuration_file_path"),
 			},
 		},
 	})
