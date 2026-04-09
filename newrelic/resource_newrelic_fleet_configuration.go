@@ -105,9 +105,9 @@ func resourceNewRelicFleetConfigurationCreate(ctx context.Context, d *schema.Res
 	// Read configuration content
 	var configBody []byte
 	if hasFilePath {
-		fileContent, err := os.ReadFile(configFilePath.(string))
-		if err != nil {
-			return diag.Errorf("failed to read configuration file: %v", err)
+		fileContent, readErr := os.ReadFile(configFilePath.(string))
+		if readErr != nil {
+			return diag.Errorf("failed to read configuration file: %v", readErr)
 		}
 		configBody = fileContent
 	} else {
