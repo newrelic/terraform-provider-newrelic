@@ -2,6 +2,20 @@
 
 package newrelic
 
+// NOTE: Fleet Configuration API Access
+//
+// Tests that create actual fleet configurations (TestAccNewRelicFleetConfiguration_Basic,
+// TestAccNewRelicFleetConfiguration_Kubernetes, TestAccNewRelicFleetConfiguration_WithVersions)
+// require access to the Fleet Configuration API (blob-api.service.newrelic.com).
+//
+// This API requires special enablement on the test account. If these tests fail with
+// "POST https://blob-api.service.newrelic.com/.../AgentConfigurations giving up after 4 attempt(s)",
+// it indicates the test account does not have Configuration API access enabled.
+//
+// Validation tests (TestAccNewRelicFleetConfiguration_MissingConfiguration,
+// TestAccNewRelicFleetConfiguration_BothConfigurations) should pass as they only validate
+// schema-level requirements without making API calls.
+
 import (
 	"fmt"
 	"regexp"
