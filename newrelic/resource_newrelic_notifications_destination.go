@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 )
 
 func resourceNewRelicNotificationDestination() *schema.Resource {
@@ -315,7 +316,7 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 
 	scope := buildEntityScopeInput(d, accountID)
 	var destinationResponse *notifications.AiNotificationsDestinationResponse
-	destinationResponse, err = client.Notifications.AiNotificationsCreateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, scope)
+	destinationResponse, err = client.Notifications.AiNotificationsCreateDestination(accountID, *destinationInput, *scope)
 	if err != nil {
 		diagErr := diag.FromErr(err)
 		newDiagErr := diag.Diagnostics{
@@ -351,7 +352,17 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 
 	scope := buildEntityScopeInput(d, accountID)
 
-	destinationResponse, err := client.Notifications.GetDestinationsWithScope(updatedContext, "", filters, sorter, scope)
+	var destinationResponse *notifications.AiNotificationsDestinationsResponse
+	var err error
+	if scope.Type == notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION {
+		destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, "", filters, sorter)
+	} else {
+		scopeID, atoiErr := strconv.Atoi(scope.ID)
+		if atoiErr != nil {
+			return diag.FromErr(atoiErr)
+		}
+		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, "", filters, sorter)
+	}
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -393,7 +404,7 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 	scope := buildEntityScopeInput(d, accountID)
 
 	// Use the regular update method (scope is passed in mutation for org-scoped)
-	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestinationWithScopeWithContext(updatedContext, accountID, *destinationInput, d.Id(), scope)
+	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestination(accountID, *destinationInput, d.Id(), *scope)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -413,11 +424,10 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 
 	providerConfig := meta.(*ProviderConfig)
 	accountID := selectAccountID(providerConfig, d)
-	updatedContext := updateContextWithAccountID(ctx, accountID)
 
 	scope := buildEntityScopeInput(d, accountID)
 
-	destinationResponse, err := client.Notifications.AiNotificationsDeleteDestinationWithScopeWithContext(updatedContext, accountID, d.Id(), scope)
+	destinationResponse, err := client.Notifications.AiNotificationsDeleteDestination(accountID, d.Id(), *scope)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -195,13 +195,13 @@ func expandNotificationDestinationProperty(cfg map[string]interface{}) notificat
 	return property
 }
 
-func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
 	}
 
 	// Check if this is an org-scoped destination
-	isOrgScoped := destination.Scope != nil && destination.Scope.Type == notifications.EntityScopeTypeInputTypes.ORGANIZATION
+	isOrgScoped := destination.Scope.Type == notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION
 
 	// Set scope based on the destination's scope info
 	// If org-scoped, use ORGANIZATION type with org ID; otherwise use ACCOUNT type with account ID
@@ -209,14 +209,14 @@ func flattenNotificationDestinationWithScope(destination *notifications.AiNotifi
 	if isOrgScoped {
 		scopeData = []map[string]interface{}{
 			{
-				"type": string(notifications.EntityScopeTypeInputTypes.ORGANIZATION),
+				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION),
 				"id":   destination.Scope.ID,
 			},
 		}
 	} else {
 		scopeData = []map[string]interface{}{
 			{
-				"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
 				"id":   fmt.Sprintf("%d", destination.AccountID),
 			},
 		}
@@ -226,7 +226,7 @@ func flattenNotificationDestinationWithScope(destination *notifications.AiNotifi
 	}
 
 	// For ACCOUNT scope, also set account_id; for ORGANIZATION scope, don't set account_id
-	return flattenNotificationDestinationBase(&destination.AiNotificationsDestination, d, isOrgScoped)
+	return flattenNotificationDestinationBase(destination, d, isOrgScoped)
 }
 
 func flattenNotificationDestination(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
@@ -419,7 +419,60 @@ func flattenNotificationDestinationSecureURLForDataSource(url *notifications.AiN
 	return secureURLResult
 }
 
-func flattenNotificationDestinationDataSourceWithScope(destination *notifications.AiNotificationsDestinationWithScope, d *schema.ResourceData) error {
+func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, scope notifications.AiNotificationsEntityScopeInput, d *schema.ResourceData) error {
+	if destination == nil {
+		return nil
+	}
+
+	d.SetId(destination.ID)
+
+	if err := d.Set("name", destination.Name); err != nil {
+		return err
+	}
+
+	if err := d.Set("type", destination.Type); err != nil {
+		return err
+	}
+
+	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
+		return err
+	}
+
+	if err := d.Set("secure_url", flattenNotificationDestinationSecureURLForDataSource(&destination.SecureURL)); err != nil {
+		return err
+	}
+
+	if err := d.Set("active", destination.Active); err != nil {
+		return err
+	}
+
+	if err := d.Set("status", destination.Status); err != nil {
+		return err
+	}
+
+	if err := d.Set("guid", destination.GUID); err != nil {
+		return err
+	}
+
+	// Set scope from the input scope used for the query
+	scopeData := []map[string]interface{}{
+		{
+			"type": string(scope.Type),
+			"id":   scope.ID,
+		},
+	}
+	if err := d.Set("scope", scopeData); err != nil {
+		return err
+	}
+
+	if err := d.Set("account_id", destination.AccountID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func flattenNotificationDestinationDataSourceWithScope(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
 	}
@@ -457,7 +510,7 @@ func flattenNotificationDestinationDataSourceWithScope(destination *notification
 	}
 
 	// Set scope based on the destination's scope info from API, or derive from account_id
-	if destination.Scope != nil {
+	if destination.Scope.ID != "" {
 		scopeData := []map[string]interface{}{
 			{
 				"type": string(destination.Scope.Type),
@@ -470,7 +523,7 @@ func flattenNotificationDestinationDataSourceWithScope(destination *notification
 	} else {
 		scopeData := []map[string]interface{}{
 			{
-				"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
 				"id":   fmt.Sprintf("%d", destination.AccountID),
 			},
 		}
@@ -487,23 +540,23 @@ func flattenNotificationDestinationDataSourceWithScope(destination *notification
 	return nil
 }
 
-func buildEntityScopeInput(d *schema.ResourceData, accountID int) *notifications.EntityScopeInput {
+func buildEntityScopeInput(d *schema.ResourceData, accountID int) *notifications.AiNotificationsEntityScopeInput {
 	scopeList, ok := d.GetOk("scope")
 	if ok {
 		items, ok := scopeList.([]interface{})
 		if ok && len(items) > 0 {
 			scopeMap, ok := items[0].(map[string]interface{})
 			if ok {
-				return &notifications.EntityScopeInput{
-					Type: notifications.EntityScopeTypeInput(scopeMap["type"].(string)),
+				return &notifications.AiNotificationsEntityScopeInput{
+					Type: notifications.AiNotificationsEntityScopeTypeInput(scopeMap["type"].(string)),
 					ID:   scopeMap["id"].(string),
 				}
 			}
 		}
 	}
 
-	return &notifications.EntityScopeInput{
-		Type: notifications.EntityScopeTypeInputTypes.ACCOUNT,
+	return &notifications.AiNotificationsEntityScopeInput{
+		Type: notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT,
 		ID:   strconv.Itoa(accountID),
 	}
 }
