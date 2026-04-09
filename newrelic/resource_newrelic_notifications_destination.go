@@ -84,6 +84,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 						"prefix": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"token": {
 							Type:      schema.TypeString,
@@ -259,6 +260,7 @@ func resourceNewRelicNotificationDestinationV0() *schema.Resource {
 						"prefix": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"token": {
 							Type:      schema.TypeString,
@@ -316,7 +318,7 @@ func resourceNewRelicNotificationDestinationCreate(ctx context.Context, d *schem
 
 	scope := buildEntityScopeInput(d, accountID)
 	var destinationResponse *notifications.AiNotificationsDestinationResponse
-	destinationResponse, err = client.Notifications.AiNotificationsCreateDestination(accountID, *destinationInput, *scope)
+	destinationResponse, err = client.Notifications.AiNotificationsCreateDestination(&accountID, *destinationInput, scope)
 	if err != nil {
 		diagErr := diag.FromErr(err)
 		newDiagErr := diag.Diagnostics{
@@ -404,7 +406,7 @@ func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schem
 	scope := buildEntityScopeInput(d, accountID)
 
 	// Use the regular update method (scope is passed in mutation for org-scoped)
-	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestination(accountID, *destinationInput, d.Id(), *scope)
+	destinationResponse, err := client.Notifications.AiNotificationsUpdateDestination(&accountID, *destinationInput, d.Id(), scope)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -427,7 +429,7 @@ func resourceNewRelicNotificationDestinationDelete(ctx context.Context, d *schem
 
 	scope := buildEntityScopeInput(d, accountID)
 
-	destinationResponse, err := client.Notifications.AiNotificationsDeleteDestination(accountID, d.Id(), *scope)
+	destinationResponse, err := client.Notifications.AiNotificationsDeleteDestination(&accountID, d.Id(), scope)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -13,8 +13,8 @@ import (
 
 func listValidNotificationsScopeTypes() []string {
 	return []string{
-		string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
-		string(notifications.EntityScopeTypeInputTypes.ORGANIZATION),
+		string(notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT),
+		string(notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION),
 	}
 }
 
@@ -203,26 +203,27 @@ func flattenNotificationDestinationWithScope(destination *notifications.AiNotifi
 	// Check if this is an org-scoped destination
 	isOrgScoped := destination.Scope.Type == notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION
 
-	// Set scope based on the destination's scope info
-	// If org-scoped, use ORGANIZATION type with org ID; otherwise use ACCOUNT type with account ID
-	var scopeData []map[string]interface{}
-	if isOrgScoped {
-		scopeData = []map[string]interface{}{
-			{
-				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION),
-				"id":   destination.Scope.ID,
-			},
+	// Only set scope in state if the request (terraform config) included scope
+	if _, ok := d.GetOk("scope"); ok {
+		var scopeData []map[string]interface{}
+		if isOrgScoped {
+			scopeData = []map[string]interface{}{
+				{
+					"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION),
+					"id":   destination.Scope.ID,
+				},
+			}
+		} else {
+			scopeData = []map[string]interface{}{
+				{
+					"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
+					"id":   fmt.Sprintf("%d", destination.AccountID),
+				},
+			}
 		}
-	} else {
-		scopeData = []map[string]interface{}{
-			{
-				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
-				"id":   fmt.Sprintf("%d", destination.AccountID),
-			},
+		if err := d.Set("scope", scopeData); err != nil {
+			return err
 		}
-	}
-	if err := d.Set("scope", scopeData); err != nil {
-		return err
 	}
 
 	// For ACCOUNT scope, also set account_id; for ORGANIZATION scope, don't set account_id
@@ -236,7 +237,7 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 
 	scopeData := []map[string]interface{}{
 		{
-			"type": string(notifications.EntityScopeTypeInputTypes.ACCOUNT),
+			"type": string(notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT),
 			"id":   fmt.Sprintf("%d", destination.AccountID),
 		},
 	}
@@ -373,6 +374,11 @@ func flattenNotificationDestinationProperties(p []notifications.AiNotificationsP
 	properties := []map[string]interface{}{}
 
 	for _, property := range p {
+		// Skip the internal monitoring property; it is added automatically during create
+		// and should not appear in state to avoid unnecessary diffs.
+		if property.Key == "source" && property.Label == "terraform-source-internal" {
+			continue
+		}
 		properties = append(properties, flattenNotificationDestinationProperty(property))
 	}
 

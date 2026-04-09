@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-
+	"strings"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/errors"
