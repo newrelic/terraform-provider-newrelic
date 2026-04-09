@@ -219,7 +219,7 @@ func resourceNewRelicAlertChannel() *schema.Resource {
 						"region": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validation.StringInSlice([]string{"US", "EU"}, false),
+							ValidateFunc: validation.StringInSlice([]string{"US", "EU", "JP"}, false),
 							ForceNew:     true,
 							Description:  "The data center region to store your data. Valid values are US and EU. Default is US.",
 						},

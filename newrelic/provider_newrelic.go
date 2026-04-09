@@ -61,7 +61,7 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("NEW_RELIC_REGION", "US"),
 				Description:  "The data center for which your New Relic account is configured. Only one region per provider block is permitted.",
-				ValidateFunc: validation.StringInSlice([]string{"US", "EU", "Staging"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"US", "EU", "JP", "Staging"}, true),
 			},
 			// New Relic internal use only
 			"api_url": {

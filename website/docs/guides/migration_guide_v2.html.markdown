@@ -44,7 +44,7 @@ If you have been using environment variables to configure the provider, you will
     - NEW_RELIC_ADMIN_API_KEY
     ```
 
-4. The v2 provider configuration **requires** your New Relic **region** to be set. You can set your region using the environment variable `NEW_RELIC_REGION` or by setting the `region` argument in your `provider` block. Valid values are `US` and `EU`.
+4. The v2 provider configuration **requires** your New Relic **region** to be set. You can set your region using the environment variable `NEW_RELIC_REGION` or by setting the `region` argument in your `provider` block. Valid values are `US`, `EU`, and `JP`.
 
     Using the environment variable:
 
