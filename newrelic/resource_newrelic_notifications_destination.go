@@ -84,7 +84,6 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 						"prefix": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"token": {
 							Type:      schema.TypeString,
@@ -260,7 +259,6 @@ func resourceNewRelicNotificationDestinationV0() *schema.Resource {
 						"prefix": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"token": {
 							Type:      schema.TypeString,
