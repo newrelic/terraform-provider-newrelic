@@ -73,4 +73,4 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
 
-replace github.com/newrelic/newrelic-client-go/v2 => "/Users/sdurgareddykovvuri/New Relic/newrelic-client-go"
+replace github.com/newrelic/newrelic-client-go/v2 => "/Users/tansar/Documents/Projects/newrelic-client-go"

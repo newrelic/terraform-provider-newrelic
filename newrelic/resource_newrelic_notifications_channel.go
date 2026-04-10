@@ -129,7 +129,7 @@ func resourceNewRelicNotificationChannelRead(ctx context.Context, d *schema.Reso
 	sorter := notifications.AiNotificationsChannelSorter{}
 	updatedContext := updateContextWithAccountID(ctx, accountID)
 
-	channelResponse, err := client.Notifications.GetChannelsWithContext(updatedContext, accountID, "", filters, sorter)
+	channelResponse, err := client.Notifications.GetChannelsWithContext(updatedContext, accountID, nil, &filters, &sorter)
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")

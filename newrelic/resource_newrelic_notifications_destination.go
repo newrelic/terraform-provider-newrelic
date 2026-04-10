@@ -171,6 +171,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 						"id": {
 							Type:     schema.TypeString,
 							Required: true,
+							Description: "The ID of the Scope (Organization UUID for ORGANIZATION scope, Account ID for ACCOUNT scope)"
 						},
 					},
 				},
@@ -354,13 +355,13 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	var destinationResponse *notifications.AiNotificationsDestinationsResponse
 	var err error
 	if scope.Type == notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION {
-		destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, "", filters, sorter)
+		destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, nil, &filters, &sorter)
 	} else {
 		scopeID, atoiErr := strconv.Atoi(scope.ID)
 		if atoiErr != nil {
 			return diag.FromErr(atoiErr)
 		}
-		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, "", filters, sorter)
+		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, nil, &filters, &sorter)
 	}
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
@@ -375,9 +376,9 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 		return nil
 	}
 
-	errs := buildAiNotificationsResponseErrors(destinationResponse.Errors)
-	if len(errs) > 0 {
-		return errs
+	errors := buildAiNotificationsResponseErrors(destinationResponse.Errors)
+	if len(errors) > 0 {
+		return errors
 	}
 
 	return diag.FromErr(flattenNotificationDestinationWithScope(&destinationResponse.Entities[0], d))

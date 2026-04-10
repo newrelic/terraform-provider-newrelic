@@ -16,6 +16,7 @@
 .vscode
 /pkg/
 bin/
+terraform-provider-newrelic
 tmp/*
 coverage/
 example.tf

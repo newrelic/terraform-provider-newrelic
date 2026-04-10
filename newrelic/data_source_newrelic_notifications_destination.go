@@ -137,7 +137,7 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 		filters = ai.AiNotificationsDestinationFilter{ID: idValue}
 	}
 
-	return getDestinationWithScope(updatedContext, client, filters, sorter, idValue, nameValue, exactNameValue, scope, d)
+	return getDestinationWithScope(updatedContext, client, &filters, &sorter, idValue, nameValue, exactNameValue, scope, d)
 }
 
 // getDestinationWithScope handles retrieval for all scope types (ACCOUNT and ORGANIZATION)
@@ -145,8 +145,8 @@ func dataSourceNewRelicNotificationDestinationRead(ctx context.Context, d *schem
 func getDestinationWithScope(
 	updatedContext context.Context,
 	client *nr.NewRelic,
-	filters ai.AiNotificationsDestinationFilter,
-	sorter notifications.AiNotificationsDestinationSorter,
+	filters *ai.AiNotificationsDestinationFilter,
+	sorter *notifications.AiNotificationsDestinationSorter,
 	idValue, nameValue, exactNameValue string,
 	scope *notifications.AiNotificationsEntityScopeInput,
 	d *schema.ResourceData,
@@ -154,14 +154,14 @@ func getDestinationWithScope(
 	var destinationResponse *notifications.AiNotificationsDestinationsResponse
 	var err error
 
-	if scope != nil && scope.Type == notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION {
-		destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, "", filters, sorter)
+	if scope.Type == notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION {
+		destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, nil, filters, sorter)
 	} else {
 		scopeID, atoiErr := strconv.Atoi(scope.ID)
 		if atoiErr != nil {
 			return diag.FromErr(atoiErr)
 		}
-		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, "", filters, sorter)
+		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, nil, filters, sorter)
 	}
 
 	if err != nil {

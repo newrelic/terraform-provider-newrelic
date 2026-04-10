@@ -275,7 +275,7 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 		}
 		sorter := notifications.AiNotificationsChannelSorter{}
 
-		channelsResponse, _ := client.Notifications.GetChannels(accountID, "", filters, sorter)
+		channelsResponse, _ := client.Notifications.GetChannels(accountID, nil, &filters, &sorter)
 		if len(channelsResponse.Entities) != 0 {
 			return fmt.Errorf("notification channel still exists")
 		}
@@ -305,7 +305,7 @@ func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckF
 		}
 		sorter := notifications.AiNotificationsChannelSorter{}
 
-		found, err := client.Notifications.GetChannels(accountID, "", filters, sorter)
+		found, err := client.Notifications.GetChannels(accountID, nil, &filters, &sorter)
 		if err != nil {
 			return err
 		}
