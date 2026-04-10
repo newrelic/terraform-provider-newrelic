@@ -308,7 +308,7 @@ func TestFlattenNotificationDestinationWithScope_OrganizationScope(t *testing.T)
 	}
 
 	d := r.TestResourceData()
-	err := flattenNotificationDestinationWithScope(destination, d)
+	err := flattenNotificationDestination(destination, d)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "org-dest", d.Get("name"))
