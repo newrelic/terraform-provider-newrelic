@@ -276,7 +276,7 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 	for _, tc := range cases {
 		if tc.Flattened != nil {
 			d := r.TestResourceData()
-			err := flattenNotificationDestinationData(tc.Flattened, d)
+			err := flattenNotificationDestinationDataSource(tc.Flattened, notifications.AiNotificationsEntityScopeInput{}, d)
 			assert.NoError(t, err)
 
 			for k, v := range tc.Data {
@@ -338,7 +338,7 @@ func TestFlattenNotificationDestinationWithScope_AccountScope(t *testing.T) {
 	}
 
 	d := r.TestResourceData()
-	err := flattenNotificationDestinationWithScope(destination, d)
+	err := flattenNotificationDestination(destination, d)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "acct-dest", d.Get("name"))
@@ -361,7 +361,11 @@ func TestFlattenNotificationDestination_SetsAccountScope(t *testing.T) {
 		Type:      "WEBHOOK",
 		GUID:      guid,
 		AccountID: 99999,
-		Active:    true,
+		Scope: notifications.AiNotificationsEntityScope{
+			Type: notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT,
+			ID:   "99999",
+		},
+		Active: true,
 	}
 
 	d := r.TestResourceData()
@@ -375,7 +379,7 @@ func TestFlattenNotificationDestination_SetsAccountScope(t *testing.T) {
 	assert.Equal(t, "99999", scopeMap["id"])
 }
 
-func TestFlattenNotificationDestinationDataSourceWithScope_OrgScope(t *testing.T) {
+func TestFlattenNotificationDestinationDataSource_OrgScope(t *testing.T) {
 	r := dataSourceNewRelicNotificationDestination()
 	guid := notifications.EntityGUID("testguid")
 
@@ -392,8 +396,13 @@ func TestFlattenNotificationDestinationDataSourceWithScope_OrgScope(t *testing.T
 		Active: true,
 	}
 
+	scope := notifications.AiNotificationsEntityScopeInput{
+		Type: notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION,
+		ID:   "org-uuid-456",
+	}
+
 	d := r.TestResourceData()
-	err := flattenNotificationDestinationDataSourceWithScope(destination, d)
+	err := flattenNotificationDestinationDataSource(destination, scope, d)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "org-dest", d.Get("name"))
@@ -405,7 +414,7 @@ func TestFlattenNotificationDestinationDataSourceWithScope_OrgScope(t *testing.T
 	assert.Equal(t, "org-uuid-456", scopeMap["id"])
 }
 
-func TestFlattenNotificationDestinationDataSourceWithScope_AccountFallback(t *testing.T) {
+func TestFlattenNotificationDestinationDataSource_AccountScope(t *testing.T) {
 	r := dataSourceNewRelicNotificationDestination()
 	guid := notifications.EntityGUID("testguid")
 
@@ -418,8 +427,13 @@ func TestFlattenNotificationDestinationDataSourceWithScope_AccountFallback(t *te
 		Active:    true,
 	}
 
+	scope := notifications.AiNotificationsEntityScopeInput{
+		Type: notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT,
+		ID:   "54321",
+	}
+
 	d := r.TestResourceData()
-	err := flattenNotificationDestinationDataSourceWithScope(destination, d)
+	err := flattenNotificationDestinationDataSource(destination, scope, d)
 	assert.NoError(t, err)
 
 	scopeList := d.Get("scope").([]interface{})

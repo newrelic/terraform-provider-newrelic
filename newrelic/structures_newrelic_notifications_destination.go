@@ -432,20 +432,6 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
-	}
-
-	responseScopeData := []map[string]interface{}{
-		{
-			"type": string(destination.Scope.Type),
-			"id":   destination.Scope.ID,
-		},
-	}
-	if err := d.Set("scope", responseScopeData); err != nil {
-		return err
-	}
-
 	return nil
 }
 
