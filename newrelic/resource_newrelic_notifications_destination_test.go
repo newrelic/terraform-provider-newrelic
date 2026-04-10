@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -412,9 +411,8 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 		filters := ai.AiNotificationsDestinationFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		resp, err := client.Notifications.GetDestinationsAccount(accountID, nil, &filters, &sorter)
+		resp, err := client.Notifications.GetDestinationsAccount(accountID, nil, &filters, nil)
 
 		// fmt.Print("\n\n **************************** \n")
 		// fmt.Printf("\n DestinationDestroy:  %+v \n", toJSON(r.Primary.Attributes))
@@ -450,9 +448,8 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 		filters := ai.AiNotificationsDestinationFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		found, err := client.Notifications.GetDestinationsAccount(accountID, nil, &filters, &sorter)
+		found, err := client.Notifications.GetDestinationsAccount(accountID, nil, &filters, nil)
 
 		if err != nil {
 			return err
