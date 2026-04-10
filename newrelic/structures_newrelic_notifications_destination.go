@@ -195,59 +195,21 @@ func expandNotificationDestinationProperty(cfg map[string]interface{}) notificat
 	return property
 }
 
-func flattenNotificationDestinationWithScope(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
-	if destination == nil {
-		return nil
-	}
-
-	// Check if this is an org-scoped destination
-	isOrgScoped := destination.Scope.Type == notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION
-
-	// Always set scope in state from the NerdGraph response
-	var scopeData []map[string]interface{}
-	if isOrgScoped {
-		scopeData = []map[string]interface{}{
-			{
-				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION),
-				"id":   destination.Scope.ID,
-			},
-		}
-	} else {
-		scopeData = []map[string]interface{}{
-			{
-				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
-				"id":   fmt.Sprintf("%d", destination.AccountID),
-			},
-		}
-	}
-	if err := d.Set("scope", scopeData); err != nil {
-		return err
-	}
-
-	// For ACCOUNT scope, also set account_id; for ORGANIZATION scope, don't set account_id
-	return flattenNotificationDestinationBase(destination, d, isOrgScoped)
-}
-
 func flattenNotificationDestination(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
 	}
 
+	isOrgScoped := destination.Scope.Type == notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION
+
 	scopeData := []map[string]interface{}{
 		{
-			"type": string(notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT),
-			"id":   fmt.Sprintf("%d", destination.AccountID),
+			"type": string(destination.Scope.Type),
+			"id":   destination.Scope.ID,
 		},
 	}
 	if err := d.Set("scope", scopeData); err != nil {
 		return err
-	}
-	return flattenNotificationDestinationBase(destination, d, false)
-}
-
-func flattenNotificationDestinationBase(destination *notifications.AiNotificationsDestination, d *schema.ResourceData, isOrgScoped bool) error {
-	if destination == nil {
-		return nil
 	}
 
 	var err error
@@ -423,13 +385,15 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return nil
 	}
 
+	var err error
+
 	d.SetId(destination.ID)
 
-	if err := d.Set("name", destination.Name); err != nil {
+	if err = d.Set("name", destination.Name); err != nil {
 		return err
 	}
 
-	if err := d.Set("type", destination.Type); err != nil {
+	if err = d.Set("type", destination.Type); err != nil {
 		return err
 	}
 
@@ -442,6 +406,10 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 	}
 
 	if err := d.Set("active", destination.Active); err != nil {
+		return err
+	}
+
+	if err := d.Set("account_id", destination.AccountID); err != nil {
 		return err
 	}
 
@@ -468,71 +436,13 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
-	return nil
-}
-
-func flattenNotificationDestinationDataSourceWithScope(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
-	if destination == nil {
-		return nil
+	responseScopeData := []map[string]interface{}{
+		{
+			"type": string(destination.Scope.Type),
+			"id":   destination.Scope.ID,
+		},
 	}
-
-	var err error
-
-	d.SetId(destination.ID)
-
-	if err = d.Set("name", destination.Name); err != nil {
-		return err
-	}
-
-	if err = d.Set("type", destination.Type); err != nil {
-		return err
-	}
-
-	if err := d.Set("property", flattenNotificationDestinationProperties(destination.Properties)); err != nil {
-		return err
-	}
-
-	if err := d.Set("secure_url", flattenNotificationDestinationSecureURLForDataSource(&destination.SecureURL)); err != nil {
-		return err
-	}
-
-	if err := d.Set("active", destination.Active); err != nil {
-		return err
-	}
-
-	if err := d.Set("status", destination.Status); err != nil {
-		return err
-	}
-
-	if err := d.Set("guid", destination.GUID); err != nil {
-		return err
-	}
-
-	// Set scope based on the destination's scope info from API, or derive from account_id
-	if destination.Scope.ID != "" {
-		scopeData := []map[string]interface{}{
-			{
-				"type": string(destination.Scope.Type),
-				"id":   destination.Scope.ID,
-			},
-		}
-		if err := d.Set("scope", scopeData); err != nil {
-			return err
-		}
-	} else {
-		scopeData := []map[string]interface{}{
-			{
-				"type": string(notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT),
-				"id":   fmt.Sprintf("%d", destination.AccountID),
-			},
-		}
-		if err := d.Set("scope", scopeData); err != nil {
-			return err
-		}
-	}
-
-	// Set account_id for backward compatibility
-	if err := d.Set("account_id", destination.AccountID); err != nil {
+	if err := d.Set("scope", responseScopeData); err != nil {
 		return err
 	}
 

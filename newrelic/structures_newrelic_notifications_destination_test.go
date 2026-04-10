@@ -276,7 +276,7 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 	for _, tc := range cases {
 		if tc.Flattened != nil {
 			d := r.TestResourceData()
-			err := flattenNotificationDestinationDataSourceWithScope(tc.Flattened, d)
+			err := flattenNotificationDestinationData(tc.Flattened, d)
 			assert.NoError(t, err)
 
 			for k, v := range tc.Data {
