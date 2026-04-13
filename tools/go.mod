@@ -489,4 +489,3 @@ require (
 	sigs.k8s.io/kind v0.23.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-replace github.com/newrelic/newrelic-client-go/v2 => "/Users/sdurgareddykovvuri/New Relic/newrelic-client-go"
