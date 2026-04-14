@@ -364,11 +364,6 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 			return diag.FromErr(atoiErr)
 		}
 		destinationResponse, err = client.Notifications.GetDestinationsWithContextAccount(updatedContext, scopeID, nil, &filters, nil)
-
-		// If not found at account scope, try organization scope (supports import without scope in state)
-		if err == nil && len(destinationResponse.Entities) == 0 {
-			destinationResponse, err = client.Notifications.GetDestinationsWithContextOrganization(updatedContext, nil, &filters, nil)
-		}
 	}
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
