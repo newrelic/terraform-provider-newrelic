@@ -234,9 +234,13 @@ func TestNewRelicNotificationChannel_ImportChannel_WrongId(t *testing.T) {
 func testNewRelicNotificationChannelConfig(accountID int, name string, notificationType string, channelProps string, destinationProps string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-	account_id = %[1]d
 	name = "destination-%[2]s"
 	type = "%[3]s"
+
+	scope {
+		type = "ACCOUNT"
+		id   = "%[1]d"
+	}
 
 	auth_basic {
 		user = "username"

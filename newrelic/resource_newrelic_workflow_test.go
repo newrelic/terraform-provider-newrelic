@@ -533,6 +533,11 @@ resource "newrelic_notification_destination" "foo" {
   name = "tf-test-destination"
   type = "WEBHOOK"
 
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
+
   property {
     key   = "url"
     value = "https://webhook.site/"
@@ -584,6 +589,11 @@ resource "newrelic_notification_destination" "foo" {
   name = "tf-test-destination"
   type = "WEBHOOK"
 
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
+
   property {
     key   = "url"
     value = "https://webhook.site/"
@@ -632,9 +642,13 @@ resource "newrelic_workflow" "foo" {
 func testAccNewRelicWorkflowConfigurationWebhook(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-  account_id = %[1]d
   name = "tf-test-destination"
   type = "WEBHOOK"
+
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
 
   property {
     key   = "url"
@@ -699,9 +713,12 @@ resource "newrelic_workflow" "foo" {
 func testAccNewRelicWorkflowConfigurationWorkflowAutomation(accountID int, apiKey string, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-  account_id = %[1]d
   name = "tf-test-destination"
   type = "WORKFLOW_AUTOMATION"
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
   property {
     key   = ""
     value = ""
@@ -756,9 +773,13 @@ resource "newrelic_workflow" "foo" {
 func testAccNewRelicWorkflowConfigurationMicrosoftTeams(accountID int, msTeamsSecurityCode string, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-  account_id = %[1]d
   name = "tf-test-destination"
   type = "MICROSOFT_TEAMS"
+
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
 
   property {
     key   = "securityCode"
@@ -829,9 +850,13 @@ func testAccNewRelicWorkflowConfigurationWithNotificationTriggers(accountID int,
 func testAccNewRelicWorkflowConfigurationWithCustomDestination(accountID int, name string, customDestination string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-  account_id = %[1]d
   name = "tf-test-destination"
   type = "WEBHOOK"
+
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
 
   property {
     key   = "url"
@@ -901,6 +926,11 @@ resource "newrelic_notification_destination" "%[2]s" {
   name = "tf-test-destination-email"
   type = "EMAIL"
 
+  scope {
+    type = "ACCOUNT"
+    id   = "%[3]d"
+  }
+
   property {
     key   = "email"
     value = "noreply+terraform-test@newrelic.com"
@@ -922,7 +952,7 @@ resource "newrelic_notification_channel" "%[1]s" {
     key   = "subject"
     value = "{{ issueTitle }}"
   }
-}`, channelResourceName, destinationResourceName)
+}`, channelResourceName, destinationResourceName, testAccountID)
 }
 
 func testAccNewRelicWorkflowConfiguration(channelResourceName string) string {
@@ -1014,9 +1044,13 @@ resource "newrelic_workflow" "foo" {
 func testAccNewRelicWorkflowConfigurationEmail(accountID int, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
-  account_id = %[1]d
   name = "tf-test-destination-email"
   type = "EMAIL"
+
+  scope {
+    type = "ACCOUNT"
+    id   = "%[1]d"
+  }
 
   property {
     key   = "email"
