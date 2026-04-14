@@ -357,14 +357,10 @@ func testNewRelicNotificationDestinationConfig(accountID int, name string, auth 
 
 	sprintf := fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
+	account_id = %[1]d
 	name = "%[2]s"
 	type = "WEBHOOK"
 	active = true
-
-	scope {
-		type = "ACCOUNT"
-		id   = "%[1]d"
-	}
 
 	%[4]s
 

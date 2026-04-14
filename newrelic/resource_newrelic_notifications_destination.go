@@ -157,6 +157,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 			"scope": {
 				Type:          schema.TypeList,
 				Optional:      true,
+				Computed:      true,
 				MaxItems:      1,
 				ConflictsWith: []string{"account_id"},
 				Description:   "Scope of the destination",
@@ -164,13 +165,15 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:         schema.TypeString,
-							Required:     true,
+							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validation.StringInSlice(listValidNotificationsScopeTypes(), false),
 							Description:  fmt.Sprintf("(Required) The scope type of the destination. One of: (%s).", strings.Join(listValidNotificationsScopeTypes(), ", ")),
 						},
 						"id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The ID of the Scope (Organization UUID for ORGANIZATION scope, Account ID for ACCOUNT scope)",
 						},
 					},

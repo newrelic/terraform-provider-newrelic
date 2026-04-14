@@ -139,38 +139,28 @@ func TestAccNewRelicNotificationDestinationDataSource_WithAccountScope(t *testin
 func testAccNewRelicNotificationsDestinationDataSourceConfigById(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
-	  name   = "%[1]s"
+	  name   = "%s"
 	  type   = "WEBHOOK"
 	  active = true
-
-	  scope {
-		type = "ACCOUNT"
-		id   = "%[2]d"
-	  }
-
+	
 	  property {
 		key   = "url"
 		value = "https://webhook.site/"
 	  }
 	}
-
+	
 	data "newrelic_notification_destination" "foo" {
 	  id = newrelic_notification_destination.foo.id
 	}
-`, name, testAccountID)
+`, name)
 }
 
 func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
-	  name   = "%[1]s"
+	  name   = "%s"
 	  type   = "WEBHOOK"
 	  active = true
-
-	  scope {
-		type = "ACCOUNT"
-		id   = "%[2]d"
-	  }
 
 	  property {
 		key   = "url"
@@ -181,20 +171,15 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigByName(name string) 
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
 	}
-`, name, testAccountID)
+`, name)
 }
 
 func testAccNewRelicNotificationsDestinationDataSourceConfigByExactName(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
-	  name   = "%[1]s"
+	  name   = "%s"
 	  type   = "WEBHOOK"
 	  active = true
-
-	  scope {
-		type = "ACCOUNT"
-		id   = "%[2]d"
-	  }
 
 	  property {
 		key   = "url"
@@ -205,21 +190,16 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigByExactName(name str
 	data "newrelic_notification_destination" "foo" {
 	  exact_name = newrelic_notification_destination.foo.name
 	}
-`, name, testAccountID)
+`, name)
 }
 
 func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_notification_destination" "foo" {
-	  name   = "%[1]s"
+	  name   = "%s"
 	  type   = "WEBHOOK"
 	  active = true
-
-	  scope {
-		type = "ACCOUNT"
-		id   = "%[2]d"
-	  }
-
+	
 		property {
 			key = "source"
 			value = "terraform"
@@ -234,7 +214,7 @@ func testAccNewRelicNotificationsDestinationDataSourceConfigWithSecureURL(name s
 	data "newrelic_notification_destination" "foo" {
 	  name = newrelic_notification_destination.foo.name
 	}
-`, name, testAccountID)
+`, name)
 }
 
 // TODO: Uncomment when organization environment variables are available in GitHub Actions
