@@ -1,3 +1,9 @@
+<a name="v3.84.2"></a>
+## [v3.84.2] - 2026-04-15
+### Bug Fixes
+- **browser-app:** implement drift detection for deleted resources ([#3057](https://github.com/newrelic/terraform-provider-newrelic/issues/3057))
+- **log-parsing-rule:** prevent state corruption on authentication errors ([#3062](https://github.com/newrelic/terraform-provider-newrelic/issues/3062))
+
 <a name="v3.84.1"></a>
 ## [v3.84.1] - 2026-03-31
 ### Bug Fixes
@@ -2658,7 +2664,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.2...HEAD
+[v3.84.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.1...v3.84.2
 [v3.84.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.0...v3.84.1
 [v3.84.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.83.0...v3.84.0
 [v3.83.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.82.0...v3.83.0
