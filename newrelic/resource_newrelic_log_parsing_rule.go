@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
+	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/logconfigurations"
 )
 
@@ -127,7 +128,16 @@ func resourceNewRelicLogParsingRuleRead(ctx context.Context, d *schema.ResourceD
 	ruleID := d.Id()
 	rule, err := getLogParsingRuleByID(ctx, client, accountID, ruleID)
 
-	if err != nil && rule == nil {
+	if err != nil {
+		if _, ok := err.(*nrErrors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	// Defensive: should never happen given function contract, but be safe
+	if rule == nil {
 		d.SetId("")
 		return nil
 	}
@@ -262,7 +272,7 @@ func getLogParsingRuleByID(ctx context.Context, client *newrelic.NewRelic, accou
 			return v, nil
 		}
 	}
-	return nil, errors.New("parsing rule not found")
+	return nil, nrErrors.NewNotFound("parsing rule not found")
 
 }
 
