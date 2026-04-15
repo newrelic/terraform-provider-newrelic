@@ -23,5 +23,10 @@ func flattenAlertPolicy(policy *alerts.AlertsPolicy, d *schema.ResourceData, acc
 		return err
 	}
 
+	err = d.Set("entity_guid", policy.EntityGuid)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
