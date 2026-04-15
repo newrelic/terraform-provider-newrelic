@@ -25,6 +25,7 @@ func TestAccNewRelicAlertPolicyDataSource_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyDataSource("data.newrelic_alert_policy.policy"),
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-test-%s", rName)),
+					resource.TestCheckResourceAttrSet("data.newrelic_alert_policy.policy", "entity_guid"),
 				),
 			},
 		},
