@@ -256,7 +256,7 @@ func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
 	resourceName := "newrelic_notification_destination.foo"
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
-	orgUUID := "404742df-e710-4f68-9edb-d22829da2e67"
+	orgUUID := "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
