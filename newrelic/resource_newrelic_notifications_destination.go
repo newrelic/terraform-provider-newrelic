@@ -24,7 +24,7 @@ func resourceNewRelicNotificationDestination() *schema.Resource {
 		UpdateContext: resourceNewRelicNotificationDestinationUpdate,
 		DeleteContext: resourceNewRelicNotificationDestinationDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: resourceNewRelicNotificationDestinationImport,
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -382,6 +382,40 @@ func resourceNewRelicNotificationDestinationRead(ctx context.Context, d *schema.
 	}
 
 	return diag.FromErr(flattenNotificationDestination(&destinationResponse.Entities[0], d))
+}
+
+// resourceNewRelicNotificationDestinationImport supports importing with a composite ID format:
+//
+//	<destination_id>:<scope_type>:<scope_id> (e.g., "abc-123:ORGANIZATION:org-uuid")
+//	<destination_id> (defaults to ACCOUNT scope with provider's account ID)
+func resourceNewRelicNotificationDestinationImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), ":", 3)
+
+	switch len(parts) {
+	case 1:
+		// Plain ID — backward compatible, defaults to account scope
+	case 3:
+		scopeType := parts[1]
+		scopeID := parts[2]
+
+		if scopeType != "ORGANIZATION" && scopeType != "ACCOUNT" {
+			return nil, fmt.Errorf("invalid scope type %q, must be ORGANIZATION or ACCOUNT", scopeType)
+		}
+
+		d.SetId(parts[0])
+		if err := d.Set("scope", []interface{}{
+			map[string]interface{}{
+				"type": scopeType,
+				"id":   scopeID,
+			},
+		}); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("invalid import ID format: expected <id> or <id>:<scope_type>:<scope_id>, got %q", d.Id())
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func resourceNewRelicNotificationDestinationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
