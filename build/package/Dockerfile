@@ -1,3 +1,3 @@
-FROM alpine:3.19.4
+FROM alpine:3.23.4
 
 ENTRYPOINT ["/bin/bash"]
