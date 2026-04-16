@@ -257,7 +257,7 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 		Data         map[string]interface{}
 		ExpectErr    bool
 		ExpectReason string
-		Flattened    *notifications.AiNotificationsDestinationWithScope
+		Flattened    *notifications.AiNotificationsDestination
 	}{
 		"minimal": {
 			Data: map[string]interface{}{
@@ -265,12 +265,10 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 				"type": "WEBHOOK",
 				"guid": "testdestinationentityguid",
 			},
-			Flattened: &notifications.AiNotificationsDestinationWithScope{
-				AiNotificationsDestination: notifications.AiNotificationsDestination{
-					Name: "testing123",
-					Type: "WEBHOOK",
-					GUID: guid,
-				},
+			Flattened: &notifications.AiNotificationsDestination{
+				Name: "testing123",
+				Type: "WEBHOOK",
+				GUID: guid,
 			},
 		},
 	}
@@ -278,7 +276,7 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 	for _, tc := range cases {
 		if tc.Flattened != nil {
 			d := r.TestResourceData()
-			err := flattenNotificationDestinationDataSourceWithScope(tc.Flattened, d)
+			err := flattenNotificationDestinationDataSource(tc.Flattened, notifications.AiNotificationsEntityScopeInput{}, d)
 			assert.NoError(t, err)
 
 			for k, v := range tc.Data {
@@ -292,6 +290,157 @@ func TestFlattenNotificationDestinationDataSource(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestFlattenNotificationDestinationWithScope_OrganizationScope(t *testing.T) {
+	r := resourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testguid")
+
+	destination := &notifications.AiNotificationsDestination{
+		Name: "org-dest",
+		Type: "WEBHOOK",
+		GUID: guid,
+		Scope: notifications.AiNotificationsEntityScope{
+			Type: notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION,
+			ID:   "org-uuid-123",
+		},
+		Active: true,
+	}
+
+	d := r.TestResourceData()
+	err := flattenNotificationDestination(destination, d)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "org-dest", d.Get("name"))
+	assert.Equal(t, string("WEBHOOK"), d.Get("type"))
+
+	scopeList := d.Get("scope").([]interface{})
+	assert.Len(t, scopeList, 1)
+	scopeMap := scopeList[0].(map[string]interface{})
+	assert.Equal(t, "ORGANIZATION", scopeMap["type"])
+	assert.Equal(t, "org-uuid-123", scopeMap["id"])
+}
+
+func TestFlattenNotificationDestinationWithScope_AccountScope(t *testing.T) {
+	r := resourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testguid")
+
+	destination := &notifications.AiNotificationsDestination{
+		Name:      "acct-dest",
+		Type:      "WEBHOOK",
+		GUID:      guid,
+		AccountID: 12345,
+		Scope: notifications.AiNotificationsEntityScope{
+			Type: notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT,
+			ID:   "12345",
+		},
+		Active: true,
+	}
+
+	d := r.TestResourceData()
+	err := flattenNotificationDestination(destination, d)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "acct-dest", d.Get("name"))
+
+	scopeList := d.Get("scope").([]interface{})
+	assert.Len(t, scopeList, 1)
+	scopeMap := scopeList[0].(map[string]interface{})
+	assert.Equal(t, "ACCOUNT", scopeMap["type"])
+	assert.Equal(t, "12345", scopeMap["id"])
+
+	assert.Equal(t, 12345, d.Get("account_id"))
+}
+
+func TestFlattenNotificationDestination_SetsAccountScope(t *testing.T) {
+	r := resourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testguid")
+
+	destination := &notifications.AiNotificationsDestination{
+		Name:      "acct-dest",
+		Type:      "WEBHOOK",
+		GUID:      guid,
+		AccountID: 99999,
+		Scope: notifications.AiNotificationsEntityScope{
+			Type: notifications.AiNotificationsEntityScopeTypeTypes.ACCOUNT,
+			ID:   "99999",
+		},
+		Active: true,
+	}
+
+	d := r.TestResourceData()
+	err := flattenNotificationDestination(destination, d)
+	assert.NoError(t, err)
+
+	scopeList := d.Get("scope").([]interface{})
+	assert.Len(t, scopeList, 1)
+	scopeMap := scopeList[0].(map[string]interface{})
+	assert.Equal(t, "ACCOUNT", scopeMap["type"])
+	assert.Equal(t, "99999", scopeMap["id"])
+}
+
+func TestFlattenNotificationDestinationDataSource_OrgScope(t *testing.T) {
+	r := dataSourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testguid")
+
+	destination := &notifications.AiNotificationsDestination{
+		ID:        "dest-id-123",
+		Name:      "org-dest",
+		Type:      "WEBHOOK",
+		GUID:      guid,
+		AccountID: 12345,
+		Scope: notifications.AiNotificationsEntityScope{
+			Type: notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION,
+			ID:   "org-uuid-456",
+		},
+		Active: true,
+	}
+
+	scope := notifications.AiNotificationsEntityScopeInput{
+		Type: notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION,
+		ID:   "org-uuid-456",
+	}
+
+	d := r.TestResourceData()
+	err := flattenNotificationDestinationDataSource(destination, scope, d)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "org-dest", d.Get("name"))
+
+	scopeList := d.Get("scope").([]interface{})
+	assert.Len(t, scopeList, 1)
+	scopeMap := scopeList[0].(map[string]interface{})
+	assert.Equal(t, "ORGANIZATION", scopeMap["type"])
+	assert.Equal(t, "org-uuid-456", scopeMap["id"])
+}
+
+func TestFlattenNotificationDestinationDataSource_AccountScope(t *testing.T) {
+	r := dataSourceNewRelicNotificationDestination()
+	guid := notifications.EntityGUID("testguid")
+
+	destination := &notifications.AiNotificationsDestination{
+		ID:        "dest-id-789",
+		Name:      "acct-dest",
+		Type:      "WEBHOOK",
+		GUID:      guid,
+		AccountID: 54321,
+		Active:    true,
+	}
+
+	scope := notifications.AiNotificationsEntityScopeInput{
+		Type: notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT,
+		ID:   "54321",
+	}
+
+	d := r.TestResourceData()
+	err := flattenNotificationDestinationDataSource(destination, scope, d)
+	assert.NoError(t, err)
+
+	scopeList := d.Get("scope").([]interface{})
+	assert.Len(t, scopeList, 1)
+	scopeMap := scopeList[0].(map[string]interface{})
+	assert.Equal(t, "ACCOUNT", scopeMap["type"])
+	assert.Equal(t, "54321", scopeMap["id"])
 }
 
 func testFlattenNotificationDestinationAuth(t *testing.T, v interface{}, auth ai.AiNotificationsAuth) {
