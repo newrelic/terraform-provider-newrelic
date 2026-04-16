@@ -1,3 +1,8 @@
+<a name="v3.84.3"></a>
+## [v3.84.3] - 2026-04-16
+### Bug Fixes
+- **notifications:** update terraform provider for global destinations support
+
 <a name="v3.84.2"></a>
 ## [v3.84.2] - 2026-04-15
 ### Bug Fixes
@@ -2664,7 +2669,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.3...HEAD
+[v3.84.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.2...v3.84.3
 [v3.84.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.1...v3.84.2
 [v3.84.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.0...v3.84.1
 [v3.84.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.83.0...v3.84.0
