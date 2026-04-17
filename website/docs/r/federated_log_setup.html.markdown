@@ -220,69 +220,6 @@ Federated Log Setups can be imported using the entity GUID:
 $ terraform import newrelic_federated_log_setup.example <entity_guid>
 ```
 
-## IAM Role Configuration
-
-### PCG Writer Role (data_ingest_connection)
-
-The writer role must have:
-
-**Trust Policy:**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "AWS": "arn:aws:iam::123456789012:role/newrelic-fed-logs-base-role"
-      },
-      "Condition": {
-        "StringEquals": {
-          "aws:PrincipalTag/PCG_Instance": "production-pcg"
-        }
-      }
-    }
-  ]
-}
-```
-
-**Permissions Policy:**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:ListBucket",
-        "s3:DeleteObject"
-      ],
-      "Resource": [
-        "arn:aws:s3:::my-company-federated-logs-bucket",
-        "arn:aws:s3:::my-company-federated-logs-bucket/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "glue:GetTable",
-        "glue:GetTables",
-        "glue:UpdateTable",
-        "glue:GetDatabase"
-      ],
-      "Resource": [
-        "arn:aws:glue:us-east-1:123456789012:catalog",
-        "arn:aws:glue:us-east-1:123456789012:database/federated_logs_db",
-        "arn:aws:glue:us-east-1:123456789012:table/federated_logs_db/*"
-      ]
-    }
-  ]
-}
-```
-
 **Tags:**
 * `PCG_Instance` = `<processor_name>` (must match the linked processor)
 
