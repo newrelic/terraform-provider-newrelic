@@ -125,6 +125,7 @@ locals {
   newrelic_urls = {
     US      = "https://aws-api.newrelic.com/cloudwatch-metrics/v1"
     EU      = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
+    JP      = "https://aws-api.jp01.nr-data.net/cloudwatch-metrics/v1"
   }
 }
 

@@ -27,7 +27,7 @@ resource "newrelic_account_management" "foo"{
 The following arguments are supported:
 
   * `name` - (Required) The name of the Account.
-  * `region` - (Required) The region code of the account.  One of: `us01`, `eu01`.
+  * `region` - (Required) The region code of the account.  One of: `us01`, `eu01`, `jp01`.
 
 
 ## Attributes Reference

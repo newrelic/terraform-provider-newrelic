@@ -78,7 +78,7 @@ module "newrelic-aws-cloud-integrations" {
 Variables:
 
 * `newrelic_account_id`: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
-* `newrelic_account_region` (Optional): The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
+* `newrelic_account_region` (Optional): The region of your New Relic account, this can be `US` for United States, `EU` for Europe, or `JP` for Japan. (Default `US`)
 * `name` (Optional): A unique name used throughout the module to name the resources. (Default `production`)
 * `output_format` (Optional): The output format for telemetry data. Supported values are `opentelemetry0.7` and `opentelemetry1.0`. (Default `opentelemetry0.7`)
 * `exclude_metric_filters` (Optional): a map of namespaces and metric names to exclude from the Cloudwatch metric stream. `Conflicts with include_metric_filters`.
@@ -321,7 +321,7 @@ Key variables:
 * `home_region` – The OCI home region where identity domain resources will be created (for example: `us-ashburn-1`, `us-phoenix-1`, `eu-frankfurt-1`). Use the full region identifier.
 * `fingerprint` / `private_key` – API key credentials for OCI authentication.
 * `identity_domain_name` (Optional) – Name of the identity domain to use (defaults to `Default`).
-* `newrelic_region` – New Relic region context (`US` or `EU`). This determines which New Relic issuer and JWKS URL are used for the identity propagation trust.
+* `newrelic_region` – New Relic region context (`US`, `EU`, or `JP`). This determines which New Relic issuer and JWKS URL are used for the identity propagation trust.
 * `resource_prefix` (Optional) – Prefix for all created resources (defaults to `newrelic`).
 * `trust_name` (Optional) – Name for the identity propagation trust (defaults to `newrelic-wif-trust`).
 * `activate_oauth_apps` (Optional) – Whether to activate OAuth applications (defaults to `true`).
@@ -385,7 +385,7 @@ Key variables:
 
 * `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
 * `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
-* `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US` or `EU`).
+* `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US`, `EU`, or `JP`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
 
 #### Example: Metrics integration module
@@ -501,7 +501,7 @@ Key variables:
 > If you want to use an existing private subnet, make sure it has required route rules and gateways with internet and all OCI services access. 
 - function application environment variables configuration:
   - `debug_enabled`: Boolean to enable or disable function debug logs.
-  - `new_relic_region`: The New Relic region (US or EU).
+  - `new_relic_region`: The New Relic region (US, EU, or JP).
   - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
   - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
   - `image_version`: Docker image version for the logging function (defaults to "latest").

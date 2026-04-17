@@ -41,7 +41,7 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 			NewRelicAccountManagementSchemaRegion: {
 				Type:         schema.TypeString,
 				Description:  "A description of what this parsing rule represents.",
-				ValidateFunc: validation.StringInSlice([]string{"us01", "eu01"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"us01", "eu01", "jp01"}, false),
 				Required:     true,
 			},
 			NewRelicAccountManagementSchemaStatus: {
