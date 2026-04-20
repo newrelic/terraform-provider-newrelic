@@ -218,3 +218,5 @@ New Relic workloads can be imported using a concatenated string of the format
 ```bash
 $ terraform import newrelic_workload.foo 12345678:1456:MjUyMDUyOHxBUE18QVBRTElDQVRJT058MjE1MDM3Nzk1
 ```
+
+~> **NOTE:** The value of `<workload_id>` can be derived from the base64 decoded value of `<guid>` - e.g. `echo <guid> | base64 -d | cut -f 4 -d '|'`
