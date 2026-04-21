@@ -108,12 +108,19 @@ func resourceNewRelicNotificationChannelCreate(ctx context.Context, d *schema.Re
 		return newDiagErr
 	}
 
+	// Always persist the channel ID to state if the backend created it, even if the
+	// response also contains errors. The NR API can return both a valid channel and
+	// errors simultaneously (e.g. UNKNOWN_ERROR with null description). Without this,
+	// the channel is created in New Relic but missing from Terraform state, causing
+	// orphaned resources and an infinite create-fail loop on subsequent applies.
+	if channelResponse.Channel.ID != "" {
+		d.SetId(channelResponse.Channel.ID)
+	}
+
 	errors := buildAiNotificationsErrors(channelResponse.Errors)
 	if len(errors) > 0 {
 		return errors
 	}
-
-	d.SetId(channelResponse.Channel.ID)
 
 	return resourceNewRelicNotificationChannelRead(updatedContext, d, meta)
 }
