@@ -64,7 +64,7 @@ Each alert channel type supports a specific set of arguments for the `config` bl
     * `channel` - (Optional) The Slack channel to send notifications to.
   * `opsgenie`
     * `api_key` - (Required) The API key for integrating with OpsGenie.
-    * `region` - (Required) The data center region to store your data.  Valid values are `US` and `EU`.  Default is `US`.
+    * `region` - (Required) The data center region to store your data.  Valid values are `US`, `EU`, and `JP`.  Default is `US`.
     * `teams` - (Optional) A set of teams for targeting notifications. Multiple values are comma separated.
     * `tags` - (Optional) A set of tags for targeting notifications. Multiple values are comma separated.
     * `recipients` - (Optional) A set of recipients for targeting notifications.  Multiple values are comma separated.
