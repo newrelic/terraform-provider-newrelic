@@ -450,7 +450,7 @@ Key variables:
   ]
   ```
 * `ingest_api_secret_ocid` / `user_api_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
-* `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (use the EU variant for EU accounts).
+* `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (use the EU variant for EU accounts, JP for Japan accounts).
 * `region` – OCI region key (short code) where resources for this module are created (for example: `iad`, `phx`, `fra`). Provide ONLY the region key, not the full region identifier (so use `iad` instead of `us-ashburn-1`).
 * `image_version` / `image_bucket` – Docker image configuration for the New Relic function (optional, defaults to latest version).
 
