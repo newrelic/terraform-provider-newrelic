@@ -20,7 +20,7 @@ provider "oci" {
 }
 
 provider "newrelic" {
-  region     = var.newrelic_provider_region # US, EU, or JP
+  region     = var.newrelic_provider_region # US or EU
   account_id = var.newrelic_account_id
   api_key    = local.user_api_key
 }

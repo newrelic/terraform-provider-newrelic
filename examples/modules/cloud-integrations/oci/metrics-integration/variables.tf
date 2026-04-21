@@ -22,10 +22,10 @@ variable "region" {
 variable "newrelic_endpoint" {
   type        = string
   default     = "US"
-  description = "The endpoint to hit for sending the metrics. Varies by region [US|EU|JP]"
+  description = "The endpoint to hit for sending the metrics. Varies by region [US|EU]"
   validation {
-    condition     = contains(["US", "EU", "JP"], var.newrelic_endpoint)
-    error_message = "Valid values for var: newrelic_endpoint are (US, EU, JP)."
+    condition     = contains(["US", "EU"], var.newrelic_endpoint)
+    error_message = "Valid values for var: newrelic_endpoint are (US, EU)."
   }
 }
 

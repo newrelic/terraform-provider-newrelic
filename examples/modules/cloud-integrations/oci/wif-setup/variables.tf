@@ -15,12 +15,12 @@ variable "identity_domain_name" {
 
 # New Relic Configuration
 variable "newrelic_region" {
-  description = "New Relic region (US, EU, or JP)"
+  description = "New Relic region (US or EU)"
   type        = string
   default     = "US"
   validation {
-    condition     = contains(["US", "EU", "JP"], var.newrelic_region)
-    error_message = "New Relic region must be 'US', 'EU', or 'JP'."
+    condition     = contains(["US", "EU"], var.newrelic_region)
+    error_message = "New Relic region must be either 'US' or 'EU'."
   }
 }
 

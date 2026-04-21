@@ -67,7 +67,7 @@ variable "debug_enabled" {
 variable "new_relic_region" {
   type        = string
   default     = "US"
-  description = "New Relic Region. US, EU, or JP"
+  description = "New Relic Region. US or EU"
 }
 
 variable "secret_ocid" {

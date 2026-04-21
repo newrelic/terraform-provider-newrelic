@@ -36,7 +36,6 @@ locals {
   newrelic_graphql_endpoint = {
     US = "https://api.newrelic.com/graphql"
     EU = "https://api.eu.newrelic.com/graphql"
-    JP = "https://api.jp.newrelic.com/graphql"
   }[var.new_relic_region]
 
   updateLinkAccount_graphql_query = <<EOF
