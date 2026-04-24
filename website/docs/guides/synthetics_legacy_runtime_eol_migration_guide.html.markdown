@@ -37,6 +37,21 @@ A quick summary to help you navigate through this document is as follows -
   - Upon trying to perform a `terraform plan`, you will see a drift, indicating that your monitor has been moved to the new runtime.
   - Upon trying to perform a `terraform apply` on this monitor without updates to include runtime attributes with new runtime values, an error will be thrown by the Synthetics API, stating that usage of the legacy runtime is no longer supported.
 
+### Behavior by Monitor Type: Scripted vs. Non-Scripted Monitors
+
+The EOL enforcement behavior differs between scripted and non-scripted monitor types:
+
+**Non-Scripted Monitors** (Simple Browser, Step Monitor, Broken Links Monitor, Cert Check Monitor):
+The New Relic Terraform Provider enforces the latest runtime version for all non-scripted monitors, in alignment with how the New Relic UI handles these monitor types. This means:
+- Even if a specific version is hard-coded in your Terraform configuration (e.g., `runtime_type_version = "100"` or `runtime_type_version = "134"` for Chrome), the provider will override it and enforce the current latest runtime version (`LATEST` for `CHROME_BROWSER` monitors, `22.20.0` for `NODE_API` monitors).
+- No manual configuration change is strictly required for non-scripted monitors to remain operational through the EOL — the provider handles the version enforcement automatically. However, we recommend explicitly setting the enforced values in your configuration to keep it in sync and avoid Terraform drift.
+
+**Scripted Monitors** (Scripted API, Scripted Browser):
+- If your Terraform configuration for scripted monitors is **not updated** with new runtime values before the EOL on July 27, 2026, the Synthetics API will force-upgrade these monitors to the latest runtime at the EOL. This will cause your Terraform state to drift.
+- Upon running `terraform plan` after the EOL, you will see a drift indicating the runtime has been upgraded. A subsequent `terraform apply` without updating your configuration will result in an API error thrown by the Synthetics API.
+- After the EOL notice period ends on July 27, 2026, all scripted monitors will be force-upgraded to the latest runtime (`NODE_API 22.20.0` for Scripted API, `CHROME_BROWSER LATEST` for Scripted Browser) regardless of their current configuration.
+- To prevent drift and errors, update your Terraform configuration with the new runtime values before July 27, 2026.
+
 To prevent these consequences, kindly upgrade your monitors to the new runtime as soon as possible, if they are still using the legacy runtime.
 
 In order to upgrade a monitor to the new runtime, one would need to ensure any private locations running jobs of the monitor operate on Synthetic Job Managers (SJMs) and not Containerized Private Minions (CPMs), as the EOL of the Legacy Runtime of Synthetic Monitors is also paired with the EOL of CPMs. Additionally, regardless of the locations monitors run in, with all kinds of scripted monitors in the legacy runtime, one would need to confirm that the script/other configuration of the monitor (which has been working in the legacy runtime) can also work in the new runtime with no changes needed. With these steps requiring manual intervention, i.e., customers needing to ensure from the Runtime Upgrades UI that these monitors are fit to run in the new runtime, if these monitors are managed via Terraform, changes are needed to the Terraform configuration as well, as a follow-up action. These changes include adding runtime attributes with values corresponding to the new runtime, or updating values of any existing runtime attributes to the new runtime.

@@ -104,7 +104,7 @@ The `BROWSER` monitor type supports the following additional arguments:
 * `device_type` - (Optional) Device emulation type field. Valid values are `MOBILE` and `TABLET`. 
   * We recommend you to use `devices` field instead of `device_type`,`device_orientation` fields, as it allows you to select multiple combinations of device types and orientations.
 * `runtime_type` - (Optional) The runtime that the monitor will use to run jobs (`CHROME_BROWSER`).
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected. Use `LATEST` to automatically use the latest Chrome version (currently 146, will be automatically upgraded to Chrome 147 or higher on July 27, 2026, updated automatically as new versions are released).
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected. Use `LATEST` to automatically use the latest Chrome version (currently 146, will be automatically upgraded to Chrome 147 or higher on July 27, 2026, updated automatically as new versions are released). **Note:** The Terraform Provider enforces `LATEST` for this non-scripted monitor type in alignment with the New Relic UI — even if a specific version is hard-coded in your configuration, the provider will override it to `LATEST`. We recommend explicitly setting `runtime_type_version = "LATEST"` in your configuration to avoid drift.
 
 #### Deprecated Runtime
 

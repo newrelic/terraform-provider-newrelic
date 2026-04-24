@@ -46,7 +46,7 @@ The following are the arguments supported by this resource.
 * `status` - (Required) The run state of the monitor. (`ENABLED` or `DISABLED`). 
 * `tag` - (Optional) The tags that will be associated with the monitor. See [Nested tag blocks](#nested-tag-blocks) below for details
 * `runtime_type` - (Optional) The runtime that the monitor will use to run jobs (`NODE_API`).
-* `runtime_type_version` - (Optional) The specific version of the runtime type selected. Use `22.20.0` which corresponds to Node.js version 22.20.0.
+* `runtime_type_version` - (Optional) The specific version of the runtime type selected. Use `22.20.0` which corresponds to Node.js version 22.20.0. **Note:** The Terraform Provider enforces the latest runtime version (`22.20.0`) for this non-scripted monitor type in alignment with the New Relic UI — even if a different version is hard-coded in your configuration, the provider will override it. We recommend explicitly setting `runtime_type_version = "22.20.0"` in your configuration to avoid drift.
 
 -> **WARNING:**  The <b style="color:red;">end-of-life</b> of the **Synthetics Legacy Runtime** will take effect on <b style="color:red;">July 27, 2026</b>, implying that support for using the deprecated Synthetics Legacy Runtime with **new and existing** Synthetic monitors <b style="color:maroon;">will officially end as of July 27, 2026</b>. As a consequence of this API change, all requests associated with Synthetic Monitors (except Ping Monitors) going out of the New Relic Terraform Provider <span style="color:maroon;">will be blocked by an API error</span> if they include values corresponding to the legacy runtime or blank runtime values.
 <br><br>
