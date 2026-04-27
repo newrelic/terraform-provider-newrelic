@@ -123,6 +123,7 @@ func flattenAlertCompoundCondition(accountID int, condition *alerts.CompoundCond
 	_ = d.Set("facet_matching_behavior", condition.FacetMatchingBehavior)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("threshold_duration", condition.ThresholdDuration)
+	_ = d.Set("entity_guid", condition.EntityGuid)
 
 	// Flatten component conditions - ONLY id and alias (per user requirement)
 	componentConditions := flattenComponentConditions(condition.ComponentConditions)
