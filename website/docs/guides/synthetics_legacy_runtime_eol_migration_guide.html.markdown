@@ -11,7 +11,7 @@ As announced by New Relic Synthetics earlier this year, the <b style="color:red;
 
 Following these changes, starting with <b style="color:red;">v3.85.0</b> of the New Relic Terraform Provider, configuration of **new and existing** Synthetic monitors without runtime attributes (or) comprising runtime attributes signifying the legacy runtime <span style="color:red;">will be deemed invalid</span> (this applies to all Synthetic monitor resources, except `newrelic_synthetics_monitor` with type `SIMPLE`). If your monitors' configuration <span style="color:red;">is not updated with new runtime values</span>, you will see the consequences stated here. 
 
-These timelines and implications [were communicated](https://docs.newrelic.com/eol/2025/11/eol-chrome-140-node-22-synthetics/) by New Relic Synthetics (also via customer communications) and the documentation for all Synthetic Monitor resources starting with [v3.36.1](https://registry.terraform.io/providers/newrelic/newrelic/3.36.1/docs/resources/synthetics_script_monitor) of the provider and this guide.
+These timelines and implications [were communicated](https://docs.newrelic.com/eol/2025/11/eol-chrome-140-node-22-synthetics/) by New Relic Synthetics (also via customer communications) and the documentation for all Synthetic Monitor resources starting with [v3.85.0](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_script_monitor) of the provider and this guide.
 
 ### EOL Timeline and Runtime Enforcement
 
