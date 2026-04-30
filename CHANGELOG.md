@@ -1,3 +1,8 @@
+<a name="v3.85.1"></a>
+## [v3.85.1] - 2026-04-30
+### Bug Fixes
+- **alerts:** add policy entity guid ([#3075](https://github.com/newrelic/terraform-provider-newrelic/issues/3075))
+
 <a name="v3.85.0"></a>
 ## [v3.85.0] - 2026-04-21
 ### Features
@@ -2674,7 +2679,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.85.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.85.1...HEAD
+[v3.85.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.85.0...v3.85.1
 [v3.85.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.3...v3.85.0
 [v3.84.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.2...v3.84.3
 [v3.84.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.1...v3.84.2
