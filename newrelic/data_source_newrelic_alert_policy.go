@@ -41,6 +41,11 @@ func dataSourceNewRelicAlertPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "The time the policy was last updated.",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The entity GUID of the alert policy.",
+			},
 		},
 	}
 }

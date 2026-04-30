@@ -37,6 +37,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The ID of the policy.
+  * `entity_guid` - The entity GUID of the alert policy.
 
 ## Additional Examples
 
