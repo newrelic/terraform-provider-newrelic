@@ -13,10 +13,10 @@ func TestFlattenAlertPolicy_Basic(t *testing.T) {
 	t.Parallel()
 
 	mockPolicy := &alerts.AlertsPolicy{
-		ID:                  "123456",
-		Name:                "Test Policy",
-		IncidentPreference:  alerts.AlertsIncidentPreference("PER_POLICY"),
-		EntityGuid:          "test-entity-guid-123",
+		ID:                 "123456",
+		Name:               "Test Policy",
+		IncidentPreference: alerts.AlertsIncidentPreference("PER_POLICY"),
+		EntityGuid:         "test-entity-guid-123",
 	}
 
 	r := resourceNewRelicAlertPolicy()
@@ -38,10 +38,10 @@ func TestFlattenAlertPolicy_EmptyEntityGuid(t *testing.T) {
 	t.Parallel()
 
 	mockPolicy := &alerts.AlertsPolicy{
-		ID:                  "123456",
-		Name:                "Test Policy",
-		IncidentPreference:  alerts.AlertsIncidentPreference("PER_CONDITION"),
-		EntityGuid:          "",
+		ID:                 "123456",
+		Name:               "Test Policy",
+		IncidentPreference: alerts.AlertsIncidentPreference("PER_CONDITION"),
+		EntityGuid:         "",
 	}
 
 	r := resourceNewRelicAlertPolicy()
@@ -87,10 +87,10 @@ func TestFlattenAlertPolicy_AllIncidentPreferences(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockPolicy := &alerts.AlertsPolicy{
-				ID:                  "123456",
-				Name:                "Test Policy",
-				IncidentPreference:  alerts.AlertsIncidentPreference(tc.incidentPreference),
-				EntityGuid:          tc.entityGuid,
+				ID:                 "123456",
+				Name:               "Test Policy",
+				IncidentPreference: alerts.AlertsIncidentPreference(tc.incidentPreference),
+				EntityGuid:         tc.entityGuid,
 			}
 
 			r := resourceNewRelicAlertPolicy()
