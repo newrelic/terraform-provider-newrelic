@@ -102,8 +102,11 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 	}
 }
 
-// resourceNewRelicFleetDeploymentCustomizeDiff validates at plan time that no
-// two agent blocks declare the same agent_type.
+// resourceNewRelicFleetDeploymentCustomizeDiff runs plan-time validations:
+//  1. No two agent blocks may declare the same agent_type.
+//  2. If the deployment already exists and its phase is not CREATED, any
+//     attempt to change mutable fields is rejected with a clear error so the
+//     user is informed before apply rather than receiving an opaque API error.
 func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	if agentsRaw, ok := d.GetOk("agent"); ok {
 		agents := agentsRaw.([]interface{})
@@ -120,6 +123,21 @@ func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.R
 			seen[agentType] = i
 		}
 	}
+
+	// Phase-gate: block updates once the deployment has left CREATED.
+	// d.Id() is non-empty only when the resource already exists in state.
+	if d.Id() != "" && d.HasChanges("name", "description", "agent", "tags") {
+		phase := d.Get("phase").(string)
+		if phase != "" && phase != "CREATED" {
+			return fmt.Errorf(
+				"cannot update fleet deployment %s: it is in phase %q, which means execution has already begun or completed — "+
+					"only deployments in the CREATED phase can be modified. "+
+					"Run 'terraform destroy' to remove this deployment from state, then re-create it with the desired configuration",
+				d.Id(), phase,
+			)
+		}
+	}
+
 	return nil
 }
 
@@ -234,21 +252,23 @@ func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
-	// Phase-gate: CustomizeDiff cannot emit warnings, so the check lives here.
-	// If the deployment has left CREATED we skip the API call and warn instead
-	// of hard-failing — the resource stays in state and the user can decide
-	// whether to import the new reality or destroy (which also clears state).
-	if phase := d.Get("phase").(string); phase != "" && phase != "CREATED" {
-		return diag.Diagnostics{{
-			Severity: diag.Warning,
-			Summary:  "Fleet deployment update skipped",
-			Detail: fmt.Sprintf(
-				"The deployment is in phase %q and can only be updated while in phase CREATED. "+
-					"No changes were sent to the API. To adopt changes, destroy this resource and create a new deployment.",
-				phase,
-			),
-		}}
-	}
+	// NOTE: The phase-gate lives in CustomizeDiff and blocks the plan before
+	// this function is ever reached. The commented-out block below is a
+	// softer fallback (warning instead of error) for future use should the
+	// team decide to move from a hard plan-time error to an apply-time warning.
+	//
+	// if phase := d.Get("phase").(string); phase != "" && phase != "CREATED" {
+	// 	return diag.Diagnostics{{
+	// 		Severity: diag.Warning,
+	// 		Summary:  "Fleet deployment update skipped",
+	// 		Detail: fmt.Sprintf(
+	// 			"The deployment is in phase %q — execution has already begun or completed "+
+	// 				"and the API does not accept updates at this stage. No changes were sent. "+
+	// 				"Run 'terraform destroy' to remove the deployment from state and re-create it.",
+	// 			phase,
+	// 		),
+	// 	}}
+	// }
 
 	// Always send all mutable fields together — the API replaces the full
 	// object on update, so omitting any field clears it on the server side.
@@ -287,17 +307,22 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 			d.SetId("")
 			return nil
 		}
-		// The deployment may be in a phase that the API refuses to delete
-		// (e.g. IN_PROGRESS). Remove it from state with a warning so the user
-		// is not left in a stuck destroy loop — the deployment will continue
-		// to run on the backend until it completes naturally.
+		// The API may refuse to delete a deployment that is actively executing
+		// (e.g. IN_PROGRESS). Rather than leaving the user in a stuck destroy
+		// loop, remove it from state with a warning. The deployment will
+		// continue running on the backend until it reaches a terminal phase
+		// (COMPLETED or FAILED), at which point it can be cleaned up manually
+		// in the New Relic UI if needed.
 		d.SetId("")
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
-			Summary:  "Fleet deployment could not be deleted from the API",
+			Summary:  "Fleet deployment removed from state but may still exist in New Relic",
 			Detail: fmt.Sprintf(
-				"Deployment %s was removed from Terraform state but may still exist in New Relic. "+
-					"It is likely in a phase that does not allow deletion. Error: %s",
+				"Deployment %s could not be deleted via the API and has been removed from Terraform state. "+
+					"This typically happens when the deployment is actively executing (IN_PROGRESS) — "+
+					"the API does not permit deletion until execution reaches a terminal phase. "+
+					"Once the deployment completes or fails, you can remove it manually from the New Relic UI. "+
+					"API error: %s",
 				id, err,
 			),
 		}}

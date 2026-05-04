@@ -188,8 +188,8 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 }
 
 // TestAccNewRelicFleetDeployment_PhaseGate verifies that attempting to update a
-// deployment that is no longer in CREATED phase emits a warning and succeeds
-// without error (the API call is skipped and state is refreshed from the API).
+// deployment that is no longer in CREATED phase is blocked at plan time with a
+// descriptive error pointing the user toward terraform destroy.
 //
 // Note: this test is skipped if the deployment stays in CREATED long enough
 // that the phase hasn't advanced before the second step runs. In practice the
@@ -214,13 +214,10 @@ func TestAccNewRelicFleetDeployment_PhaseGate(t *testing.T) {
 				),
 			},
 			// Step 2: Attempt to change name after phase has advanced.
-			// The update emits a warning and skips the API call — no error.
+			// CustomizeDiff must block the plan with a clear error.
 			{
-				Config: testAccFleetDeploymentGateUpdated(rName, fleetID),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFleetDeploymentExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "phase"),
-				),
+				Config:      testAccFleetDeploymentGateUpdated(rName, fleetID),
+				ExpectError: regexp.MustCompile(`cannot update fleet deployment`),
 			},
 		},
 	})
