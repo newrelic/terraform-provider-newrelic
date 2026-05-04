@@ -12,7 +12,7 @@ Use this resource to create and manage New Relic fleet deployments.
 
 A fleet deployment defines the agent versions and optional configuration versions to roll out to a fleet. Each deployment belongs to a fleet and contains one or more `agent` blocks describing which agent type and version to deploy, and optionally which configuration version (from `newrelic_fleet_configuration`) to apply.
 
-~> **Note:** Deployments can only be updated while in the `CREATED` phase. Once the fleet backend begins executing the deployment (phase advances to `IN_PROGRESS`, `FAILED`, or `COMPLETED`), any attempt to change `name`, `description`, `agent`, or `tags` will be blocked at plan time with an error. To make changes after a deployment has started, destroy the resource and create a new deployment.
+~> **Note:** Deployments can only be updated while in the `CREATED` phase. Once the fleet backend begins executing the deployment (phase advances to `IN_PROGRESS`, `FAILED`, or `COMPLETED`), any attempt to change `name`, `description`, `agent`, or `tags` will emit a **warning** at apply time and the API call will be skipped — the resource remains in state with its current values. To adopt new configuration, destroy this resource and create a new deployment. If `terraform destroy` also fails (the API may reject deletes for in-flight deployments), the resource will still be removed from state with a warning.
 
 ## Example Usage
 

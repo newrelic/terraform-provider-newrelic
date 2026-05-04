@@ -188,13 +188,8 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 }
 
 // TestAccNewRelicFleetDeployment_PhaseGate verifies that attempting to update a
-// deployment that is no longer in CREATED phase is blocked at plan time with a
-// descriptive error, rather than surfacing an opaque API error at apply time.
-//
-// The test creates a deployment, then waits for the phase to advance beyond
-// CREATED by doing a refresh-only plan (the API transitions state asynchronously).
-// Because acceptance tests run against a live fleet that will advance the phase,
-// we use PlanOnly with ExpectError to confirm the gate fires.
+// deployment that is no longer in CREATED phase emits a warning and succeeds
+// without error (the API call is skipped and state is refreshed from the API).
 //
 // Note: this test is skipped if the deployment stays in CREATED long enough
 // that the phase hasn't advanced before the second step runs. In practice the
@@ -219,10 +214,13 @@ func TestAccNewRelicFleetDeployment_PhaseGate(t *testing.T) {
 				),
 			},
 			// Step 2: Attempt to change name after phase has advanced.
-			// The CustomizeDiff phase-gate must return an error before apply.
+			// The update emits a warning and skips the API call — no error.
 			{
-				Config:      testAccFleetDeploymentGateUpdated(rName, fleetID),
-				ExpectError: regexp.MustCompile(`cannot update fleet deployment`),
+				Config: testAccFleetDeploymentGateUpdated(rName, fleetID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetDeploymentExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "phase"),
+				),
 			},
 		},
 	})

@@ -102,13 +102,9 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 	}
 }
 
-// resourceNewRelicFleetDeploymentCustomizeDiff runs two plan-time validations:
-//  1. No two agent blocks may declare the same agent_type.
-//  2. If the deployment already exists and its phase is not CREATED, any
-//     attempt to change mutable fields is rejected early with a clear error
-//     rather than surfacing an opaque API error at apply time.
+// resourceNewRelicFleetDeploymentCustomizeDiff validates at plan time that no
+// two agent blocks declare the same agent_type.
 func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	// Validate duplicate agent types.
 	if agentsRaw, ok := d.GetOk("agent"); ok {
 		agents := agentsRaw.([]interface{})
 		seen := make(map[string]int, len(agents))
@@ -124,20 +120,6 @@ func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.R
 			seen[agentType] = i
 		}
 	}
-
-	// Phase-gate: block updates once the deployment has left the CREATED phase.
-	// d.Id() is non-empty only when the resource already exists in state.
-	if d.Id() != "" && d.HasChanges("name", "description", "agent", "tags") {
-		phase := d.Get("phase").(string)
-		if phase != "" && phase != "CREATED" {
-			return fmt.Errorf(
-				"cannot update fleet deployment: the deployment is in phase %q and can only be updated while in phase CREATED; "+
-					"to make changes, destroy this deployment and create a new one",
-				phase,
-			)
-		}
-	}
-
 	return nil
 }
 
@@ -252,6 +234,22 @@ func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
+	// Phase-gate: CustomizeDiff cannot emit warnings, so the check lives here.
+	// If the deployment has left CREATED we skip the API call and warn instead
+	// of hard-failing — the resource stays in state and the user can decide
+	// whether to import the new reality or destroy (which also clears state).
+	if phase := d.Get("phase").(string); phase != "" && phase != "CREATED" {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  "Fleet deployment update skipped",
+			Detail: fmt.Sprintf(
+				"The deployment is in phase %q and can only be updated while in phase CREATED. "+
+					"No changes were sent to the API. To adopt changes, destroy this resource and create a new deployment.",
+				phase,
+			),
+		}}
+	}
+
 	// Always send all mutable fields together — the API replaces the full
 	// object on update, so omitting any field clears it on the server side.
 	agents, err := expandFleetDeploymentAgents(d.Get("agent").([]interface{}))
@@ -281,10 +279,28 @@ func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.Resour
 
 func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
+	id := d.Id()
 
-	_, err := providerConfig.NewClient.FleetControl.FleetControlDeleteFleetDeploymentWithContext(ctx, d.Id())
+	_, err := providerConfig.NewClient.FleetControl.FleetControlDeleteFleetDeploymentWithContext(ctx, id)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error deleting fleet deployment %s: %w", d.Id(), err))
+		if _, ok := err.(*nrErrors.NotFound); ok {
+			d.SetId("")
+			return nil
+		}
+		// The deployment may be in a phase that the API refuses to delete
+		// (e.g. IN_PROGRESS). Remove it from state with a warning so the user
+		// is not left in a stuck destroy loop — the deployment will continue
+		// to run on the backend until it completes naturally.
+		d.SetId("")
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  "Fleet deployment could not be deleted from the API",
+			Detail: fmt.Sprintf(
+				"Deployment %s was removed from Terraform state but may still exist in New Relic. "+
+					"It is likely in a phase that does not allow deletion. Error: %s",
+				id, err,
+			),
+		}}
 	}
 
 	log.Printf("[DEBUG] Deleted fleet deployment: %s", d.Id())
