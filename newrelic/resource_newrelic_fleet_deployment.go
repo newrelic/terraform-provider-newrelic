@@ -301,34 +301,34 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 	providerConfig := meta.(*ProviderConfig)
 	id := d.Id()
 
+	// If the deployment is actively executing the API will reject the delete.
+	// Skip the call, warn, and remove from state so the user is not stuck in a
+	// destroy loop. FAILED and COMPLETED are terminal phases that the API can
+	// delete normally, so only IN_PROGRESS gets this special treatment.
+	if d.Get("phase").(string) == "IN_PROGRESS" {
+		d.SetId("")
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  "Fleet deployment removed from state but is still executing in New Relic",
+			Detail: fmt.Sprintf(
+				"Deployment %s is currently IN_PROGRESS and cannot be deleted via the API while executing. "+
+					"It has been removed from Terraform state and will continue running until it reaches a terminal phase. "+
+					"Once it completes or fails, you can remove it manually from the New Relic UI if needed.",
+				id,
+			),
+		}}
+	}
+
 	_, err := providerConfig.NewClient.FleetControl.FleetControlDeleteFleetDeploymentWithContext(ctx, id)
 	if err != nil {
 		if _, ok := err.(*nrErrors.NotFound); ok {
 			d.SetId("")
 			return nil
 		}
-		// The API may refuse to delete a deployment that is actively executing
-		// (e.g. IN_PROGRESS). Rather than leaving the user in a stuck destroy
-		// loop, remove it from state with a warning. The deployment will
-		// continue running on the backend until it reaches a terminal phase
-		// (COMPLETED or FAILED), at which point it can be cleaned up manually
-		// in the New Relic UI if needed.
-		d.SetId("")
-		return diag.Diagnostics{{
-			Severity: diag.Warning,
-			Summary:  "Fleet deployment removed from state but may still exist in New Relic",
-			Detail: fmt.Sprintf(
-				"Deployment %s could not be deleted via the API and has been removed from Terraform state. "+
-					"This typically happens when the deployment is actively executing (IN_PROGRESS) — "+
-					"the API does not permit deletion until execution reaches a terminal phase. "+
-					"Once the deployment completes or fails, you can remove it manually from the New Relic UI. "+
-					"API error: %s",
-				id, err,
-			),
-		}}
+		return diag.FromErr(fmt.Errorf("error deleting fleet deployment %s: %w", id, err))
 	}
 
-	log.Printf("[DEBUG] Deleted fleet deployment: %s", d.Id())
+	log.Printf("[DEBUG] Deleted fleet deployment: %s", id)
 	return nil
 }
 
