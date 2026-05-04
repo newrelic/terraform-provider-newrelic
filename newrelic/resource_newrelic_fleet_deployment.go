@@ -252,31 +252,26 @@ func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
-	input := fleetcontrol.FleetControlFleetDeploymentUpdateInput{}
-
-	// Always send name and description together to keep the object consistent on
-	// the API side — the top-level HasChanges guard already ensures we only
-	// reach here when something actually changed.
-	input.Name = d.Get("name").(string)
-	input.Description = d.Get("description").(string)
-
-	if d.HasChange("agent") {
-		agents, err := expandFleetDeploymentAgents(d.Get("agent").([]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		input.Agents = agents
+	// Always send all mutable fields together — the API replaces the full
+	// object on update, so omitting any field clears it on the server side.
+	agents, err := expandFleetDeploymentAgents(d.Get("agent").([]interface{}))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.HasChange("tags") {
-		tags, err := parseFleetTags(d.Get("tags").([]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		input.Tags = tags
+	tags, err := parseFleetTags(d.Get("tags").([]interface{}))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	_, err := providerConfig.NewClient.FleetControl.FleetControlUpdateFleetDeploymentWithContext(ctx, input, d.Id())
+	input := fleetcontrol.FleetControlFleetDeploymentUpdateInput{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Agents:      agents,
+		Tags:        tags,
+	}
+
+	_, err = providerConfig.NewClient.FleetControl.FleetControlUpdateFleetDeploymentWithContext(ctx, input, d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating fleet deployment %s: %w", d.Id(), err))
 	}
