@@ -262,6 +262,12 @@ resource_newrelic_fleet_configuration.go:
 resource_newrelic_fleet_configuration_test.go:
   test: true
   product_mapping: FLEET
+resource_newrelic_fleet_deployment.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_deployment_test.go:
+  test: true
+  product_mapping: FLEET
 resource_newrelic_fleet_test.go:
   test: true
   product_mapping: FLEET
