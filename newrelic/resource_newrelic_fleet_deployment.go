@@ -301,20 +301,21 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 	providerConfig := meta.(*ProviderConfig)
 	id := d.Id()
 
-	// If the deployment is actively executing the API will reject the delete.
-	// Skip the call, warn, and remove from state so the user is not stuck in a
-	// destroy loop. FAILED and COMPLETED are terminal phases that the API can
-	// delete normally, so only IN_PROGRESS gets this special treatment.
-	if d.Get("phase").(string) == "IN_PROGRESS" {
+	// The API only allows deleting deployments that are still in the CREATED
+	// phase — once execution has begun (IN_PROGRESS, FAILED, COMPLETED) the
+	// API rejects the call with "Cannot delete deployment if it has been
+	// previously deployed". Warn and clear state so the user is not stuck.
+	if phase := d.Get("phase").(string); phase != "" && phase != "CREATED" {
 		d.SetId("")
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
-			Summary:  "Fleet deployment removed from state but is still executing in New Relic",
+			Summary:  "Fleet deployment removed from state but may still exist in New Relic",
 			Detail: fmt.Sprintf(
-				"Deployment %s is currently IN_PROGRESS and cannot be deleted via the API while executing. "+
-					"It has been removed from Terraform state and will continue running until it reaches a terminal phase. "+
-					"Once it completes or fails, you can remove it manually from the New Relic UI if needed.",
-				id,
+				"Deployment %s is in phase %q and cannot be deleted via the API — "+
+					"only deployments in the CREATED phase can be removed. "+
+					"It has been removed from Terraform state. "+
+					"You can clean it up manually in the New Relic UI if needed.",
+				id, phase,
 			),
 		}}
 	}
