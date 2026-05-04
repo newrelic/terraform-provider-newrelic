@@ -51,18 +51,52 @@ func resourceNewRelicFleetMembersCreate(ctx context.Context, d *schema.ResourceD
 	ring := d.Get("ring").(string)
 	entityIDs := expandStringSet(d.Get("entity_ids").(*schema.Set))
 
+	var diags diag.Diagnostics
+
+	// Check for pre-existing members in this ring before adding. These entities
+	// were added outside Terraform (e.g. via the CLI instrumentation flow) and
+	// are not in the caller's config. After Create, Read will sync them into
+	// state, and a subsequent plan will show them as pending removal unless the
+	// caller adds them to entity_ids.
+	existing, err := getAllFleetMembersInRing(ctx, client, fleetID, ring)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error checking existing fleet members: %w", err))
+	}
+
+	configSet := stringSliceToSet(entityIDs)
+	var unmanaged []string
+	for _, id := range existing {
+		if !configSet[id] {
+			unmanaged = append(unmanaged, id)
+		}
+	}
+
+	if len(unmanaged) > 0 {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Pre-existing fleet members not in configuration",
+			Detail: fmt.Sprintf(
+				"The following entities already exist in fleet %q ring %q but are not in your entity_ids configuration. "+
+					"They will be included in Terraform state after this apply. Add them to entity_ids to manage them "+
+					"with Terraform, or they will be removed from the fleet on the next apply:\n  - %s",
+				fleetID, ring, strings.Join(unmanaged, "\n  - "),
+			),
+		})
+	}
+
+	// Add entities from config. The API is idempotent for entities already present.
 	members := []fleetcontrol.FleetControlFleetMemberRingInput{
 		{Ring: ring, EntityIds: entityIDs},
 	}
 
-	_, err := client.FleetControl.FleetControlAddFleetMembersWithContext(ctx, fleetID, members)
+	_, err = client.FleetControl.FleetControlAddFleetMembersWithContext(ctx, fleetID, members)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error adding fleet members: %w", err))
+		return append(diags, diag.FromErr(fmt.Errorf("error adding fleet members: %w", err))...)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", fleetID, ring))
 
-	return resourceNewRelicFleetMembersRead(ctx, d, meta)
+	return append(diags, resourceNewRelicFleetMembersRead(ctx, d, meta)...)
 }
 
 func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -72,21 +106,72 @@ func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceDat
 	fleetID := d.Get("fleet_id").(string)
 	ring := d.Get("ring").(string)
 
-	entityIDs, err := getAllFleetMembersInRing(ctx, client, fleetID, ring)
+	apiIDs, err := getAllFleetMembersInRing(ctx, client, fleetID, ring)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
 	}
 
-	members := make([]interface{}, len(entityIDs))
-	for i, id := range entityIDs {
+	var diags diag.Diagnostics
+
+	// Drift detection — only meaningful after initial creation (when state has
+	// a prior entity_ids set to compare against).
+	if d.Id() != "" {
+		priorSet := d.Get("entity_ids").(*schema.Set)
+		apiSet := stringSliceToSet(apiIDs)
+
+		// Members that were in state but have since been removed outside Terraform.
+		// These will be re-added on the next apply.
+		var removedExternally []string
+		for _, id := range expandStringSet(priorSet) {
+			if !apiSet[id] {
+				removedExternally = append(removedExternally, id)
+			}
+		}
+		if len(removedExternally) > 0 {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Fleet members removed outside Terraform",
+				Detail: fmt.Sprintf(
+					"The following entities were removed from fleet %q ring %q outside of Terraform. "+
+						"Run terraform apply to re-add them, or remove them from entity_ids if the removal was intentional:\n  - %s",
+					fleetID, ring, strings.Join(removedExternally, "\n  - "),
+				),
+			})
+		}
+
+		// Members present in the API but not in prior state — added outside
+		// Terraform (e.g. via CLI instrumentation). They will be included in
+		// state now and removed on the next apply unless added to entity_ids.
+		priorStateSet := stringSliceToSet(expandStringSet(priorSet))
+		var addedExternally []string
+		for _, id := range apiIDs {
+			if !priorStateSet[id] {
+				addedExternally = append(addedExternally, id)
+			}
+		}
+		if len(addedExternally) > 0 {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Fleet members added outside Terraform",
+				Detail: fmt.Sprintf(
+					"The following entities were added to fleet %q ring %q outside of Terraform. "+
+						"Add them to entity_ids to manage them with Terraform, or they will be removed from the fleet on the next apply:\n  - %s",
+					fleetID, ring, strings.Join(addedExternally, "\n  - "),
+				),
+			})
+		}
+	}
+
+	members := make([]interface{}, len(apiIDs))
+	for i, id := range apiIDs {
 		members[i] = id
 	}
 
 	if err := d.Set("entity_ids", schema.NewSet(schema.HashSchema(&schema.Schema{Type: schema.TypeString}), members)); err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
 
-	return nil
+	return diags
 }
 
 func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -200,4 +285,13 @@ func getAllFleetMembersInRing(ctx context.Context, client *nr.NewRelic, fleetID,
 	}
 
 	return allEntityIDs, nil
+}
+
+// stringSliceToSet converts a string slice to a map for O(1) lookup.
+func stringSliceToSet(ss []string) map[string]bool {
+	m := make(map[string]bool, len(ss))
+	for _, s := range ss {
+		m[s] = true
+	}
+	return m
 }
