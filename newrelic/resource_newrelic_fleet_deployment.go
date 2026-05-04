@@ -131,8 +131,8 @@ func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.R
 		phase := d.Get("phase").(string)
 		if phase != "" && phase != "CREATED" {
 			return fmt.Errorf(
-				"cannot update fleet deployment: the deployment is in phase %q and can only be updated while in phase CREATED. "+
-					"To make changes, destroy this deployment and create a new one.",
+				"cannot update fleet deployment: the deployment is in phase %q and can only be updated while in phase CREATED; "+
+					"to make changes, destroy this deployment and create a new one",
 				phase,
 			)
 		}

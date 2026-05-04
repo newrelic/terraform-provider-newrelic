@@ -47,10 +47,10 @@ func TestAccNewRelicFleetConfiguration_Basic(t *testing.T) {
 			},
 			// Import — compound ID reconstructs non-API-readable fields (agent_type, etc.)
 			{
-				ResourceName:        resourceName,
-				ImportState:         true,
-				ImportStateVerify:   true,
-				ImportStateIdFunc:   testAccFleetConfigImportID(resourceName),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccFleetConfigImportID(resourceName),
 			},
 		},
 	})
@@ -281,10 +281,10 @@ func TestAccNewRelicFleetConfiguration_Kubernetes(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:        resourceName,
-				ImportState:         true,
-				ImportStateVerify:   true,
-				ImportStateIdFunc:   testAccFleetConfigImportID(resourceName),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccFleetConfigImportID(resourceName),
 			},
 		},
 	})
