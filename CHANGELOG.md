@@ -1,3 +1,8 @@
+<a name="v3.87.0"></a>
+## [v3.87.0] - 2026-05-04
+### Features
+- **fleet:** add newrelic_fleet_deployment resource ([#3078](https://github.com/newrelic/terraform-provider-newrelic/issues/3078))
+
 <a name="v3.86.0"></a>
 ## [v3.86.0] - 2026-05-04
 ### Features
@@ -2684,7 +2689,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.86.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.0...HEAD
+[v3.87.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.86.0...v3.87.0
 [v3.86.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.85.1...v3.86.0
 [v3.85.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.85.0...v3.85.1
 [v3.85.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.84.3...v3.85.0
