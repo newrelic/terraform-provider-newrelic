@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create and manage New Relic fleet configurations for centralized agent management.
 
-A fleet configuration defines versioned agent settings deployable to your fleets. Each configuration is specific to an agent type and managed entity type. Versions are immutable — their content cannot be modified after creation. To add a new configuration, add a `version` block; to remove one, delete its block.
+A fleet configuration defines versioned agent settings deployable to your fleets. Each configuration is specific to an agent type and managed entity type. Versions are immutable - their content cannot be modified after creation. To add a new configuration, add a `version` block; to remove one, delete its block.
 
 ## Example Usage
 
@@ -140,10 +140,10 @@ In addition to all arguments above, the following attributes are exported:
 
 ### Version Immutability
 
-Version content is **immutable** — the API does not support updating the content of an existing version. If you attempt to modify `configuration_content` of an already-applied `version` block, Terraform will catch this at plan time and surface an error before any API call is made:
+Version content is **immutable** - the API does not support updating the content of an existing version. If you attempt to modify `configuration_content` of an already-applied `version` block, Terraform will catch this at plan time and surface an error before any API call is made:
 
 ```
-configuration_content cannot be modified in place — versions are immutable:
+configuration_content cannot be modified in place - versions are immutable:
   - index 0: content was changed (edit detected)
 ```
 
@@ -161,11 +161,11 @@ All `version` blocks within a resource must have distinct `configuration_content
 duplicate configuration_content detected across version blocks
 ```
 
-This also applies to rollback scenarios. If you previously had versions A → B and want to roll back by reintroducing A's content as a new version, add a new `version` block with A's content rather than restoring an old block — the new version will get a new version number from the API.
+This also applies to rollback scenarios. If you previously had versions A → B and want to roll back by reintroducing A's content as a new version, add a new `version` block with A's content rather than restoring an old block - the new version will get a new version number from the API.
 
 ### Version Numbering
 
-Version numbers are assigned sequentially by the API and are never reused or renumbered. When you remove a `version` block, the remaining versions keep their original numbers. For example, if you have versions 1, 2, and 3 and remove version 2, the configuration will have versions 1 and 3 — the API does not compact the sequence.
+Version numbers are assigned sequentially by the API and are never reused or renumbered. When you remove a `version` block, the remaining versions keep their original numbers. For example, if you have versions 1, 2, and 3 and remove version 2, the configuration will have versions 1 and 3 - the API does not compact the sequence.
 
 `latest_version_number` and `latest_version_entity_id` always reflect the highest-numbered version, regardless of how many versions exist.
 
@@ -186,12 +186,6 @@ The warning indicates that Terraform will recreate the missing version on the ne
 
 Fleet configurations can be imported using the configuration entity GUID:
 
-```
-$ terraform import newrelic_fleet_configuration.infra <configuration_guid>
-```
-
-Fleet configurations can be imported using the configuration entity GUID:
-
-```
+```bash
 $ terraform import newrelic_fleet_configuration.infra <configuration_guid>
 ```
