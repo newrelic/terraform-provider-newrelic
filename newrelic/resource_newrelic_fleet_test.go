@@ -147,7 +147,6 @@ func TestAccNewRelicFleet_WithTags(t *testing.T) {
 	})
 }
 
-
 // Error case tests
 
 func TestAccNewRelicFleet_MissingOperatingSystemForHost(t *testing.T) {
@@ -215,7 +214,6 @@ func testAccCheckNewRelicFleetExists(n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no fleet ID is set")
 		}
@@ -223,13 +221,11 @@ func testAccCheckNewRelicFleetExists(n string) resource.TestCheckFunc {
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 		entity, err := client.FleetControl.GetEntity(rs.Primary.ID)
 		if err != nil {
-			return err
+			return fmt.Errorf("error fetching fleet %s: %s", rs.Primary.ID, err)
 		}
-
 		if entity == nil {
-			return fmt.Errorf("fleet not found: %s", rs.Primary.ID)
+			return fmt.Errorf("fleet %s not found", rs.Primary.ID)
 		}
-
 		return nil
 	}
 }

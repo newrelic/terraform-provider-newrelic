@@ -43,6 +43,12 @@ data_source_newrelic_entity_integration_test.go:
 data_source_newrelic_entity_unit_test.go:
   test: true
   product_mapping: ENTITY
+data_source_newrelic_fleet_configuration.go:
+  test: false
+  product_mapping: FLEET
+data_source_newrelic_fleet_configuration_test.go:
+  test: true
+  product_mapping: FLEET
 data_source_newrelic_group_management.go:
   test: false
   product_mapping: AUTH
@@ -249,6 +255,12 @@ resource_newrelic_events_to_metrics_rule_test.go:
   product_mapping: EVENTS
 resource_newrelic_fleet.go:
   test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_configuration.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_configuration_test.go:
+  test: true
   product_mapping: FLEET
 resource_newrelic_fleet_test.go:
   test: true
