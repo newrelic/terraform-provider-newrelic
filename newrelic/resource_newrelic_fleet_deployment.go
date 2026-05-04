@@ -22,6 +22,7 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: resourceNewRelicFleetDeploymentCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"fleet_id": {
 				Type:        schema.TypeString,
@@ -39,13 +40,11 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 				Optional:    true,
 				Description: "A description of the deployment.",
 			},
-			// agent blocks define which agent versions (and optionally which
-			// configuration versions) are included in this deployment.
 			"agent": {
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,
-				Description: "One or more agent blocks defining agent type, version, and optional configuration versions to include in the deployment.",
+				Description: "One or more agent blocks. Each agent type may appear at most once per deployment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"agent_type": {
@@ -64,11 +63,13 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 							Required:    true,
 							Description: "The agent version to deploy (e.g. \"1.58.0\").",
 						},
-						"configuration_version_ids": {
-							Type:        schema.TypeSet,
+						// Single config version per agent. Sent to the API as a
+						// one-element list; the API type is a slice but we
+						// intentionally expose only one version per agent block.
+						"configuration_version_id": {
+							Type:        schema.TypeString,
 							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Set of configuration version entity GUIDs to associate with this agent in the deployment.",
+							Description: "Configuration version entity GUID to associate with this agent in the deployment.",
 						},
 					},
 				},
@@ -95,10 +96,49 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 			"phase": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The current phase of the deployment (e.g. DRAFT, READY).",
+				Description: "The current phase of the deployment (e.g. CREATED, IN_PROGRESS, FAILED, COMPLETED).",
 			},
 		},
 	}
+}
+
+// resourceNewRelicFleetDeploymentCustomizeDiff runs two plan-time validations:
+//  1. No two agent blocks may declare the same agent_type.
+//  2. If the deployment already exists and its phase is not CREATED, any
+//     attempt to change mutable fields is rejected early with a clear error
+//     rather than surfacing an opaque API error at apply time.
+func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	// Validate duplicate agent types.
+	if agentsRaw, ok := d.GetOk("agent"); ok {
+		agents := agentsRaw.([]interface{})
+		seen := make(map[string]int, len(agents))
+		for i, raw := range agents {
+			m := raw.(map[string]interface{})
+			agentType := m["agent_type"].(string)
+			if prev, exists := seen[agentType]; exists {
+				return fmt.Errorf(
+					"duplicate agent_type %q: agent blocks at index %d and %d both declare the same type — each agent type may appear at most once per deployment",
+					agentType, prev, i,
+				)
+			}
+			seen[agentType] = i
+		}
+	}
+
+	// Phase-gate: block updates once the deployment has left the CREATED phase.
+	// d.Id() is non-empty only when the resource already exists in state.
+	if d.Id() != "" && d.HasChanges("name", "description", "agent", "tags") {
+		phase := d.Get("phase").(string)
+		if phase != "" && phase != "CREATED" {
+			return fmt.Errorf(
+				"cannot update fleet deployment: the deployment is in phase %q and can only be updated while in phase CREATED. "+
+					"To make changes, destroy this deployment and create a new one.",
+				phase,
+			)
+		}
+	}
+
+	return nil
 }
 
 func resourceNewRelicFleetDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -169,20 +209,37 @@ func resourceNewRelicFleetDeploymentRead(ctx context.Context, d *schema.Resource
 
 	_ = d.Set("deployment_id", entity.ID)
 	_ = d.Set("fleet_id", entity.FleetId)
-	_ = d.Set("name", entity.Name)
-	_ = d.Set("description", entity.Description)
 	_ = d.Set("phase", string(entity.Phase))
+
+	// name and description are in the query but the API may return empty strings
+	// for deployments that have them set; only overwrite state when the API
+	// actually returns a value to prevent wiping user-configured values.
+	if entity.Name != "" {
+		_ = d.Set("name", entity.Name)
+	}
+	if entity.Description != "" {
+		_ = d.Set("description", entity.Description)
+	}
 
 	if entity.Scope.ID != "" {
 		_ = d.Set("organization_id", entity.Scope.ID)
 	}
 
-	if err := d.Set("agent", flattenFleetDeploymentAgents(entity.Agents)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting agent: %w", err))
+	// agents is absent from the GetEntity query fragment for
+	// EntityManagementFleetDeploymentEntity — entity.Agents is always nil.
+	if len(entity.Agents) > 0 {
+		if err := d.Set("agent", flattenFleetDeploymentAgents(entity.Agents)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting agent: %w", err))
+		}
 	}
 
-	if err := d.Set("tags", flattenFleetTags(entity.Tags)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting tags: %w", err))
+	// The deployment API accepts tags in the mutation but does not persist or
+	// return them via GetEntity; skip the set when the API returns nothing to
+	// avoid wiping user-configured tags from state on every refresh.
+	if len(entity.Tags) > 0 {
+		if err := d.Set("tags", flattenFleetTags(entity.Tags)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting tags: %w", err))
+		}
 	}
 
 	return nil
@@ -195,24 +252,31 @@ func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.Resour
 		return nil
 	}
 
-	agents, err := expandFleetDeploymentAgents(d.Get("agent").([]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
+	input := fleetcontrol.FleetControlFleetDeploymentUpdateInput{}
+
+	// Always send name and description together to keep the object consistent on
+	// the API side — the top-level HasChanges guard already ensures we only
+	// reach here when something actually changed.
+	input.Name = d.Get("name").(string)
+	input.Description = d.Get("description").(string)
+
+	if d.HasChange("agent") {
+		agents, err := expandFleetDeploymentAgents(d.Get("agent").([]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		input.Agents = agents
 	}
 
-	tags, err := parseFleetTags(d.Get("tags").([]interface{}))
-	if err != nil {
-		return diag.FromErr(err)
+	if d.HasChange("tags") {
+		tags, err := parseFleetTags(d.Get("tags").([]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		input.Tags = tags
 	}
 
-	input := fleetcontrol.FleetControlFleetDeploymentUpdateInput{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Agents:      agents,
-		Tags:        tags,
-	}
-
-	_, err = providerConfig.NewClient.FleetControl.FleetControlUpdateFleetDeploymentWithContext(ctx, input, d.Id())
+	_, err := providerConfig.NewClient.FleetControl.FleetControlUpdateFleetDeploymentWithContext(ctx, input, d.Id())
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating fleet deployment %s: %w", d.Id(), err))
 	}
@@ -233,6 +297,8 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 }
 
 // expandFleetDeploymentAgents converts the agent list from schema into API input structs.
+// configuration_version_id is a single string in the schema but sent to the
+// API as a one-element list.
 func expandFleetDeploymentAgents(raw []interface{}) ([]fleetcontrol.FleetControlAgentInput, error) {
 	agents := make([]fleetcontrol.FleetControlAgentInput, 0, len(raw))
 	for _, item := range raw {
@@ -243,12 +309,9 @@ func expandFleetDeploymentAgents(raw []interface{}) ([]fleetcontrol.FleetControl
 			Version:   m["version"].(string),
 		}
 
-		if v, ok := m["configuration_version_ids"]; ok {
-			for _, id := range v.(*schema.Set).List() {
-				agent.ConfigurationVersionList = append(
-					agent.ConfigurationVersionList,
-					fleetcontrol.FleetControlConfigurationVersionListInput{ID: id.(string)},
-				)
+		if v, ok := m["configuration_version_id"].(string); ok && v != "" {
+			agent.ConfigurationVersionList = []fleetcontrol.FleetControlConfigurationVersionListInput{
+				{ID: v},
 			}
 		}
 
@@ -258,20 +321,20 @@ func expandFleetDeploymentAgents(raw []interface{}) ([]fleetcontrol.FleetControl
 }
 
 // flattenFleetDeploymentAgents converts API agent structs back into schema-compatible maps.
+// Only the first configuration version is surfaced (matching the single-version schema).
 func flattenFleetDeploymentAgents(agents []fleetcontrol.EntityManagementAgentToDeploy) []interface{} {
 	result := make([]interface{}, 0, len(agents))
 	for _, a := range agents {
-		ids := make([]interface{}, 0, len(a.ConfigurationVersionList))
-		for _, cv := range a.ConfigurationVersionList {
-			ids = append(ids, cv.ID)
+		configVersionID := ""
+		if len(a.ConfigurationVersionList) > 0 {
+			configVersionID = a.ConfigurationVersionList[0].ID
 		}
 
-		m := map[string]interface{}{
-			"agent_type":                a.AgentType,
-			"version":                   a.Version,
-			"configuration_version_ids": schema.NewSet(schema.HashSchema(&schema.Schema{Type: schema.TypeString}), ids),
-		}
-		result = append(result, m)
+		result = append(result, map[string]interface{}{
+			"agent_type":               a.AgentType,
+			"version":                  a.Version,
+			"configuration_version_id": configVersionID,
+		})
 	}
 	return result
 }

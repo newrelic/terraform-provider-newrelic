@@ -10,9 +10,9 @@ description: |-
 
 Use this resource to create and manage New Relic fleet deployments.
 
-A fleet deployment defines the agent versions and optional configuration versions that are associated with a fleet. Each deployment belongs to a fleet and contains one or more `agent` blocks that describe which agent type and version to deploy, and which configuration versions (from `newrelic_fleet_configuration`) to apply.
+A fleet deployment defines the agent versions and optional configuration versions to roll out to a fleet. Each deployment belongs to a fleet and contains one or more `agent` blocks describing which agent type and version to deploy, and optionally which configuration version (from `newrelic_fleet_configuration`) to apply.
 
-~> **Note:** This resource manages the deployment definition - it does not trigger the rollout to fleet members. Use the New Relic UI or CLI to trigger deployments once the definition is in place.
+~> **Note:** Deployments can only be updated while in the `CREATED` phase. Once the fleet backend begins executing the deployment (phase advances to `IN_PROGRESS`, `FAILED`, or `COMPLETED`), any attempt to change `name`, `description`, `agent`, or `tags` will be blocked at plan time with an error. To make changes after a deployment has started, destroy the resource and create a new deployment.
 
 ## Example Usage
 
@@ -31,20 +31,31 @@ resource "newrelic_fleet_deployment" "infra" {
 }
 ```
 
-### Deployment with Configuration Versions
+### Deployment Linked to a Configuration Version
 
 ```hcl
+resource "newrelic_fleet_configuration" "infra_cfg" {
+  name                = "Production Infra Config"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = <<-EOT
+      log:
+        level: info
+    EOT
+  }
+}
+
 resource "newrelic_fleet_deployment" "infra" {
   fleet_id    = newrelic_fleet.prod.id
   name        = "Production Infra Deployment"
+  description = "Deploys NRInfra v1.58.0 with the production config"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
-
-    configuration_version_ids = [
-      newrelic_fleet_configuration.infra.latest_version_entity_id,
-    ]
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.infra_cfg.latest_version_entity_id
   }
 }
 ```
@@ -53,16 +64,13 @@ resource "newrelic_fleet_deployment" "infra" {
 
 ```hcl
 resource "newrelic_fleet_deployment" "full_stack" {
-  fleet_id    = newrelic_fleet.prod.id
-  name        = "Full Stack Deployment"
+  fleet_id = newrelic_fleet.prod.id
+  name     = "Full Stack Deployment"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
-
-    configuration_version_ids = [
-      newrelic_fleet_configuration.infra.latest_version_entity_id,
-    ]
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.infra_cfg.latest_version_entity_id
   }
 
   agent {
@@ -95,7 +103,7 @@ The following arguments are supported:
 * `fleet_id` - (Required, ForceNew) The entity GUID of the fleet this deployment belongs to. **Cannot be changed after creation.**
 * `name` - (Optional) The name of the deployment.
 * `description` - (Optional) A description of the deployment.
-* `agent` - (Required) One or more agent blocks. At least one is required. See [Nested `agent` blocks](#nested-agent-blocks) below.
+* `agent` - (Required) One or more agent blocks. At least one is required. Each `agent_type` may appear at most once per deployment. See [Nested `agent` blocks](#nested-agent-blocks) below.
 * `tags` - (Optional) A list of tags in `key:value1,value2` format.
 * `organization_id` - (Optional, ForceNew) The organization ID. Auto-fetched from the account when not provided. **Cannot be changed after creation.**
 
@@ -105,7 +113,7 @@ Each `agent` block supports:
 
 * `agent_type` - (Required) The agent type. Valid values: `NRInfra`, `NRDOT`, `FluentBit`, `NRPrometheusAgent`.
 * `version` - (Required) The agent version string to deploy (e.g. `"1.58.0"`).
-* `configuration_version_ids` - (Optional) A set of configuration version entity GUIDs (from `newrelic_fleet_configuration` version blocks) to associate with this agent.
+* `configuration_version_id` - (Optional) A configuration version entity GUID (from `newrelic_fleet_configuration`) to associate with this agent in the deployment.
 
 ## Attributes Reference
 
@@ -113,12 +121,12 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The entity GUID of the deployment (same as `deployment_id`).
 * `deployment_id` - The entity GUID of the deployment.
-* `phase` - The current phase of the deployment (e.g. `DRAFT`, `READY`).
+* `phase` - The current phase of the deployment. Possible values: `CREATED`, `IN_PROGRESS`, `FAILED`, `COMPLETED`.
 
 ## Import
 
 Fleet deployments can be imported using the deployment entity GUID:
 
-```bash
-$ terraform import newrelic_fleet_deployment.infra <deployment_guid>
+```shell
+terraform import newrelic_fleet_deployment.infra <deployment_guid>
 ```
