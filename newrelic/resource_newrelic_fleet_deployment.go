@@ -41,7 +41,7 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 			},
 			"agent": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "One or more agent blocks on create. May be empty on update to uninstall all agents. Each agent type may appear at most once per deployment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
