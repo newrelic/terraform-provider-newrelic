@@ -356,8 +356,9 @@ func expandFleetDeploymentAgents(raw []interface{}) ([]fleetcontrol.FleetControl
 		m := item.(map[string]interface{})
 
 		agent := fleetcontrol.FleetControlAgentInput{
-			AgentType: m["agent_type"].(string),
-			Version:   m["version"].(string),
+			AgentType:                m["agent_type"].(string),
+			Version:                  m["version"].(string),
+			ConfigurationVersionList: []fleetcontrol.FleetControlConfigurationVersionListInput{},
 		}
 
 		if v, ok := m["configuration_version_id"].(string); ok && v != "" {
