@@ -190,17 +190,3 @@ Fleet configurations can be imported using the configuration entity GUID:
 ```shell
 terraform import newrelic_fleet_configuration.infra <configuration_guid>
 ```
-
-Because `agent_type`, `managed_entity_type`, `operating_system`, and `name` are not returned by the configuration read API, a plain GUID import leaves those fields empty. Use the compound import ID to reconstruct them in a single step:
-
-```shell
-terraform import newrelic_fleet_configuration.infra \
-  <configGUID>:<orgID>:<agentType>:<managedEntityType>:<operatingSystem>:<name>
-```
-
-For `KUBERNETESCLUSTER` configurations (where `operating_system` is not set), leave that segment empty:
-
-```shell
-terraform import newrelic_fleet_configuration.infra \
-  <configGUID>:<orgID>:NRInfra:KUBERNETESCLUSTER::<name>
-```

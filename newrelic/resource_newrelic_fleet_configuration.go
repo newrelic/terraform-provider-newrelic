@@ -278,37 +278,37 @@ func resourceNewRelicFleetConfigurationCustomizeDiff(_ context.Context, d *schem
 	return nil
 }
 
-// resourceNewRelicFleetConfigurationImportState handles:
-//
-//   - Plain ID: terraform import newrelic_fleet_configuration.x <configGUID>
-//     name, agent_type, managed_entity_type remain empty and must be filled in
-//     manually after import.
-//
-//   - 6-part compound ID: <configGUID>:<orgID>:<agentType>:<managedEntityType>:<operatingSystem>:<name>
-//     All fields are reconstructed. operating_system may be empty for KUBERNETESCLUSTER
-//     (e.g. "...:<managedEntityType>::<name>"). The name may contain colons.
-//
-//   - Legacy 5-part compound ID: <configGUID>:<orgID>:<agentType>:<managedEntityType>:<name>
-//     Accepted for backward compatibility; operating_system is left unset.
-func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
-	parts := strings.SplitN(d.Id(), ":", 6)
-	switch len(parts) {
-	case 6:
-		d.SetId(parts[0])
-		_ = d.Set("organization_id", parts[1])
-		_ = d.Set("agent_type", parts[2])
-		_ = d.Set("managed_entity_type", parts[3])
-		if parts[4] != "" {
-			_ = d.Set("operating_system", parts[4])
-		}
-		_ = d.Set("name", parts[5])
-	case 5:
-		d.SetId(parts[0])
-		_ = d.Set("organization_id", parts[1])
-		_ = d.Set("agent_type", parts[2])
-		_ = d.Set("managed_entity_type", parts[3])
-		_ = d.Set("name", parts[4])
+// resourceNewRelicFleetConfigurationImportState resolves entity metadata (name,
+// agent_type, managed_entity_type, operating_system, organization_id) via a
+// GetEntity call so that a plain configuration GUID is all the user needs to
+// supply. Terraform automatically calls Read after this function returns, which
+// handles all version fetching.
+func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	providerConfig := meta.(*ProviderConfig)
+
+	entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, d.Id())
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch fleet configuration entity %s: %w", d.Id(), err)
 	}
+	if entityInterface == nil {
+		return nil, fmt.Errorf("fleet configuration entity %s not found", d.Id())
+	}
+
+	entity, ok := (*entityInterface).(*fleetcontrol.EntityManagementAgentConfigurationEntity)
+	if !ok {
+		return nil, fmt.Errorf("entity %s is not a fleet configuration", d.Id())
+	}
+
+	_ = d.Set("name", entity.Name)
+	_ = d.Set("agent_type", entity.AgentType)
+	_ = d.Set("managed_entity_type", string(entity.ManagedEntityType))
+	if entity.OperatingSystem.Type != "" {
+		_ = d.Set("operating_system", string(entity.OperatingSystem.Type))
+	}
+	if entity.Scope.ID != "" {
+		_ = d.Set("organization_id", entity.Scope.ID)
+	}
+
 	return []*schema.ResourceData{d}, nil
 }
 
