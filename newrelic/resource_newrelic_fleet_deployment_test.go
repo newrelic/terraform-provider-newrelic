@@ -4,7 +4,6 @@ package newrelic
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"testing"
 
@@ -20,18 +19,6 @@ import (
 // a test teardown.
 const testAccFleetDeploymentFleetID = "NjQyNTg2NXxOR0VQfEZMRUVUfDAxOWRmMTkyLTAxNjktNzJiZi1hNDA2LWVhNDkxNTZmZjUzNg"
 
-// testAccPreCheckFleetDeploymentEnvVars extends testAccPreCheckFleetEnvVars
-// with an additional gate on NEW_RELIC_FLEET_TEST_FLEET_ID. That env var is
-// set only in the CI run that has access to the shared fleet (account 6425865).
-// Tests that make real API calls against the fleet must use this pre-check so
-// they skip in CI runs that use a different account.
-func testAccPreCheckFleetDeploymentEnvVars(t *testing.T) {
-	testAccPreCheckFleetEnvVars(t)
-	if os.Getenv("NEW_RELIC_FLEET_TEST_FLEET_ID") == "" {
-		t.Skip("NEW_RELIC_FLEET_TEST_FLEET_ID must be set for fleet deployment acceptance tests")
-	}
-}
-
 // TestAccNewRelicFleetDeployment_Basic covers create → read → import → destroy
 // for a minimal deployment with no linked configuration.
 func TestAccNewRelicFleetDeployment_Basic(t *testing.T) {
@@ -41,7 +28,7 @@ func TestAccNewRelicFleetDeployment_Basic(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
@@ -78,7 +65,7 @@ func TestAccNewRelicFleetDeployment_WithConfiguration(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
@@ -103,7 +90,7 @@ func TestAccNewRelicFleetDeployment_NoDriftAfterCreate(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
@@ -128,7 +115,7 @@ func TestAccNewRelicFleetDeployment_MultipleAgents(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
@@ -154,7 +141,7 @@ func TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
@@ -226,7 +213,7 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
@@ -255,7 +242,7 @@ func TestAccNewRelicFleetDeployment_PhaseGate(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetDeploymentEnvVars(t) },
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
