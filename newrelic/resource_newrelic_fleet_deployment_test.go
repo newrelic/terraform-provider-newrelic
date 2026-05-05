@@ -142,6 +142,61 @@ func TestAccNewRelicFleetDeployment_MultipleAgents(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate verifies that:
+//   - Creating a deployment with zero agent blocks is rejected at plan time.
+//   - Updating an existing CREATED deployment to zero agents is allowed.
+func TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-deploy-zero-%s", acctest.RandString(5))
+	fleetID := testAccFleetDeploymentFleetID(t)
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create with one agent block — must succeed.
+			{
+				Config: testAccFleetDeploymentBasic(rName, fleetID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetDeploymentExists("newrelic_fleet_deployment.basic"),
+					resource.TestCheckResourceAttr("newrelic_fleet_deployment.basic", "agent.#", "1"),
+				),
+			},
+			// Step 2: update to zero agents — must be accepted at plan time and
+			// result in an empty agent list in state.
+			{
+				Config: testAccFleetDeploymentZeroAgents(rName, fleetID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetDeploymentExists("newrelic_fleet_deployment.basic"),
+					resource.TestCheckResourceAttr("newrelic_fleet_deployment.basic", "agent.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicFleetDeployment_ZeroAgentsOnCreate verifies that creating a
+// deployment without any agent block is rejected at plan time.
+func TestAccNewRelicFleetDeployment_ZeroAgentsOnCreate(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-deploy-nocreate-%s", acctest.RandString(5))
+	fleetID := testAccFleetDeploymentFleetID(t)
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckFleetEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccFleetDeploymentZeroAgents(rName, fleetID),
+				ExpectError: regexp.MustCompile(`at least one agent block is required`),
+			},
+		},
+	})
+}
+
 // TestAccNewRelicFleetDeployment_DuplicateAgentType verifies that declaring two
 // agent blocks with the same agent_type is rejected at plan time.
 func TestAccNewRelicFleetDeployment_DuplicateAgentType(t *testing.T) {
@@ -398,4 +453,14 @@ resource "newrelic_fleet_deployment" "gate" {
   }
 }
 `, fleetID, name+"-changed")
+}
+
+func testAccFleetDeploymentZeroAgents(name, fleetID string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet_deployment" "basic" {
+  fleet_id    = %q
+  name        = %q
+  description = "Zero-agent deployment"
+}
+`, fleetID, name)
 }

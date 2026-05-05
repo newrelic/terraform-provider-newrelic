@@ -8,108 +8,75 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/fleetcontrol"
 )
 
-// Fleet resource expand/flatten functions
-
-// flattenEntityManagementTags converts EntityManagementTag array to Terraform-friendly format
+// flattenEntityManagementTags converts EntityManagementTag slice to "key:v1,v2" strings.
 func flattenEntityManagementTags(tags []fleetcontrol.EntityManagementTag) []string {
-	// Always return a slice (even if empty) for proper drift detection
 	result := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag.Values) > 0 {
-			tagStr := fmt.Sprintf("%s:%s", tag.Key, strings.Join(tag.Values, ","))
-			result = append(result, tagStr)
+			result = append(result, fmt.Sprintf("%s:%s", tag.Key, strings.Join(tag.Values, ",")))
 		}
 	}
 	return result
 }
 
-// flattenFleetControlTags converts FleetControlTag array to Terraform-friendly format
+// flattenFleetControlTags converts FleetControlTag slice to "key:v1,v2" strings.
 func flattenFleetControlTags(tags []fleetcontrol.FleetControlTag) []string {
-	// Always return a slice (even if empty) for proper drift detection
 	result := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag.Values) > 0 {
-			tagStr := fmt.Sprintf("%s:%s", tag.Key, strings.Join(tag.Values, ","))
-			result = append(result, tagStr)
+			result = append(result, fmt.Sprintf("%s:%s", tag.Key, strings.Join(tag.Values, ",")))
 		}
 	}
 	return result
 }
 
-// flattenFleetEntity flattens a fleet entity from EntityManagement into Terraform state
-func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *schema.ResourceData, organizationID string) error {
-	if err := d.Set("name", fleet.Name); err != nil {
+// applyFleetEntityToState writes the fleet entity fields shared by all fleet
+// resource CRUD responses into Terraform state. operatingSystem is only set
+// when non-empty and the managed entity type is HOST.
+func applyFleetEntityToState(d *schema.ResourceData, name, managedEntityType, operatingSystem, description string, tags []string, organizationID string) error {
+	if err := d.Set("name", name); err != nil {
 		return err
 	}
-
-	if err := d.Set("managed_entity_type", string(fleet.ManagedEntityType)); err != nil {
+	if err := d.Set("managed_entity_type", managedEntityType); err != nil {
 		return err
 	}
-
-	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
-	// Use string comparison to be defensive against type issues
-	if strings.ToUpper(string(fleet.ManagedEntityType)) == "HOST" {
-		osType := string(fleet.OperatingSystem.Type)
-		// Only set if we have a non-empty value
-		// This prevents clearing a value that was set in config but not returned by API
-		if osType != "" {
-			if err := d.Set("operating_system", osType); err != nil {
-				return err
-			}
+	if strings.ToUpper(managedEntityType) == "HOST" && operatingSystem != "" {
+		if err := d.Set("operating_system", operatingSystem); err != nil {
+			return err
 		}
 	}
-
-	if err := d.Set("description", fleet.Description); err != nil {
+	if err := d.Set("description", description); err != nil {
 		return err
 	}
-
-	// Always set tags (even if empty) to detect drift when tags are removed externally
-	if err := d.Set("tags", flattenEntityManagementTags(fleet.Tags)); err != nil {
+	if err := d.Set("tags", tags); err != nil {
 		return err
 	}
-
 	if err := d.Set("organization_id", organizationID); err != nil {
 		return err
 	}
-
 	return nil
 }
 
-// flattenFleetControlEntity flattens a FleetControlFleetEntityResult into Terraform state
+// flattenFleetEntity writes an EntityManagementFleetEntity (Read response) into state.
+func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *schema.ResourceData, organizationID string) error {
+	return applyFleetEntityToState(d,
+		fleet.Name,
+		string(fleet.ManagedEntityType),
+		string(fleet.OperatingSystem.Type),
+		fleet.Description,
+		flattenEntityManagementTags(fleet.Tags),
+		organizationID,
+	)
+}
+
+// flattenFleetControlEntity writes a FleetControlFleetEntityResult (Create/Update response) into state.
 func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult, d *schema.ResourceData, organizationID string) error {
-	if err := d.Set("name", fleet.Name); err != nil {
-		return err
-	}
-
-	if err := d.Set("managed_entity_type", string(fleet.ManagedEntityType)); err != nil {
-		return err
-	}
-
-	// Only set operating_system for HOST fleets (not for KUBERNETESCLUSTER)
-	// Use string comparison to be defensive against type issues
-	if strings.ToUpper(string(fleet.ManagedEntityType)) == "HOST" {
-		osType := string(fleet.OperatingSystem.Type)
-		// Only set if we have a non-empty value
-		// This prevents clearing a value that was set in config but not returned by API
-		if osType != "" {
-			if err := d.Set("operating_system", osType); err != nil {
-				return err
-			}
-		}
-	}
-
-	if err := d.Set("description", fleet.Description); err != nil {
-		return err
-	}
-
-	// Always set tags (even if empty) to detect drift when tags are removed externally
-	if err := d.Set("tags", flattenFleetControlTags(fleet.Tags)); err != nil {
-		return err
-	}
-
-	if err := d.Set("organization_id", organizationID); err != nil {
-		return err
-	}
-
-	return nil
+	return applyFleetEntityToState(d,
+		fleet.Name,
+		string(fleet.ManagedEntityType),
+		string(fleet.OperatingSystem.Type),
+		fleet.Description,
+		flattenFleetControlTags(fleet.Tags),
+		organizationID,
+	)
 }

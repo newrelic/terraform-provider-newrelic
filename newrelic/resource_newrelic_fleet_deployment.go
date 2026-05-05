@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,8 +42,7 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 			"agent": {
 				Type:        schema.TypeList,
 				Required:    true,
-				MinItems:    1,
-				Description: "One or more agent blocks. Each agent type may appear at most once per deployment.",
+				Description: "One or more agent blocks on create. May be empty on update to uninstall all agents. Each agent type may appear at most once per deployment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"agent_type": {
@@ -108,20 +106,25 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 //     attempt to change mutable fields is rejected with a clear error so the
 //     user is informed before apply rather than receiving an opaque API error.
 func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if agentsRaw, ok := d.GetOk("agent"); ok {
-		agents := agentsRaw.([]interface{})
-		seen := make(map[string]int, len(agents))
-		for i, raw := range agents {
-			m := raw.(map[string]interface{})
-			agentType := m["agent_type"].(string)
-			if prev, exists := seen[agentType]; exists {
-				return fmt.Errorf(
-					"duplicate agent_type %q: agent blocks at index %d and %d both declare the same type — each agent type may appear at most once per deployment",
-					agentType, prev, i,
-				)
-			}
-			seen[agentType] = i
+	agentsRaw := d.Get("agent").([]interface{})
+
+	// Require at least one agent block on create.
+	if d.Id() == "" && len(agentsRaw) == 0 {
+		return fmt.Errorf("at least one agent block is required when creating a fleet deployment")
+	}
+
+	// Reject duplicate agent_type within a single deployment.
+	seen := make(map[string]int, len(agentsRaw))
+	for i, raw := range agentsRaw {
+		m := raw.(map[string]interface{})
+		agentType := m["agent_type"].(string)
+		if prev, exists := seen[agentType]; exists {
+			return fmt.Errorf(
+				"duplicate agent_type %q: agent blocks at index %d and %d both declare the same type — each agent type may appear at most once per deployment",
+				agentType, prev, i,
+			)
 		}
+		seen[agentType] = i
 	}
 
 	// Phase-gate: block updates once the deployment has left CREATED.
@@ -207,22 +210,33 @@ func resourceNewRelicFleetDeploymentRead(ctx context.Context, d *schema.Resource
 		return diag.Errorf("entity '%s' is not a fleet deployment", d.Id())
 	}
 
-	_ = d.Set("deployment_id", entity.ID)
-	_ = d.Set("fleet_id", entity.FleetId)
-	_ = d.Set("phase", string(entity.Phase))
+	if err := d.Set("deployment_id", entity.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("fleet_id", entity.FleetId); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("phase", string(entity.Phase)); err != nil {
+		return diag.FromErr(err)
+	}
 
-	// name and description are in the query but the API may return empty strings
-	// for deployments that have them set; only overwrite state when the API
-	// actually returns a value to prevent wiping user-configured values.
+	// name and description: only overwrite state when the API returns a value —
+	// the API may return empty strings for deployments that have them set.
 	if entity.Name != "" {
-		_ = d.Set("name", entity.Name)
+		if err := d.Set("name", entity.Name); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if entity.Description != "" {
-		_ = d.Set("description", entity.Description)
+		if err := d.Set("description", entity.Description); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if entity.Scope.ID != "" {
-		_ = d.Set("organization_id", entity.Scope.ID)
+		if err := d.Set("organization_id", entity.Scope.ID); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// agents is absent from the GetEntity query fragment for
@@ -237,7 +251,7 @@ func resourceNewRelicFleetDeploymentRead(ctx context.Context, d *schema.Resource
 	// return them via GetEntity; skip the set when the API returns nothing to
 	// avoid wiping user-configured tags from state on every refresh.
 	if len(entity.Tags) > 0 {
-		if err := d.Set("tags", flattenFleetTags(entity.Tags)); err != nil {
+		if err := d.Set("tags", flattenEntityManagementTags(entity.Tags)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting tags: %w", err))
 		}
 	}
@@ -372,15 +386,6 @@ func flattenFleetDeploymentAgents(agents []fleetcontrol.EntityManagementAgentToD
 			"version":                  a.Version,
 			"configuration_version_id": configVersionID,
 		})
-	}
-	return result
-}
-
-// flattenFleetTags converts API tag structs back into "key:value1,value2" strings.
-func flattenFleetTags(tags []fleetcontrol.EntityManagementTag) []string {
-	result := make([]string, 0, len(tags))
-	for _, t := range tags {
-		result = append(result, fmt.Sprintf("%s:%s", t.Key, strings.Join(t.Values, ",")))
 	}
 	return result
 }

@@ -112,6 +112,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the configuration.
 * `agent_type` - (Required, ForceNew) The type of agent this configuration is for. Valid values: `NRInfra`, `NRDOT`, `FluentBit`, `NRPrometheusAgent`. **Cannot be changed after creation.**
 * `managed_entity_type` - (Required, ForceNew) The type of entities this configuration manages. Valid values: `HOST`, `KUBERNETESCLUSTER`. **Cannot be changed after creation.**
+* `operating_system` - (Optional, ForceNew) The operating system this configuration targets. Valid values: `LINUX`, `WINDOWS`. Applicable to `HOST` configurations only — must not be set when `managed_entity_type` is `KUBERNETESCLUSTER`. **Cannot be changed after creation.**
 * `version` - (Required) One or more version blocks. At least one is required. See [Nested `version` blocks](#nested-version-blocks) below.
 * `organization_id` - (Optional, ForceNew) The organization ID. Auto-fetched from the account when not provided. **Cannot be changed after creation.**
 
@@ -186,6 +187,20 @@ The warning indicates that Terraform will recreate the missing version on the ne
 
 Fleet configurations can be imported using the configuration entity GUID:
 
-```bash
-$ terraform import newrelic_fleet_configuration.infra <configuration_guid>
+```shell
+terraform import newrelic_fleet_configuration.infra <configuration_guid>
+```
+
+Because `agent_type`, `managed_entity_type`, `operating_system`, and `name` are not returned by the configuration read API, a plain GUID import leaves those fields empty. Use the compound import ID to reconstruct them in a single step:
+
+```shell
+terraform import newrelic_fleet_configuration.infra \
+  <configGUID>:<orgID>:<agentType>:<managedEntityType>:<operatingSystem>:<name>
+```
+
+For `KUBERNETESCLUSTER` configurations (where `operating_system` is not set), leave that segment empty:
+
+```shell
+terraform import newrelic_fleet_configuration.infra \
+  <configGUID>:<orgID>:NRInfra:KUBERNETESCLUSTER::<name>
 ```
