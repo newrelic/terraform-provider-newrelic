@@ -155,9 +155,11 @@ func TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate(t *testing.T) {
 				),
 			},
 			// Step 2: update to zero agents — must be accepted at plan time and
-			// result in an empty agent list in state.
+			// result in an empty agent list in state. We keep the fleet
+			// configuration resource in the config so Terraform does not attempt
+			// to delete the configuration version (the API rejects that).
 			{
-				Config: testAccFleetDeploymentZeroAgents(rName, testAccFleetDeploymentFleetID),
+				Config: testAccFleetDeploymentZeroAgentsKeepCfg(rName, testAccFleetDeploymentFleetID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFleetDeploymentExists("newrelic_fleet_deployment.basic"),
 					resource.TestCheckResourceAttr("newrelic_fleet_deployment.basic", "agent.#", "0"),
@@ -432,4 +434,28 @@ resource "newrelic_fleet_deployment" "basic" {
   description = "Zero-agent deployment"
 }
 `, fleetID, name)
+}
+
+// testAccFleetDeploymentZeroAgentsKeepCfg is used as step 2 in
+// ZeroAgentsOnUpdate. It retains the fleet configuration resource so Terraform
+// does not attempt to delete the configuration version between steps (the API
+// rejects that deletion).
+func testAccFleetDeploymentZeroAgentsKeepCfg(name, fleetID string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "basic_cfg" {
+  name                = "%s-cfg"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
+resource "newrelic_fleet_deployment" "basic" {
+  fleet_id    = %q
+  name        = %q
+  description = "Zero-agent deployment"
+}
+`, name, fleetID, name)
 }
