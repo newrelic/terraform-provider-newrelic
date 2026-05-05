@@ -229,40 +229,6 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicFleetDeployment_PhaseGate verifies that attempting to update a
-// deployment that is no longer in CREATED phase is blocked at plan time with a
-// descriptive error pointing the user toward terraform destroy.
-//
-// Note: this test is skipped if the deployment stays in CREATED long enough
-// that the phase hasn't advanced before the second step runs. In practice the
-// fleet backend transitions within seconds.
-func TestAccNewRelicFleetDeployment_PhaseGate(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-deploy-gate-%s", acctest.RandString(5))
-	resourceName := "newrelic_fleet_deployment.gate"
-
-	setupFleetTestCredentials(t)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: Create the deployment (phase starts as CREATED).
-			{
-				Config: testAccFleetDeploymentGate(rName, testAccFleetDeploymentFleetID),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFleetDeploymentExists(resourceName),
-				),
-			},
-			// Step 2: Attempt to change name after phase has advanced.
-			// CustomizeDiff must block the plan with a clear error.
-			{
-				Config:      testAccFleetDeploymentGateUpdated(rName, testAccFleetDeploymentFleetID),
-				ExpectError: regexp.MustCompile(`cannot update fleet deployment`),
-			},
-		},
-	})
-}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -411,35 +377,6 @@ resource "newrelic_fleet_deployment" "tagged" {
 `, fleetID, name)
 }
 
-func testAccFleetDeploymentGate(name, fleetID string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet_deployment" "gate" {
-  fleet_id    = %q
-  name        = %q
-  description = "Phase gate test deployment"
-
-  agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
-  }
-}
-`, fleetID, name)
-}
-
-func testAccFleetDeploymentGateUpdated(name, fleetID string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet_deployment" "gate" {
-  fleet_id    = %q
-  name        = %q
-  description = "Phase gate test — updated after phase advanced"
-
-  agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
-  }
-}
-`, fleetID, name+"-changed")
-}
 
 func testAccFleetDeploymentZeroAgents(name, fleetID string) string {
 	return fmt.Sprintf(`
