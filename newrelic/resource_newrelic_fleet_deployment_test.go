@@ -278,17 +278,28 @@ func testAccCheckNewRelicFleetDeploymentDestroy(s *terraform.State) error {
 
 func testAccFleetDeploymentBasic(name, fleetID string) string {
 	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "basic_cfg" {
+  name                = "%s-cfg"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
 resource "newrelic_fleet_deployment" "basic" {
   fleet_id    = %q
   name        = %q
   description = "Test deployment"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.basic_cfg.latest_version_entity_id
   }
 }
-`, fleetID, name)
+`, name, fleetID, name)
 }
 
 func testAccFleetDeploymentWithConfiguration(name, fleetID string) string {
@@ -323,22 +334,44 @@ resource "newrelic_fleet_deployment" "with_config" {
 
 func testAccFleetDeploymentMultipleAgents(name, fleetID string) string {
 	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "multi_cfg_infra" {
+  name                = "%s-cfg-infra"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
+resource "newrelic_fleet_configuration" "multi_cfg_fb" {
+  name                = "%s-cfg-fb"
+  agent_type          = "FluentBit"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
 resource "newrelic_fleet_deployment" "multi" {
   fleet_id    = %q
   name        = %q
   description = "Multi-agent deployment"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.multi_cfg_infra.latest_version_entity_id
   }
 
   agent {
-    agent_type = "FluentBit"
-    version    = "3.2.0"
+    agent_type               = "FluentBit"
+    version                  = "3.2.0"
+    configuration_version_id = newrelic_fleet_configuration.multi_cfg_fb.latest_version_entity_id
   }
 }
-`, fleetID, name)
+`, name, name, fleetID, name)
 }
 
 func testAccFleetDeploymentDuplicateAgentType(name, fleetID string) string {
@@ -349,13 +382,15 @@ resource "newrelic_fleet_deployment" "dup" {
   description = "Should fail due to duplicate agent type"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = "fake-cfg-version-id-1"
   }
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.59.0"
+    agent_type               = "NRInfra"
+    version                  = "1.59.0"
+    configuration_version_id = "fake-cfg-version-id-2"
   }
 }
 `, fleetID, name)
@@ -363,6 +398,16 @@ resource "newrelic_fleet_deployment" "dup" {
 
 func testAccFleetDeploymentWithTags(name, fleetID string) string {
 	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "tags_cfg" {
+  name                = "%s-cfg"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
 resource "newrelic_fleet_deployment" "tagged" {
   fleet_id    = %q
   name        = %q
@@ -370,11 +415,12 @@ resource "newrelic_fleet_deployment" "tagged" {
   tags        = ["environment:production", "team:platform"]
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.tags_cfg.latest_version_entity_id
   }
 }
-`, fleetID, name)
+`, name, fleetID, name)
 }
 
 
