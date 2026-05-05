@@ -53,6 +53,16 @@ func resourceNewRelicFleetConfiguration() *schema.Resource {
 				}, false),
 				Description: "The type of entities this configuration manages. Allowed values: HOST, KUBERNETESCLUSTER.",
 			},
+			"operating_system": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"LINUX",
+					"WINDOWS",
+				}, false),
+				Description: "The operating system this configuration targets. Required for HOST configurations. Allowed values: LINUX, WINDOWS. Must not be set for KUBERNETESCLUSTER configurations.",
+			},
 			// TypeList — preserves insertion order so CustomizeDiff sees all blocks (including
 			// duplicates) and positional removal is unambiguous (surviving blocks encode which
 			// one was removed). This also makes rollback sequences like v1(A)→v2(B)→v3(A) safe,
@@ -169,6 +179,13 @@ func resourceNewRelicFleetConfiguration() *schema.Resource {
 //  3. SetNewComputed — marks derived scalar fields as unknown whenever the version
 //     list changes so the plan accurately shows they will be re-evaluated.
 func resourceNewRelicFleetConfigurationCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	managedEntityType := d.Get("managed_entity_type").(string)
+	_, hasOS := d.GetOk("operating_system")
+
+	if managedEntityType == "KUBERNETESCLUSTER" && hasOS {
+		return fmt.Errorf("operating_system must not be set when managed_entity_type is KUBERNETESCLUSTER")
+	}
+
 	versionsRaw, ok := d.GetOk("version")
 	if !ok {
 		return nil
@@ -261,24 +278,53 @@ func resourceNewRelicFleetConfigurationCustomizeDiff(_ context.Context, d *schem
 	return nil
 }
 
-// resourceNewRelicFleetConfigurationImportState handles:
+// resourceNewRelicFleetConfigurationImportState handles import via a composite ID:
 //
-//   - Plain ID:  terraform import newrelic_fleet_configuration.x <configGUID>
-//     name, agent_type, managed_entity_type remain empty and must be filled in
-//     manually after import.
+//	<configuration_guid>:<managed_entity_type>
 //
-//   - Compound ID: <configGUID>:<orgID>:<agentType>:<managedEntityType>:<name>
-//     All required fields are reconstructed from the import ID so that
-//     ImportStateVerify passes without an additional API round-trip.
-func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
-	parts := strings.SplitN(d.Id(), ":", 5)
-	if len(parts) == 5 {
-		d.SetId(parts[0])
-		_ = d.Set("organization_id", parts[1])
-		_ = d.Set("agent_type", parts[2])
-		_ = d.Set("managed_entity_type", parts[3])
-		_ = d.Set("name", parts[4])
+// managed_entity_type must be included because the GetEntity GraphQL fragment
+// for AgentConfigurationEntity does not return managedEntityType — the field has
+// conflicting nullability across entity types in the union and the API rejects
+// any query that includes it. All other ForceNew fields (name, agent_type,
+// operating_system, organization_id) are available from GetEntity and are set
+// here so Terraform does not plan spurious replacements after import.
+func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), ":", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return nil, fmt.Errorf(
+			"invalid import ID %q: expected \"<configuration_guid>:<managed_entity_type>\" "+
+				"(e.g. \"NjQy...abc:HOST\" or \"NjQy...abc:KUBERNETESCLUSTER\")",
+			d.Id(),
+		)
 	}
+	guid, managedEntityType := parts[0], parts[1]
+
+	providerConfig := meta.(*ProviderConfig)
+
+	entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, guid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch fleet configuration entity %s: %w", guid, err)
+	}
+	if entityInterface == nil {
+		return nil, fmt.Errorf("fleet configuration entity %s not found", guid)
+	}
+
+	entity, ok := (*entityInterface).(*fleetcontrol.EntityManagementAgentConfigurationEntity)
+	if !ok {
+		return nil, fmt.Errorf("entity %s is not a fleet configuration", guid)
+	}
+
+	d.SetId(guid)
+	_ = d.Set("name", entity.Name)
+	_ = d.Set("agent_type", entity.AgentType)
+	_ = d.Set("managed_entity_type", managedEntityType)
+	if entity.OperatingSystem.Type != "" {
+		_ = d.Set("operating_system", string(entity.OperatingSystem.Type))
+	}
+	if entity.Scope.ID != "" {
+		_ = d.Set("organization_id", entity.Scope.ID)
+	}
+
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -296,16 +342,17 @@ func resourceNewRelicFleetConfigurationCreate(ctx context.Context, d *schema.Res
 	firstVersion := versions[0].(map[string]interface{})
 	configBody := []byte(firstVersion["configuration_content"].(string))
 
+	entityMeta := fleetConfigBuildEntityMeta(
+		d.Get("name").(string),
+		d.Get("agent_type").(string),
+		d.Get("managed_entity_type").(string),
+		d.Get("operating_system").(string),
+	)
 	result, err := providerConfig.NewClient.FleetControl.FleetControlCreateConfiguration(
 		configBody,
 		map[string]interface{}{
 			"x-newrelic-client-go-custom-headers": map[string]string{
-				"Newrelic-Entity": fmt.Sprintf(
-					`{"name": "%s", "agentType": "%s", "managedEntityType": "%s"}`,
-					d.Get("name").(string),
-					d.Get("agent_type").(string),
-					d.Get("managed_entity_type").(string),
-				),
+				"Newrelic-Entity": entityMeta,
 			},
 		},
 		organizationID,
@@ -688,4 +735,19 @@ func fleetConfigSetLatestVersionFields(d *schema.ResourceData, versions []map[st
 	}
 	_ = d.Set("latest_version_number", latestNum)
 	_ = d.Set("latest_version_entity_id", latestEntityID)
+}
+
+// fleetConfigBuildEntityMeta builds the JSON string for the Newrelic-Entity header.
+// When operatingSystem is non-empty, the operatingSystem object is included.
+func fleetConfigBuildEntityMeta(name, agentType, managedEntityType, operatingSystem string) string {
+	if operatingSystem != "" {
+		return fmt.Sprintf(
+			`{"name": "%s", "agentType": "%s", "managedEntityType": "%s", "operatingSystem": {"type": "%s"}}`,
+			name, agentType, managedEntityType, operatingSystem,
+		)
+	}
+	return fmt.Sprintf(
+		`{"name": "%s", "agentType": "%s", "managedEntityType": "%s"}`,
+		name, agentType, managedEntityType,
+	)
 }

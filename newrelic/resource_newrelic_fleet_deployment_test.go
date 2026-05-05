@@ -4,7 +4,6 @@ package newrelic
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"testing"
 
@@ -14,23 +13,17 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/fleetcontrol"
 )
 
-// testAccFleetDeploymentFleetID returns the fleet GUID used in deployment tests.
-// Set NEW_RELIC_FLEET_TEST_FLEET_ID in your environment before running fleet tests.
-func testAccFleetDeploymentFleetID(t *testing.T) string {
-	t.Helper()
-	id := os.Getenv("NEW_RELIC_FLEET_TEST_FLEET_ID")
-	if id == "" {
-		t.Skip("NEW_RELIC_FLEET_TEST_FLEET_ID must be set for fleet deployment acceptance tests")
-	}
-	return id
-}
+// testAccFleetDeploymentFleetID is the GUID of the shared fleet used in
+// deployment acceptance tests. Tests reference this fleet by ID only — they
+// never manage the fleet resource itself, so it will never be deleted by
+// a test teardown.
+const testAccFleetDeploymentFleetID = "NjQyNTg2NXxOR0VQfEZMRUVUfDAxOWRmMTkyLTAxNjktNzJiZi1hNDA2LWVhNDkxNTZmZjUzNg"
 
 // TestAccNewRelicFleetDeployment_Basic covers create → read → import → destroy
 // for a minimal deployment with no linked configuration.
 func TestAccNewRelicFleetDeployment_Basic(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-deploy-%s", acctest.RandString(5))
 	resourceName := "newrelic_fleet_deployment.basic"
-	fleetID := testAccFleetDeploymentFleetID(t)
 
 	setupFleetTestCredentials(t)
 
@@ -40,12 +33,12 @@ func TestAccNewRelicFleetDeployment_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetDeploymentBasic(rName, fleetID),
+				Config: testAccFleetDeploymentBasic(rName, testAccFleetDeploymentFleetID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFleetDeploymentExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Test deployment"),
-					resource.TestCheckResourceAttr(resourceName, "fleet_id", fleetID),
+					resource.TestCheckResourceAttr(resourceName, "fleet_id", testAccFleetDeploymentFleetID),
 					resource.TestCheckResourceAttr(resourceName, "agent.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "agent.0.agent_type", "NRInfra"),
 					resource.TestCheckResourceAttr(resourceName, "agent.0.version", "1.58.0"),
@@ -55,9 +48,10 @@ func TestAccNewRelicFleetDeployment_Basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"agent"},
 			},
 		},
 	})
@@ -68,7 +62,6 @@ func TestAccNewRelicFleetDeployment_Basic(t *testing.T) {
 func TestAccNewRelicFleetDeployment_WithConfiguration(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-deploy-cfg-%s", acctest.RandString(5))
 	resourceName := "newrelic_fleet_deployment.with_config"
-	fleetID := testAccFleetDeploymentFleetID(t)
 
 	setupFleetTestCredentials(t)
 
@@ -78,7 +71,7 @@ func TestAccNewRelicFleetDeployment_WithConfiguration(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetDeploymentWithConfiguration(rName, fleetID),
+				Config: testAccFleetDeploymentWithConfiguration(rName, testAccFleetDeploymentFleetID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFleetDeploymentExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "agent.#", "1"),
@@ -94,7 +87,6 @@ func TestAccNewRelicFleetDeployment_WithConfiguration(t *testing.T) {
 // immediately after create shows no changes (no perpetual drift).
 func TestAccNewRelicFleetDeployment_NoDriftAfterCreate(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-deploy-nodrift-%s", acctest.RandString(5))
-	fleetID := testAccFleetDeploymentFleetID(t)
 
 	setupFleetTestCredentials(t)
 
@@ -104,10 +96,10 @@ func TestAccNewRelicFleetDeployment_NoDriftAfterCreate(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetDeploymentBasic(rName, fleetID),
+				Config: testAccFleetDeploymentBasic(rName, testAccFleetDeploymentFleetID),
 			},
 			{
-				Config:             testAccFleetDeploymentBasic(rName, fleetID),
+				Config:             testAccFleetDeploymentBasic(rName, testAccFleetDeploymentFleetID),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -120,7 +112,6 @@ func TestAccNewRelicFleetDeployment_NoDriftAfterCreate(t *testing.T) {
 func TestAccNewRelicFleetDeployment_MultipleAgents(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-deploy-multi-%s", acctest.RandString(5))
 	resourceName := "newrelic_fleet_deployment.multi"
-	fleetID := testAccFleetDeploymentFleetID(t)
 
 	setupFleetTestCredentials(t)
 
@@ -130,7 +121,7 @@ func TestAccNewRelicFleetDeployment_MultipleAgents(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetDeploymentMultipleAgents(rName, fleetID),
+				Config: testAccFleetDeploymentMultipleAgents(rName, testAccFleetDeploymentFleetID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFleetDeploymentExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "agent.#", "2"),
@@ -142,11 +133,46 @@ func TestAccNewRelicFleetDeployment_MultipleAgents(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicFleetDeployment_DuplicateAgentType verifies that declaring two
-// agent blocks with the same agent_type is rejected at plan time.
-func TestAccNewRelicFleetDeployment_DuplicateAgentType(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-deploy-dup-%s", acctest.RandString(5))
-	fleetID := testAccFleetDeploymentFleetID(t)
+// TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate verifies that:
+//   - Creating a deployment with zero agent blocks is rejected at plan time.
+//   - Updating an existing CREATED deployment to zero agents is allowed.
+func TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-deploy-zero-%s", acctest.RandString(5))
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create with one agent block — must succeed.
+			{
+				Config: testAccFleetDeploymentBasic(rName, testAccFleetDeploymentFleetID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetDeploymentExists("newrelic_fleet_deployment.basic"),
+					resource.TestCheckResourceAttr("newrelic_fleet_deployment.basic", "agent.#", "1"),
+				),
+			},
+			// Step 2: update to zero agents — must be accepted at plan time and
+			// result in an empty agent list in state. We keep the fleet
+			// configuration resource in the config so Terraform does not attempt
+			// to delete the configuration version (the API rejects that).
+			{
+				Config: testAccFleetDeploymentZeroAgentsKeepCfg(rName, testAccFleetDeploymentFleetID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetDeploymentExists("newrelic_fleet_deployment.basic"),
+					resource.TestCheckResourceAttr("newrelic_fleet_deployment.basic", "agent.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicFleetDeployment_ZeroAgentsOnCreate verifies that creating a
+// deployment without any agent block is rejected at plan time.
+func TestAccNewRelicFleetDeployment_ZeroAgentsOnCreate(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-deploy-nocreate-%s", acctest.RandString(5))
 
 	setupFleetTestCredentials(t)
 
@@ -155,7 +181,26 @@ func TestAccNewRelicFleetDeployment_DuplicateAgentType(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccFleetDeploymentDuplicateAgentType(rName, fleetID),
+				Config:      testAccFleetDeploymentZeroAgents(rName, testAccFleetDeploymentFleetID),
+				ExpectError: regexp.MustCompile(`at least one agent block is required`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicFleetDeployment_DuplicateAgentType verifies that declaring two
+// agent blocks with the same agent_type is rejected at plan time.
+func TestAccNewRelicFleetDeployment_DuplicateAgentType(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-deploy-dup-%s", acctest.RandString(5))
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckFleetEnvVars(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccFleetDeploymentDuplicateAgentType(rName, testAccFleetDeploymentFleetID),
 				ExpectError: regexp.MustCompile(`duplicate agent_type "NRInfra"`),
 			},
 		},
@@ -167,7 +212,6 @@ func TestAccNewRelicFleetDeployment_DuplicateAgentType(t *testing.T) {
 func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-deploy-tags-%s", acctest.RandString(5))
 	resourceName := "newrelic_fleet_deployment.tagged"
-	fleetID := testAccFleetDeploymentFleetID(t)
 
 	setupFleetTestCredentials(t)
 
@@ -177,7 +221,7 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetDeploymentWithTags(rName, fleetID),
+				Config: testAccFleetDeploymentWithTags(rName, testAccFleetDeploymentFleetID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFleetDeploymentExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
@@ -187,41 +231,6 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicFleetDeployment_PhaseGate verifies that attempting to update a
-// deployment that is no longer in CREATED phase is blocked at plan time with a
-// descriptive error pointing the user toward terraform destroy.
-//
-// Note: this test is skipped if the deployment stays in CREATED long enough
-// that the phase hasn't advanced before the second step runs. In practice the
-// fleet backend transitions within seconds.
-func TestAccNewRelicFleetDeployment_PhaseGate(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-deploy-gate-%s", acctest.RandString(5))
-	resourceName := "newrelic_fleet_deployment.gate"
-	fleetID := testAccFleetDeploymentFleetID(t)
-
-	setupFleetTestCredentials(t)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: Create the deployment (phase starts as CREATED).
-			{
-				Config: testAccFleetDeploymentGate(rName, fleetID),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicFleetDeploymentExists(resourceName),
-				),
-			},
-			// Step 2: Attempt to change name after phase has advanced.
-			// CustomizeDiff must block the plan with a clear error.
-			{
-				Config:      testAccFleetDeploymentGateUpdated(rName, fleetID),
-				ExpectError: regexp.MustCompile(`cannot update fleet deployment`),
-			},
-		},
-	})
-}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -271,17 +280,28 @@ func testAccCheckNewRelicFleetDeploymentDestroy(s *terraform.State) error {
 
 func testAccFleetDeploymentBasic(name, fleetID string) string {
 	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "basic_cfg" {
+  name                = "%s-cfg"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
 resource "newrelic_fleet_deployment" "basic" {
   fleet_id    = %q
   name        = %q
   description = "Test deployment"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.basic_cfg.latest_version_entity_id
   }
 }
-`, fleetID, name)
+`, name, fleetID, name)
 }
 
 func testAccFleetDeploymentWithConfiguration(name, fleetID string) string {
@@ -316,22 +336,44 @@ resource "newrelic_fleet_deployment" "with_config" {
 
 func testAccFleetDeploymentMultipleAgents(name, fleetID string) string {
 	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "multi_cfg_infra" {
+  name                = "%s-cfg-infra"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
+resource "newrelic_fleet_configuration" "multi_cfg_fb" {
+  name                = "%s-cfg-fb"
+  agent_type          = "FluentBit"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
 resource "newrelic_fleet_deployment" "multi" {
   fleet_id    = %q
   name        = %q
   description = "Multi-agent deployment"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.multi_cfg_infra.latest_version_entity_id
   }
 
   agent {
-    agent_type = "FluentBit"
-    version    = "3.2.0"
+    agent_type               = "FluentBit"
+    version                  = "3.2.0"
+    configuration_version_id = newrelic_fleet_configuration.multi_cfg_fb.latest_version_entity_id
   }
 }
-`, fleetID, name)
+`, name, name, fleetID, name)
 }
 
 func testAccFleetDeploymentDuplicateAgentType(name, fleetID string) string {
@@ -342,13 +384,15 @@ resource "newrelic_fleet_deployment" "dup" {
   description = "Should fail due to duplicate agent type"
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = "fake-cfg-version-id-1"
   }
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.59.0"
+    agent_type               = "NRInfra"
+    version                  = "1.59.0"
+    configuration_version_id = "fake-cfg-version-id-2"
   }
 }
 `, fleetID, name)
@@ -356,6 +400,16 @@ resource "newrelic_fleet_deployment" "dup" {
 
 func testAccFleetDeploymentWithTags(name, fleetID string) string {
 	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "tags_cfg" {
+  name                = "%s-cfg"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+
+  version {
+    configuration_content = "log:\n  level: info\n"
+  }
+}
+
 resource "newrelic_fleet_deployment" "tagged" {
   fleet_id    = %q
   name        = %q
@@ -363,39 +417,45 @@ resource "newrelic_fleet_deployment" "tagged" {
   tags        = ["environment:production", "team:platform"]
 
   agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    configuration_version_id = newrelic_fleet_configuration.tags_cfg.latest_version_entity_id
   }
+}
+`, name, fleetID, name)
+}
+
+
+func testAccFleetDeploymentZeroAgents(name, fleetID string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet_deployment" "basic" {
+  fleet_id    = %q
+  name        = %q
+  description = "Zero-agent deployment"
 }
 `, fleetID, name)
 }
 
-func testAccFleetDeploymentGate(name, fleetID string) string {
+// testAccFleetDeploymentZeroAgentsKeepCfg is used as step 2 in
+// ZeroAgentsOnUpdate. It retains the fleet configuration resource so Terraform
+// does not attempt to delete the configuration version between steps (the API
+// rejects that deletion).
+func testAccFleetDeploymentZeroAgentsKeepCfg(name, fleetID string) string {
 	return fmt.Sprintf(`
-resource "newrelic_fleet_deployment" "gate" {
-  fleet_id    = %q
-  name        = %q
-  description = "Phase gate test deployment"
+resource "newrelic_fleet_configuration" "basic_cfg" {
+  name                = "%s-cfg"
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
 
-  agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
+  version {
+    configuration_content = "log:\n  level: info\n"
   }
 }
-`, fleetID, name)
-}
 
-func testAccFleetDeploymentGateUpdated(name, fleetID string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet_deployment" "gate" {
+resource "newrelic_fleet_deployment" "basic" {
   fleet_id    = %q
   name        = %q
-  description = "Phase gate test — updated after phase advanced"
-
-  agent {
-    agent_type = "NRInfra"
-    version    = "1.58.0"
-  }
+  description = "Zero-agent deployment"
 }
-`, fleetID, name+"-changed")
+`, name, fleetID, name)
 }

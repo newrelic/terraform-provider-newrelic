@@ -257,6 +257,39 @@ func TestAccNewRelicFleetConfiguration_RollbackWorkflow(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicFleetConfiguration_WithOperatingSystem verifies that a HOST configuration
+// can be created and imported with the operating_system attribute set.
+func TestAccNewRelicFleetConfiguration_WithOperatingSystem(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-os-%s", acctest.RandString(5))
+	resourceName := "newrelic_fleet_configuration.with_os"
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFleetConfigWithOperatingSystem(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetConfigurationExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
+					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
+					resource.TestCheckResourceAttr(resourceName, "operating_system", "LINUX"),
+					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccFleetConfigImportID(resourceName),
+			},
+		},
+	})
+}
+
 // TestAccNewRelicFleetConfiguration_Kubernetes verifies a Kubernetes-targeted configuration.
 func TestAccNewRelicFleetConfiguration_Kubernetes(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-k8s-%s", acctest.RandString(5))
@@ -292,23 +325,17 @@ func TestAccNewRelicFleetConfiguration_Kubernetes(t *testing.T) {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-// testAccFleetConfigImportID builds the compound import ID needed by the custom
-// importer: configGUID:orgID:agentType:managedEntityType:name.
-// The API does not expose agent_type/managed_entity_type/name via any working
-// read endpoint, so we encode them in the import ID to satisfy ImportStateVerify.
+// testAccFleetConfigImportID returns "<guid>:<managed_entity_type>" as the import ID.
+// managed_entity_type cannot be fetched from GetEntity (GraphQL nullability
+// conflict), so it must be encoded in the import ID.
 func testAccFleetConfigImportID(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("resource not found: %s", resourceName)
 		}
-		return fmt.Sprintf("%s:%s:%s:%s:%s",
-			rs.Primary.ID,
-			rs.Primary.Attributes["organization_id"],
-			rs.Primary.Attributes["agent_type"],
-			rs.Primary.Attributes["managed_entity_type"],
-			rs.Primary.Attributes["name"],
-		), nil
+		managedEntityType := rs.Primary.Attributes["managed_entity_type"]
+		return rs.Primary.ID + ":" + managedEntityType, nil
 	}
 }
 
@@ -548,6 +575,25 @@ resource "newrelic_fleet_configuration" "k8s" {
       prometheus:
         enabled: true
       # v1
+    EOT
+  }
+}
+`, name)
+}
+
+func testAccFleetConfigWithOperatingSystem(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "with_os" {
+  name                = %q
+  agent_type          = "NRInfra"
+  managed_entity_type = "HOST"
+  operating_system    = "LINUX"
+
+  version {
+    configuration_content = <<-EOT
+      log:
+        level: info
+      # os-test-v1
     EOT
   }
 }

@@ -112,6 +112,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the configuration.
 * `agent_type` - (Required, ForceNew) The type of agent this configuration is for. Valid values: `NRInfra`, `NRDOT`, `FluentBit`, `NRPrometheusAgent`. **Cannot be changed after creation.**
 * `managed_entity_type` - (Required, ForceNew) The type of entities this configuration manages. Valid values: `HOST`, `KUBERNETESCLUSTER`. **Cannot be changed after creation.**
+* `operating_system` - (Optional, ForceNew) The operating system this configuration targets. Valid values: `LINUX`, `WINDOWS`. Applicable to `HOST` configurations only — must not be set when `managed_entity_type` is `KUBERNETESCLUSTER`. **Cannot be changed after creation.**
 * `version` - (Required) One or more version blocks. At least one is required. See [Nested `version` blocks](#nested-version-blocks) below.
 * `organization_id` - (Optional, ForceNew) The organization ID. Auto-fetched from the account when not provided. **Cannot be changed after creation.**
 
@@ -184,8 +185,11 @@ The warning indicates that Terraform will recreate the missing version on the ne
 
 ## Import
 
-Fleet configurations can be imported using the configuration entity GUID:
+Fleet configurations can be imported using a composite ID of `<configuration_guid>:<managed_entity_type>`:
 
-```bash
-$ terraform import newrelic_fleet_configuration.infra <configuration_guid>
+```shell
+terraform import newrelic_fleet_configuration.infra <configuration_guid>:HOST
+terraform import newrelic_fleet_configuration.infra <configuration_guid>:KUBERNETESCLUSTER
 ```
+
+The `managed_entity_type` portion is required because the New Relic API does not return it via the entity lookup query (a GraphQL schema constraint). All other attributes — `name`, `agent_type`, `operating_system`, `organization_id` — are resolved automatically from the API.

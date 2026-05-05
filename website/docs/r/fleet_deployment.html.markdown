@@ -103,7 +103,7 @@ The following arguments are supported:
 * `fleet_id` - (Required, ForceNew) The entity GUID of the fleet this deployment belongs to. **Cannot be changed after creation.**
 * `name` - (Optional) The name of the deployment.
 * `description` - (Optional) A description of the deployment.
-* `agent` - (Required) One or more agent blocks. At least one is required. Each `agent_type` may appear at most once per deployment. See [Nested `agent` blocks](#nested-agent-blocks) below.
+* `agent` - (Required on create, may be empty on update) One or more agent blocks. At least one is required when creating a deployment. On update, the list may be set to empty (`agent = []`) to uninstall all agent assignments from the deployment. Each `agent_type` may appear at most once per deployment. See [Nested `agent` blocks](#nested-agent-blocks) below.
 * `tags` - (Optional) A list of tags in `key:value1,value2` format.
 * `organization_id` - (Optional, ForceNew) The organization ID. Auto-fetched from the account when not provided. **Cannot be changed after creation.**
 
@@ -113,7 +113,7 @@ Each `agent` block supports:
 
 * `agent_type` - (Required) The agent type. Valid values: `NRInfra`, `NRDOT`, `FluentBit`, `NRPrometheusAgent`.
 * `version` - (Required) The agent version string to deploy (e.g. `"1.58.0"`).
-* `configuration_version_id` - (Optional) A configuration version entity GUID (from `newrelic_fleet_configuration`) to associate with this agent in the deployment.
+* `configuration_version_id` - (Required) A configuration version entity GUID (from `newrelic_fleet_configuration`) to associate with this agent in the deployment.
 
 ## Attributes Reference
 
