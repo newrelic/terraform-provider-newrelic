@@ -315,11 +315,21 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 	providerConfig := meta.(*ProviderConfig)
 	id := d.Id()
 
+	// Always fetch the current phase from the API rather than relying on state.
+	// A failed plan step (e.g. ExpectError in tests, or a plan that errors at
+	// CustomizeDiff) does not flush the refreshed state to disk, so d.Get("phase")
+	// can be stale (still "CREATED") even when the deployment has advanced.
+	currentPhase := d.Get("phase").(string)
+	if entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, id); err == nil && entityInterface != nil {
+		if entity, ok := (*entityInterface).(*fleetcontrol.EntityManagementFleetDeploymentEntity); ok && entity.Phase != "" {
+			currentPhase = string(entity.Phase)
+		}
+	}
+
 	// The API only allows deleting deployments that are still in the CREATED
 	// phase — once execution has begun (IN_PROGRESS, FAILED, COMPLETED) the
-	// API rejects the call with "Cannot delete deployment if it has been
-	// previously deployed". Warn and clear state so the user is not stuck.
-	if phase := d.Get("phase").(string); phase != "" && phase != "CREATED" {
+	// API rejects the call. Warn and clear state so the user is not stuck.
+	if currentPhase != "" && currentPhase != "CREATED" {
 		d.SetId("")
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
@@ -329,7 +339,7 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 					"only deployments in the CREATED phase can be removed. "+
 					"It has been removed from Terraform state. "+
 					"You can clean it up manually in the New Relic UI if needed.",
-				id, phase,
+				id, currentPhase,
 			),
 		}}
 	}
