@@ -113,7 +113,7 @@ Each `agent` block supports:
 
 * `agent_type` - (Required) The agent type. Valid values: `NRInfra`, `NRDOT`, `FluentBit`, `NRPrometheusAgent`.
 * `version` - (Required) The agent version string to deploy (e.g. `"1.58.0"`).
-* `configuration_version_id` - (Optional) A configuration version entity GUID (from `newrelic_fleet_configuration`) to associate with this agent in the deployment.
+* `configuration_version_id` - (Required) A configuration version entity GUID (from `newrelic_fleet_configuration`) to associate with this agent in the deployment.
 
 ## Attributes Reference
 

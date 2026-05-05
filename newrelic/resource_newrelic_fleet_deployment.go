@@ -66,7 +66,7 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 						// intentionally expose only one version per agent block.
 						"configuration_version_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "Configuration version entity GUID to associate with this agent in the deployment.",
 						},
 					},
