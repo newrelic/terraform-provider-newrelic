@@ -278,30 +278,46 @@ func resourceNewRelicFleetConfigurationCustomizeDiff(_ context.Context, d *schem
 	return nil
 }
 
-// resourceNewRelicFleetConfigurationImportState resolves entity metadata (name,
-// agent_type, managed_entity_type, operating_system, organization_id) via a
-// GetEntity call so that a plain configuration GUID is all the user needs to
-// supply. Terraform automatically calls Read after this function returns, which
-// handles all version fetching.
+// resourceNewRelicFleetConfigurationImportState handles import via a composite ID:
+//
+//	<configuration_guid>:<managed_entity_type>
+//
+// managed_entity_type must be included because the GetEntity GraphQL fragment
+// for AgentConfigurationEntity does not return managedEntityType — the field has
+// conflicting nullability across entity types in the union and the API rejects
+// any query that includes it. All other ForceNew fields (name, agent_type,
+// operating_system, organization_id) are available from GetEntity and are set
+// here so Terraform does not plan spurious replacements after import.
 func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), ":", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return nil, fmt.Errorf(
+			"invalid import ID %q: expected \"<configuration_guid>:<managed_entity_type>\" "+
+				"(e.g. \"NjQy...abc:HOST\" or \"NjQy...abc:KUBERNETESCLUSTER\")",
+			d.Id(),
+		)
+	}
+	guid, managedEntityType := parts[0], parts[1]
+
 	providerConfig := meta.(*ProviderConfig)
 
-	entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, d.Id())
+	entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, guid)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch fleet configuration entity %s: %w", d.Id(), err)
+		return nil, fmt.Errorf("failed to fetch fleet configuration entity %s: %w", guid, err)
 	}
 	if entityInterface == nil {
-		return nil, fmt.Errorf("fleet configuration entity %s not found", d.Id())
+		return nil, fmt.Errorf("fleet configuration entity %s not found", guid)
 	}
 
 	entity, ok := (*entityInterface).(*fleetcontrol.EntityManagementAgentConfigurationEntity)
 	if !ok {
-		return nil, fmt.Errorf("entity %s is not a fleet configuration", d.Id())
+		return nil, fmt.Errorf("entity %s is not a fleet configuration", guid)
 	}
 
+	d.SetId(guid)
 	_ = d.Set("name", entity.Name)
 	_ = d.Set("agent_type", entity.AgentType)
-	_ = d.Set("managed_entity_type", string(entity.ManagedEntityType))
+	_ = d.Set("managed_entity_type", managedEntityType)
 	if entity.OperatingSystem.Type != "" {
 		_ = d.Set("operating_system", string(entity.OperatingSystem.Type))
 	}

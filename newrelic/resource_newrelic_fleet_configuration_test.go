@@ -325,16 +325,17 @@ func TestAccNewRelicFleetConfiguration_Kubernetes(t *testing.T) {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-// testAccFleetConfigImportID returns the resource's plain GUID as the import ID.
-// The importer calls GetEntity to resolve all metadata fields, so no compound
-// encoding is needed.
+// testAccFleetConfigImportID returns "<guid>:<managed_entity_type>" as the import ID.
+// managed_entity_type cannot be fetched from GetEntity (GraphQL nullability
+// conflict), so it must be encoded in the import ID.
 func testAccFleetConfigImportID(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("resource not found: %s", resourceName)
 		}
-		return rs.Primary.ID, nil
+		managedEntityType := rs.Primary.Attributes["managed_entity_type"]
+		return rs.Primary.ID + ":" + managedEntityType, nil
 	}
 }
 

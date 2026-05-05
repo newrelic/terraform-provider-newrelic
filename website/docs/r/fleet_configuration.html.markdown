@@ -185,8 +185,11 @@ The warning indicates that Terraform will recreate the missing version on the ne
 
 ## Import
 
-Fleet configurations can be imported using the configuration entity GUID:
+Fleet configurations can be imported using a composite ID of `<configuration_guid>:<managed_entity_type>`:
 
 ```shell
-terraform import newrelic_fleet_configuration.infra <configuration_guid>
+terraform import newrelic_fleet_configuration.infra <configuration_guid>:HOST
+terraform import newrelic_fleet_configuration.infra <configuration_guid>:KUBERNETESCLUSTER
 ```
+
+The `managed_entity_type` portion is required because the New Relic API does not return it via the entity lookup query (a GraphQL schema constraint). All other attributes — `name`, `agent_type`, `operating_system`, `organization_id` — are resolved automatically from the API.
