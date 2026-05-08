@@ -41,6 +41,12 @@ func resourceNewRelicSyntheticsPrivateLocation() *schema.Resource {
 				ForceNew:    true,
 				Required:    true,
 			},
+			"shared": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Specifies whether the private location is shared across the organization.",
+			},
 			"verified_script_execution": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -79,8 +85,9 @@ func resourceNewRelicSyntheticsPrivateLocationCreate(ctx context.Context, d *sch
 
 	description := d.Get("description").(string)
 	name := d.Get("name").(string)
+	shared := d.Get("shared").(bool)
 	verifiedScriptExecution := d.Get("verified_script_execution").(bool)
-	res, err := client.Synthetics.SyntheticsCreatePrivateLocationWithContext(ctx, accountID, description, name, verifiedScriptExecution)
+	res, err := client.Synthetics.SyntheticsCreatePrivateLocationWithContext(ctx, accountID, description, name, shared, verifiedScriptExecution)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,6 +111,7 @@ func resourceNewRelicSyntheticsPrivateLocationCreate(ctx context.Context, d *sch
 	_ = d.Set("key", res.Key)
 	_ = d.Set("location_id", res.LocationId)
 	_ = d.Set("guid", string(res.GUID))
+	_ = d.Set("shared", res.Shared)
 
 	return resourceNewRelicSyntheticsPrivateLocationRead(ctx, d, meta)
 }
@@ -152,9 +160,10 @@ func resourceNewRelicSyntheticsPrivateLocationUpdate(ctx context.Context, d *sch
 
 	description := d.Get("description").(string)
 	guid := synthetics.EntityGUID(d.Id())
+	shared := d.Get("shared").(bool)
 	verifiedScriptExecution := d.Get("verified_script_execution").(bool)
 
-	res, err := client.Synthetics.SyntheticsUpdatePrivateLocationWithContext(ctx, description, guid, verifiedScriptExecution)
+	res, err := client.Synthetics.SyntheticsUpdatePrivateLocationWithContext(ctx, description, guid, shared, verifiedScriptExecution)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -176,6 +185,7 @@ func resourceNewRelicSyntheticsPrivateLocationUpdate(ctx context.Context, d *sch
 	_ = d.Set("key", res.Key)
 	_ = d.Set("location_id", res.LocationId)
 	_ = d.Set("guid", string(res.GUID))
+	_ = d.Set("shared", res.Shared)
 
 	return resourceNewRelicSyntheticsPrivateLocationRead(ctx, d, meta)
 }
