@@ -9,9 +9,9 @@ description: |-
 
 As announced by New Relic Synthetics earlier this year, the <b style="color:red;">end-of-life</b> of the **Synthetics Legacy Runtime** will take effect on <b style="color:red;">Aug 18, 2026 for Node browser runtime monitors</b> and <b style="color:red;">Nov 18, 2026 for Node api runtime monitors</b>, implying that support for using the deprecated Synthetics Legacy Runtime with **new and existing** Synthetic monitors will officially end on <b style="color:maroon;">Aug 18, 2026 (Node browser runtime monitors)</b> and <b style="color:maroon;">Nov 18, 2026 (Node api runtime monitors)</b>. As a consequence of this API change, all requests associated with Synthetic Monitors (except Ping Monitors) going out of the New Relic Terraform Provider <span style="color:maroon;">will be blocked by an API error</span> if they include values corresponding to the legacy runtime values.
 
-Following these changes, starting with <b style="color:red;">v3.85.0</b> of the New Relic Terraform Provider, configuration of **new and existing** Synthetic monitors without runtime attributes (or) comprising runtime attributes signifying the legacy runtime <span style="color:red;">will be deemed invalid</span> (this applies to all Synthetic monitor resources, except `newrelic_synthetics_monitor` with type `SIMPLE`). If your monitors' configuration <span style="color:red;">is not updated with new runtime values</span>, you will see the consequences stated here. 
+Following these changes, starting with <b style="color:red;">v3.51.0</b> of the New Relic Terraform Provider, configuration of **new and existing** Synthetic monitors without runtime attributes (or) comprising runtime attributes signifying the legacy runtime <span style="color:red;">will be deemed invalid</span> (this applies to all Synthetic monitor resources, except `newrelic_synthetics_monitor` with type `SIMPLE`). If your monitors' configuration <span style="color:red;">is not updated with new runtime values</span>, you will see the consequences stated here. 
 
-These timelines and implications [were communicated](https://docs.newrelic.com/eol/2025/11/eol-chrome-140-node-22-synthetics/) by New Relic Synthetics (also via customer communications) and the documentation for all Synthetic Monitor resources starting with [v3.85.0](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_script_monitor) of the provider and this guide.
+These timelines and implications [were communicated](https://docs.newrelic.com/eol/2025/11/eol-chrome-140-node-22-synthetics/) by New Relic Synthetics (also via customer communications) and the documentation for all Synthetic Monitor resources starting with [v3.51.0](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/synthetics_script_monitor) of the provider and this guide.
 
 ### EOL Timeline and Runtime Enforcement
 
@@ -57,9 +57,9 @@ The New Relic Terraform Provider enforces the latest runtime version for all non
 - Upon running `terraform plan` after the EOL, you will see a drift indicating the runtime has been upgraded. A subsequent `terraform apply` without updating your configuration will result in an API error thrown by the Synthetics API.
 - **EOL Timeline for Scripted API Monitors:**
   - **During the EOL window (before Nov 18, 2026):** The Synthetics API will continue to accept legacy runtime versions (Node.js 16).
-  - **After Nov 18, 2026:** All Scripted API monitors will be force-upgraded and the API will enforce `NODE_API 22.20.0` by default, regardless of their current configuration.
+  - **After Nov 18, 2026:** All Scripted API monitors will be force-upgraded and the API will enforce `NODE_API` `22.20.0` by default, regardless of their current configuration.
 - **EOL Timeline for Scripted Browser Monitors:**
-  - After Aug 18, 2026, all Scripted Browser monitors will be force-upgraded to `CHROME_BROWSER LATEST` regardless of their current configuration.
+  - After Aug 18, 2026, all Scripted Browser monitors will be force-upgraded to `CHROME_BROWSER` `LATEST` regardless of their current configuration.
 - To prevent drift and errors, update your Terraform configuration with the new runtime values before Aug 18, 2026 (for `SCRIPT_BROWSER`) and Nov 18, 2026 (for `SCRIPT_API`).
 
 To prevent these consequences, kindly upgrade your monitors to the new runtime as soon as possible, if they are still using the legacy runtime.
@@ -72,7 +72,7 @@ The following methods may be adopted to identify if your monitor(s) is/are runni
 ### Terraform
 - If the configuration of the Synthetic Monitor resource contains attributes `runtime_type` and `runtime_type_version`, and the values of these runtime attributes correspond to the new runtimes (see the table below), the monitor was created in the new runtime.
   - If the configuration of the Synthetic Monitor resource does not contain attributes `runtime_type` and `runtime_type_version` (or, if both of these attributes are specified with empty strings "" as their values), the monitor was created in the legacy runtime.
-  - If the configuration of the Synthetic Monitor resource contains the attributes `runtime_type` and `runtime_type_version` and the values of these attributes correspond to the legacy runtime (i.e. `NODE  16` or `CHROME_BROWSER 134` or `CHROME_BROWSER 140`), the monitor was created in the legacy runtime.
+  - If the configuration of the Synthetic Monitor resource contains the attributes `runtime_type` and `runtime_type_version` and the values of these attributes correspond to the legacy runtime (i.e. `NODE` `16` or `CHROME_BROWSER` `134` or `CHROME_BROWSER` `140`), the monitor was created in the legacy runtime.
 
 Based on the criteria stated above, monitors running on the legacy runtime need to be upgraded to the new runtime in order to avoid interruptions of Synthetic checks and other consequences explained in the previous section.
 
