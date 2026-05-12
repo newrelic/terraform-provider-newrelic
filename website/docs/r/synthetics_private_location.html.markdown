@@ -26,6 +26,7 @@ The following arguments are supported:
 * `account_id` - (Optional) The account in which the private location will be created.
 * `description` - (Required) The private location description.
 * `name` - (Required) The name of the private location.
+* `shared` - (Optional) Specifies whether the private location is shared across the organization. Defaults to `false`. **Note:** If a location is shared and used by other accounts in your organization to run synthetic monitors, you cannot unshare this private location until those monitors are disabled.
 * `verified_script_execution` - (Optional) The private location requires a password to edit if value is true. Defaults to `false`
 
 ## Attributes Reference

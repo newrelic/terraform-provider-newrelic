@@ -12,6 +12,26 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
+func TestAccNewRelicSyntheticsPrivateLocation_Shared(t *testing.T) {
+	resourceName := "newrelic_synthetics_private_location.bar"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// Test: Create with shared=true
+			{
+				Config: testAccNewRelicSyntheticsPrivateLocationConfigShared(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicSyntheticsPrivateLocationExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "shared", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
 	resourceName := "newrelic_synthetics_private_location.bar"
 	rName := generateNameForIntegrationTestResource()
@@ -39,7 +59,7 @@ func TestAccNewRelicSyntheticsPrivateLocation_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"description", "domain_id", "key", "location_id", "verified_script_execution"},
+				ImportStateVerifyIgnore: []string{"description", "domain_id", "key", "location_id", "shared", "verified_script_execution"},
 			},
 		},
 	})
@@ -109,6 +129,17 @@ func testAccNewRelicSyntheticsPrivateLocationConfigUpdated(name string) string {
 	resource "newrelic_synthetics_private_location" "bar" {
 		description               = "Test Description-Updated"
 		name                      = "%[1]s"
+		verified_script_execution = false
+}
+`, name)
+}
+
+func testAccNewRelicSyntheticsPrivateLocationConfigShared(name string) string {
+	return fmt.Sprintf(`
+	resource "newrelic_synthetics_private_location" "bar" {
+		description               = "Test Description"
+		name                      = "%[1]s"
+		shared                    = true
 		verified_script_execution = false
 }
 `, name)

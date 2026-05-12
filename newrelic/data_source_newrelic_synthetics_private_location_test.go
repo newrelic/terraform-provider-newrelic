@@ -32,6 +32,7 @@ func TestAccNewRelicSyntheticsPrivateLocationDataSource_Basic(t *testing.T) {
 				"created via TF integration tests",
 				privateLocationName,
 				false,
+				false,
 			)
 
 			if err != nil {
