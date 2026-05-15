@@ -18,26 +18,35 @@ func resourceNewRelicFleetMembers() *schema.Resource {
 		UpdateContext: resourceNewRelicFleetMembersUpdate,
 		DeleteContext: resourceNewRelicFleetMembersDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceNewRelicFleetMembersImportState,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"fleet_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The GUID of the fleet to manage members for.",
+				Description: "The GUID of the fleet to manage member assignments for.",
 			},
 			"ring": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ring name to manage members in (e.g. \"default\", \"canary\", \"production\").",
-			},
-			"entity_ids": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Set of entity GUIDs to add as members of the fleet ring.",
+				Type:     schema.TypeList,
+				Required: true,
+				Description: "One or more ring blocks. Each block declares which entities to place in that ring. " +
+					"Only rings explicitly declared here are managed — any other rings on the fleet are left untouched.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The ring name (e.g. \"default\", \"canary\").",
+						},
+						"entity_ids": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "List of entity GUIDs to assign to this ring.",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -46,128 +55,147 @@ func resourceNewRelicFleetMembers() *schema.Resource {
 func resourceNewRelicFleetMembersCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
-
 	fleetID := d.Get("fleet_id").(string)
-	ring := d.Get("ring").(string)
-	entityIDs := expandStringSet(d.Get("entity_ids").(*schema.Set))
 
-	var diags diag.Diagnostics
-
-	// Check for pre-existing members in this ring before adding. These entities
-	// were added outside Terraform (e.g. via the CLI instrumentation flow) and
-	// are not in the caller's config. After Create, Read will sync them into
-	// state, and a subsequent plan will show them as pending removal unless the
-	// caller adds them to entity_ids.
-	existing, err := getAllFleetMembersInRing(ctx, client, fleetID, ring)
+	alreadyInFleet, err := getAllFleetMembers(ctx, client, fleetID)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error checking existing fleet members: %w", err))
 	}
+	assignedSet := stringSliceToSet(alreadyInFleet)
 
-	configSet := stringSliceToSet(entityIDs)
-	var unmanaged []string
-	for _, id := range existing {
-		if !configSet[id] {
-			unmanaged = append(unmanaged, id)
+	rings := expandFleetMemberRings(d.Get("ring").([]interface{}))
+
+	var diags diag.Diagnostics
+	var toAdd []fleetcontrol.FleetControlFleetMemberRingInput
+
+	for _, ring := range rings {
+		var actualToAdd []string
+		var alreadyAssigned []string
+
+		for _, id := range ring.entityIDs {
+			if assignedSet[id] {
+				alreadyAssigned = append(alreadyAssigned, id)
+			} else {
+				actualToAdd = append(actualToAdd, id)
+			}
+		}
+
+		if len(alreadyAssigned) > 0 {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ring.name),
+				Detail: fmt.Sprintf(
+					"The following entities are already assigned somewhere in fleet %q. "+
+						"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
+						"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
+					fleetID, ring.name, strings.Join(alreadyAssigned, "\n  - "),
+				),
+			})
+		}
+
+		if len(actualToAdd) > 0 {
+			toAdd = append(toAdd, fleetcontrol.FleetControlFleetMemberRingInput{
+				Ring:      ring.name,
+				EntityIds: actualToAdd,
+			})
 		}
 	}
 
-	if len(unmanaged) > 0 {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Pre-existing fleet members not in configuration",
-			Detail: fmt.Sprintf(
-				"The following entities already exist in fleet %q ring %q but are not in your entity_ids configuration. "+
-					"They will be included in Terraform state after this apply. Add them to entity_ids to manage them "+
-					"with Terraform, or they will be removed from the fleet on the next apply:\n  - %s",
-				fleetID, ring, strings.Join(unmanaged, "\n  - "),
-			),
-		})
+	if len(toAdd) > 0 {
+		_, err := client.FleetControl.FleetControlAddFleetMembersWithContext(ctx, fleetID, toAdd)
+		if err != nil {
+			return append(diags, diag.FromErr(fmt.Errorf("error adding fleet members: %w", err))...)
+		}
 	}
 
-	// Add entities from config. The API is idempotent for entities already present.
-	members := []fleetcontrol.FleetControlFleetMemberRingInput{
-		{Ring: ring, EntityIds: entityIDs},
-	}
-
-	_, err = client.FleetControl.FleetControlAddFleetMembersWithContext(ctx, fleetID, members)
-	if err != nil {
-		return append(diags, diag.FromErr(fmt.Errorf("error adding fleet members: %w", err))...)
-	}
-
-	d.SetId(fmt.Sprintf("%s:%s", fleetID, ring))
-
+	d.SetId(fleetID)
 	return append(diags, resourceNewRelicFleetMembersRead(ctx, d, meta)...)
 }
 
 func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	fleetID := d.Id()
 
-	fleetID := d.Get("fleet_id").(string)
-	ring := d.Get("ring").(string)
+	rings := expandFleetMemberRings(d.Get("ring").([]interface{}))
 
-	apiIDs, err := getAllFleetMembersInRing(ctx, client, fleetID, ring)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
+	// Import path: no rings declared in prior state. Query all fleet members
+	// and surface them under a "default" ring so that plan -generate-config-out
+	// produces valid config. For multi-ring fleets, adjust ring blocks manually.
+	if len(rings) == 0 {
+		apiIDs, err := getAllFleetMembers(ctx, client, fleetID)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error reading fleet members on import: %w", err))
+		}
+		var entityIDs []interface{}
+		for _, id := range apiIDs {
+			entityIDs = append(entityIDs, id)
+		}
+		if entityIDs == nil {
+			entityIDs = []interface{}{}
+		}
+		if err := d.Set("fleet_id", fleetID); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("ring", []interface{}{
+			map[string]interface{}{
+				"name":       "default",
+				"entity_ids": entityIDs,
+			},
+		}); err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
 	}
 
 	var diags diag.Diagnostics
+	var updatedRings []interface{}
 
-	// Drift detection — only meaningful after initial creation (when state has
-	// a prior entity_ids set to compare against).
-	if d.Id() != "" {
-		priorSet := d.Get("entity_ids").(*schema.Set)
+	for _, ring := range rings {
+		apiIDs, err := getAllFleetMembersInRing(ctx, client, fleetID, ring.name)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error reading members of ring %q: %w", ring.name, err))
+		}
 		apiSet := stringSliceToSet(apiIDs)
 
-		// Members that were in state but have since been removed outside Terraform.
-		// These will be re-added on the next apply.
+		var confirmedIDs []interface{}
 		var removedExternally []string
-		for _, id := range expandStringSet(priorSet) {
-			if !apiSet[id] {
+
+		for _, id := range ring.entityIDs {
+			if apiSet[id] {
+				confirmedIDs = append(confirmedIDs, id)
+			} else {
 				removedExternally = append(removedExternally, id)
 			}
 		}
+
 		if len(removedExternally) > 0 {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  "Fleet members removed outside Terraform",
+				Summary:  fmt.Sprintf("Fleet members removed outside Terraform in ring %q", ring.name),
 				Detail: fmt.Sprintf(
 					"The following entities were removed from fleet %q ring %q outside of Terraform. "+
 						"Run terraform apply to re-add them, or remove them from entity_ids if the removal was intentional:\n  - %s",
-					fleetID, ring, strings.Join(removedExternally, "\n  - "),
+					fleetID, ring.name, strings.Join(removedExternally, "\n  - "),
 				),
 			})
 		}
 
-		// Members present in the API but not in prior state — added outside
-		// Terraform (e.g. via CLI instrumentation). They will be included in
-		// state now and removed on the next apply unless added to entity_ids.
-		priorStateSet := stringSliceToSet(expandStringSet(priorSet))
-		var addedExternally []string
-		for _, id := range apiIDs {
-			if !priorStateSet[id] {
-				addedExternally = append(addedExternally, id)
-			}
+		if confirmedIDs == nil {
+			confirmedIDs = []interface{}{}
 		}
-		if len(addedExternally) > 0 {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Fleet members added outside Terraform",
-				Detail: fmt.Sprintf(
-					"The following entities were added to fleet %q ring %q outside of Terraform. "+
-						"Add them to entity_ids to manage them with Terraform, or they will be removed from the fleet on the next apply:\n  - %s",
-					fleetID, ring, strings.Join(addedExternally, "\n  - "),
-				),
-			})
-		}
+
+		updatedRings = append(updatedRings, map[string]interface{}{
+			"name":       ring.name,
+			"entity_ids": confirmedIDs,
+		})
 	}
 
-	members := make([]interface{}, len(apiIDs))
-	for i, id := range apiIDs {
-		members[i] = id
+	if updatedRings == nil {
+		updatedRings = []interface{}{}
 	}
 
-	if err := d.Set("entity_ids", schema.NewSet(schema.HashSchema(&schema.Schema{Type: schema.TypeString}), members)); err != nil {
+	if err := d.Set("ring", updatedRings); err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 
@@ -175,63 +203,194 @@ func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
-
-	if !d.HasChange("entity_ids") {
+	if !d.HasChange("ring") {
 		return nil
 	}
 
-	fleetID := d.Get("fleet_id").(string)
-	ring := d.Get("ring").(string)
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	fleetID := d.Id()
 
-	oldRaw, newRaw := d.GetChange("entity_ids")
-	oldSet := oldRaw.(*schema.Set)
-	newSet := newRaw.(*schema.Set)
+	oldRaw, newRaw := d.GetChange("ring")
+	oldRings := expandFleetMemberRings(oldRaw.([]interface{}))
+	newRings := expandFleetMemberRings(newRaw.([]interface{}))
 
-	toAdd := expandStringSet(newSet.Difference(oldSet))
-	toRemove := expandStringSet(oldSet.Difference(newSet))
+	oldByName := make(map[string][]string, len(oldRings))
+	for _, r := range oldRings {
+		oldByName[r.name] = r.entityIDs
+	}
+	newByName := make(map[string][]string, len(newRings))
+	for _, r := range newRings {
+		newByName[r.name] = r.entityIDs
+	}
 
-	if len(toAdd) > 0 {
-		members := []fleetcontrol.FleetControlFleetMemberRingInput{
-			{Ring: ring, EntityIds: toAdd},
-		}
-		_, err := client.FleetControl.FleetControlAddFleetMembersWithContext(ctx, fleetID, members)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error adding fleet members: %w", err))
+	// Pre-compute all entities being removed in this apply so we can correctly
+	// handle moves between rings: an entity moving from ring A to ring B appears
+	// in both toRemove (ring A) and toAdd (ring B). Without this, the fleet-wide
+	// pre-check would see it as "already assigned" and block the add.
+	beingRemovedInThisApply := make(map[string]bool)
+	for ringName, oldIDs := range oldByName {
+		if newIDs, stillExists := newByName[ringName]; stillExists {
+			newIDSet := stringSliceToSet(newIDs)
+			for _, id := range oldIDs {
+				if !newIDSet[id] {
+					beingRemovedInThisApply[id] = true
+				}
+			}
+		} else {
+			for _, id := range oldIDs {
+				beingRemovedInThisApply[id] = true
+			}
 		}
 	}
 
+	var diags diag.Diagnostics
+	var toAdd []fleetcontrol.FleetControlFleetMemberRingInput
+	var toRemove []fleetcontrol.FleetControlFleetMemberRingInput
+
+	for ringName, newIDs := range newByName {
+		newIDSet := stringSliceToSet(newIDs)
+
+		if oldIDs, existed := oldByName[ringName]; existed {
+			oldIDSet := stringSliceToSet(oldIDs)
+
+			var additions []string
+			for _, id := range newIDs {
+				if !oldIDSet[id] {
+					additions = append(additions, id)
+				}
+			}
+			var removals []string
+			for _, id := range oldIDs {
+				if !newIDSet[id] {
+					removals = append(removals, id)
+				}
+			}
+
+			if len(additions) > 0 {
+				alreadyInFleet, err := getAllFleetMembers(ctx, client, fleetID)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("error checking existing fleet members: %w", err))
+				}
+				assignedSet := stringSliceToSet(alreadyInFleet)
+
+				var actualToAdd []string
+				var alreadyAssigned []string
+				for _, id := range additions {
+					if assignedSet[id] && !beingRemovedInThisApply[id] {
+						alreadyAssigned = append(alreadyAssigned, id)
+					} else {
+						actualToAdd = append(actualToAdd, id)
+					}
+				}
+				if len(alreadyAssigned) > 0 {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ringName),
+						Detail: fmt.Sprintf(
+							"The following entities are already assigned somewhere in fleet %q. "+
+								"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
+								"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
+							fleetID, ringName, strings.Join(alreadyAssigned, "\n  - "),
+						),
+					})
+				}
+				if len(actualToAdd) > 0 {
+					toAdd = append(toAdd, fleetcontrol.FleetControlFleetMemberRingInput{
+						Ring: ringName, EntityIds: actualToAdd,
+					})
+				}
+			}
+			if len(removals) > 0 {
+				toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{
+					Ring: ringName, EntityIds: removals,
+				})
+			}
+		} else {
+			alreadyInFleet, err := getAllFleetMembers(ctx, client, fleetID)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error checking existing fleet members: %w", err))
+			}
+			assignedSet := stringSliceToSet(alreadyInFleet)
+
+			var actualToAdd []string
+			var alreadyAssigned []string
+			for _, id := range newIDs {
+				if assignedSet[id] && !beingRemovedInThisApply[id] {
+					alreadyAssigned = append(alreadyAssigned, id)
+				} else {
+					actualToAdd = append(actualToAdd, id)
+				}
+			}
+			if len(alreadyAssigned) > 0 {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ringName),
+					Detail: fmt.Sprintf(
+						"The following entities are already assigned somewhere in fleet %q. "+
+							"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
+							"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
+						fleetID, ringName, strings.Join(alreadyAssigned, "\n  - "),
+					),
+				})
+			}
+			if len(actualToAdd) > 0 {
+				toAdd = append(toAdd, fleetcontrol.FleetControlFleetMemberRingInput{
+					Ring: ringName, EntityIds: actualToAdd,
+				})
+			}
+		}
+	}
+
+	// Ring blocks removed from config — remove all their previously declared entities.
+	for ringName, oldIDs := range oldByName {
+		if _, stillExists := newByName[ringName]; !stillExists && len(oldIDs) > 0 {
+			toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{
+				Ring: ringName, EntityIds: oldIDs,
+			})
+		}
+	}
+
+	// Execute removes BEFORE adds so that entities moving between rings are
+	// cleanly unassigned before the add mutation is attempted.
 	if len(toRemove) > 0 {
-		members := []fleetcontrol.FleetControlFleetMemberRingInput{
-			{Ring: ring, EntityIds: toRemove},
-		}
-		_, err := client.FleetControl.FleetControlRemoveFleetMembersWithContext(ctx, fleetID, members)
+		_, err := client.FleetControl.FleetControlRemoveFleetMembersWithContext(ctx, fleetID, toRemove)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error removing fleet members: %w", err))
+			return append(diags, diag.FromErr(fmt.Errorf("error removing fleet members: %w", err))...)
+		}
+	}
+	if len(toAdd) > 0 {
+		_, err := client.FleetControl.FleetControlAddFleetMembersWithContext(ctx, fleetID, toAdd)
+		if err != nil {
+			return append(diags, diag.FromErr(fmt.Errorf("error adding fleet members: %w", err))...)
 		}
 	}
 
-	return resourceNewRelicFleetMembersRead(ctx, d, meta)
+	return append(diags, resourceNewRelicFleetMembersRead(ctx, d, meta)...)
 }
 
 func resourceNewRelicFleetMembersDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	fleetID := d.Id()
 
-	fleetID := d.Get("fleet_id").(string)
-	ring := d.Get("ring").(string)
-	entityIDs := expandStringSet(d.Get("entity_ids").(*schema.Set))
+	rings := expandFleetMemberRings(d.Get("ring").([]interface{}))
 
-	if len(entityIDs) == 0 {
+	var toRemove []fleetcontrol.FleetControlFleetMemberRingInput
+	for _, ring := range rings {
+		if len(ring.entityIDs) > 0 {
+			toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{
+				Ring:      ring.name,
+				EntityIds: ring.entityIDs,
+			})
+		}
+	}
+
+	if len(toRemove) == 0 {
 		return nil
 	}
 
-	members := []fleetcontrol.FleetControlFleetMemberRingInput{
-		{Ring: ring, EntityIds: entityIDs},
-	}
-
-	_, err := client.FleetControl.FleetControlRemoveFleetMembersWithContext(ctx, fleetID, members)
+	_, err := client.FleetControl.FleetControlRemoveFleetMembersWithContext(ctx, fleetID, toRemove)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error removing fleet members: %w", err))
 	}
@@ -239,24 +398,54 @@ func resourceNewRelicFleetMembersDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceNewRelicFleetMembersImportState(ctx context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
-	parts := strings.SplitN(d.Id(), ":", 2)
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return nil, fmt.Errorf("invalid import ID %q: expected fleet_id:ring", d.Id())
-	}
-
-	if err := d.Set("fleet_id", parts[0]); err != nil {
-		return nil, err
-	}
-	if err := d.Set("ring", parts[1]); err != nil {
-		return nil, err
-	}
-
-	return []*schema.ResourceData{d}, nil
+type fleetMemberRing struct {
+	name      string
+	entityIDs []string
 }
 
-// getAllFleetMembersInRing fetches all member entity IDs for the given fleet and ring,
-// following the cursor-based pagination from GetFleetMembers.
+func expandFleetMemberRings(raw []interface{}) []fleetMemberRing {
+	rings := make([]fleetMemberRing, 0, len(raw))
+	for _, item := range raw {
+		m := item.(map[string]interface{})
+		rings = append(rings, fleetMemberRing{
+			name:      m["name"].(string),
+			entityIDs: expandStringList(m["entity_ids"].([]interface{})),
+		})
+	}
+	return rings
+}
+
+// getAllFleetMembers returns all member entity IDs across all rings of a fleet.
+func getAllFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID string) ([]string, error) {
+	var allEntityIDs []string
+	var cursor *string
+
+	for {
+		filter := &fleetcontrol.FleetControlFleetMembersFilterInput{
+			FleetId: fleetID,
+		}
+
+		result, err := client.FleetControl.GetFleetMembersWithContext(ctx, cursor, filter)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, item := range result.Items {
+			allEntityIDs = append(allEntityIDs, item.ID)
+		}
+
+		if result.NextCursor == "" {
+			break
+		}
+
+		next := result.NextCursor
+		cursor = &next
+	}
+
+	return allEntityIDs, nil
+}
+
+// getAllFleetMembersInRing returns all member entity IDs for a specific ring.
 func getAllFleetMembersInRing(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]string, error) {
 	var allEntityIDs []string
 	var cursor *string
