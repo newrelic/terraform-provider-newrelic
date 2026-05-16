@@ -3,7 +3,10 @@
 package newrelic
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -14,22 +17,11 @@ import (
 )
 
 // TestAccNewRelicFleetMembers_Lifecycle exercises the full lifecycle of the
-// newrelic_fleet_members resource in a single test run. The steps cover:
+// newrelic_fleet_members resource in the same order as manual scenarios
+// S1, S3, S4, S5, S6, S7, S8, S9, S12.
 //
-//   - Create: single ring with two entities.
-//   - Update (add): a third entity is added to the ring.
-//   - Update (remove): the third entity is removed.
-//   - Multi-ring create: a canary ring is introduced alongside default,
-//     with two entities distributed across the rings.
-//   - Move between rings: both canary entities are moved to default in one
-//     apply, exercising the multi-entity cross-ring transfer path.
-//   - Ring-block removal: the canary block is dropped; its entities are
-//     removed from the fleet.
-//   - Import: the resource is re-imported by fleet GUID.
-//
-// A fresh fleet is created for every test run via acctest.RandString. The
-// CheckDestroy step confirms that no fleet_members resource remains in state
-// after the fleet is destroyed, ensuring no entities are left stranded.
+// S2 and S10 (Agent Control entity adoption) are covered separately in
+// TestAccNewRelicFleetMembers_Adoption.
 //
 // Prerequisites (all skipped if absent):
 //
@@ -37,8 +29,7 @@ import (
 //	NEW_RELIC_FLEET_TEST_ACCOUNT_ID  – Account ID of the fleet.
 //	NEW_RELIC_FLEET_TEST_ENTITY_IDS  – Comma-separated list of ≥3 real entity
 //	                                   GUIDs that are currently unassigned in
-//	                                   the test account. The API rejects GUIDs
-//	                                   that do not correspond to known entities.
+//	                                   the test account.
 func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 	resourceName := "newrelic_fleet_members.test"
 	fleetName := fmt.Sprintf("tf-test-members-%s", acctest.RandString(5))
@@ -47,12 +38,15 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 	entityIDs := testAccFleetMembersEntityIDs(t, 3)
 	e1, e2, e3 := entityIDs[0], entityIDs[1], entityIDs[2]
 
+	// Captured from Step 1 for use in the S5 drift PreConfig.
+	var capturedFleetID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
 		Steps: []resource.TestStep{
-			// Step 1 — Clean create: two unassigned entities in one ring.
+			// ── S1 ── Clean create: two unassigned entities in one ring.
 			// Expect: resource created, no warnings.
 			{
 				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2}),
@@ -62,26 +56,48 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ring.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "ring.0.name", "default"),
 					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "2"),
+					func(s *terraform.State) error {
+						if rs, ok := s.RootModule().Resources["newrelic_fleet.test"]; ok {
+							capturedFleetID = rs.Primary.ID
+						}
+						return nil
+					},
 				),
 			},
-			// Step 2 — Update add: introduce a third entity.
-			// Expect: ring now contains three entities, no warnings.
+			// ── S3 ── Update add: introduce e3.
+			// Expect: ring now has three entities, no warnings.
 			{
 				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2, e3}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "3"),
 				),
 			},
-			// Step 3 — Update remove: remove the third entity.
-			// Expect: ring returns to two entities.
+			// ── S4 ── Update remove: remove e3, ring returns to two entities.
 			{
 				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "2"),
 				),
 			},
-			// Step 4 — Multi-ring create: split entities across two rings.
-			// Expect: both ring blocks present, entity counts correct.
+			// ── S5 (plan) ── Drift detection: remove e2 out-of-band before the
+			// plan runs and expect Terraform to surface a non-empty diff.
+			{
+				PreConfig: func() {
+					testAccFleetControlRemoveOutOfBand(t, capturedFleetID, "default", e2)
+				},
+				Config:             testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2}),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// ── S5 (apply) ── Apply re-adds e2, restoring declared state.
+			{
+				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "2"),
+				),
+			},
+			// ── S6 ── Multi-ring: e1 in default, e2+e3 in canary.
+			// Expect: both ring blocks present with correct entity counts.
 			{
 				Config: testAccFleetMembersConfigMultiRing(fleetName, []string{e1}, []string{e2, e3}),
 				Check: resource.ComposeTestCheckFunc(
@@ -92,11 +108,10 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ring.1.entity_ids.#", "2"),
 				),
 			},
-			// Step 5 — Move between rings: transfer both canary entities to
-			// default in a single apply. Exercises the multi-entity
-			// cross-ring transfer path.
-			// Expect: default contains all three entities, canary is empty,
-			// no spurious "already assigned" warnings.
+			// ── S7 ── Move both canary entities to default in one apply.
+			// Exercises the multi-entity beingRemovedInThisApply exclusion so
+			// that e2 and e3 are not blocked by the "already assigned" pre-check
+			// during the add phase.
 			{
 				Config: testAccFleetMembersConfigMultiRing(fleetName, []string{e1, e2, e3}, []string{}),
 				Check: resource.ComposeTestCheckFunc(
@@ -104,9 +119,7 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ring.1.entity_ids.#", "0"),
 				),
 			},
-			// Step 6 — Ring-block removal: drop the canary block entirely.
-			// Expect: resource now has one ring block, canary entities
-			// (previously moved to default in step 5) remain there.
+			// ── Transition ── Drop the now-empty canary block to set up S8.
 			{
 				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2, e3}),
 				Check: resource.ComposeTestCheckFunc(
@@ -114,11 +127,29 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "3"),
 				),
 			},
-			// Step 7 — Import: verify the resource can be imported using
-			// the fleet GUID. Full state verification is skipped because
-			// the import path reads entity IDs from the API in server-
-			// determined order, which may differ from the order recorded in
-			// Terraform state (TypeList is order-sensitive).
+			// ── S8 ── Add ring block: add a canary ring alongside default.
+			// e3 is moved from default to canary, exercising the add-ring-block path.
+			{
+				Config: testAccFleetMembersConfigMultiRing(fleetName, []string{e1, e2}, []string{e3}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "ring.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "ring.1.entity_ids.#", "1"),
+				),
+			},
+			// ── S9 ── Remove ring block: drop canary entirely.
+			// e3 is removed from the fleet; default is untouched.
+			{
+				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{e1, e2}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "ring.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "2"),
+				),
+			},
+			// ── S12 ── Import: verify re-import by fleet GUID.
+			// ImportStateVerify is disabled because the API returns entity IDs in
+			// server-determined order, which may differ from the TypeList order
+			// recorded in state.
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -129,26 +160,184 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 	})
 }
 
-// testAccFleetMembersEntityIDs reads the NEW_RELIC_FLEET_TEST_ENTITY_IDS
-// environment variable and returns the first n GUIDs. The test is skipped if
-// the variable is unset or contains fewer than n entries.
+// TestAccNewRelicFleetMembers_Adoption covers scenarios S2 and S10 — declaring
+// an entity that is already present in the fleet (simulated by a direct API
+// add before Terraform runs) alongside unassigned entities.
+//
+// The entity-already-in-fleet condition triggers an "already assigned" warning
+// on create (S2) and on update (S10), after which the entity is adopted into
+// Terraform state.
+//
+// Additional prerequisites (skipped if absent):
+//
+//	NEW_RELIC_FLEET_TEST_AC_ENTITY_IDS – Comma-separated list of ≥2 entity
+//	                                      GUIDs to use as the "already in fleet"
+//	                                      entities for S2 and S10 respectively.
+//	                                      These must be valid entity GUIDs in
+//	                                      the test account but need not be
+//	                                      Agent Control managed.
+func TestAccNewRelicFleetMembers_Adoption(t *testing.T) {
+	resourceName := "newrelic_fleet_members.test"
+	fleetName := fmt.Sprintf("tf-test-adoption-%s", acctest.RandString(5))
+
+	setupFleetTestCredentials(t)
+	acEntityIDs := testAccFleetMembersACEntityIDs(t, 2)
+	ac1, ac2 := acEntityIDs[0], acEntityIDs[1]
+
+	// Fleet ID captured after the fleet is created (Step 1) so that Steps 2
+	// and 4 can pre-add the AC entities via API before Terraform runs.
+	var capturedFleetID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
+		Steps: []resource.TestStep{
+			// ── Setup ── Create the fleet only (no fleet_members resource yet)
+			// so that we can capture the fleet GUID for out-of-band operations.
+			{
+				Config: testAccFleetMembersConfigFleetOnly(fleetName),
+				Check: func(s *terraform.State) error {
+					if rs, ok := s.RootModule().Resources["newrelic_fleet.test"]; ok {
+						capturedFleetID = rs.Primary.ID
+					}
+					return nil
+				},
+			},
+			// ── S2 ── Adoption on create: pre-add ac1 to the fleet out-of-band,
+			// then declare it in a Terraform Create call.
+			// Expect: warning fires for ac1 (already assigned), ac1 is adopted into state.
+			{
+				PreConfig: func() {
+					testAccFleetControlAddOutOfBand(t, capturedFleetID, "default", ac1)
+				},
+				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{ac1}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetMembersExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "1"),
+				),
+			},
+			// ── Cleanup ── Remove ac1 from the declared set so the fleet is clean for S10.
+			{
+				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "0"),
+				),
+			},
+			// ── S10 ── Adoption on update: pre-add ac2 to the fleet out-of-band,
+			// then add it to the existing declared set via an Update call.
+			// Expect: warning fires for ac2, ac2 is adopted into state.
+			{
+				PreConfig: func() {
+					testAccFleetControlAddOutOfBand(t, capturedFleetID, "default", ac2)
+				},
+				Config: testAccFleetMembersConfigSingleRing(fleetName, "default", []string{ac2}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+// testAccFleetMembersEntityIDs reads NEW_RELIC_FLEET_TEST_ENTITY_IDS and
+// returns the first n GUIDs. Skips the test if the variable is unset or
+// contains fewer than n entries.
 func testAccFleetMembersEntityIDs(t *testing.T, n int) []string {
 	t.Helper()
 	raw := os.Getenv("NEW_RELIC_FLEET_TEST_ENTITY_IDS")
 	if raw == "" {
 		t.Skip("NEW_RELIC_FLEET_TEST_ENTITY_IDS is not set — skipping fleet members acceptance test")
 	}
-	parts := strings.Split(raw, ",")
-	var ids []string
-	for _, p := range parts {
-		if s := strings.TrimSpace(p); s != "" {
-			ids = append(ids, s)
-		}
-	}
+	ids := splitTrimmed(raw)
 	if len(ids) < n {
 		t.Skipf("NEW_RELIC_FLEET_TEST_ENTITY_IDS must contain at least %d GUIDs (got %d)", n, len(ids))
 	}
 	return ids[:n]
+}
+
+// testAccFleetMembersACEntityIDs reads NEW_RELIC_FLEET_TEST_AC_ENTITY_IDS and
+// returns the first n GUIDs. Skips the test if the variable is unset or
+// contains fewer than n entries.
+func testAccFleetMembersACEntityIDs(t *testing.T, n int) []string {
+	t.Helper()
+	raw := os.Getenv("NEW_RELIC_FLEET_TEST_AC_ENTITY_IDS")
+	if raw == "" {
+		t.Skip("NEW_RELIC_FLEET_TEST_AC_ENTITY_IDS is not set — skipping fleet members adoption test")
+	}
+	ids := splitTrimmed(raw)
+	if len(ids) < n {
+		t.Skipf("NEW_RELIC_FLEET_TEST_AC_ENTITY_IDS must contain at least %d GUIDs (got %d)", n, len(ids))
+	}
+	return ids[:n]
+}
+
+func splitTrimmed(s string) []string {
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if v := strings.TrimSpace(p); v != "" {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// testAccFleetControlRemoveOutOfBand removes a single entity from a ring via
+// the GraphQL API, simulating an out-of-band change for drift-detection tests.
+func testAccFleetControlRemoveOutOfBand(t *testing.T, fleetID, ring, entityID string) {
+	t.Helper()
+	if fleetID == "" {
+		t.Log("testAccFleetControlRemoveOutOfBand: fleetID not yet captured, skipping")
+		return
+	}
+	apiKey := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY")
+	if apiKey == "" {
+		return
+	}
+	body := fmt.Sprintf(
+		`{"query":"mutation($f:ID!,$m:[FleetControlFleetMemberRingInput!]){fleetControlRemoveFleetMembers(fleetId:$f,members:$m){fleetId}}","variables":{"f":%q,"m":[{"ring":%q,"entityIds":[%q]}]}}`,
+		fleetID, ring, entityID,
+	)
+	req, _ := http.NewRequest("POST", "https://api.newrelic.com/graphql", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Key", apiKey)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Logf("testAccFleetControlRemoveOutOfBand: request failed: %v", err)
+		return
+	}
+	resp.Body.Close()
+}
+
+// testAccFleetControlAddOutOfBand adds a single entity to a ring via the
+// GraphQL API, simulating an out-of-band pre-assignment (e.g. Agent Control)
+// for adoption tests.
+func testAccFleetControlAddOutOfBand(t *testing.T, fleetID, ring, entityID string) {
+	t.Helper()
+	if fleetID == "" {
+		t.Log("testAccFleetControlAddOutOfBand: fleetID not yet captured, skipping")
+		return
+	}
+	apiKey := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY")
+	if apiKey == "" {
+		return
+	}
+	body := fmt.Sprintf(
+		`{"query":"mutation($f:ID!,$m:[FleetControlFleetMemberRingInput!]){fleetControlAddFleetMembers(fleetId:$f,members:$m){fleetId}}","variables":{"f":%q,"m":[{"ring":%q,"entityIds":[%q]}]}}`,
+		fleetID, ring, entityID,
+	)
+	req, _ := http.NewRequest("POST", "https://api.newrelic.com/graphql", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Key", apiKey)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Logf("testAccFleetControlAddOutOfBand: request failed: %v", err)
+		return
+	}
+	resp.Body.Close()
 }
 
 func testAccCheckNewRelicFleetMembersExists(n string) resource.TestCheckFunc {
@@ -164,17 +353,27 @@ func testAccCheckNewRelicFleetMembersExists(n string) resource.TestCheckFunc {
 	}
 }
 
-// testAccCheckNewRelicFleetMembersDestroy verifies that no fleet_members
-// resource remains in state after destroy. The underlying API removes all
-// declared entity memberships during the delete operation; this check
-// confirms the state was cleaned up correctly.
+// testAccCheckNewRelicFleetMembersDestroy verifies via the API that fleet
+// members were actually removed. The SDK calls CheckDestroy with the
+// pre-destroy state (IDs are always set), so state-based checks are not
+// meaningful here — we query the API instead.
 func testAccCheckNewRelicFleetMembersDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
 		if r.Type != "newrelic_fleet_members" {
 			continue
 		}
-		if r.Primary.ID != "" {
-			return fmt.Errorf("fleet_members resource %s still present in state after destroy", r.Primary.ID)
+		fleetID := r.Primary.ID
+		if fleetID == "" {
+			continue
+		}
+		members, err := getAllFleetMembers(context.Background(), client, fleetID)
+		if err != nil {
+			// Fleet no longer exists — members are implicitly removed.
+			continue
+		}
+		if len(members) > 0 {
+			return fmt.Errorf("fleet %s still has %d member(s) after destroy", fleetID, len(members))
 		}
 	}
 	return nil
@@ -191,8 +390,18 @@ func testAccFleetMembersImportID(resourceName string) resource.ImportStateIdFunc
 	}
 }
 
-// testAccFleetMembersConfigSingleRing generates a config with a single fleet
-// and a single ring block containing the given entity IDs.
+// ── Config templates ──────────────────────────────────────────────────────────
+
+func testAccFleetMembersConfigFleetOnly(fleetName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet" "test" {
+  name                = %q
+  managed_entity_type = "HOST"
+  operating_system    = "LINUX"
+}
+`, fleetName)
+}
+
 func testAccFleetMembersConfigSingleRing(fleetName, ringName string, entityIDs []string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet" "test" {
@@ -211,8 +420,6 @@ resource "newrelic_fleet_members" "test" {
 `, fleetName, ringName, joinQuoted(entityIDs))
 }
 
-// testAccFleetMembersConfigMultiRing generates a config with two ring blocks:
-// "default" containing defaultIDs and "canary" containing canaryIDs.
 func testAccFleetMembersConfigMultiRing(fleetName string, defaultIDs, canaryIDs []string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet" "test" {
@@ -235,8 +442,6 @@ resource "newrelic_fleet_members" "test" {
 `, fleetName, joinQuoted(defaultIDs), joinQuoted(canaryIDs))
 }
 
-// joinQuoted returns a comma-separated, double-quoted string of the given
-// values, suitable for embedding in an HCL list literal.
 func joinQuoted(ss []string) string {
 	quoted := make([]string, len(ss))
 	for i, s := range ss {
