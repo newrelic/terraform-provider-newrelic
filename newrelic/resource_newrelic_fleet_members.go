@@ -212,37 +212,12 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 	fleetID := d.Id()
 
 	oldRaw, newRaw := d.GetChange("ring")
-	oldRings := expandFleetMemberRings(oldRaw.([]interface{}))
-	newRings := expandFleetMemberRings(newRaw.([]interface{}))
+	oldByName := ringsByName(expandFleetMemberRings(oldRaw.([]interface{})))
+	newByName := ringsByName(expandFleetMemberRings(newRaw.([]interface{})))
 
-	oldByName := make(map[string][]string, len(oldRings))
-	for _, r := range oldRings {
-		oldByName[r.name] = r.entityIDs
-	}
-	newByName := make(map[string][]string, len(newRings))
-	for _, r := range newRings {
-		newByName[r.name] = r.entityIDs
-	}
-
-	// Pre-compute all entities being removed in this apply so we can correctly
-	// handle moves between rings: an entity moving from ring A to ring B appears
-	// in both toRemove (ring A) and toAdd (ring B). Without this, the fleet-wide
-	// pre-check would see it as "already assigned" and block the add.
-	beingRemovedInThisApply := make(map[string]bool)
-	for ringName, oldIDs := range oldByName {
-		if newIDs, stillExists := newByName[ringName]; stillExists {
-			newIDSet := stringSliceToSet(newIDs)
-			for _, id := range oldIDs {
-				if !newIDSet[id] {
-					beingRemovedInThisApply[id] = true
-				}
-			}
-		} else {
-			for _, id := range oldIDs {
-				beingRemovedInThisApply[id] = true
-			}
-		}
-	}
+	// Pre-compute removals so entities moving between rings are excluded from
+	// the "already assigned" pre-check on the add path.
+	beingRemovedInThisApply := computeBeingRemoved(oldByName, newByName)
 
 	var diags diag.Diagnostics
 	var toAdd []fleetcontrol.FleetControlFleetMemberRingInput
@@ -250,11 +225,10 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 
 	for ringName, newIDs := range newByName {
 		newIDSet := stringSliceToSet(newIDs)
+		var additions []string
 
 		if oldIDs, existed := oldByName[ringName]; existed {
 			oldIDSet := stringSliceToSet(oldIDs)
-
-			var additions []string
 			for _, id := range newIDs {
 				if !oldIDSet[id] {
 					additions = append(additions, id)
@@ -266,88 +240,27 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 					removals = append(removals, id)
 				}
 			}
-
-			if len(additions) > 0 {
-				alreadyInFleet, err := getAllFleetMembers(ctx, client, fleetID)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error checking existing fleet members: %w", err))
-				}
-				assignedSet := stringSliceToSet(alreadyInFleet)
-
-				var actualToAdd []string
-				var alreadyAssigned []string
-				for _, id := range additions {
-					if assignedSet[id] && !beingRemovedInThisApply[id] {
-						alreadyAssigned = append(alreadyAssigned, id)
-					} else {
-						actualToAdd = append(actualToAdd, id)
-					}
-				}
-				if len(alreadyAssigned) > 0 {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ringName),
-						Detail: fmt.Sprintf(
-							"The following entities are already assigned somewhere in fleet %q. "+
-								"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
-								"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
-							fleetID, ringName, strings.Join(alreadyAssigned, "\n  - "),
-						),
-					})
-				}
-				if len(actualToAdd) > 0 {
-					toAdd = append(toAdd, fleetcontrol.FleetControlFleetMemberRingInput{
-						Ring: ringName, EntityIds: actualToAdd,
-					})
-				}
-			}
 			if len(removals) > 0 {
-				toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{
-					Ring: ringName, EntityIds: removals,
-				})
+				toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{Ring: ringName, EntityIds: removals})
 			}
 		} else {
-			alreadyInFleet, err := getAllFleetMembers(ctx, client, fleetID)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error checking existing fleet members: %w", err))
-			}
-			assignedSet := stringSliceToSet(alreadyInFleet)
+			additions = newIDs
+		}
 
-			var actualToAdd []string
-			var alreadyAssigned []string
-			for _, id := range newIDs {
-				if assignedSet[id] && !beingRemovedInThisApply[id] {
-					alreadyAssigned = append(alreadyAssigned, id)
-				} else {
-					actualToAdd = append(actualToAdd, id)
-				}
-			}
-			if len(alreadyAssigned) > 0 {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ringName),
-					Detail: fmt.Sprintf(
-						"The following entities are already assigned somewhere in fleet %q. "+
-							"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
-							"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
-						fleetID, ringName, strings.Join(alreadyAssigned, "\n  - "),
-					),
-				})
-			}
-			if len(actualToAdd) > 0 {
-				toAdd = append(toAdd, fleetcontrol.FleetControlFleetMemberRingInput{
-					Ring: ringName, EntityIds: actualToAdd,
-				})
-			}
+		actualToAdd, addDiags, err := fleetMembersComputeAdds(ctx, client, fleetID, ringName, additions, beingRemovedInThisApply)
+		if err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
+		diags = append(diags, addDiags...)
+		if len(actualToAdd) > 0 {
+			toAdd = append(toAdd, fleetcontrol.FleetControlFleetMemberRingInput{Ring: ringName, EntityIds: actualToAdd})
 		}
 	}
 
 	// Ring blocks removed from config — remove all their previously declared entities.
 	for ringName, oldIDs := range oldByName {
 		if _, stillExists := newByName[ringName]; !stillExists && len(oldIDs) > 0 {
-			toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{
-				Ring: ringName, EntityIds: oldIDs,
-			})
+			toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{Ring: ringName, EntityIds: oldIDs})
 		}
 	}
 
@@ -401,6 +314,80 @@ func resourceNewRelicFleetMembersDelete(ctx context.Context, d *schema.ResourceD
 type fleetMemberRing struct {
 	name      string
 	entityIDs []string
+}
+
+func ringsByName(rings []fleetMemberRing) map[string][]string {
+	m := make(map[string][]string, len(rings))
+	for _, r := range rings {
+		m[r.name] = r.entityIDs
+	}
+	return m
+}
+
+// computeBeingRemoved returns the set of entity IDs that will be removed from
+// any ring in this apply, so cross-ring moves are not blocked by the
+// "already assigned" pre-check.
+func computeBeingRemoved(oldByName, newByName map[string][]string) map[string]bool {
+	out := make(map[string]bool)
+	for ringName, oldIDs := range oldByName {
+		if newIDs, stillExists := newByName[ringName]; stillExists {
+			newIDSet := stringSliceToSet(newIDs)
+			for _, id := range oldIDs {
+				if !newIDSet[id] {
+					out[id] = true
+				}
+			}
+		} else {
+			for _, id := range oldIDs {
+				out[id] = true
+			}
+		}
+	}
+	return out
+}
+
+// fleetMembersComputeAdds checks which candidates are already assigned in the
+// fleet, emits a warning for those that are (and are not being removed in this
+// apply), and returns the subset that should be passed to the add mutation.
+func fleetMembersComputeAdds(
+	ctx context.Context, client *nr.NewRelic,
+	fleetID, ringName string,
+	candidates []string,
+	beingRemovedInThisApply map[string]bool,
+) ([]string, diag.Diagnostics, error) {
+	if len(candidates) == 0 {
+		return nil, nil, nil
+	}
+	alreadyInFleet, err := getAllFleetMembers(ctx, client, fleetID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error checking existing fleet members: %w", err)
+	}
+	assignedSet := stringSliceToSet(alreadyInFleet)
+
+	var actualToAdd []string
+	var alreadyAssigned []string
+	for _, id := range candidates {
+		if assignedSet[id] && !beingRemovedInThisApply[id] {
+			alreadyAssigned = append(alreadyAssigned, id)
+		} else {
+			actualToAdd = append(actualToAdd, id)
+		}
+	}
+
+	var diags diag.Diagnostics
+	if len(alreadyAssigned) > 0 {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ringName),
+			Detail: fmt.Sprintf(
+				"The following entities are already assigned somewhere in fleet %q. "+
+					"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
+					"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
+				fleetID, ringName, strings.Join(alreadyAssigned, "\n  - "),
+			),
+		})
+	}
+	return actualToAdd, diags, nil
 }
 
 func expandFleetMemberRings(raw []interface{}) []fleetMemberRing {

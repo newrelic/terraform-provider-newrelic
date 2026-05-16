@@ -17,6 +17,7 @@ func TestAccNewRelicFleetMembersDataSource_All(t *testing.T) {
 	fleetName := fmt.Sprintf("tf-test-ds-members-%s", acctest.RandString(5))
 
 	setupFleetTestCredentials(t)
+	entityIDs := testAccFleetMembersEntityIDs(t, 1)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
@@ -24,7 +25,7 @@ func TestAccNewRelicFleetMembersDataSource_All(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetMembersDataSourceAll(fleetName),
+				Config: testAccFleetMembersDataSourceAll(fleetName, entityIDs[0]),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dsName, "fleet_id"),
 					resource.TestCheckResourceAttrSet(dsName, "members.#"),
@@ -40,6 +41,7 @@ func TestAccNewRelicFleetMembersDataSource_ByRing(t *testing.T) {
 	fleetName := fmt.Sprintf("tf-test-ds-members-ring-%s", acctest.RandString(5))
 
 	setupFleetTestCredentials(t)
+	entityIDs := testAccFleetMembersEntityIDs(t, 1)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
@@ -47,7 +49,7 @@ func TestAccNewRelicFleetMembersDataSource_ByRing(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetMembersDataSourceByRing(fleetName),
+				Config: testAccFleetMembersDataSourceByRing(fleetName, entityIDs[0]),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dsName, "fleet_id"),
 					resource.TestCheckResourceAttr(dsName, "ring", "default"),
@@ -59,41 +61,43 @@ func TestAccNewRelicFleetMembersDataSource_ByRing(t *testing.T) {
 
 // Config templates
 
-func testAccFleetMembersDataSourceAll(fleetName string) string {
+func testAccFleetMembersDataSourceAll(fleetName, entityID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet" "test" {
   name                = %q
   managed_entity_type = "HOST"
   operating_system    = "LINUX"
-  description         = "Fleet for members data source test"
 }
 
 resource "newrelic_fleet_members" "default" {
-  fleet_id   = newrelic_fleet.test.id
-  ring       = "default"
-  entity_ids = [%q]
+  fleet_id = newrelic_fleet.test.id
+  ring {
+    name       = "default"
+    entity_ids = [%q]
+  }
 }
 
 data "newrelic_fleet_members" "all" {
   fleet_id   = newrelic_fleet.test.id
   depends_on = [newrelic_fleet_members.default]
 }
-`, fleetName, testAccFleetMembersEntityID)
+`, fleetName, entityID)
 }
 
-func testAccFleetMembersDataSourceByRing(fleetName string) string {
+func testAccFleetMembersDataSourceByRing(fleetName, entityID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet" "test" {
   name                = %q
   managed_entity_type = "HOST"
   operating_system    = "LINUX"
-  description         = "Fleet for members data source ring filter test"
 }
 
 resource "newrelic_fleet_members" "default" {
-  fleet_id   = newrelic_fleet.test.id
-  ring       = "default"
-  entity_ids = [%q]
+  fleet_id = newrelic_fleet.test.id
+  ring {
+    name       = "default"
+    entity_ids = [%q]
+  }
 }
 
 data "newrelic_fleet_members" "by_ring" {
@@ -101,5 +105,5 @@ data "newrelic_fleet_members" "by_ring" {
   ring       = "default"
   depends_on = [newrelic_fleet_members.default]
 }
-`, fleetName, testAccFleetMembersEntityID)
+`, fleetName, entityID)
 }
