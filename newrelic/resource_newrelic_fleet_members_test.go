@@ -1,5 +1,14 @@
 //go:build integration || FLEET
 
+// Package-level note: the tests in this file are intended for local execution
+// only and will be automatically skipped in CI. CI does not set the fleet-
+// specific environment variables (NEW_RELIC_FLEET_TEST_API_KEY,
+// NEW_RELIC_FLEET_TEST_ACCOUNT_ID, NEW_RELIC_FLEET_TEST_ENTITY_IDS,
+// NEW_RELIC_FLEET_TEST_AC_ENTITY_IDS) because the tests require real, named
+// host entities that exist in a specific account — infrastructure that cannot
+// be reproduced generically in a shared CI environment. Each test checks for
+// these variables at the top of its setup and calls t.Skip if any are absent.
+
 package newrelic
 
 import (
