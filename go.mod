@@ -4,7 +4,6 @@ go 1.24.0
 
 toolchain go1.24.11
 
-
 replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.84.1-0.20260515134859-075f087c1e59
 
 require (
