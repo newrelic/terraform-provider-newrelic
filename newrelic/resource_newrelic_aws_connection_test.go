@@ -21,6 +21,7 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 
 	roleArn := "arn:aws:iam::123456789012:role/tf-test-role"
 	roleArnUpdated := "arn:aws:iam::123456789012:role/tf-test-role-rotated"
+	orgID := "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -28,7 +29,7 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAwsConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicAwsConnectionConfig(rName, "Acceptance test AWS connection", roleArn, true, "us-east-1"),
+				Config: testAccNewRelicAwsConnectionConfig(rName, "Acceptance test AWS connection", roleArn, true, "us-east-1", orgID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsConnectionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
@@ -36,13 +37,14 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "role_arn", roleArn),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
-					resource.TestCheckResourceAttrSet(resourceName, "scope_id"),
+					resource.TestCheckResourceAttr(resourceName, "scope_id", orgID),
+					resource.TestCheckResourceAttr(resourceName, "scope_type", "ORGANIZATION"),
 				),
 			},
 			// In-place update: change description / enabled / region / role_arn.
 			// All four fields are in EntityManagementAwsConnectionEntityUpdateInput.
 			{
-				Config: testAccNewRelicAwsConnectionConfig(rName, "Updated AWS connection", roleArnUpdated, false, "us-west-2"),
+				Config: testAccNewRelicAwsConnectionConfig(rName, "Updated AWS connection", roleArnUpdated, false, "us-west-2", orgID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsConnectionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated AWS connection"),
@@ -60,7 +62,7 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAwsConnectionConfig(name, description, roleArn string, enabled bool, region string) string {
+func testAccNewRelicAwsConnectionConfig(name, description, roleArn string, enabled bool, region, orgID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "foo" {
   name        = "%[1]s"
@@ -68,8 +70,10 @@ resource "newrelic_aws_connection" "foo" {
   enabled     = %[3]t
   region      = "%[4]s"
   role_arn    = "%[5]s"
+  scope_id    = "%[6]s"
+  scope_type  = "ORGANIZATION"
 }
-`, name, description, enabled, region, roleArn)
+`, name, description, enabled, region, roleArn, orgID)
 }
 
 func testAccCheckNewRelicAwsConnectionExists(name string) resource.TestCheckFunc {
