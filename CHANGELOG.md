@@ -1,3 +1,8 @@
+<a name="v3.87.4"></a>
+## [v3.87.4] - 2026-05-18
+### Documentation Updates
+- **synthetics:** update synthetics monitors information related to EOL ([#3063](https://github.com/newrelic/terraform-provider-newrelic/issues/3063))
+
 <a name="v3.87.3"></a>
 ## [v3.87.3] - 2026-05-12
 ### Bug Fixes
@@ -2704,7 +2709,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.4...HEAD
+[v3.87.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.3...v3.87.4
 [v3.87.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.2...v3.87.3
 [v3.87.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.1...v3.87.2
 [v3.87.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.0...v3.87.1
