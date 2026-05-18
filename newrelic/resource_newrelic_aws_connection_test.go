@@ -13,18 +13,14 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/federatedlogs"
 )
 
-// TestAccNewRelicAwsConnection_Basic exercises create / read / import / destroy
-// for the newrelic_aws_connection resource. Update is not supported by the
-// underlying entity-management mutation, so no update step is performed.
-//
-// Required env vars (in addition to the standard testAccPreCheck set):
-//   - TEST_AWS_ROLE_ARN: a valid IAM role ARN that the integration test account
-//     can pass through to the EntityManagementCreateAwsConnection mutation.
+// TestAccNewRelicAwsConnection_Basic exercises create / read / update / import /
+// destroy for the newrelic_aws_connection resource.
 func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 	resourceName := "newrelic_aws_connection.foo"
 	rName := generateNameForIntegrationTestResource()
 
 	roleArn := "arn:aws:iam::123456789012:role/tf-test-role"
+	roleArnUpdated := "arn:aws:iam::123456789012:role/tf-test-role-rotated"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -32,14 +28,27 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAwsConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicAwsConnectionConfig(rName, roleArn),
+				Config: testAccNewRelicAwsConnectionConfig(rName, "Acceptance test AWS connection", roleArn, true, "us-east-1"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsConnectionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "description", "Acceptance test AWS connection"),
 					resource.TestCheckResourceAttr(resourceName, "role_arn", roleArn),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
 					resource.TestCheckResourceAttrSet(resourceName, "scope_id"),
+				),
+			},
+			// In-place update: change description / enabled / region / role_arn.
+			// All four fields are in EntityManagementAwsConnectionEntityUpdateInput.
+			{
+				Config: testAccNewRelicAwsConnectionConfig(rName, "Updated AWS connection", roleArnUpdated, false, "us-west-2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAwsConnectionExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "description", "Updated AWS connection"),
+					resource.TestCheckResourceAttr(resourceName, "role_arn", roleArnUpdated),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "region", "us-west-2"),
 				),
 			},
 			{
@@ -51,16 +60,16 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAwsConnectionConfig(name, roleArn string) string {
+func testAccNewRelicAwsConnectionConfig(name, description, roleArn string, enabled bool, region string) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "foo" {
   name        = "%[1]s"
-  description = "Acceptance test AWS connection"
-  enabled     = true
-  region      = "us-east-1"
-  role_arn    = "%[2]s"
+  description = "%[2]s"
+  enabled     = %[3]t
+  region      = "%[4]s"
+  role_arn    = "%[5]s"
 }
-`, name, roleArn)
+`, name, description, enabled, region, roleArn)
 }
 
 func testAccCheckNewRelicAwsConnectionExists(name string) resource.TestCheckFunc {

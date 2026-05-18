@@ -29,22 +29,27 @@ func TestAccNewRelicFederatedLogsPartition_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFederatedLogsPartitionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicFederatedLogsPartitionConfig(rName, roleArn, "Initial partition"),
+				Config: testAccNewRelicFederatedLogsPartitionConfig(rName, roleArn, "Initial partition", true, 30),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFederatedLogsPartitionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName+"-partition"),
 					resource.TestCheckResourceAttr(resourceName, "description", "Initial partition"),
+					resource.TestCheckResourceAttr(resourceName, "active", "true"),
 					resource.TestCheckResourceAttr(resourceName, "storage.0.table", "log_transactions_secondary"),
 					resource.TestCheckResourceAttr(resourceName, "is_default", "false"),
+					resource.TestCheckResourceAttr(resourceName, "data_retention_policy.0.duration", "30"),
 					resource.TestCheckResourceAttrSet(resourceName, "setup_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "lifecycle_status.0.status"),
 				),
 			},
+			// Update description + active + retention duration (all mutable per FederatedLogsUpdatePartitionInput).
 			{
-				Config: testAccNewRelicFederatedLogsPartitionConfig(rName, roleArn, "Updated partition"),
+				Config: testAccNewRelicFederatedLogsPartitionConfig(rName, roleArn, "Updated partition", false, 60),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFederatedLogsPartitionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated partition"),
+					resource.TestCheckResourceAttr(resourceName, "active", "false"),
+					resource.TestCheckResourceAttr(resourceName, "data_retention_policy.0.duration", "60"),
 				),
 			},
 			{
@@ -62,7 +67,7 @@ func TestAccNewRelicFederatedLogsPartition_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicFederatedLogsPartitionConfig(name, roleArn, description string) string {
+func testAccNewRelicFederatedLogsPartitionConfig(name, roleArn, description string, active bool, retentionDuration int) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "ingest" {
   name     = "%[1]s-ingest"
@@ -106,6 +111,7 @@ resource "newrelic_federated_logs_partition" "foo" {
   setup_id    = newrelic_federated_logs_setup.parent.id
   name        = "%[1]s-partition"
   description = "%[3]s"
+  active      = %[4]t
 
   storage {
     table             = "log_transactions_secondary"
@@ -113,11 +119,11 @@ resource "newrelic_federated_logs_partition" "foo" {
   }
 
   data_retention_policy {
-    duration = 30
+    duration = %[5]d
     unit     = "DAYS"
   }
 }
-`, name, roleArn, description)
+`, name, roleArn, description, active, retentionDuration)
 }
 
 func testAccCheckNewRelicFederatedLogsPartitionExists(name string) resource.TestCheckFunc {
@@ -174,7 +180,7 @@ func TestAccNewRelicFederatedLogsPartition_ImmutableFieldsError(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFederatedLogsPartitionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicFederatedLogsPartitionConfig(rName, roleArn, "Initial partition"),
+				Config: testAccNewRelicFederatedLogsPartitionConfig(rName, roleArn, "Initial partition", true, 30),
 				Check:  resource.ComposeTestCheckFunc(testAccCheckNewRelicFederatedLogsPartitionExists(resourceName)),
 			},
 			{

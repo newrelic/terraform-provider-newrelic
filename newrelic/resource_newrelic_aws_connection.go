@@ -216,7 +216,58 @@ func resourceNewRelicAwsConnectionRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceNewRelicAwsConnectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Update not yet supported for AwsConnectionEntity in the client
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	entityID := d.Id()
+	log.Printf("[INFO] Updating New Relic AWS Connection entity with ID %s", entityID)
+
+	getResp, err := client.Federatedlogs.GetEntityWithContext(ctx, entityID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if getResp == nil {
+		d.SetId("")
+		return nil
+	}
+	awsEntity, ok := (*getResp).(*federatedlogs.EntityManagementAwsConnectionEntity)
+	if !ok {
+		return diag.Errorf("unexpected entity type %T for ID %s", *getResp, entityID)
+	}
+
+	// Build the update input from changed fields only. Each field has
+	// json:",omitempty" on the wire, so unset fields are not sent.
+	input := federatedlogs.EntityManagementAwsConnectionEntityUpdateInput{}
+	if d.HasChange("name") {
+		input.Name = d.Get("name").(string)
+	}
+	if d.HasChange("description") {
+		input.Description = d.Get("description").(string)
+	}
+	if d.HasChange("enabled") {
+		input.Enabled = d.Get("enabled").(bool)
+	}
+	if d.HasChange("external_id") {
+		input.ExternalId = d.Get("external_id").(string)
+	}
+	if d.HasChange("region") {
+		input.Region = d.Get("region").(string)
+	}
+	if d.HasChange("role_arn") {
+		input.Credential = federatedlogs.EntityManagementAwsCredentialsUpdateInput{
+			AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigUpdateInput{
+				RoleArn: d.Get("role_arn").(string),
+			},
+		}
+	}
+	if d.HasChange("settings") {
+		input.Settings = expandAwsConnectionSettingsUpdate(d.Get("settings").([]interface{}))
+	}
+
+	if _, err := client.Federatedlogs.EntityManagementUpdateAwsConnectionWithContext(ctx, input, entityID, awsEntity.Metadata.Version); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceNewRelicAwsConnectionRead(ctx, d, meta)
 }
 
@@ -259,6 +310,22 @@ func expandAwsConnectionSettings(settings []interface{}) []federatedlogs.EntityM
 	for i, s := range settings {
 		setting := s.(map[string]interface{})
 		result[i] = federatedlogs.EntityManagementConnectionSettingsCreateInput{
+			Key:   setting["key"].(string),
+			Value: setting["value"].(string),
+		}
+	}
+	return result
+}
+
+// expandAwsConnectionSettingsUpdate is the update-path counterpart to
+// expandAwsConnectionSettings. The Create / Update input types have identical
+// fields (Key, Value) but distinct Go types; client-go keeps them separate
+// because the GraphQL schema declares them separately.
+func expandAwsConnectionSettingsUpdate(settings []interface{}) []federatedlogs.EntityManagementConnectionSettingsUpdateInput {
+	result := make([]federatedlogs.EntityManagementConnectionSettingsUpdateInput, len(settings))
+	for i, s := range settings {
+		setting := s.(map[string]interface{})
+		result[i] = federatedlogs.EntityManagementConnectionSettingsUpdateInput{
 			Key:   setting["key"].(string),
 			Value: setting["value"].(string),
 		}

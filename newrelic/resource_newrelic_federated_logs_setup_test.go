@@ -25,11 +25,12 @@ func TestAccNewRelicFederatedLogsSetup_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFederatedLogsSetupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicFederatedLogsSetupConfig(rName, roleArn, "Initial setup"),
+				Config: testAccNewRelicFederatedLogsSetupConfig(rName, roleArn, "Initial setup", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFederatedLogsSetupExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Initial setup"),
+					resource.TestCheckResourceAttr(resourceName, "active", "true"),
 					resource.TestCheckResourceAttr(resourceName, "storage.0.data_location_bucket", "tf-test-fed-logs-bucket"),
 					resource.TestCheckResourceAttr(resourceName, "storage.0.database", "tf_test_fed_logs_db"),
 					resource.TestCheckResourceAttr(resourceName, "storage.0.cloud_provider_configuration.0.provider", "AWS"),
@@ -39,13 +40,14 @@ func TestAccNewRelicFederatedLogsSetup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "lifecycle_status.0.status"),
 				),
 			},
-			// Update name and description (mutable via FederatedLogsUpdateSetup).
+			// Update name + description + active (all mutable per FederatedLogsUpdateSetupInput).
 			{
-				Config: testAccNewRelicFederatedLogsSetupConfig(rName+"-updated", roleArn, "Updated setup"),
+				Config: testAccNewRelicFederatedLogsSetupConfig(rName+"-updated", roleArn, "Updated setup", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFederatedLogsSetupExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName+"-updated"),
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated setup"),
+					resource.TestCheckResourceAttr(resourceName, "active", "false"),
 				),
 			},
 			{
@@ -65,7 +67,7 @@ func TestAccNewRelicFederatedLogsSetup_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicFederatedLogsSetupConfig(name, roleArn, description string) string {
+func testAccNewRelicFederatedLogsSetupConfig(name, roleArn, description string, active bool) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "ingest" {
   name     = "%[1]s-ingest"
@@ -84,6 +86,7 @@ resource "newrelic_aws_connection" "query" {
 resource "newrelic_federated_logs_setup" "foo" {
   name        = "%[1]s"
   description = "%[3]s"
+  active      = %[4]t
 
   storage {
     data_location_bucket      = "tf-test-fed-logs-bucket"
@@ -109,7 +112,7 @@ resource "newrelic_federated_logs_setup" "foo" {
     }
   }
 }
-`, name, roleArn, description)
+`, name, roleArn, description, active)
 }
 
 func testAccCheckNewRelicFederatedLogsSetupExists(name string) resource.TestCheckFunc {
@@ -168,7 +171,7 @@ func TestAccNewRelicFederatedLogsSetup_ImmutableFieldsError(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFederatedLogsSetupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicFederatedLogsSetupConfig(rName, roleArn, "Initial setup"),
+				Config: testAccNewRelicFederatedLogsSetupConfig(rName, roleArn, "Initial setup", true),
 				Check:  resource.ComposeTestCheckFunc(testAccCheckNewRelicFederatedLogsSetupExists(resourceName)),
 			},
 			{
