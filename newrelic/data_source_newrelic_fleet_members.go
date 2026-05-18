@@ -50,6 +50,21 @@ func dataSourceNewRelicFleetMembers() *schema.Resource {
 	}
 }
 
+// dataSourceNewRelicFleetMembersRead fetches the current member list from the
+// API and stores it in the computed "members" attribute.
+//
+// It operates in two modes depending on whether "ring" is set:
+//
+//   - Unfiltered (ring = ""): returns every entity across all rings in the
+//     fleet. Useful for a complete inventory of who belongs to a fleet.
+//   - Ring-filtered (ring = "default", "canary", etc.): returns only the
+//     entities assigned to that specific ring. Useful when you need to know
+//     exactly which entities are in a given rollout tier.
+//
+// The resource ID is set to fleetID for the unfiltered case, and to
+// "fleetID:ring" for the filtered case. This ensures that two data source
+// blocks targeting the same fleet but different rings can coexist in the
+// same configuration without colliding on the same Terraform resource ID.
 func dataSourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
@@ -61,6 +76,8 @@ func dataSourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
 	}
 
+	// Convert the API result slice into the []interface{} form that the
+	// Terraform SDK expects when setting a TypeList[schema.Resource] attribute.
 	members := make([]interface{}, len(allItems))
 	for i, item := range allItems {
 		members[i] = map[string]interface{}{
@@ -74,6 +91,9 @@ func dataSourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	// Construct a stable, unique ID. Using just fleetID would cause two data
+	// source instances on the same fleet (one filtered, one not) to share the
+	// same ID, which confuses Terraform's state tracking.
 	id := fleetID
 	if ring != "" {
 		id = fmt.Sprintf("%s:%s", fleetID, ring)
