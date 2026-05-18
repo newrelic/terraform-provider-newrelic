@@ -31,7 +31,7 @@ func resourceNewRelicFleetMembers() *schema.Resource {
 				Type:     schema.TypeList,
 				Required: true,
 				Description: "One or more ring blocks. Each block declares which entities to place in that ring. " +
-					"Only rings explicitly declared here are managed — any other rings on the fleet are left untouched.",
+					"Only rings explicitly declared here are managed - any other rings on the fleet are left untouched.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -83,10 +83,10 @@ func resourceNewRelicFleetMembersCreate(ctx context.Context, d *schema.ResourceD
 		if len(alreadyAssigned) > 0 {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ring.name),
+				Summary:  fmt.Sprintf("Entities already assigned in fleet - skipped add for ring %q", ring.name),
 				Detail: fmt.Sprintf(
 					"The following entities are already assigned somewhere in fleet %q. "+
-						"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
+						"If they are already in ring %q, they are now Terraform-managed - removing them from entity_ids will remove them from the fleet. "+
 						"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
 					fleetID, ring.name, strings.Join(alreadyAssigned, "\n  - "),
 				),
@@ -257,7 +257,7 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	// Ring blocks removed from config — remove all their previously declared entities.
+	// Ring blocks removed from config - remove all their previously declared entities.
 	for ringName, oldIDs := range oldByName {
 		if _, stillExists := newByName[ringName]; !stillExists && len(oldIDs) > 0 {
 			toRemove = append(toRemove, fleetcontrol.FleetControlFleetMemberRingInput{Ring: ringName, EntityIds: oldIDs})
@@ -378,10 +378,10 @@ func fleetMembersComputeAdds(
 	if len(alreadyAssigned) > 0 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary:  fmt.Sprintf("Entities already assigned in fleet — skipped add for ring %q", ringName),
+			Summary:  fmt.Sprintf("Entities already assigned in fleet - skipped add for ring %q", ringName),
 			Detail: fmt.Sprintf(
 				"The following entities are already assigned somewhere in fleet %q. "+
-					"If they are already in ring %q, they are now Terraform-managed — removing them from entity_ids will remove them from the fleet. "+
+					"If they are already in ring %q, they are now Terraform-managed - removing them from entity_ids will remove them from the fleet. "+
 					"If they are in a different ring, remove them from that ring first and re-apply:\n  - %s",
 				fleetID, ringName, strings.Join(alreadyAssigned, "\n  - "),
 			),
@@ -402,14 +402,16 @@ func expandFleetMemberRings(raw []interface{}) []fleetMemberRing {
 	return rings
 }
 
-// getAllFleetMembers returns all member entity IDs across all rings of a fleet.
-func getAllFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID string) ([]string, error) {
-	var allEntityIDs []string
+// fetchFleetMembers pages through the fleet members API and returns all results.
+// Pass an empty ring to query across all rings.
+func fetchFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]fleetcontrol.FleetControlFleetMemberEntityResult, error) {
+	var all []fleetcontrol.FleetControlFleetMemberEntityResult
 	var cursor *string
 
 	for {
-		filter := &fleetcontrol.FleetControlFleetMembersFilterInput{
-			FleetId: fleetID,
+		filter := &fleetcontrol.FleetControlFleetMembersFilterInput{FleetId: fleetID}
+		if ring != "" {
+			filter.Ring = ring
 		}
 
 		result, err := client.FleetControl.GetFleetMembersWithContext(ctx, cursor, filter)
@@ -417,50 +419,42 @@ func getAllFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID string
 			return nil, err
 		}
 
-		for _, item := range result.Items {
-			allEntityIDs = append(allEntityIDs, item.ID)
-		}
+		all = append(all, result.Items...)
 
 		if result.NextCursor == "" {
 			break
 		}
-
 		next := result.NextCursor
 		cursor = &next
 	}
 
-	return allEntityIDs, nil
+	return all, nil
+}
+
+// getAllFleetMembers returns all member entity IDs across all rings of a fleet.
+func getAllFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID string) ([]string, error) {
+	items, err := fetchFleetMembers(ctx, client, fleetID, "")
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, len(items))
+	for i, item := range items {
+		ids[i] = item.ID
+	}
+	return ids, nil
 }
 
 // getAllFleetMembersInRing returns all member entity IDs for a specific ring.
 func getAllFleetMembersInRing(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]string, error) {
-	var allEntityIDs []string
-	var cursor *string
-
-	for {
-		filter := &fleetcontrol.FleetControlFleetMembersFilterInput{
-			FleetId: fleetID,
-			Ring:    ring,
-		}
-
-		result, err := client.FleetControl.GetFleetMembersWithContext(ctx, cursor, filter)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, item := range result.Items {
-			allEntityIDs = append(allEntityIDs, item.ID)
-		}
-
-		if result.NextCursor == "" {
-			break
-		}
-
-		next := result.NextCursor
-		cursor = &next
+	items, err := fetchFleetMembers(ctx, client, fleetID, ring)
+	if err != nil {
+		return nil, err
 	}
-
-	return allEntityIDs, nil
+	ids := make([]string, len(items))
+	for i, item := range items {
+		ids[i] = item.ID
+	}
+	return ids, nil
 }
 
 // stringSliceToSet converts a string slice to a map for O(1) lookup.

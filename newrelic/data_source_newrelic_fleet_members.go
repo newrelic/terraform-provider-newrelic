@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/fleetcontrol"
 )
 
 func dataSourceNewRelicFleetMembers() *schema.Resource {
@@ -52,36 +51,14 @@ func dataSourceNewRelicFleetMembers() *schema.Resource {
 }
 
 func dataSourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
+	client := meta.(*ProviderConfig).NewClient
 
 	fleetID := d.Get("fleet_id").(string)
 	ring := d.Get("ring").(string)
 
-	var allItems []fleetcontrol.FleetControlFleetMemberEntityResult
-	var cursor *string
-
-	for {
-		filter := &fleetcontrol.FleetControlFleetMembersFilterInput{
-			FleetId: fleetID,
-		}
-		if ring != "" {
-			filter.Ring = ring
-		}
-
-		result, err := client.FleetControl.GetFleetMembersWithContext(ctx, cursor, filter)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
-		}
-
-		allItems = append(allItems, result.Items...)
-
-		if result.NextCursor == "" {
-			break
-		}
-
-		next := result.NextCursor
-		cursor = &next
+	allItems, err := fetchFleetMembers(ctx, client, fleetID, ring)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
 	}
 
 	members := make([]interface{}, len(allItems))
