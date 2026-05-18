@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/pipelinecontrol"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/federatedlogs"
 )
 
 func resourceNewRelicAwsConnection() *schema.Resource {
@@ -112,16 +112,16 @@ func resourceNewRelicAwsConnectionCreate(ctx context.Context, d *schema.Resource
 		_ = d.Set("account_id", accountID)
 	}
 
-	input := pipelinecontrol.EntityManagementAwsConnectionEntityCreateInput{
+	input := federatedlogs.EntityManagementAwsConnectionEntityCreateInput{
 		Name:    d.Get("name").(string),
 		Enabled: d.Get("enabled").(bool),
-		Credential: pipelinecontrol.EntityManagementAwsCredentialsCreateInput{
-			AssumeRole: pipelinecontrol.EntityManagementAwsAssumeRoleConfigCreateInput{
+		Credential: federatedlogs.EntityManagementAwsCredentialsCreateInput{
+			AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigCreateInput{
 				RoleArn: d.Get("role_arn").(string),
 			},
 		},
-		Scope: pipelinecontrol.EntityManagementScopedReferenceInput{
-			Type: pipelinecontrol.EntityManagementEntityScope(scopeType),
+		Scope: federatedlogs.EntityManagementScopedReferenceInput{
+			Type: federatedlogs.EntityManagementEntityScope(scopeType),
 			ID:   scopeID,
 		},
 	}
@@ -139,7 +139,7 @@ func resourceNewRelicAwsConnectionCreate(ctx context.Context, d *schema.Resource
 		input.Settings = expandAwsConnectionSettings(v.([]interface{}))
 	}
 
-	resp, err := client.Pipelinecontrol.EntityManagementCreateAwsConnectionWithContext(ctx, input)
+	resp, err := client.Federatedlogs.EntityManagementCreateAwsConnectionWithContext(ctx, input)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,7 +157,7 @@ func resourceNewRelicAwsConnectionRead(ctx context.Context, d *schema.ResourceDa
 
 	entityID := d.Id()
 
-	resp, err := client.Pipelinecontrol.GetEntityWithContext(ctx, entityID)
+	resp, err := client.Federatedlogs.GetEntityWithContext(ctx, entityID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,8 +168,8 @@ func resourceNewRelicAwsConnectionRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	switch entityType := (*resp).(type) {
-	case *pipelinecontrol.EntityManagementAwsConnectionEntity:
-		entity := (*resp).(*pipelinecontrol.EntityManagementAwsConnectionEntity)
+	case *federatedlogs.EntityManagementAwsConnectionEntity:
+		entity := (*resp).(*federatedlogs.EntityManagementAwsConnectionEntity)
 
 		accountIDStr := entity.Scope.ID
 		accountIDInt, accountIDIntErr := strconv.Atoi(accountIDStr)
@@ -228,7 +228,22 @@ func resourceNewRelicAwsConnectionDelete(ctx context.Context, d *schema.Resource
 
 	entityID := d.Id()
 
-	result, err := client.Pipelinecontrol.EntityManagementDelete(entityID)
+	// EntityManagementDelete requires the entity's current metadata.version
+	// for optimistic concurrency control. Fetch it first.
+	getResp, err := client.Federatedlogs.GetEntityWithContext(ctx, entityID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if getResp == nil {
+		d.SetId("")
+		return nil
+	}
+	awsEntity, ok := (*getResp).(*federatedlogs.EntityManagementAwsConnectionEntity)
+	if !ok {
+		return diag.Errorf("unexpected entity type %T for ID %s", *getResp, entityID)
+	}
+
+	result, err := client.Federatedlogs.EntityManagementDeleteWithContext(ctx, entityID, awsEntity.Metadata.Version)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -239,11 +254,11 @@ func resourceNewRelicAwsConnectionDelete(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func expandAwsConnectionSettings(settings []interface{}) []pipelinecontrol.EntityManagementConnectionSettingsCreateInput {
-	result := make([]pipelinecontrol.EntityManagementConnectionSettingsCreateInput, len(settings))
+func expandAwsConnectionSettings(settings []interface{}) []federatedlogs.EntityManagementConnectionSettingsCreateInput {
+	result := make([]federatedlogs.EntityManagementConnectionSettingsCreateInput, len(settings))
 	for i, s := range settings {
 		setting := s.(map[string]interface{})
-		result[i] = pipelinecontrol.EntityManagementConnectionSettingsCreateInput{
+		result[i] = federatedlogs.EntityManagementConnectionSettingsCreateInput{
 			Key:   setting["key"].(string),
 			Value: setting["value"].(string),
 		}
@@ -251,7 +266,7 @@ func expandAwsConnectionSettings(settings []interface{}) []pipelinecontrol.Entit
 	return result
 }
 
-func flattenAwsConnectionSettings(settings []pipelinecontrol.EntityManagementConnectionSettings) []map[string]interface{} {
+func flattenAwsConnectionSettings(settings []federatedlogs.EntityManagementConnectionSettings) []map[string]interface{} {
 	result := make([]map[string]interface{}, len(settings))
 	for i, s := range settings {
 		result[i] = map[string]interface{}{
