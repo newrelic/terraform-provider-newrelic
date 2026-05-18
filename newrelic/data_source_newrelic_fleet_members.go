@@ -56,7 +56,7 @@ func dataSourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceD
 	fleetID := d.Get("fleet_id").(string)
 	ring := d.Get("ring").(string)
 
-	allItems, err := fetchFleetMembers(ctx, client, fleetID, ring)
+	allItems, err := queryFleetMembers(ctx, client, fleetID, ring)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
 	}
