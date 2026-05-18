@@ -41,7 +41,7 @@ func TestAccNewRelicFleetMembersDataSource_ByRing(t *testing.T) {
 	fleetName := fmt.Sprintf("tf-test-ds-members-ring-%s", acctest.RandString(5))
 
 	setupFleetTestCredentials(t)
-	entityIDs := testAccFleetMembersEntityIDs(t, 1)
+	entityIDs := testAccFleetMembersEntityIDs(t, 2)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
@@ -49,10 +49,11 @@ func TestAccNewRelicFleetMembersDataSource_ByRing(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFleetMembersDataSourceByRing(fleetName, entityIDs[0]),
+				Config: testAccFleetMembersDataSourceByRing(fleetName, entityIDs[1]),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dsName, "fleet_id"),
 					resource.TestCheckResourceAttr(dsName, "ring", "default"),
+					resource.TestCheckResourceAttrSet(dsName, "members.#"),
 				),
 			},
 		},

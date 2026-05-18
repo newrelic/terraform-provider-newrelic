@@ -20,7 +20,7 @@ Entities can join a fleet ring through two independent paths:
 
 2. **Explicit assignment** — this resource manages entities via the `FleetControlAddFleetMembers` and `FleetControlRemoveFleetMembers` API mutations. Only entities listed in `entity_ids` are tracked.
 
-This resource operates on an **opt-in management model**: it tracks only the entities explicitly declared in each `ring` block. Entities present in a ring through any other means—including Agent Control instrumentation—are not visible to Terraform, are never reported as drift, and are never removed by this resource.
+This resource operates on an **opt-in management model**: it tracks only the entities explicitly declared in each `ring` block. Entities present in a ring through any other means—including Agent Control instrumentation—are not visible to Terraform, are never reported as drift, and are never removed by this resource — unless they are explicitly added to `entity_ids`, at which point they come under full Terraform lifecycle management and can be removed from a ring or moved to another ring on the next `apply`.
 
 ## Warning reference
 
