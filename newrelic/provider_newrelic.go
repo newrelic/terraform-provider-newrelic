@@ -61,7 +61,7 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("NEW_RELIC_REGION", "US"),
 				Description:  "The data center for which your New Relic account is configured. Only one region per provider block is permitted.",
-				ValidateFunc: validation.StringInSlice([]string{"US", "EU", "Staging"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"US", "EU", "JP", "Staging"}, true),
 			},
 			// New Relic internal use only
 			"api_url": {
@@ -136,6 +136,7 @@ func Provider() *schema.Provider {
 			"newrelic_test_grok_pattern":            dataSourceNewRelicTestGrokPattern(),
 			"newrelic_service_level_alert_helper":   dataSourceNewRelicServiceLevelAlertHelper(),
 			"newrelic_user":                         dataSourceNewRelicUser(),
+			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -193,6 +194,8 @@ func Provider() *schema.Provider {
 			"newrelic_workload":                                 resourceNewRelicWorkload(),
 			"newrelic_user":                                     resourceNewRelicUser(),
 			"newrelic_fleet":                                    resourceNewRelicFleet(),
+			"newrelic_fleet_configuration":                      resourceNewRelicFleetConfiguration(),
+			"newrelic_fleet_deployment":                         resourceNewRelicFleetDeployment(),
 			"newrelic_workflow_automation":                      resourceNewRelicWorkflowAutomation(),
 		},
 	}

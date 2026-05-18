@@ -46,14 +46,28 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 				Config:      testAccNewRelicProviderConfig("EU", "", rName),
 				ExpectError: regexp.MustCompile(expectedErrorMsgRegex),
 			},
+			// Test: Region "JP"
+			{
+				Config:      testAccNewRelicProviderConfig("JP", "", rName),
+				ExpectError: regexp.MustCompile(expectedErrorMsgRegex),
+			},
 			// Test: Override US region URLs with EU region URLs (will result in an auth error)
 			{
 				Config:      testAccNewRelicProviderConfig("US", `nerdgraph_api_url = "https://api.eu.newrelic.com/graphql"`, rName),
 				ExpectError: regexp.MustCompile(expectedErrorMsgRegex),
 			},
+			// Test: Override US region URLs with JP region URLs (will result in an auth error)
+			{
+				Config:      testAccNewRelicProviderConfig("US", `nerdgraph_api_url = "https://api.jp.newrelic.com/graphql"`, rName),
+				ExpectError: regexp.MustCompile(expectedErrorMsgRegex),
+			},
 			// Test: Override EU region URLs with US region URLs (should work since the TF acct is US-based)
 			{
 				Config: testAccNewRelicProviderConfig("EU", `nerdgraph_api_url = "https://api.newrelic.com/graphql"`, rName),
+			},
+			// Test: Override JP region URLs with US region URLs (should work since the TF acct is US-based)
+			{
+				Config: testAccNewRelicProviderConfig("JP", `nerdgraph_api_url = "https://api.newrelic.com/graphql"`, rName),
 			},
 			// Test: Case insensitivity
 			{

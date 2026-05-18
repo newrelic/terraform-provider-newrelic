@@ -131,6 +131,9 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 			return resource.NonRetryableError(err)
 		}
 
+		// When entity doesn't exist, API returns nil response with no error
+		// Retry to allow time for eventual consistency during resource creation
+		// If retries exhaust, we handle it as a deleted resource in the retryErr check below
 		if resp == nil || *resp == nil {
 			return resource.RetryableError(fmt.Errorf("entity with GUID %s not found", guid))
 		}
@@ -176,7 +179,13 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 	})
 
 	if retryErr != nil {
-		d.SetId("")
+		// After all retries exhausted, if the entity was not found, it means it was deleted outside Terraform
+		// Clear the ID and return nil (not an error) to signal Terraform the resource should be recreated
+		if strings.Contains(retryErr.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
+		// For other errors (non-not-found), return them as actual errors
 		return diag.FromErr(retryErr)
 	}
 

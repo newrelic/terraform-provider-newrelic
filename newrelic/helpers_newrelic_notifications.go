@@ -99,7 +99,7 @@ func buildAiNotificationsResponseError(err ai.AiNotificationsResponseError) diag
 }
 
 // Builds an array of typed notifications response errors based on the GraphQL `response.errors` array.
-func buildAiNotificationsResponseErrors(errors []notifications.AiNotificationsResponseError) diag.Diagnostics {
+func buildAiNotificationsResponseErrors(errors []ai.AiNotificationsResponseError) diag.Diagnostics {
 	var diagErrors diag.Diagnostics
 	for _, err := range errors {
 		diagErrors = append(diagErrors, diag.Diagnostic{

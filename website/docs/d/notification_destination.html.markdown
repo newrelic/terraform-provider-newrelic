@@ -126,7 +126,12 @@ Exactly one of the following attributes is required:
 * `exact_name` - (Optional) The exact name of the notification destination. Uses an **exact** match, so searching for "foo" would only match "foo", not "foobar".
 
 Optional:
+
 * `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
+* `scope` - (Optional) The scope of destination which has two parameters scope type and ID. This is required when trying to get  either account scoped or cross account destination. The scope type can be either `ORGANIZATION` or `ACCOUNT`. If the scope type is `ORGANIZATION`, then the scope ID should be the Organization UUID. If the scope type is `ACCOUNT`, then the scope ID should be the New Relic account ID. 
+
+Note:
+    By Default account scope is considered for the destination until unless it is mentioned explicitly in the arguments. If you want to get a cross account destination, then you need to provide the scope of destination in the arguments.    
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

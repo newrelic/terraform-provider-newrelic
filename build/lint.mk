@@ -26,11 +26,11 @@ lint-fix: deps spell-check-fix gofmt-fix goimports
 #
 spell-check: deps
 	@echo "=== $(PROJECT_NAME) === [ spell-check      ]: Checking for spelling mistakes with $(MISSPELL)..."
-	@$(MISSPELL) -source text $(FILES)
+	@$(MISSPELL) -source text -i importas $(FILES)
 
 spell-check-fix: deps
 	@echo "=== $(PROJECT_NAME) === [ spell-check-fix  ]: Fixing spelling mistakes with $(MISSPELL)..."
-	@$(MISSPELL) -source text -w $(FILES)
+	@$(MISSPELL) -source text -i importas -w $(FILES)
 
 gofmt: deps
 	@echo "=== $(PROJECT_NAME) === [ gofmt            ]: Checking file format with $(GOFMT)..."

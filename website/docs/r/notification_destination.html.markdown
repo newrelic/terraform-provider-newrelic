@@ -330,7 +330,9 @@ This example is especially useful for slack destinations which *must* be importe
 resource "newrelic_notification_destination" "foo" {
 }
 ```
-2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
+2. Run import command:
+   - **Account scope** (default): `terraform import newrelic_notification_destination.foo <destination_id>`
+   - **Organization scope**: `terraform import newrelic_notification_destination.foo <destination_id>:ORGANIZATION:<organization_id>`
 3. Run the following command after the import successfully done and copy the information to your resource:
    `terraform state show newrelic_notification_destination.foo`
 4. Add `ignore_changes` attribute on `all` in your imported resource:

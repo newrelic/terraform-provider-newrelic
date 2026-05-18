@@ -288,8 +288,12 @@ func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"scope.0.id",
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:ORGANIZATION:%s", rs.Primary.ID, orgUUID), nil
 				},
 			},
 		},
@@ -406,26 +410,28 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 			continue
 		}
 
-		var accountID int
 		id := r.Primary.ID
-		accountID = providerConfig.AccountID
 		filters := ai.AiNotificationsDestinationFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		resp, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
+		var resp *notifications.AiNotificationsDestinationsResponse
+		var err error
 
-		// fmt.Print("\n\n **************************** \n")
-		// fmt.Printf("\n DestinationDestroy:  %+v \n", toJSON(r.Primary.Attributes))
-		// fmt.Print("\n **************************** \n\n")
-
-		if len(resp.Entities) > 0 {
-			return fmt.Errorf("notification destination still exists")
+		scopeType := r.Primary.Attributes["scope.0.type"]
+		if scopeType == "ORGANIZATION" {
+			resp, err = client.Notifications.GetDestinationsOrganization(nil, &filters, nil)
+		} else {
+			accountID := providerConfig.AccountID
+			resp, err = client.Notifications.GetDestinationsAccount(accountID, nil, &filters, nil)
 		}
 
 		if err != nil {
 			return err
+		}
+
+		if resp != nil && len(resp.Entities) > 0 {
+			return fmt.Errorf("notification destination still exists")
 		}
 	}
 	return nil
@@ -444,21 +450,27 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 			return fmt.Errorf("no destination ID is set")
 		}
 
-		var accountID int
 		id := rs.Primary.ID
-		accountID = providerConfig.AccountID
 		filters := ai.AiNotificationsDestinationFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		found, err := client.Notifications.GetDestinationsWithScope(accountID, "", filters, sorter)
+		var found *notifications.AiNotificationsDestinationsResponse
+		var err error
+
+		scopeType := rs.Primary.Attributes["scope.0.type"]
+		if scopeType == "ORGANIZATION" {
+			found, err = client.Notifications.GetDestinationsOrganization(nil, &filters, nil)
+		} else {
+			accountID := providerConfig.AccountID
+			found, err = client.Notifications.GetDestinationsAccount(accountID, nil, &filters, nil)
+		}
 
 		if err != nil {
 			return err
 		}
 
-		if string(found.Entities[0].ID) != rs.Primary.ID {
+		if found == nil || len(found.Entities) == 0 || string(found.Entities[0].ID) != rs.Primary.ID {
 			return fmt.Errorf("destination not found: %v - %v", rs.Primary.ID, found)
 		}
 
