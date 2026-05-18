@@ -64,6 +64,14 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 					},
 				),
 			},
+			// ── DS check after S1 ── Data source (no ring filter) must reflect
+			// the two members just created by the resource.
+			{
+				Config: testAccFleetMembersConfigSingleRingWithDS(fleetName, "default", []string{e1, e2}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.newrelic_fleet_members.test", "members.#", "2"),
+				),
+			},
 			// ── S3 ── Update add: introduce e3.
 			// Expect: ring now has three entities, no warnings.
 			{
@@ -106,6 +114,16 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ring.0.entity_ids.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "ring.1.name", "canary"),
 					resource.TestCheckResourceAttr(resourceName, "ring.1.entity_ids.#", "2"),
+				),
+			},
+			// ── DS check after S6 ── Two data sources in one step: unfiltered view
+			// sees all 3 members across both rings; ring-filtered view sees only the
+			// 1 member in "default". This exercises both data source modes together.
+			{
+				Config: testAccFleetMembersConfigMultiRingWithDualDS(fleetName, []string{e1}, []string{e2, e3}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.newrelic_fleet_members.all", "members.#", "3"),
+					resource.TestCheckResourceAttr("data.newrelic_fleet_members.default_ring", "members.#", "1"),
 				),
 			},
 			// ── S7 ── Move both canary entities to default in one apply.
@@ -448,4 +466,60 @@ func joinQuoted(ss []string) string {
 		quoted[i] = fmt.Sprintf("%q", s)
 	}
 	return strings.Join(quoted, ", ")
+}
+
+func testAccFleetMembersConfigSingleRingWithDS(fleetName, ringName string, entityIDs []string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet" "test" {
+  name                = %q
+  managed_entity_type = "HOST"
+  operating_system    = "LINUX"
+}
+
+resource "newrelic_fleet_members" "test" {
+  fleet_id = newrelic_fleet.test.id
+  ring {
+    name       = %q
+    entity_ids = [%s]
+  }
+}
+
+data "newrelic_fleet_members" "test" {
+  fleet_id   = newrelic_fleet.test.id
+  depends_on = [newrelic_fleet_members.test]
+}
+`, fleetName, ringName, joinQuoted(entityIDs))
+}
+
+func testAccFleetMembersConfigMultiRingWithDualDS(fleetName string, defaultIDs, canaryIDs []string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet" "test" {
+  name                = %q
+  managed_entity_type = "HOST"
+  operating_system    = "LINUX"
+}
+
+resource "newrelic_fleet_members" "test" {
+  fleet_id = newrelic_fleet.test.id
+  ring {
+    name       = "default"
+    entity_ids = [%s]
+  }
+  ring {
+    name       = "canary"
+    entity_ids = [%s]
+  }
+}
+
+data "newrelic_fleet_members" "all" {
+  fleet_id   = newrelic_fleet.test.id
+  depends_on = [newrelic_fleet_members.test]
+}
+
+data "newrelic_fleet_members" "default_ring" {
+  fleet_id   = newrelic_fleet.test.id
+  ring       = "default"
+  depends_on = [newrelic_fleet_members.test]
+}
+`, fleetName, joinQuoted(defaultIDs), joinQuoted(canaryIDs))
 }

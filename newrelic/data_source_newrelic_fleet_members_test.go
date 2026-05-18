@@ -2,109 +2,23 @@
 
 package newrelic
 
-import (
-	"fmt"
-	"testing"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-)
-
-// TestAccNewRelicFleetMembersDataSource_All reads all members of a fleet
-// (no ring filter) and checks the data source populates the members list.
-func TestAccNewRelicFleetMembersDataSource_All(t *testing.T) {
-	dsName := "data.newrelic_fleet_members.all"
-	fleetName := fmt.Sprintf("tf-test-ds-members-%s", acctest.RandString(5))
-
-	setupFleetTestCredentials(t)
-	entityIDs := testAccFleetMembersEntityIDs(t, 1)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccFleetMembersDataSourceAll(fleetName, entityIDs[0]),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dsName, "fleet_id"),
-					resource.TestCheckResourceAttrSet(dsName, "members.#"),
-				),
-			},
-		},
-	})
-}
-
-// TestAccNewRelicFleetMembersDataSource_ByRing reads members filtered by ring.
-func TestAccNewRelicFleetMembersDataSource_ByRing(t *testing.T) {
-	dsName := "data.newrelic_fleet_members.by_ring"
-	fleetName := fmt.Sprintf("tf-test-ds-members-ring-%s", acctest.RandString(5))
-
-	setupFleetTestCredentials(t)
-	entityIDs := testAccFleetMembersEntityIDs(t, 2)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetMembersDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccFleetMembersDataSourceByRing(fleetName, entityIDs[1]),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dsName, "fleet_id"),
-					resource.TestCheckResourceAttr(dsName, "ring", "default"),
-					resource.TestCheckResourceAttrSet(dsName, "members.#"),
-				),
-			},
-		},
-	})
-}
-
-// Config templates
-
-func testAccFleetMembersDataSourceAll(fleetName, entityID string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet" "test" {
-  name                = %q
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-}
-
-resource "newrelic_fleet_members" "default" {
-  fleet_id = newrelic_fleet.test.id
-  ring {
-    name       = "default"
-    entity_ids = [%q]
-  }
-}
-
-data "newrelic_fleet_members" "all" {
-  fleet_id   = newrelic_fleet.test.id
-  depends_on = [newrelic_fleet_members.default]
-}
-`, fleetName, entityID)
-}
-
-func testAccFleetMembersDataSourceByRing(fleetName, entityID string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet" "test" {
-  name                = %q
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-}
-
-resource "newrelic_fleet_members" "default" {
-  fleet_id = newrelic_fleet.test.id
-  ring {
-    name       = "default"
-    entity_ids = [%q]
-  }
-}
-
-data "newrelic_fleet_members" "by_ring" {
-  fleet_id   = newrelic_fleet.test.id
-  ring       = "default"
-  depends_on = [newrelic_fleet_members.default]
-}
-`, fleetName, entityID)
-}
+// Acceptance tests for the newrelic_fleet_members data source have been
+// integrated into TestAccNewRelicFleetMembers_Lifecycle in
+// resource_newrelic_fleet_members_test.go.
+//
+// The standalone tests that previously lived here each created their own fleet
+// and added a single entity to it just to read it back — simple enough, but
+// they required a separate entity pool to avoid parallel conflicts with the
+// resource lifecycle test (which already owns the same entity IDs). Keeping
+// them separate would have also meant the data source was only ever verified
+// in an almost-empty, single-step scenario.
+//
+// The integrated approach is better on both counts:
+//   - No entity pool conflicts: the data source steps re-use the same fleet
+//     and entities that the lifecycle test is already managing, so no
+//     additional environment setup is needed.
+//   - Richer coverage: the data source is verified at two meaningful points in
+//     the lifecycle — after a single-ring create (exercises the unfiltered
+//     all-members mode) and after a multi-ring setup (exercises both the
+//     unfiltered mode and the ring-filter mode side-by-side), confirming the
+//     data source accurately reflects what the resource actually applied.
