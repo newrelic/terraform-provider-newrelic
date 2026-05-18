@@ -74,15 +74,16 @@ func resourceNewRelicFleetMembers() *schema.Resource {
 // resourceNewRelicFleetMembersCreate assigns entities to the declared rings
 // for the first time.
 //
-// Before issuing the add mutation it calls fleetMembersFilterAdds for each
-// ring, which checks whether any of the requested entities are already
-// somewhere in the fleet (e.g. added by Agent Control or a previous partial
-// run). Those entities are skipped for the mutation — the API would reject a
-// duplicate add — but if they happen to already be in the correct ring they
-// are confirmed by the subsequent Read and adopted into Terraform state.
+// Before issuing the add mutation it calls resolveEntitiesToAdd for each ring,
+// which checks whether any of the requested entities are already somewhere in
+// the fleet (e.g. added by Agent Control or a previous partial run). Those
+// entities are skipped for the mutation — the API would reject a duplicate add
+// — but if they happen to already be in the correct ring they are confirmed by
+// the subsequent Read and adopted into Terraform state.
 //
-// nil is passed for beingRemoved because a Create never removes anything; the
-// parameter only matters during Update when entities move between rings.
+// nil is passed for entitiesBeingRemoved because a Create never removes
+// anything; that parameter only matters during Update when entities move
+// between rings.
 func resourceNewRelicFleetMembersCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -98,7 +99,7 @@ func resourceNewRelicFleetMembersCreate(ctx context.Context, d *schema.ResourceD
 	for _, ring := range rings {
 		// nil means "nothing is being removed in this apply" — safe for Create
 		// because we are not changing any existing assignments, only adding new ones.
-		actualToAdd, addDiags, err := fleetMembersFilterAdds(ctx, client, fleetID, ring.name, ring.entityIDs, nil)
+		actualToAdd, addDiags, err := resolveEntitiesToAdd(ctx, client, fleetID, ring.name, ring.entityIDs, nil)
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
@@ -149,17 +150,17 @@ func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceDat
 
 	rings := expandFleetMemberRings(d.Get("ring").([]interface{}))
 
-	// When ring is empty the resource was just imported: there is no prior state
-	// to diff against, so we populate a baseline by fetching all members.
+	// When rings is empty the resource was just imported: there is no prior
+	// state to diff against, so we populate a baseline by fetching all members.
 	if len(rings) == 0 {
-		apiIDs, err := fleetMemberIDs(ctx, client, fleetID, "")
+		memberIDs, err := listFleetMemberIDs(ctx, client, fleetID, "")
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error reading fleet members on import: %w", err))
 		}
 		// Convert []string to []interface{} because the Terraform SDK requires
 		// interface slices when calling d.Set on a TypeList of TypeString.
 		var entityIDs []interface{}
-		for _, id := range apiIDs {
+		for _, id := range memberIDs {
 			entityIDs = append(entityIDs, id)
 		}
 		if entityIDs == nil {
@@ -184,22 +185,22 @@ func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceDat
 
 	for _, ring := range rings {
 		// Fetch only the members of this specific ring from the API.
-		apiIDs, err := fleetMemberIDs(ctx, client, fleetID, ring.name)
+		ringMemberIDs, err := listFleetMemberIDs(ctx, client, fleetID, ring.name)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error reading members of ring %q: %w", ring.name, err))
 		}
 		// Build a set for O(1) membership checks instead of scanning the slice
 		// for every entity in state.
-		apiSet := stringSliceToSet(apiIDs)
+		ringMemberSet := makeStringSet(ringMemberIDs)
 
 		// Walk the declared entity list and split it into two buckets:
-		//   confirmedIDs    — still present in the API; keep in state
+		//   confirmedIDs      — still present in the API; keep in state
 		//   removedExternally — absent from the API; were removed out-of-band
 		var confirmedIDs []interface{}
 		var removedExternally []string
 
 		for _, id := range ring.entityIDs {
-			if apiSet[id] {
+			if ringMemberSet[id] {
 				confirmedIDs = append(confirmedIDs, id)
 			} else {
 				removedExternally = append(removedExternally, id)
@@ -265,15 +266,15 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 	// how it should look after (new). Both are decoded into name→[]entityID maps
 	// for efficient lookup.
 	oldRaw, newRaw := d.GetChange("ring")
-	oldByName := fleetRingsByName(expandFleetMemberRings(oldRaw.([]interface{})))
-	newByName := fleetRingsByName(expandFleetMemberRings(newRaw.([]interface{})))
+	oldByName := indexRingsByName(expandFleetMemberRings(oldRaw.([]interface{})))
+	newByName := indexRingsByName(expandFleetMemberRings(newRaw.([]interface{})))
 
-	// Build the full removal set up front so that fleetMembersFilterAdds can
+	// Build the full removal set up front so that resolveEntitiesToAdd can
 	// distinguish entities that are being moved (remove from one ring, add to
 	// another in the same apply) from entities that are genuinely new to the
 	// fleet. Without this, a moved entity would be flagged as "already assigned"
 	// and the add would be skipped.
-	beingRemoved := buildFleetRemovalSet(oldByName, newByName)
+	entitiesBeingRemoved := collectEntitiesBeingRemoved(oldByName, newByName)
 
 	var diags diag.Diagnostics
 	var toAdd []fleetcontrol.FleetControlFleetMemberRingInput
@@ -281,12 +282,12 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 
 	// Process each ring that exists in the new desired state.
 	for ringName, newIDs := range newByName {
-		newIDSet := stringSliceToSet(newIDs)
+		newIDSet := makeStringSet(newIDs)
 		var additions []string
 
 		if oldIDs, existed := oldByName[ringName]; existed {
 			// Ring existed before — diff the two entity lists.
-			oldIDSet := stringSliceToSet(oldIDs)
+			oldIDSet := makeStringSet(oldIDs)
 			for _, id := range newIDs {
 				if !oldIDSet[id] {
 					additions = append(additions, id) // present in new, absent from old
@@ -306,7 +307,7 @@ func resourceNewRelicFleetMembersUpdate(ctx context.Context, d *schema.ResourceD
 			additions = newIDs
 		}
 
-		actualToAdd, addDiags, err := fleetMembersFilterAdds(ctx, client, fleetID, ringName, additions, beingRemoved)
+		actualToAdd, addDiags, err := resolveEntitiesToAdd(ctx, client, fleetID, ringName, additions, entitiesBeingRemoved)
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
@@ -387,10 +388,10 @@ type fleetMemberRing struct {
 	entityIDs []string // ordered list of GUIDs from the "entity_ids" attribute
 }
 
-// fleetRingsByName converts a slice of rings into a map keyed by ring name.
+// indexRingsByName converts a slice of rings into a map keyed by ring name.
 // This allows O(1) lookups when diffing old vs new ring state, instead of
 // scanning the slice every time.
-func fleetRingsByName(rings []fleetMemberRing) map[string][]string {
+func indexRingsByName(rings []fleetMemberRing) map[string][]string {
 	m := make(map[string][]string, len(rings))
 	for _, r := range rings {
 		m[r.name] = r.entityIDs
@@ -398,38 +399,38 @@ func fleetRingsByName(rings []fleetMemberRing) map[string][]string {
 	return m
 }
 
-// buildFleetRemovalSet returns the set of entity IDs that will be removed from
-// at least one ring in this apply.
+// collectEntitiesBeingRemoved returns the set of entity IDs that will be
+// removed from at least one ring in this apply.
 //
 // This is needed to support cross-ring moves in a single apply. When an entity
 // moves from ring A to ring B, it appears in both the "remove from A" list and
-// the "add to B" list. If fleetMembersFilterAdds checked the fleet membership
-// without knowing about this pending removal, it would see the entity as
-// "already assigned" and skip the add — leaving the entity in limbo after A's
-// removal ran. By telling the filter which entities are on their way out, we
-// let them pass through to the add list.
-func buildFleetRemovalSet(oldByName, newByName map[string][]string) map[string]bool {
-	out := make(map[string]bool)
+// the "add to B" list. If resolveEntitiesToAdd checked fleet membership without
+// knowing about this pending removal, it would see the entity as "already
+// assigned" and skip the add — leaving the entity in limbo after A's removal
+// ran. By telling the resolver which entities are on their way out, we let them
+// pass through to the add list.
+func collectEntitiesBeingRemoved(oldByName, newByName map[string][]string) map[string]bool {
+	entitiesBeingRemoved := make(map[string]bool)
 	for ringName, oldIDs := range oldByName {
 		if newIDs, stillExists := newByName[ringName]; stillExists {
 			// Ring still exists — mark only the entities being dropped from it.
-			newIDSet := stringSliceToSet(newIDs)
+			newIDSet := makeStringSet(newIDs)
 			for _, id := range oldIDs {
 				if !newIDSet[id] {
-					out[id] = true
+					entitiesBeingRemoved[id] = true
 				}
 			}
 		} else {
 			// Entire ring is being removed — all its entities are leaving.
 			for _, id := range oldIDs {
-				out[id] = true
+				entitiesBeingRemoved[id] = true
 			}
 		}
 	}
-	return out
+	return entitiesBeingRemoved
 }
 
-// fleetMembersFilterAdds separates a list of candidate entity IDs into two
+// resolveEntitiesToAdd separates a list of candidate entity IDs into two
 // groups and handles the "already assigned" case:
 //
 //   - Entities NOT yet in the fleet → returned as the actual add list.
@@ -438,15 +439,15 @@ func buildFleetRemovalSet(oldByName, newByName map[string][]string) map[string]b
 //     warning. If the entity happens to already be in the correct ring it
 //     is confirmed by the Read that follows and adopted into Terraform state.
 //
-// The beingRemoved parameter lets cross-ring moves through: an entity that
-// is simultaneously being removed from one ring and added to another is
+// The entitiesBeingRemoved parameter lets cross-ring moves through: an entity
+// that is simultaneously being removed from one ring and added to another is
 // included in the add list even though it is currently "assigned". Pass nil
 // when no removals are happening (e.g. on Create).
-func fleetMembersFilterAdds(
+func resolveEntitiesToAdd(
 	ctx context.Context, client *nr.NewRelic,
 	fleetID, ringName string,
 	candidates []string,
-	beingRemoved map[string]bool,
+	entitiesBeingRemoved map[string]bool,
 ) ([]string, diag.Diagnostics, error) {
 	if len(candidates) == 0 {
 		return nil, nil, nil
@@ -454,11 +455,11 @@ func fleetMembersFilterAdds(
 
 	// Fetch the full current membership of the fleet (all rings) so we can
 	// detect whether any candidate is already assigned somewhere.
-	assigned, err := fleetMemberIDs(ctx, client, fleetID, "")
+	currentMembers, err := listFleetMemberIDs(ctx, client, fleetID, "")
 	if err != nil {
 		return nil, nil, fmt.Errorf("error checking existing fleet members: %w", err)
 	}
-	assignedSet := stringSliceToSet(assigned)
+	currentMemberSet := makeStringSet(currentMembers)
 
 	var actualToAdd []string
 	var alreadyAssigned []string
@@ -466,7 +467,7 @@ func fleetMembersFilterAdds(
 		// An entity passes through to the add list if it is either:
 		//   (a) not yet in the fleet at all, or
 		//   (b) in the fleet but already scheduled for removal in this apply.
-		if assignedSet[id] && !beingRemoved[id] {
+		if currentMemberSet[id] && !entitiesBeingRemoved[id] {
 			alreadyAssigned = append(alreadyAssigned, id)
 		} else {
 			actualToAdd = append(actualToAdd, id)
@@ -508,7 +509,7 @@ func expandFleetMemberRings(raw []interface{}) []fleetMemberRing {
 	return rings
 }
 
-// queryFleetMembers pages through the fleet members API and collects all
+// listFleetMembers pages through the fleet members API and collects all
 // results into a single slice.
 //
 // The API uses cursor-based pagination: each response includes a NextCursor
@@ -517,8 +518,8 @@ func expandFleetMemberRings(raw []interface{}) []fleetMemberRing {
 // pass nil — meaning "start from the beginning" — which is distinct from an
 // empty string that would be treated as an invalid cursor value by the API.
 //
-// Pass an empty ring to query members across all rings in the fleet.
-func queryFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]fleetcontrol.FleetControlFleetMemberEntityResult, error) {
+// Pass an empty ring to retrieve members across all rings in the fleet.
+func listFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]fleetcontrol.FleetControlFleetMemberEntityResult, error) {
 	var all []fleetcontrol.FleetControlFleetMemberEntityResult
 	var cursor *string // nil on the first request; points to the next-page token thereafter
 
@@ -548,11 +549,11 @@ func queryFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID, ring s
 	return all, nil
 }
 
-// fleetMemberIDs is a convenience wrapper around queryFleetMembers that returns
-// only the entity GUIDs, discarding the name and type fields that the resource
-// logic does not need. Pass an empty ring to query across all rings.
-func fleetMemberIDs(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]string, error) {
-	items, err := queryFleetMembers(ctx, client, fleetID, ring)
+// listFleetMemberIDs is a convenience wrapper around listFleetMembers that
+// returns only the entity GUIDs, discarding the name and type fields that the
+// resource logic does not need. Pass an empty ring to query across all rings.
+func listFleetMemberIDs(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]string, error) {
+	items, err := listFleetMembers(ctx, client, fleetID, ring)
 	if err != nil {
 		return nil, err
 	}
@@ -563,13 +564,13 @@ func fleetMemberIDs(ctx context.Context, client *nr.NewRelic, fleetID, ring stri
 	return ids, nil
 }
 
-// stringSliceToSet converts a string slice into a map[string]bool so that
+// makeStringSet converts a string slice into a map[string]bool so that
 // membership checks run in O(1) time instead of O(n). This matters when
 // diffing entity lists that can contain hundreds of GUIDs — using a nested
 // loop would make the diff O(n²).
-func stringSliceToSet(ss []string) map[string]bool {
-	m := make(map[string]bool, len(ss))
-	for _, s := range ss {
+func makeStringSet(items []string) map[string]bool {
+	m := make(map[string]bool, len(items))
+	for _, s := range items {
 		m[s] = true
 	}
 	return m
