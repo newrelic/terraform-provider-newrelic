@@ -5,6 +5,7 @@ package newrelic
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -37,6 +38,7 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 	setupFleetTestCredentials(t)
 	entityIDs := testAccFleetMembersEntityIDs(t, 3)
 	e1, e2, e3 := entityIDs[0], entityIDs[1], entityIDs[2]
+	testAccEnsureEntitiesUnassigned(t, entityIDs)
 
 	// Captured from Step 1 for use in the S5 drift PreConfig.
 	var capturedFleetID string
@@ -201,6 +203,7 @@ func TestAccNewRelicFleetMembers_Adoption(t *testing.T) {
 	setupFleetTestCredentials(t)
 	acEntityIDs := testAccFleetMembersACEntityIDs(t, 2)
 	ac1, ac2 := acEntityIDs[0], acEntityIDs[1]
+	testAccEnsureEntitiesUnassigned(t, acEntityIDs)
 
 	// Fleet ID captured after the fleet is created (Step 1) so that Steps 2
 	// and 4 can pre-add the AC entities via API before Terraform runs.
@@ -301,6 +304,67 @@ func splitTrimmed(s string) []string {
 		}
 	}
 	return out
+}
+
+// testAccEnsureEntitiesUnassigned checks each entity's nr.fleet tag and, if
+// any are still assigned to a fleet from a previous failed run, removes them
+// so the current test starts from a clean state.
+func testAccEnsureEntitiesUnassigned(t *testing.T, entityIDs []string) {
+	t.Helper()
+	apiKey := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY")
+	if apiKey == "" {
+		return
+	}
+	for _, entityID := range entityIDs {
+		fleetID := testAccGetEntityFleetID(t, apiKey, entityID)
+		if fleetID == "" {
+			continue
+		}
+		t.Logf("testAccEnsureEntitiesUnassigned: %s is in fleet %s from a previous run — removing", entityID, fleetID)
+		for _, ring := range []string{"default", "canary"} {
+			testAccFleetControlRemoveOutOfBand(t, fleetID, ring, entityID)
+		}
+	}
+}
+
+// testAccGetEntityFleetID queries the nr.fleet entity tag to find which fleet
+// the entity currently belongs to. Returns "" if unassigned.
+func testAccGetEntityFleetID(t *testing.T, apiKey, entityID string) string {
+	t.Helper()
+	body := fmt.Sprintf(
+		`{"query":"query($g:EntityGuid!){actor{entity(guid:$g){tags{key values}}}}","variables":{"g":%q}}`,
+		entityID,
+	)
+	req, _ := http.NewRequest("POST", "https://api.newrelic.com/graphql", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Key", apiKey)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp == nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Data struct {
+			Actor struct {
+				Entity struct {
+					Tags []struct {
+						Key    string   `json:"key"`
+						Values []string `json:"values"`
+					} `json:"tags"`
+				} `json:"entity"`
+			} `json:"actor"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return ""
+	}
+	for _, tag := range result.Data.Actor.Entity.Tags {
+		if tag.Key == "nr.fleet" && len(tag.Values) > 0 {
+			return tag.Values[0]
+		}
+	}
+	return ""
 }
 
 // testAccFleetControlRemoveOutOfBand removes a single entity from a ring via
