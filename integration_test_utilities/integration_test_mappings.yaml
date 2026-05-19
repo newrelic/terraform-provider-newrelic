@@ -253,6 +253,12 @@ resource_newrelic_events_to_metrics_rule.go:
 resource_newrelic_events_to_metrics_rule_test.go:
   test: true
   product_mapping: EVENTS
+data_source_newrelic_fleet_members.go:
+  test: false
+  product_mapping: FLEET
+data_source_newrelic_fleet_members_test.go:
+  test: true
+  product_mapping: FLEET
 resource_newrelic_fleet.go:
   test: false
   product_mapping: FLEET
@@ -266,6 +272,12 @@ resource_newrelic_fleet_deployment.go:
   test: false
   product_mapping: FLEET
 resource_newrelic_fleet_deployment_test.go:
+  test: true
+  product_mapping: FLEET
+resource_newrelic_fleet_members.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_members_test.go:
   test: true
   product_mapping: FLEET
 resource_newrelic_fleet_test.go:
