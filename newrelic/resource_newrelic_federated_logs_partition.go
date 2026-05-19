@@ -254,7 +254,7 @@ func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema
 		d.SetId("")
 		return nil
 	}
-	entity, ok := (*getResp).(*federatedlogs.EntityManagementFederatedLogPartitionEntity)
+	entity, ok := (*getResp).(*federatedlogs.EntityManagementFederatedLogsPartitionEntity)
 	if !ok {
 		return diag.Errorf("unexpected entity type %T for ID %s", *getResp, d.Id())
 	}

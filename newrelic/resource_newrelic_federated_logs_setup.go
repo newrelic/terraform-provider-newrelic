@@ -320,7 +320,7 @@ func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.Res
 		d.SetId("")
 		return nil
 	}
-	entity, ok := (*getResp).(*federatedlogs.EntityManagementFederatedLogSetupEntity)
+	entity, ok := (*getResp).(*federatedlogs.EntityManagementFederatedLogsSetupEntity)
 	if !ok {
 		return diag.Errorf("unexpected entity type %T for ID %s", *getResp, d.Id())
 	}
