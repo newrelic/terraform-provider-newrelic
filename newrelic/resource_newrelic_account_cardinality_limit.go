@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -15,9 +14,10 @@ import (
 )
 
 const (
-	cardinalityLimitName        = "Dimensional Metric per-metric cardinality ingested per day"
-	cardinalityModeDefault      = "DEFAULT"
-	cardinalityModePerMetric    = "PER_METRIC"
+	cardinalityLimitName            = "Dimensional Metric per-metric cardinality ingested per day"
+	cardinalityModeDefault          = "DEFAULT"
+	cardinalityModePerMetric        = "PER_METRIC"
+	cardinalityLimitPlatformDefault = 100000
 )
 
 func resourceNewRelicAccountCardinalityLimit() *schema.Resource {
@@ -75,9 +75,10 @@ func resourceNewRelicAccountCardinalityLimitCreate(ctx context.Context, d *schem
 	client := providerConfig.NewClient
 	accountID := providerConfig.AccountID
 
+	mode := d.Get("mode").(string)
 	input := buildCardinalityLimitInput(accountID, d)
 
-	log.Printf("[INFO] Creating New Relic account cardinality limit for account %d, mode %q, metric %q", accountID, d.Get("mode").(string), input.Qualifier)
+	log.Printf("[INFO] Creating New Relic account cardinality limit for account %d, mode %q, metric %q", accountID, mode, input.Qualifier)
 
 	_, err := client.DataManagement.DataManagementCreateAccountLimitWithContext(ctx, accountID, input)
 	if err != nil {
@@ -86,7 +87,21 @@ func resourceNewRelicAccountCardinalityLimitCreate(ctx context.Context, d *schem
 
 	d.SetId(buildCardinalityLimitID(accountID, input.Qualifier))
 
-	return resourceNewRelicAccountCardinalityLimitRead(ctx, d, meta)
+	var diags diag.Diagnostics
+
+	if mode == cardinalityModePerMetric {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Cardinality limit override submitted",
+			Detail: fmt.Sprintf(
+				"The cardinality limit override for metric %q has been submitted successfully. "+
+					"Please note that changes to per-metric cardinality limits may take a few minutes to be reflected in the New Relic UI.",
+				input.Qualifier,
+			),
+		})
+	}
+
+	return append(diags, resourceNewRelicAccountCardinalityLimitRead(ctx, d, meta)...)
 }
 
 func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -108,7 +123,6 @@ func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.
 			return diag.FromErr(err)
 		}
 
-		// DEFAULT mode: read the current value from the dataManagement limits query.
 		limits, err := client.DataManagement.GetLimitsWithContext(ctx, accountID)
 		if err != nil {
 			return diag.FromErr(err)
@@ -123,29 +137,122 @@ func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.
 				}
 			}
 		}
-	} else {
-		if err := d.Set("mode", cardinalityModePerMetric); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := d.Set("metric_name", metricName); err != nil {
-			return diag.FromErr(err)
-		}
-
-		// PER_METRIC mode: no reliable synchronous read path exists for per-metric
-		// override values. The dataManagement limits query does not expose qualifier,
-		// and newrelic.resourceConsumption.limitValue in NRDB lags behind the mutation
-		// API by the metric ingestion interval. cardinality_limit is kept from state.
+		return nil
 	}
 
-	return nil
+	if err := d.Set("mode", cardinalityModePerMetric); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("metric_name", metricName); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// PER_METRIC mode: no reliable synchronous read path exists for per-metric
+	// override values. The dataManagement limits query does not expose qualifier,
+	// and newrelic.resourceConsumption.limitValue in NRDB lags behind the mutation
+	// API by the metric ingestion interval. cardinality_limit is kept from state.
+	return diag.Diagnostics{
+		{
+			Severity: diag.Warning,
+			Summary:  "Per-metric cardinality limit value cannot be verified in real time",
+			Detail: fmt.Sprintf(
+				"The current enforced cardinality limit for metric %q cannot be read back via the New Relic API at this time. "+
+					"The value shown in state reflects the last value applied by Terraform and may not match the current enforced limit in New Relic. "+
+					"Run 'terraform apply' to re-apply the desired limit if you suspect drift.",
+				metricName,
+			),
+		},
+	}
 }
 
-func resourceNewRelicAccountCardinalityLimitDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
-	// The NerdGraph API does not expose a delete mutation for account cardinality
-	// limits. Destroying this resource removes it from Terraform state only; the
-	// override remains in New Relic until changed externally or via a new apply.
-	log.Printf("[INFO] Removing New Relic account cardinality limit %s from state (no API delete available)", d.Id())
-	return nil
+func resourceNewRelicAccountCardinalityLimitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	accountID, metricName, err := parseCardinalityLimitID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if metricName == "" {
+		// DEFAULT mode: the NerdGraph API has no delete operation, so we reset the
+		// account-wide default back to the New Relic platform default of 100,000.
+		log.Printf("[INFO] Resetting account-wide default cardinality limit for account %d to platform default (%d)", accountID, cardinalityLimitPlatformDefault)
+
+		resetInput := datamanagement.DataManagementAccountLimitInput{
+			Limit:          datamanagement.DataManagementLimitLookupInput{Name: cardinalityLimitName},
+			OverrideValue:  cardinalityLimitPlatformDefault,
+			OverrideReason: fmt.Sprintf("Default cardinality limit for account %d reset to platform default (%d) via Terraform destroy", accountID, cardinalityLimitPlatformDefault),
+			Qualifier:      "",
+		}
+
+		if _, err := client.DataManagement.DataManagementCreateAccountLimitWithContext(ctx, accountID, resetInput); err != nil {
+			return diag.FromErr(err)
+		}
+
+		return diag.Diagnostics{
+			{
+				Severity: diag.Warning,
+				Summary:  "Account-wide default cardinality limit reset to platform default",
+				Detail: fmt.Sprintf(
+					"The account-wide default cardinality limit has been reset to the New Relic platform default of %d. "+
+						"This change may take a few minutes to be reflected in the New Relic UI.",
+					cardinalityLimitPlatformDefault,
+				),
+			},
+		}
+	}
+
+	// PER_METRIC mode: the NerdGraph API has no delete operation, so we reset this
+	// metric's override to the current account-wide default, effectively removing
+	// the per-metric exception.
+	log.Printf("[INFO] Resetting per-metric cardinality limit for metric %q in account %d to the current account-wide default", metricName, accountID)
+
+	defaultLimit, err := fetchDefaultCardinalityLimitValue(ctx, providerConfig, accountID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	resetInput := datamanagement.DataManagementAccountLimitInput{
+		Limit:          datamanagement.DataManagementLimitLookupInput{Name: cardinalityLimitName},
+		OverrideValue:  defaultLimit,
+		OverrideReason: fmt.Sprintf("Cardinality limit for metric '%s' in account %d reset to account-wide default (%d) via Terraform destroy", metricName, accountID, defaultLimit),
+		Qualifier:      metricName,
+	}
+
+	if _, err := client.DataManagement.DataManagementCreateAccountLimitWithContext(ctx, accountID, resetInput); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.Diagnostics{
+		{
+			Severity: diag.Warning,
+			Summary:  "Per-metric cardinality limit reset to account-wide default",
+			Detail: fmt.Sprintf(
+				"The cardinality limit override for metric %q has been reset to the current account-wide default value of %d. "+
+					"This change may take a few minutes to be reflected in the New Relic UI.",
+				metricName, defaultLimit,
+			),
+		},
+	}
+}
+
+// fetchDefaultCardinalityLimitValue retrieves the current account-wide default
+// cardinality limit from the dataManagement limits API. Falls back to the
+// platform default of 100,000 if the limit entry is not found.
+func fetchDefaultCardinalityLimitValue(ctx context.Context, providerConfig *ProviderConfig, accountID int) (int, error) {
+	limits, err := providerConfig.NewClient.DataManagement.GetLimitsWithContext(ctx, accountID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to fetch account-wide default cardinality limit: %w", err)
+	}
+	if limits != nil {
+		for _, l := range *limits {
+			if l.Name == cardinalityLimitName {
+				return l.Value, nil
+			}
+		}
+	}
+	return cardinalityLimitPlatformDefault, nil
 }
 
 func buildCardinalityLimitInput(accountID int, d *schema.ResourceData) datamanagement.DataManagementAccountLimitInput {
