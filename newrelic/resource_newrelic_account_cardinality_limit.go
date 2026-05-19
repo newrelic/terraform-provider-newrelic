@@ -18,6 +18,11 @@ const (
 	cardinalityModeDefault          = "DEFAULT"
 	cardinalityModePerMetric        = "PER_METRIC"
 	cardinalityLimitPlatformDefault = 100000
+
+	// cardinalityUILagNotice is appended to any warning that involves a write
+	// operation, because cardinality limit changes are not immediately visible
+	// in the New Relic UI or in metric consumption data.
+	cardinalityUILagNotice = "Please allow a few minutes for this change to be reflected in the New Relic UI and for updated metrics to flow through."
 )
 
 func resourceNewRelicAccountCardinalityLimit() *schema.Resource {
@@ -94,9 +99,8 @@ func resourceNewRelicAccountCardinalityLimitCreate(ctx context.Context, d *schem
 			Severity: diag.Warning,
 			Summary:  "Cardinality limit override submitted",
 			Detail: fmt.Sprintf(
-				"The cardinality limit override for metric %q has been submitted successfully. "+
-					"Please note that changes to per-metric cardinality limits may take a few minutes to be reflected in the New Relic UI.",
-				input.Qualifier,
+				"The cardinality limit override for metric %q has been submitted successfully. %s",
+				input.Qualifier, cardinalityUILagNotice,
 			),
 		})
 	}
@@ -195,9 +199,8 @@ func resourceNewRelicAccountCardinalityLimitDelete(ctx context.Context, d *schem
 				Severity: diag.Warning,
 				Summary:  "Account-wide default cardinality limit reset to platform default",
 				Detail: fmt.Sprintf(
-					"The account-wide default cardinality limit has been reset to the New Relic platform default of %d. "+
-						"This change may take a few minutes to be reflected in the New Relic UI.",
-					cardinalityLimitPlatformDefault,
+					"The account-wide default cardinality limit has been reset to the New Relic platform default of %d. %s",
+					cardinalityLimitPlatformDefault, cardinalityUILagNotice,
 				),
 			},
 		}
@@ -229,9 +232,8 @@ func resourceNewRelicAccountCardinalityLimitDelete(ctx context.Context, d *schem
 			Severity: diag.Warning,
 			Summary:  "Per-metric cardinality limit reset to account-wide default",
 			Detail: fmt.Sprintf(
-				"The cardinality limit override for metric %q has been reset to the current account-wide default value of %d. "+
-					"This change may take a few minutes to be reflected in the New Relic UI.",
-				metricName, defaultLimit,
+				"The cardinality limit override for metric %q has been reset to the current account-wide default value of %d. %s",
+				metricName, defaultLimit, cardinalityUILagNotice,
 			),
 		},
 	}
