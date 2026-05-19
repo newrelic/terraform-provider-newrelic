@@ -245,7 +245,7 @@ func resourceNewRelicAwsConnectionUpdate(ctx context.Context, d *schema.Resource
 		input.Description = d.Get("description").(string)
 	}
 	if d.HasChange("enabled") {
-		input.Enabled = d.Get("enabled").(bool)
+		input.Enabled = getBoolPointer(d.Get("enabled").(bool))
 	}
 	if d.HasChange("external_id") {
 		input.ExternalId = d.Get("external_id").(string)
