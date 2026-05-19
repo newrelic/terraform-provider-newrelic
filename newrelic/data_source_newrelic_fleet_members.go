@@ -71,15 +71,15 @@ func dataSourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceD
 	fleetID := d.Get("fleet_id").(string)
 	ring := d.Get("ring").(string)
 
-	allItems, err := listFleetMembers(ctx, client, fleetID, ring)
+	fetchedMembers, err := listFleetMembers(ctx, client, fleetID, ring)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error reading fleet members: %w", err))
 	}
 
 	// Convert the API result slice into the []interface{} form that the
 	// Terraform SDK expects when setting a TypeList[schema.Resource] attribute.
-	members := make([]interface{}, len(allItems))
-	for i, item := range allItems {
+	members := make([]interface{}, len(fetchedMembers))
+	for i, item := range fetchedMembers {
 		members[i] = map[string]interface{}{
 			"id":   item.ID,
 			"name": item.Name,

@@ -138,9 +138,8 @@ func TestAccNewRelicFleetMembers_Lifecycle(t *testing.T) {
 				),
 			},
 			// ── S7 ── Move both canary entities to default in one apply.
-			// Exercises the multi-entity buildFleetRemovalSet exclusion so
-			// that e2 and e3 are not blocked by the "already assigned" pre-check
-			// during the add phase.
+			// Exercises the collectEntitiesBeingRemoved exclusion so that e2 and
+			// e3 are not blocked by the "already assigned" pre-check during the add phase.
 			{
 				Config: testAccFleetMembersConfigMultiRing(fleetName, []string{e1, e2, e3}, []string{}),
 				Check: resource.ComposeTestCheckFunc(

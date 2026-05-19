@@ -181,7 +181,7 @@ func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	var diags diag.Diagnostics
-	var updatedRings []interface{}
+	var reconciledRings []interface{}
 
 	for _, ring := range rings {
 		// Fetch only the members of this specific ring from the API.
@@ -223,17 +223,17 @@ func resourceNewRelicFleetMembersRead(ctx context.Context, d *schema.ResourceDat
 			confirmedIDs = []interface{}{}
 		}
 
-		updatedRings = append(updatedRings, map[string]interface{}{
+		reconciledRings = append(reconciledRings, map[string]interface{}{
 			"name":       ring.name,
 			"entity_ids": confirmedIDs,
 		})
 	}
 
-	if updatedRings == nil {
-		updatedRings = []interface{}{}
+	if reconciledRings == nil {
+		reconciledRings = []interface{}{}
 	}
 
-	if err := d.Set("ring", updatedRings); err != nil {
+	if err := d.Set("ring", reconciledRings); err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 
@@ -520,7 +520,7 @@ func expandFleetMemberRings(raw []interface{}) []fleetMemberRing {
 //
 // Pass an empty ring to retrieve members across all rings in the fleet.
 func listFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID, ring string) ([]fleetcontrol.FleetControlFleetMemberEntityResult, error) {
-	var all []fleetcontrol.FleetControlFleetMemberEntityResult
+	var results []fleetcontrol.FleetControlFleetMemberEntityResult
 	var cursor *string // nil on the first request; points to the next-page token thereafter
 
 	for {
@@ -529,24 +529,24 @@ func listFleetMembers(ctx context.Context, client *nr.NewRelic, fleetID, ring st
 			filter.Ring = ring
 		}
 
-		result, err := client.FleetControl.GetFleetMembersWithContext(ctx, cursor, filter)
+		page, err := client.FleetControl.GetFleetMembersWithContext(ctx, cursor, filter)
 		if err != nil {
 			return nil, err
 		}
 
-		all = append(all, result.Items...)
+		results = append(results, page.Items...)
 
-		if result.NextCursor == "" {
+		if page.NextCursor == "" {
 			break // no more pages
 		}
 		// Store the cursor in a local variable first so we can take its address.
 		// Ranging over a loop variable and taking &loopVar would give us a
 		// pointer that changes on each iteration, which is a common Go pitfall.
-		next := result.NextCursor
+		next := page.NextCursor
 		cursor = &next
 	}
 
-	return all, nil
+	return results, nil
 }
 
 // listFleetMemberIDs is a convenience wrapper around listFleetMembers that
