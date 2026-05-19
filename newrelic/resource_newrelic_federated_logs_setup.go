@@ -285,7 +285,7 @@ func resourceNewRelicFederatedLogsSetupUpdate(ctx context.Context, d *schema.Res
 		input.Description = d.Get("description").(string)
 	}
 	if d.HasChange("active") {
-		input.Active = d.Get("active").(bool)
+		input.Active = getBoolPointer(d.Get("active").(bool))
 	}
 	// The connection IDs are mutable per FederatedLogsUpdateSetupInput; bucket /
 	// database / cloud_provider_configuration are immutable and are guarded
@@ -308,30 +308,22 @@ func resourceNewRelicFederatedLogsSetupUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// The federatedLogsDeleteSetup wrapper is not yet exposed on the schema.
-	// Fall back to entity-management delete.
+	// Per IDD, setup deletion is a soft-delete that transitions the entity to
+	// the DELETING lifecycle state. The API cascades the DELETING state
+	// to the default partition automatically; we don't need a separate
+	// updatePartition call. Validation (no non-default partitions exist)
+	// are handled server-side.
 	client := meta.(*ProviderConfig).NewClient
 
-	getResp, err := client.Federatedlogs.GetEntityWithContext(ctx, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	input := federatedlogs.FederatedLogsUpdateSetupInput{
+		LifecycleStatus: federatedlogs.FederatedLogsLifecycleStatusInput{
+			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
+		},
 	}
-	if getResp == nil {
-		d.SetId("")
-		return nil
-	}
-	entity, ok := (*getResp).(*federatedlogs.EntityManagementFederatedLogsSetupEntity)
-	if !ok {
-		return diag.Errorf("unexpected entity type %T for ID %s", *getResp, d.Id())
+	if _, err := client.Federatedlogs.FederatedLogsUpdateSetupWithContext(ctx, d.Id(), input); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to mark setup %s as DELETING: %w", d.Id(), err))
 	}
 
-	result, err := client.Federatedlogs.EntityManagementDeleteWithContext(ctx, d.Id(), entity.Metadata.Version)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if result.ID == "" {
-		return diag.FromErr(fmt.Errorf("error in deleting federated logs setup %s", d.Id()))
-	}
 	return nil
 }
 

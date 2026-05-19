@@ -227,7 +227,7 @@ func resourceNewRelicFederatedLogsPartitionUpdate(ctx context.Context, d *schema
 		input.Description = d.Get("description").(string)
 	}
 	if d.HasChange("active") {
-		input.Active = d.Get("active").(bool)
+		input.Active = getBoolPointer(d.Get("active").(bool))
 	}
 	if d.HasChange("data_retention_policy") {
 		input.DataRetentionPolicy = expandFederatedLogsRetentionPolicy(d.Get("data_retention_policy").([]interface{}))
@@ -244,28 +244,20 @@ func resourceNewRelicFederatedLogsPartitionUpdate(ctx context.Context, d *schema
 }
 
 func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Per IDD, partition deletion is a soft-delete via the wrapper update
+	// mutation, transitioning lifecycleStatus to DELETING.
+	// The entity is not removed outright.
 	client := meta.(*ProviderConfig).NewClient
 
-	getResp, err := client.Federatedlogs.GetEntityWithContext(ctx, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	input := federatedlogs.FederatedLogsUpdatePartitionInput{
+		LifecycleStatus: federatedlogs.FederatedLogsLifecycleStatusInput{
+			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
+		},
 	}
-	if getResp == nil {
-		d.SetId("")
-		return nil
-	}
-	entity, ok := (*getResp).(*federatedlogs.EntityManagementFederatedLogsPartitionEntity)
-	if !ok {
-		return diag.Errorf("unexpected entity type %T for ID %s", *getResp, d.Id())
+	if _, err := client.Federatedlogs.FederatedLogsUpdatePartitionWithContext(ctx, d.Id(), input); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to mark partition %s as DELETING: %w", d.Id(), err))
 	}
 
-	result, err := client.Federatedlogs.EntityManagementDeleteWithContext(ctx, d.Id(), entity.Metadata.Version)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if result.ID == "" {
-		return diag.FromErr(fmt.Errorf("error in deleting federated logs partition %s", d.Id()))
-	}
 	return nil
 }
 

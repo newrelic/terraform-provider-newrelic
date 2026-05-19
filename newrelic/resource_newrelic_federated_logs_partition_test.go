@@ -10,6 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	"github.com/newrelic/newrelic-client-go/v2/pkg/federatedlogs"
 )
 
 // TestAccNewRelicFederatedLogsPartition_Basic exercises the full chain:
@@ -70,17 +72,21 @@ func TestAccNewRelicFederatedLogsPartition_Basic(t *testing.T) {
 func testAccNewRelicFederatedLogsPartitionConfig(name, roleArn, description string, active bool, retentionDuration int) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "ingest" {
-  name     = "%[1]s-ingest"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-ingest"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_aws_connection" "query" {
-  name     = "%[1]s-query"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-query"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_federated_logs_setup" "parent" {
@@ -148,6 +154,8 @@ func testAccCheckNewRelicFederatedLogsPartitionExists(name string) resource.Test
 }
 
 func testAccCheckNewRelicFederatedLogsPartitionDestroy(s *terraform.State) error {
+	// Partition deletion is a soft-delete via lifecycleStatus DELETING. The
+	// entity stays queryable state.
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "newrelic_federated_logs_partition" {
@@ -155,10 +163,14 @@ func testAccCheckNewRelicFederatedLogsPartitionDestroy(s *terraform.State) error
 		}
 		resp, err := client.Federatedlogs.GetPartitionWithContext(context.Background(), rs.Primary.ID)
 		if err != nil {
-			return nil
+			return fmt.Errorf("expected partition %s to be queryable in DELETING state, got error: %w", rs.Primary.ID, err)
 		}
-		if resp != nil {
-			return fmt.Errorf("federated logs partition %s still exists after destroy", rs.Primary.ID)
+		if resp == nil {
+			return fmt.Errorf("expected partition %s to be queryable in DELETING state, got nil response", rs.Primary.ID)
+		}
+		if string(resp.LifecycleStatus.Status) != string(federatedlogs.FederatedLogsLifecycleStateTypes.DELETING) {
+			return fmt.Errorf("federated logs partition %s expected lifecycleStatus DELETING, got %q",
+				rs.Primary.ID, resp.LifecycleStatus.Status)
 		}
 	}
 	return nil
@@ -198,17 +210,21 @@ func TestAccNewRelicFederatedLogsPartition_ImmutableFieldsError(t *testing.T) {
 func testAccNewRelicFederatedLogsPartitionConfigDifferentTable(name, roleArn string) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "ingest" {
-  name     = "%[1]s-ingest"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-ingest"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_aws_connection" "query" {
-  name     = "%[1]s-query"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-query"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_federated_logs_setup" "parent" {

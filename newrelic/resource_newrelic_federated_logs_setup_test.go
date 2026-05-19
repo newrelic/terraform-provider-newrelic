@@ -10,6 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	"github.com/newrelic/newrelic-client-go/v2/pkg/federatedlogs"
 )
 
 // TestAccNewRelicFederatedLogsSetup_Basic exercises create / read / update /
@@ -70,17 +72,21 @@ func TestAccNewRelicFederatedLogsSetup_Basic(t *testing.T) {
 func testAccNewRelicFederatedLogsSetupConfig(name, roleArn, description string, active bool) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "ingest" {
-  name     = "%[1]s-ingest"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-ingest"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_aws_connection" "query" {
-  name     = "%[1]s-query"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-query"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_federated_logs_setup" "foo" {
@@ -137,6 +143,8 @@ func testAccCheckNewRelicFederatedLogsSetupExists(name string) resource.TestChec
 }
 
 func testAccCheckNewRelicFederatedLogsSetupDestroy(s *terraform.State) error {
+	// Setup deletion is a soft-delete: the entity stays queryable in the
+	// DELETING lifecycle state.
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "newrelic_federated_logs_setup" {
@@ -144,11 +152,14 @@ func testAccCheckNewRelicFederatedLogsSetupDestroy(s *terraform.State) error {
 		}
 		resp, err := client.Federatedlogs.GetSetupWithContext(context.Background(), rs.Primary.ID)
 		if err != nil {
-			// API returns an error for deleted IDs — that's the destroy success path.
-			return nil
+			return fmt.Errorf("expected setup %s to be queryable in DELETING state, got error: %w", rs.Primary.ID, err)
 		}
-		if resp != nil {
-			return fmt.Errorf("federated logs setup %s still exists after destroy", rs.Primary.ID)
+		if resp == nil {
+			return fmt.Errorf("expected setup %s to be queryable in DELETING state, got nil response", rs.Primary.ID)
+		}
+		if string(resp.LifecycleStatus.Status) != string(federatedlogs.FederatedLogsLifecycleStateTypes.DELETING) {
+			return fmt.Errorf("federated logs setup %s expected lifecycleStatus DELETING, got %q",
+				rs.Primary.ID, resp.LifecycleStatus.Status)
 		}
 	}
 	return nil
@@ -189,17 +200,21 @@ func TestAccNewRelicFederatedLogsSetup_ImmutableFieldsError(t *testing.T) {
 func testAccNewRelicFederatedLogsSetupConfigDifferentBucket(name, roleArn string) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "ingest" {
-  name     = "%[1]s-ingest"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-ingest"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_aws_connection" "query" {
-  name     = "%[1]s-query"
-  enabled  = true
-  region   = "us-east-1"
-  role_arn = "%[2]s"
+  name       = "%[1]s-query"
+  enabled    = true
+  region     = "us-east-1"
+  role_arn   = "%[2]s"
+  scope_type = "ORGANIZATION"
+  scope_id   = "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 }
 
 resource "newrelic_federated_logs_setup" "foo" {
