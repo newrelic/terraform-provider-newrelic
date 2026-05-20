@@ -18,13 +18,7 @@ Two modes are available, controlled by the required `mode` argument.
 
 ## DEFAULT Mode
 
-In `DEFAULT` mode, the resource sets the account-wide default cardinality limit. This value is applied to every dimensional metric in the account that does not have its own per-metric override.
-
-### Behaviour
-
-- **Create / Update**: Submits the new default value via the `dataManagementCreateAccountLimit` mutation. The change takes effect immediately in the enforcement layer.
-- **Read**: Reads the current account-wide default from the New Relic data management API and reconciles Terraform state. Drift is detected and surfaced on the next `plan`.
-- **Destroy**: Because the New Relic API does not expose a delete operation for cardinality limit overrides, destroying this resource resets the account-wide default back to the New Relic platform default of **100,000**. A warning is displayed to confirm the reset value.
+In `DEFAULT` mode, the resource sets the account-wide default cardinality limit. This value applies to every dimensional metric in the account that does not have its own per-metric override. Terraform tracks the live value and will surface any drift on the next `terraform plan`. Running `terraform destroy` on this resource resets the account-wide limit back to the New Relic platform default of **100,000** — it does not remove the setting entirely.
 
 ### Example
 
@@ -41,13 +35,7 @@ resource "newrelic_account_cardinality_limit" "default" {
 
 ## PER\_METRIC Mode
 
-In `PER_METRIC` mode, the resource overrides the cardinality limit for a single named metric, independent of the account-wide default.
-
-### Behaviour
-
-- **Create / Update**: Submits the per-metric override via the `dataManagementCreateAccountLimit` mutation with the metric name as the qualifier. A warning is displayed after apply indicating that the change may take a few minutes to be reflected in the New Relic UI.
-- **Read**: The New Relic data management API does not expose per-metric qualifier values in its response, and the NRDB event stream for limit enforcement lags behind the mutation API. As a result, the `cardinality_limit` value in state is preserved from the last successful `apply` and is not synchronised from the API on each `plan`. A warning is displayed to indicate this limitation.
-- **Destroy**: Because the New Relic API does not expose a delete operation, destroying this resource resets the metric's cardinality limit to the **current account-wide default** (fetched live from the API at destroy time). A warning is displayed confirming the value the limit was reset to.
+In `PER_METRIC` mode, the resource overrides the cardinality limit for a single named metric, independent of the account-wide default. Changes applied via `terraform apply` may take a few minutes to be reflected in the New Relic UI and in consumption metrics. Because per-metric limit values are not available for read-back, Terraform preserves the last applied value in state — running `terraform plan` will not detect external changes to this specific limit. Running `terraform destroy` resets the metric's limit to the current account-wide default rather than removing it entirely.
 
 ### Example
 
@@ -59,9 +47,7 @@ resource "newrelic_account_cardinality_limit" "per_metric" {
 }
 ```
 
--> **Note:** Destroying a `PER_METRIC` resource does not remove the override from New Relic. It resets the metric's limit to the current account-wide default. If no `DEFAULT` override exists, this will be the New Relic platform default of 100,000.
-
--> **Note:** Due to API limitations, the `cardinality_limit` value for a `PER_METRIC` resource reflects the last value applied by Terraform and may not represent the currently enforced limit if the override was modified outside of Terraform.
+-> **Note:** Destroying a `PER_METRIC` resource resets the metric's limit to the current account-wide default. If no `DEFAULT` override exists, this will be the New Relic platform default of 100,000.
 
 ---
 
@@ -114,4 +100,4 @@ For a **PER_METRIC** override, append the metric name after the colon:
 $ terraform import newrelic_account_cardinality_limit.per_metric 12345678:otelcol_nrreceiver_incoming_request_proxy
 ```
 
--> **Note:** When importing a `PER_METRIC` resource, `mode` and `metric_name` are restored from the resource ID. However, because the API does not return the current per-metric override value, `cardinality_limit` will reflect the account-wide default read at import time. Run `terraform apply` after import to re-apply the intended limit.
+-> **Note:** When importing a `PER_METRIC` resource, `mode` and `metric_name` are restored from the resource ID. The `cardinality_limit` in state will reflect the account-wide default until you run `terraform apply` to re-apply the intended limit.
