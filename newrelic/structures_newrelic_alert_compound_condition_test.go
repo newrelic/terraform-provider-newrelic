@@ -147,6 +147,7 @@ func TestFlattenAlertCompoundCondition(t *testing.T) {
 		RunbookURL:            "https://example.com/runbook",
 		ThresholdDuration:     120,
 		FacetMatchingBehavior: "FACETS_IGNORED",
+		EntityGuid:            "MTAxMzMyMDB8QUxFUlR8Q09ORGU5OfDEwMzQ1NTc",
 		ComponentConditions: []alerts.ComponentCondition{
 			{
 				ID:    "123",
@@ -175,4 +176,5 @@ func TestFlattenAlertCompoundCondition(t *testing.T) {
 	assert.Equal(t, 120, d.Get("threshold_duration"))
 	assert.Equal(t, "FACETS_IGNORED", d.Get("facet_matching_behavior"))
 	assert.Equal(t, testAccountID, d.Get("account_id"))
+	assert.Equal(t, "MTAxMzMyMDB8QUxFUlR8Q09ORGU5OfDEwMzQ1NTc", d.Get("entity_guid"))
 }

@@ -92,6 +92,11 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				Computed:    true,
 				Description: "The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-86400 seconds.",
 			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique entity identifier of the compound alert condition in New Relic.",
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
