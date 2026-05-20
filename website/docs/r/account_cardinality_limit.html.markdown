@@ -35,7 +35,7 @@ resource "newrelic_account_cardinality_limit" "default" {
 
 ## PER\_METRIC Mode
 
-In `PER_METRIC` mode, the resource overrides the cardinality limit for a single named metric, independent of the account-wide default. Changes applied via `terraform apply` may take a few minutes to be reflected in the New Relic UI and in consumption metrics. Because per-metric limit values are not available for read-back, Terraform preserves the last applied value in state — running `terraform plan` will not detect external changes to this specific limit. Running `terraform destroy` resets the metric's limit to the current account-wide default rather than removing it entirely.
+In `PER_METRIC` mode, the resource overrides the cardinality limit for a single named metric, independent of the account-wide default. The updated limit takes effect as metric data is received and processed by the platform, and will be visible in the New Relic UI once the metric ingestion cycle completes. Terraform maintains the last applied value in state, as the enforced limit is tied to metric activity on the platform rather than being independently queryable — so `terraform plan` will not flag changes made outside of Terraform to this specific limit. Running `terraform destroy` resets the metric's limit to the current account-wide default rather than removing it entirely.
 
 ### Example
 
@@ -100,4 +100,4 @@ For a **PER_METRIC** override, append the metric name after the colon:
 $ terraform import newrelic_account_cardinality_limit.per_metric 12345678:otelcol_nrreceiver_incoming_request_proxy
 ```
 
--> **Note:** When importing a `PER_METRIC` resource, `mode` and `metric_name` are restored from the resource ID. The `cardinality_limit` in state will reflect the account-wide default until you run `terraform apply` to re-apply the intended limit.
+-> **Note:** When importing a `PER_METRIC` resource, `mode` and `metric_name` are restored from the resource ID. The `cardinality_limit` in state will be populated once you run `terraform apply` to establish the intended limit — the enforced value on the platform becomes fully active as metric data flows through.
