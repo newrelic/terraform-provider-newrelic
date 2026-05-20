@@ -103,6 +103,9 @@ data_source_newrelic_user_management_test.go:
 resource_newrelic_account_cardinality_limit.go:
   test: false
   product_mapping: UNKNOWN
+resource_newrelic_account_cardinality_limit_test.go:
+  test: true
+  product_mapping: UNKNOWN
 resource_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
