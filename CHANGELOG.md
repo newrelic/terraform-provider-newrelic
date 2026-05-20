@@ -1,3 +1,8 @@
+<a name="v3.89.0"></a>
+## [v3.89.0] - 2026-05-20
+### Features
+- **alerts:** add entity_guid computed attribute to compound condition ([#3090](https://github.com/newrelic/terraform-provider-newrelic/issues/3090))
+
 <a name="v3.88.0"></a>
 ## [v3.88.0] - 2026-05-19
 ### Features
@@ -2714,7 +2719,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.88.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.89.0...HEAD
+[v3.89.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.88.0...v3.89.0
 [v3.88.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.4...v3.88.0
 [v3.87.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.3...v3.87.4
 [v3.87.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.2...v3.87.3
