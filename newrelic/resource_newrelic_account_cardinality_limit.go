@@ -19,11 +19,8 @@ const (
 	cardinalityModePerMetric        = "PER_METRIC"
 	cardinalityLimitPlatformDefault = 100000
 
-	// cardinalityUILagNotice is appended to warnings on write operations. The
-	// updated limit takes effect as metric data is received and processed by
-	// the platform, so visibility in the New Relic UI follows the metric
-	// ingestion cycle rather than being instantaneous.
-	cardinalityUILagNotice = "The updated limit takes effect as metric data is received and processed by the platform, and will be visible in the New Relic UI once the next metric ingestion cycle completes."
+	// cardinalityUILagNotice is appended to warnings on write operations.
+	cardinalityUILagNotice = "Please allow a few minutes for this change to appear in the New Relic UI."
 )
 
 func resourceNewRelicAccountCardinalityLimit() *schema.Resource {
@@ -159,17 +156,16 @@ func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	// PER_METRIC mode: the enforced limit is tied to metric ingestion on the
-	// platform, so cardinality_limit is preserved from state rather than read
-	// back on each plan.
+	// PER_METRIC mode: cardinality_limit is preserved from state rather than
+	// read back on each plan, as the enforced value reflects metric activity
+	// on the platform.
 	return diag.Diagnostics{
 		{
 			Severity: diag.Warning,
 			Summary:  "Per-metric cardinality limit reflects last applied value",
 			Detail: fmt.Sprintf(
-				"The enforced cardinality limit for metric %q is tied to metric ingestion on the platform. "+
-					"The value in state is the last limit applied by Terraform. "+
-					"Run 'terraform apply' to re-enforce the desired limit at any time.",
+				"The value shown in state is the last cardinality limit applied by Terraform for metric %q. "+
+					"If you have made recent changes, please allow a few minutes for them to appear in the New Relic UI.",
 				metricName,
 			),
 		},
