@@ -34,6 +34,7 @@ func TestAccNewRelicAlertCompoundCondition_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "facet_matching_behavior", "FACETS_IGNORED"),
 					resource.TestCheckResourceAttr(resourceName, "runbook_url", "https://example.com/runbook"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration", "120"),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 			// Test: Update to OR expression
