@@ -70,6 +70,7 @@ func TestAccNewRelicAlertCompoundCondition_ThreeComponents(t *testing.T) {
 					testAccCheckNewRelicAlertCompoundConditionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "trigger_expression", "(A AND B) OR C"),
 					resource.TestCheckResourceAttr(resourceName, "component_conditions.#", "3"),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 		},
@@ -90,6 +91,7 @@ func TestAccNewRelicAlertCompoundCondition_FacetMatching(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertCompoundConditionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "facet_matching_behavior", "FACETS_MATCH"),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 		},
