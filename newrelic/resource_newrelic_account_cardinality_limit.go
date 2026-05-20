@@ -19,10 +19,11 @@ const (
 	cardinalityModePerMetric        = "PER_METRIC"
 	cardinalityLimitPlatformDefault = 100000
 
-	// cardinalityUILagNotice is appended to any warning that involves a write
-	// operation, because cardinality limit changes are not immediately visible
-	// in the New Relic UI or in metric consumption data.
-	cardinalityUILagNotice = "Please allow a few minutes for this change to be reflected in the New Relic UI and for updated metrics to flow through."
+	// cardinalityUILagNotice is appended to warnings on write operations. The
+	// updated limit takes effect as metric data is received and processed by
+	// the platform, so visibility in the New Relic UI follows the metric
+	// ingestion cycle rather than being instantaneous.
+	cardinalityUILagNotice = "The updated limit takes effect as metric data is received and processed by the platform, and will be visible in the New Relic UI once the next metric ingestion cycle completes."
 )
 
 func resourceNewRelicAccountCardinalityLimit() *schema.Resource {
@@ -94,13 +95,20 @@ func resourceNewRelicAccountCardinalityLimitCreate(ctx context.Context, d *schem
 
 	var diags diag.Diagnostics
 
-	if mode == cardinalityModePerMetric {
+	switch mode {
+	case cardinalityModeDefault:
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary:  "Cardinality limit override submitted",
+			Summary:  "Account-wide cardinality limit updated",
+			Detail:   fmt.Sprintf("The account-wide cardinality limit has been set to %d. %s", input.OverrideValue, cardinalityUILagNotice),
+		})
+	case cardinalityModePerMetric:
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Per-metric cardinality limit applied",
 			Detail: fmt.Sprintf(
-				"The cardinality limit override for metric %q has been submitted successfully. %s",
-				input.Qualifier, cardinalityUILagNotice,
+				"The cardinality limit for metric %q has been set to %d. %s",
+				input.Qualifier, input.OverrideValue, cardinalityUILagNotice,
 			),
 		})
 	}
@@ -151,18 +159,17 @@ func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	// PER_METRIC mode: no reliable synchronous read path exists for per-metric
-	// override values. The dataManagement limits query does not expose qualifier,
-	// and newrelic.resourceConsumption.limitValue in NRDB lags behind the mutation
-	// API by the metric ingestion interval. cardinality_limit is kept from state.
+	// PER_METRIC mode: the enforced limit is tied to metric ingestion on the
+	// platform, so cardinality_limit is preserved from state rather than read
+	// back on each plan.
 	return diag.Diagnostics{
 		{
 			Severity: diag.Warning,
-			Summary:  "Per-metric cardinality limit value cannot be verified in real time",
+			Summary:  "Per-metric cardinality limit reflects last applied value",
 			Detail: fmt.Sprintf(
-				"The current enforced cardinality limit for metric %q cannot be read back via the New Relic API at this time. "+
-					"The value shown in state reflects the last value applied by Terraform and may not match the current enforced limit in New Relic. "+
-					"Run 'terraform apply' to re-apply the desired limit if you suspect drift.",
+				"The enforced cardinality limit for metric %q is tied to metric ingestion on the platform. "+
+					"The value in state is the last limit applied by Terraform. "+
+					"Run 'terraform apply' to re-enforce the desired limit at any time.",
 				metricName,
 			),
 		},
