@@ -190,7 +190,7 @@ func resourceNewRelicAccountCardinalityLimitDelete(ctx context.Context, d *schem
 			Qualifier:      "",
 		}
 
-		if _, err := client.DataManagement.DataManagementCreateAccountLimitWithContext(ctx, accountID, resetInput); err != nil {
+		if _, err = client.DataManagement.DataManagementCreateAccountLimitWithContext(ctx, accountID, resetInput); err != nil {
 			return diag.FromErr(err)
 		}
 
