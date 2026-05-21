@@ -2,8 +2,8 @@ data_source_newrelic_account.go:
   test: false
   product_mapping: AUTH
 data_source_newrelic_account_cardinality_limits.go:
-  test: false
-  product_mapping: UNKNOWN
+  test: true
+  product_mapping: INGEST
 data_source_newrelic_account_test.go:
   test: true
   product_mapping: AUTH
@@ -101,8 +101,8 @@ data_source_newrelic_user_management_test.go:
   test: true
   product_mapping: AUTH
 resource_newrelic_account_cardinality_limit.go:
-  test: false
-  product_mapping: UNKNOWN
+  test: true
+  product_mapping: INGEST
 resource_newrelic_metric_pruning_rule.go:
   test: true
   product_mapping: INGEST
