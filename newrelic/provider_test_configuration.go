@@ -1,4 +1,4 @@
-//go:build integration || unit || ALERTS || APIKS || APM || AUTH || CLOUD || DASHBOARDS || ENTITY || EVENTS || FLEET || KEY_TRANSACTIONS || LOGGING_INTEGRATIONS || NGEP || SYNTHETICS || WORKFLOW_AUTOMATION || WORKFLOW_INTEGRATIONS || WORKLOADS
+//go:build integration || unit || ALERTS || APIKS || APM || AUTH || CLOUD || DASHBOARDS || ENTITY || EVENTS || FLEET || INGEST || KEY_TRANSACTIONS || LOGGING_INTEGRATIONS || NGEP || SYNTHETICS || WORKFLOW_AUTOMATION || WORKFLOW_INTEGRATIONS || WORKLOADS
 
 // Test helpers
 //
@@ -33,7 +33,7 @@ var (
 	testAccExpectedApplicationName             string
 	testAccExpectedSingleQuotedApplicationName string
 	testAccExpectedAlertPolicyName             string
-	testAccAPIKey                              string
+	testAccAPIKey                            string
 	testAccProviders                           map[string]*schema.Provider
 	testAccProvider                            *schema.Provider
 	testFleetAPIKey                            string
