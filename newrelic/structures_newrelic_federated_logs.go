@@ -86,40 +86,42 @@ func expandFederatedLogsDefaultPartition(in []interface{}) federatedlogs.Federat
 	return out
 }
 
-func expandFederatedLogsForwarder(in []interface{}) federatedlogs.FederatedLogsForwarderInput {
-	out := federatedlogs.FederatedLogsForwarderInput{}
+func expandFederatedLogsForwarder(in []interface{}) *federatedlogs.FederatedLogsForwarderInput {
 	if len(in) == 0 || in[0] == nil {
-		return out
+		return nil
 	}
 	m := in[0].(map[string]interface{})
-	out.Type = federatedlogs.FederatedLogsForwarderType(m["type"].(string))
+	out := federatedlogs.FederatedLogsForwarderInput{
+		Type: federatedlogs.FederatedLogsForwarderType(m["type"].(string)),
+	}
 	if v, ok := m["pipeline_control"]; ok {
 		out.PipelineControl = expandFederatedLogsPipelineControl(v.([]interface{}))
 	}
-	return out
+	return &out
 }
 
-func expandFederatedLogsPipelineControl(in []interface{}) federatedlogs.FederatedLogsPipelineControlConfigurationInput {
-	out := federatedlogs.FederatedLogsPipelineControlConfigurationInput{}
+func expandFederatedLogsPipelineControl(in []interface{}) *federatedlogs.FederatedLogsPipelineControlConfigurationInput {
 	if len(in) == 0 || in[0] == nil {
-		return out
+		return nil
 	}
 	m := in[0].(map[string]interface{})
-	out.FleetId = m["fleet_id"].(string)
+	out := federatedlogs.FederatedLogsPipelineControlConfigurationInput{
+		FleetId: m["fleet_id"].(string),
+	}
 	if v, ok := m["routing_rule"]; ok {
 		out.RoutingRule = expandFederatedLogsRule(v.([]interface{}))
 	}
-	return out
+	return &out
 }
 
-func expandFederatedLogsRule(in []interface{}) federatedlogs.FederatedLogsRuleInput {
-	out := federatedlogs.FederatedLogsRuleInput{}
+func expandFederatedLogsRule(in []interface{}) *federatedlogs.FederatedLogsRuleInput {
 	if len(in) == 0 || in[0] == nil {
-		return out
+		return nil
 	}
 	m := in[0].(map[string]interface{})
-	out.Expression = m["expression"].(string)
-	return out
+	return &federatedlogs.FederatedLogsRuleInput{
+		Expression: m["expression"].(string),
+	}
 }
 
 // =====================================================================
@@ -137,40 +139,41 @@ func expandFederatedLogsPartitionStorage(in []interface{}) federatedlogs.Federat
 	return out
 }
 
-func expandFederatedLogsRetentionPolicy(in []interface{}) federatedlogs.FederatedLogsRetentionPolicyInput {
-	out := federatedlogs.FederatedLogsRetentionPolicyInput{}
+func expandFederatedLogsRetentionPolicy(in []interface{}) *federatedlogs.FederatedLogsRetentionPolicyInput {
 	if len(in) == 0 || in[0] == nil {
-		return out
+		return nil
 	}
 	m := in[0].(map[string]interface{})
-	out.Duration = m["duration"].(int)
-	out.Unit = federatedlogs.FederatedLogsRetentionUnit(m["unit"].(string))
-	return out
+	return &federatedlogs.FederatedLogsRetentionPolicyInput{
+		Duration: m["duration"].(int),
+		Unit:     federatedlogs.FederatedLogsRetentionUnit(m["unit"].(string)),
+	}
 }
 
-func expandFederatedLogsPartitionForwarderConfig(in []interface{}) federatedlogs.FederatedLogsPartitionForwarderConfigurationInput {
-	out := federatedlogs.FederatedLogsPartitionForwarderConfigurationInput{}
+func expandFederatedLogsPartitionForwarderConfig(in []interface{}) *federatedlogs.FederatedLogsPartitionForwarderConfigurationInput {
 	if len(in) == 0 || in[0] == nil {
-		return out
+		return nil
 	}
 	m := in[0].(map[string]interface{})
-	out.Type = federatedlogs.FederatedLogsForwarderType(m["type"].(string))
+	out := federatedlogs.FederatedLogsPartitionForwarderConfigurationInput{
+		Type: federatedlogs.FederatedLogsForwarderType(m["type"].(string)),
+	}
 	if v, ok := m["pipeline_control"]; ok {
 		out.PipelineControl = expandFederatedLogsPartitionPipelineControl(v.([]interface{}))
 	}
-	return out
+	return &out
 }
 
-func expandFederatedLogsPartitionPipelineControl(in []interface{}) federatedlogs.FederatedLogsPartitionPipelineControlConfigurationInput {
-	out := federatedlogs.FederatedLogsPartitionPipelineControlConfigurationInput{}
+func expandFederatedLogsPartitionPipelineControl(in []interface{}) *federatedlogs.FederatedLogsPartitionPipelineControlConfigurationInput {
 	if len(in) == 0 || in[0] == nil {
-		return out
+		return nil
 	}
 	m := in[0].(map[string]interface{})
+	out := federatedlogs.FederatedLogsPartitionPipelineControlConfigurationInput{}
 	if v, ok := m["partition_rule"]; ok {
 		out.PartitionRule = expandFederatedLogsRule(v.([]interface{}))
 	}
-	return out
+	return &out
 }
 
 // =====================================================================

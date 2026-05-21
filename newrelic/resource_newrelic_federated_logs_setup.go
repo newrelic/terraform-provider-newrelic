@@ -316,7 +316,7 @@ func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.Res
 	client := meta.(*ProviderConfig).NewClient
 
 	input := federatedlogs.FederatedLogsUpdateSetupInput{
-		LifecycleStatus: federatedlogs.FederatedLogsLifecycleStatusInput{
+		LifecycleStatus: &federatedlogs.FederatedLogsLifecycleStatusInput{
 			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
 		},
 	}

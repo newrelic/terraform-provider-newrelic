@@ -4,14 +4,14 @@ go 1.24.0
 
 toolchain go1.24.11
 
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.84.1-0.20260519121241-a0cd12453eea
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.84.1-0.20260520121348-0b062a7b5a38
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-insights v1.0.3
-	github.com/newrelic/newrelic-client-go/v2 v2.84.1-0.20260519121241-a0cd12453eea
+	github.com/newrelic/newrelic-client-go/v2 v2.84.1-0.20260520121348-0b062a7b5a38
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	gopkg.in/yaml.v3 v3.0.1

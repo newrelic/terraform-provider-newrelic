@@ -114,7 +114,7 @@ func resourceNewRelicAwsConnectionCreate(ctx context.Context, d *schema.Resource
 
 	input := federatedlogs.EntityManagementAwsConnectionEntityCreateInput{
 		Name:    d.Get("name").(string),
-		Enabled: d.Get("enabled").(bool),
+		Enabled: getBoolPointer(d.Get("enabled").(bool)),
 		Credential: federatedlogs.EntityManagementAwsCredentialsCreateInput{
 			AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigCreateInput{
 				RoleArn: d.Get("role_arn").(string),
@@ -254,7 +254,7 @@ func resourceNewRelicAwsConnectionUpdate(ctx context.Context, d *schema.Resource
 		input.Region = d.Get("region").(string)
 	}
 	if d.HasChange("role_arn") {
-		input.Credential = federatedlogs.EntityManagementAwsCredentialsUpdateInput{
+		input.Credential = &federatedlogs.EntityManagementAwsCredentialsUpdateInput{
 			AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigUpdateInput{
 				RoleArn: d.Get("role_arn").(string),
 			},

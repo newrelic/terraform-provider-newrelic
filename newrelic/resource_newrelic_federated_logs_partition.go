@@ -250,7 +250,7 @@ func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema
 	client := meta.(*ProviderConfig).NewClient
 
 	input := federatedlogs.FederatedLogsUpdatePartitionInput{
-		LifecycleStatus: federatedlogs.FederatedLogsLifecycleStatusInput{
+		LifecycleStatus: &federatedlogs.FederatedLogsLifecycleStatusInput{
 			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
 		},
 	}
