@@ -1,9 +1,9 @@
 data_source_newrelic_account.go:
   test: false
   product_mapping: AUTH
-data_source_newrelic_account_cardinality_limits.go:
+data_source_newrelic_cardinality_management.go:
   test: false
-  product_mapping: UNKNOWN
+  product_mapping: INGEST
 data_source_newrelic_account_test.go:
   test: true
   product_mapping: AUTH
@@ -50,6 +50,12 @@ data_source_newrelic_fleet_configuration.go:
   test: false
   product_mapping: FLEET
 data_source_newrelic_fleet_configuration_test.go:
+  test: true
+  product_mapping: FLEET
+data_source_newrelic_fleet_members.go:
+  test: false
+  product_mapping: FLEET
+data_source_newrelic_fleet_members_test.go:
   test: true
   product_mapping: FLEET
 data_source_newrelic_group_management.go:
@@ -100,12 +106,12 @@ data_source_newrelic_user_management.go:
 data_source_newrelic_user_management_test.go:
   test: true
   product_mapping: AUTH
-resource_newrelic_account_cardinality_limit.go:
+resource_newrelic_cardinality_management.go:
   test: false
-  product_mapping: UNKNOWN
-resource_newrelic_account_cardinality_limit_test.go:
+  product_mapping: INGEST
+resource_newrelic_cardinality_management_test.go:
   test: true
-  product_mapping: UNKNOWN
+  product_mapping: INGEST
 resource_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
@@ -262,12 +268,6 @@ resource_newrelic_events_to_metrics_rule.go:
 resource_newrelic_events_to_metrics_rule_test.go:
   test: true
   product_mapping: EVENTS
-data_source_newrelic_fleet_members.go:
-  test: false
-  product_mapping: FLEET
-data_source_newrelic_fleet_members_test.go:
-  test: true
-  product_mapping: FLEET
 resource_newrelic_fleet.go:
   test: false
   product_mapping: FLEET

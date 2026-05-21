@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceNewRelicAccountCardinalityLimits() *schema.Resource {
+func dataSourceNewRelicCardinalityManagement() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceNewRelicAccountCardinalityLimitsRead,
+		ReadContext: dataSourceNewRelicCardinalityManagementRead,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -21,7 +21,7 @@ func dataSourceNewRelicAccountCardinalityLimits() *schema.Resource {
 			"limits": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of cardinality limits for the account.",
+				Description: "The list of cardinality limits configured for the account.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -51,7 +51,7 @@ func dataSourceNewRelicAccountCardinalityLimits() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicAccountCardinalityLimitsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceNewRelicCardinalityManagementRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)

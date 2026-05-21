@@ -138,7 +138,7 @@ func Provider() *schema.Provider {
 			"newrelic_user":                         dataSourceNewRelicUser(),
 			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
 			"newrelic_fleet_members":                dataSourceNewRelicFleetMembers(),
-			"newrelic_account_cardinality_limits":   dataSourceNewRelicAccountCardinalityLimits(),
+			"newrelic_cardinality_management":        dataSourceNewRelicCardinalityManagement(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -175,7 +175,7 @@ func Provider() *schema.Provider {
 			"newrelic_notification_channel":                     resourceNewRelicNotificationChannel(),
 			"newrelic_notification_destination":                 resourceNewRelicNotificationDestination(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
-			"newrelic_account_cardinality_limit":                resourceNewRelicAccountCardinalityLimit(),
+			"newrelic_cardinality_management":                   resourceNewRelicCardinalityManagement(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),

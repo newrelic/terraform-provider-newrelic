@@ -1,37 +1,37 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_account_cardinality_limits"
-sidebar_current: "docs-newrelic-datasource-account-cardinality-limits"
+page_title: "New Relic: newrelic_cardinality_management"
+sidebar_current: "docs-newrelic-datasource-cardinality-management"
 description: |-
   Reads all current cardinality limits for a New Relic account.
 ---
 
-# Data Source: newrelic\_account\_cardinality\_limits
+# Data Source: newrelic\_cardinality\_management
 
-Use this data source to read the current cardinality limits configured for a New Relic account. The returned list includes limits across all categories (e.g. ingest, API) and can be used to inspect current values before creating overrides with [`newrelic_account_cardinality_limit`](/providers/newrelic/newrelic/latest/docs/resources/account_cardinality_limit).
+Use this data source to read the current cardinality limits configured for a New Relic account. The returned list covers all limit categories (e.g. ingest, API) and can be used to inspect current values before creating overrides with [`newrelic_cardinality_management`](/providers/newrelic/newrelic/latest/docs/resources/cardinality_management).
 
 ## Example Usage
 
 ```hcl
-data "newrelic_account_cardinality_limits" "current" {
+data "newrelic_cardinality_management" "current" {
   account_id = 12345678
 }
 
 output "all_limits" {
-  value = data.newrelic_account_cardinality_limits.current.limits
+  value = data.newrelic_cardinality_management.current.limits
 }
 ```
 
 ### Look Up the Default Metric Cardinality Limit
 
 ```hcl
-data "newrelic_account_cardinality_limits" "current" {
+data "newrelic_cardinality_management" "current" {
   account_id = 12345678
 }
 
 output "default_cardinality_limit" {
   value = [
-    for l in data.newrelic_account_cardinality_limits.current.limits :
+    for l in data.newrelic_cardinality_management.current.limits :
     l.value if l.name == "Dimensional Metric per-metric cardinality ingested per day"
   ]
 }
@@ -40,16 +40,15 @@ output "default_cardinality_limit" {
 ### Use Alongside a Cardinality Limit Override
 
 ```hcl
-data "newrelic_account_cardinality_limits" "current" {
+data "newrelic_cardinality_management" "current" {
   account_id = 12345678
 }
 
-resource "newrelic_account_cardinality_limit" "default" {
-  account_id        = 12345678
+resource "newrelic_cardinality_management" "default" {
+  mode              = "DEFAULT"
   cardinality_limit = 150000
-  override_reason   = "Increased for high-cardinality workloads"
 
-  depends_on = [data.newrelic_account_cardinality_limits.current]
+  depends_on = [data.newrelic_cardinality_management.current]
 }
 ```
 
