@@ -33,7 +33,7 @@ var (
 	testAccExpectedApplicationName             string
 	testAccExpectedSingleQuotedApplicationName string
 	testAccExpectedAlertPolicyName             string
-	testAccAPIKey                            string
+	testAccAPIKey                              string
 	testAccProviders                           map[string]*schema.Provider
 	testAccProvider                            *schema.Provider
 	testFleetAPIKey                            string
