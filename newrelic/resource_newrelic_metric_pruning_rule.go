@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/nrqldroprules"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/pruningrules"
 )
 
 func resourceNewRelicMetricPruningRule() *schema.Resource {
@@ -29,7 +29,7 @@ func resourceNewRelicMetricPruningRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The NRQL query that identifies the metric attributes to prune. Must target a single metric name using a WHERE clause (e.g. `SELECT * FROM Metric WHERE metricName = 'my.metric'`).",
+				Description: "The NRQL query that identifies the metric attributes to prune. Must select specific attributes from Metric (e.g. `SELECT collector.name FROM Metric WHERE metricName = 'my.metric'`).",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -52,9 +52,9 @@ func resourceNewRelicMetricPruningRuleCreate(ctx context.Context, d *schema.Reso
 
 	accountID := selectAccountID(providerConfig, d)
 
-	input := []nrqldroprules.NRQLDropRulesCreateDropRuleInput{
+	input := []pruningrules.NRQLDropRulesCreateDropRuleInput{
 		{
-			Action:      nrqldroprules.NRQLDropRulesActionTypes.DROP_ATTRIBUTES_FROM_METRIC_AGGREGATES,
+			Action:      pruningrules.NRQLDropRulesActionTypes.DROP_ATTRIBUTES_FROM_METRIC_AGGREGATES,
 			NRQL:        d.Get("nrql").(string),
 			Description: d.Get("description").(string),
 		},
@@ -62,7 +62,7 @@ func resourceNewRelicMetricPruningRuleCreate(ctx context.Context, d *schema.Reso
 
 	log.Printf("[INFO] Creating New Relic metric pruning rule for account %d", accountID)
 
-	created, err := client.Nrqldroprules.NRQLDropRulesCreateWithContext(ctx, accountID, input)
+	created, err := client.Pruningrules.NRQLDropRulesCreateWithContext(ctx, accountID, input)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,12 +96,12 @@ func resourceNewRelicMetricPruningRuleRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	rules, err := client.Nrqldroprules.GetListWithContext(ctx, accountID)
+	rules, err := client.Pruningrules.GetListWithContext(ctx, accountID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if rules.Error.Reason == nrqldroprules.NRQLDropRulesErrorReasonTypes.RULE_NOT_FOUND {
+	if rules.Error.Reason == pruningrules.NRQLDropRulesErrorReasonTypes.RULE_NOT_FOUND {
 		d.SetId("")
 		return nil
 	}
@@ -140,7 +140,7 @@ func resourceNewRelicMetricPruningRuleDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	deleted, err := client.Nrqldroprules.NRQLDropRulesDeleteWithContext(ctx, accountID, []string{ruleID})
+	deleted, err := client.Pruningrules.NRQLDropRulesDeleteWithContext(ctx, accountID, []string{ruleID})
 	if err != nil {
 		return diag.FromErr(err)
 	}

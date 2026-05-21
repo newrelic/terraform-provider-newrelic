@@ -118,7 +118,7 @@ func testAccCheckNewRelicMetricPruningRuleExists(n string) resource.TestCheckFun
 			return err
 		}
 
-		rules, err := client.Nrqldroprules.GetListWithContext(context.Background(), accountID)
+		rules, err := client.Pruningrules.GetListWithContext(context.Background(), accountID)
 		if err != nil {
 			return err
 		}
@@ -146,7 +146,7 @@ func testAccCheckNewRelicMetricPruningRuleDestroy(s *terraform.State) error {
 			return err
 		}
 
-		rules, err := client.Nrqldroprules.GetListWithContext(context.Background(), accountID)
+		rules, err := client.Pruningrules.GetListWithContext(context.Background(), accountID)
 		if err != nil {
 			return err
 		}
