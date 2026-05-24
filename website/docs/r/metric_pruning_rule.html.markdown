@@ -8,11 +8,11 @@ description: |-
 
 # Resource: newrelic\_metric\_pruning\_rule
 
-Use this resource to create and manage **metric pruning rules** for a New Relic account.
+Use this resource to create and manage metric pruning rules for a New Relic account.
 
-A metric pruning rule strips specific high-cardinality attributes from dimensional metric aggregates before they are stored. Unlike a full data drop, pruning keeps the metric itself but removes the nominated attributes, reducing cardinality without losing the metric signal entirely.
+A metric pruning rule strips specific high-cardinality attributes from dimensional metric aggregates before they are stored. Unlike dropping a metric entirely, pruning keeps the metric signal intact while removing the nominated attributes — reducing cardinality without any loss of the metric itself.
 
-Internally, this resource uses the `nrqlDropRulesCreate` NerdGraph mutation with the `DROP_ATTRIBUTES_FROM_METRIC_AGGREGATES` action.
+-> **Note:** All arguments (`nrql`, `description`) force re-creation when changed. Metric pruning rules cannot be updated in place.
 
 ---
 
@@ -20,8 +20,8 @@ Internally, this resource uses the `nrqlDropRulesCreate` NerdGraph mutation with
 
 ```hcl
 resource "newrelic_metric_pruning_rule" "example" {
-  nrql        = "SELECT * FROM Metric WHERE metricName = 'scooter.speed.kmph'"
-  description = "Drop high-cardinality rider_id from scooter speed metric"
+  nrql        = "SELECT collector.name FROM Metric WHERE metricName = 'http.server.duration'"
+  description = "Remove collector.name attribute from http.server.duration to reduce cardinality"
 }
 ```
 
@@ -30,8 +30,8 @@ resource "newrelic_metric_pruning_rule" "example" {
 ```hcl
 resource "newrelic_metric_pruning_rule" "example" {
   account_id  = 12345678
-  nrql        = "SELECT * FROM Metric WHERE metricName = 'scooter.speed.kmph'"
-  description = "Drop high-cardinality rider_id from scooter speed metric"
+  nrql        = "SELECT collector.name FROM Metric WHERE metricName = 'http.server.duration'"
+  description = "Remove collector.name attribute from http.server.duration to reduce cardinality"
 }
 ```
 
@@ -41,9 +41,9 @@ resource "newrelic_metric_pruning_rule" "example" {
 
 The following arguments are supported:
 
-* `nrql` - (Required, Forces new resource) The NRQL query that identifies the metric and attributes to prune. The query must target a specific metric name. For example: `SELECT * FROM Metric WHERE metricName = 'my.metric.name'`.
-* `description` - (Optional, Forces new resource) A human-readable description of the pruning rule.
-* `account_id` - (Optional) The account ID in which to create the pruning rule. Defaults to the account ID configured on the provider.
+* `nrql` - (Required, Forces new resource) The NRQL query that identifies the metric and the specific attributes to prune. The `SELECT` clause must name the attributes to remove (not `SELECT *`), and the `FROM` clause must target `Metric`. Example: `SELECT collector.name FROM Metric WHERE metricName = 'my.metric.name'`.
+* `description` - (Optional, Forces new resource) A human-readable description of what this pruning rule does.
+* `account_id` - (Optional) The New Relic account ID in which to create the pruning rule. Defaults to the account ID configured on the provider.
 
 ## Attributes Reference
 
@@ -60,4 +60,4 @@ Metric pruning rules can be imported using the composite ID format `<account_id>
 $ terraform import newrelic_metric_pruning_rule.example 12345678:1234
 ```
 
--> **Note:** All attributes (`nrql`, `description`) are restored from the New Relic API on import.
+-> **Note:** All attributes (`nrql`, `description`) are restored from New Relic on import.
