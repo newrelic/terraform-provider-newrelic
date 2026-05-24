@@ -20,6 +20,7 @@ var ProductMappingTypes = struct {
 	ENTITY               ProductMapping
 	EVENTS               ProductMapping
 	FLEET                ProductMapping
+	INGEST               ProductMapping
 	KeyTransactions      ProductMapping
 	LoggingIntegrations  ProductMapping
 	NGEP                 ProductMapping
@@ -37,6 +38,7 @@ var ProductMappingTypes = struct {
 	ENTITY:               "ENTITY",
 	EVENTS:               "EVENTS",
 	FLEET:                "FLEET",
+	INGEST:               "INGEST",
 	KeyTransactions:      "KEY_TRANSACTIONS",
 	LoggingIntegrations:  "LOGGING_INTEGRATIONS",
 	NGEP:                 "NGEP",
@@ -80,6 +82,10 @@ var productMappings = map[ProductMapping][]string{
 	},
 	ProductMappingTypes.FLEET: {
 		"fleet",
+	},
+	ProductMappingTypes.INGEST: {
+		"cardinality",
+		"pruning_rule",
 	},
 	ProductMappingTypes.KeyTransactions: {
 		"key_transaction",

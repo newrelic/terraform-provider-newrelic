@@ -174,6 +174,8 @@ func Provider() *schema.Provider {
 			"newrelic_notification_channel":                     resourceNewRelicNotificationChannel(),
 			"newrelic_notification_destination":                 resourceNewRelicNotificationDestination(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
+			"newrelic_cardinality_management":                   resourceNewRelicCardinalityManagement(),
+			"newrelic_metric_pruning_rule":                      resourceNewRelicMetricPruningRule(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
