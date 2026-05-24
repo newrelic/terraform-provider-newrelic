@@ -25,16 +25,16 @@ const (
 	cardinalityUILagNotice = "Please allow a few minutes for this change to be reflected in the New Relic UI and for updated metrics to flow through."
 )
 
-func resourceNewRelicAccountCardinalityLimit() *schema.Resource {
+func resourceNewRelicCardinalityManagement() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicAccountCardinalityLimitCreate,
-		ReadContext:   resourceNewRelicAccountCardinalityLimitRead,
-		UpdateContext: resourceNewRelicAccountCardinalityLimitCreate,
-		DeleteContext: resourceNewRelicAccountCardinalityLimitDelete,
+		CreateContext: resourceNewRelicCardinalityManagementCreate,
+		ReadContext:   resourceNewRelicCardinalityManagementRead,
+		UpdateContext: resourceNewRelicCardinalityManagementCreate,
+		DeleteContext: resourceNewRelicCardinalityManagementDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		CustomizeDiff: resourceNewRelicAccountCardinalityLimitDiff,
+		CustomizeDiff: resourceNewRelicCardinalityManagementDiff,
 		Schema: map[string]*schema.Schema{
 			"mode": {
 				Type:         schema.TypeString,
@@ -58,7 +58,7 @@ func resourceNewRelicAccountCardinalityLimit() *schema.Resource {
 	}
 }
 
-func resourceNewRelicAccountCardinalityLimitDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+func resourceNewRelicCardinalityManagementDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	mode := d.Get("mode").(string)
 	metricName := d.Get("metric_name").(string)
 
@@ -75,7 +75,7 @@ func resourceNewRelicAccountCardinalityLimitDiff(_ context.Context, d *schema.Re
 	return nil
 }
 
-func resourceNewRelicAccountCardinalityLimitCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCardinalityManagementCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := providerConfig.AccountID
@@ -105,10 +105,10 @@ func resourceNewRelicAccountCardinalityLimitCreate(ctx context.Context, d *schem
 		})
 	}
 
-	return append(diags, resourceNewRelicAccountCardinalityLimitRead(ctx, d, meta)...)
+	return append(diags, resourceNewRelicCardinalityManagementRead(ctx, d, meta)...)
 }
 
-func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCardinalityManagementRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
@@ -169,7 +169,7 @@ func resourceNewRelicAccountCardinalityLimitRead(ctx context.Context, d *schema.
 	}
 }
 
-func resourceNewRelicAccountCardinalityLimitDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCardinalityManagementDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 

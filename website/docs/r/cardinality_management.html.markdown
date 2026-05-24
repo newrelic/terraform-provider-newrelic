@@ -1,6 +1,6 @@
 ---
 layout: "newrelic"
-page_title: "New Relic: newrelic_account_cardinality_limit"
+page_title: "New Relic: newrelic_cardinality_management"
 sidebar_current: "docs-newrelic-resource-account-cardinality-limit"
 description: |-
   Create and manage New Relic account cardinality limit overrides.
@@ -29,7 +29,7 @@ In `DEFAULT` mode, the resource sets the account-wide default cardinality limit.
 ### Example
 
 ```hcl
-resource "newrelic_account_cardinality_limit" "default" {
+resource "newrelic_cardinality_management" "default" {
   mode              = "DEFAULT"
   cardinality_limit = 150000
 }
@@ -52,7 +52,7 @@ In `PER_METRIC` mode, the resource overrides the cardinality limit for a single 
 ### Example
 
 ```hcl
-resource "newrelic_account_cardinality_limit" "per_metric" {
+resource "newrelic_cardinality_management" "per_metric" {
   mode              = "PER_METRIC"
   metric_name       = "otelcol_nrreceiver_incoming_request_proxy"
   cardinality_limit = 200000
@@ -68,12 +68,12 @@ resource "newrelic_account_cardinality_limit" "per_metric" {
 ## Using Both Modes Together
 
 ```hcl
-resource "newrelic_account_cardinality_limit" "default" {
+resource "newrelic_cardinality_management" "default" {
   mode              = "DEFAULT"
   cardinality_limit = 150000
 }
 
-resource "newrelic_account_cardinality_limit" "per_metric" {
+resource "newrelic_cardinality_management" "per_metric" {
   mode              = "PER_METRIC"
   metric_name       = "otelcol_nrreceiver_incoming_request_proxy"
   cardinality_limit = 200000
@@ -105,13 +105,13 @@ Cardinality limit overrides can be imported using the composite ID format `<acco
 For a **DEFAULT** override (no metric name), use a trailing colon:
 
 ```bash
-$ terraform import newrelic_account_cardinality_limit.default 12345678:
+$ terraform import newrelic_cardinality_management.default 12345678:
 ```
 
 For a **PER_METRIC** override, append the metric name after the colon:
 
 ```bash
-$ terraform import newrelic_account_cardinality_limit.per_metric 12345678:otelcol_nrreceiver_incoming_request_proxy
+$ terraform import newrelic_cardinality_management.per_metric 12345678:otelcol_nrreceiver_incoming_request_proxy
 ```
 
 -> **Note:** When importing a `PER_METRIC` resource, `mode` and `metric_name` are restored from the resource ID. However, because the API does not return the current per-metric override value, `cardinality_limit` will reflect the account-wide default read at import time. Run `terraform apply` after import to re-apply the intended limit.
