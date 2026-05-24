@@ -14,7 +14,7 @@ Dimensional metrics in New Relic are subject to a per-metric cardinality limit �
 
 Two modes are available, selected via the required `mode` argument.
 
--> **Note:** The New Relic API does not expose a delete operation for cardinality limit overrides. Destroying this resource resets the affected limit(s) back to the platform default of **100,000** rather than removing them. The destroy behaviour for each mode is described in the sections below.
+-> **Note:** Cardinality limit overrides are managed via reset rather than removal. Destroying this resource resets the affected limit(s) back to the platform default of **100,000**. The destroy behaviour for each mode is described in the sections below.
 
 ---
 
@@ -34,8 +34,8 @@ resource "newrelic_cardinality_management" "account_default" {
 ### Behaviour
 
 - **Create / Update** — submits the new default value. The change takes effect in the enforcement layer straight away.
-- **Read** — reads the current account-wide default from the New Relic data management API and reconciles Terraform state. Drift is detected on the next `terraform plan`.
-- **Destroy** — resets the account-wide default to the New Relic platform default of **100,000** and displays a confirmation warning.
+- **Read** — reads the current account-wide default and reconciles Terraform state. Drift is detected on the next `terraform plan`.
+- **Destroy** — resets the account-wide default to the platform default of **100,000** and displays a confirmation warning.
 
 -> **Note:** Changes may take a few minutes to be visible in the New Relic UI, particularly if affected metrics have not sent data recently.
 
@@ -52,7 +52,7 @@ resource "newrelic_cardinality_management" "per_metric" {
   mode = "PER_METRIC"
 
   metric {
-    name  = "http.server.duration"
+    name              = "http.server.duration"
     cardinality_limit = 200000
   }
 }
@@ -65,17 +65,17 @@ resource "newrelic_cardinality_management" "high_cardinality_metrics" {
   mode = "PER_METRIC"
 
   metric {
-    name  = "http.server.duration"
+    name              = "http.server.duration"
     cardinality_limit = 200000
   }
 
   metric {
-    name  = "otelcol_nrreceiver_incoming_request_proxy"
+    name              = "otelcol_nrreceiver_incoming_request_proxy"
     cardinality_limit = 300000
   }
 
   metric {
-    name  = "k8s.pod.cpu.usage"
+    name              = "k8s.pod.cpu.usage"
     cardinality_limit = 150000
   }
 }
@@ -84,10 +84,10 @@ resource "newrelic_cardinality_management" "high_cardinality_metrics" {
 ### Behaviour
 
 - **Create / Update** — submits one override per `metric` block. A warning is displayed after apply as a reminder that updates may take a few minutes to be reflected in the UI.
-- **Read** — the New Relic API does not return per-metric override values, so the `limit` values in state are preserved from the last successful `apply`. A warning is displayed on each `plan` and `apply` to reflect this limitation.
-- **Destroy** — resets each managed metric's limit to the platform default of **100,000**. A warning is displayed to confirm this.
+- **Read** — in PER_METRIC mode, `cardinality_limit` values in state reflect the last configuration applied via terraform — this is the expected behaviour for this mode. A note is displayed on each `terraform plan` as a reminder.
+- **Destroy** — resets each managed metric's limit to the platform default of **100,000** and displays a confirmation warning.
 
--> **Note:** Because the API does not return per-metric limit values, the `limit` attributes in state always reflect the last values applied by Terraform. If a limit was changed outside of Terraform, run `terraform apply` to re-apply the desired values.
+-> **Note:** In PER_METRIC mode, the `cardinality_limit` values within `metric` blocks reflect the last configuration applied via terraform. If any of these limits have been adjusted outside of terraform, run `terraform apply` to re-apply the desired values.
 
 ---
 
@@ -105,12 +105,12 @@ resource "newrelic_cardinality_management" "per_metric" {
   mode = "PER_METRIC"
 
   metric {
-    name  = "http.server.duration"
-    limit = 250000
+    name              = "http.server.duration"
+    cardinality_limit = 250000
   }
 
   metric {
-    name  = "otelcol_nrreceiver_incoming_request_proxy"
+    name              = "otelcol_nrreceiver_incoming_request_proxy"
     cardinality_limit = 300000
   }
 }
@@ -126,7 +126,7 @@ The following arguments are supported:
   * `DEFAULT` — sets an account-wide limit for all metrics. `cardinality_limit` is required; `metric` blocks must not be set.
   * `PER_METRIC` — sets individual limits for named metrics. At least one `metric` block is required; `cardinality_limit` must not be set at the top level.
 
-* `cardinality_limit` - (Optional) The account-wide cardinality limit value — the maximum unique dimension-value combinations allowed per metric per day. Required when `mode` is `"DEFAULT"`; must not be set when `mode` is `"PER_METRIC"`.
+* `cardinality_limit` - (Optional) The account-wide cardinality limit — the maximum number of unique dimension-value combinations allowed per metric per day. Required when `mode` is `"DEFAULT"`; must not be set when `mode` is `"PER_METRIC"`.
 
 * `metric` - (Optional) One or more metric override blocks. Required when `mode` is `"PER_METRIC"`; must not be set when `mode` is `"DEFAULT"`. Each block supports:
   * `name` - (Required) The full name of the metric (e.g. `"http.server.duration"`).
@@ -154,4 +154,4 @@ For a **PER_METRIC** override:
 $ terraform import newrelic_cardinality_management.per_metric 12345678:PER_METRIC
 ```
 
--> **Note:** When importing a `PER_METRIC` resource, the `metric` blocks cannot be populated from the API (per-metric override values are not readable). After import, add the correct `metric` blocks to your configuration and run `terraform apply` to re-apply the desired limits.
+-> **Note:** When importing a `PER_METRIC` resource, `metric` blocks cannot be auto-populated on import and must be defined manually in your configuration. Run `terraform apply` after import to re-apply the desired limits.
