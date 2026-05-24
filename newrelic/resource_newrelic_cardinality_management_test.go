@@ -25,17 +25,16 @@ func TestAccNewRelicCardinalityManagement_Default(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "mode", "DEFAULT"),
 					resource.TestCheckResourceAttr(resourceName, "cardinality_limit", "200000"),
-					resource.TestCheckResourceAttr(resourceName, "metric_name", ""),
 				),
 			},
-			// Update cardinality_limit in-place (no ForceNew on that field).
+			// cardinality_limit is not ForceNew, so this is an in-place update.
 			{
 				Config: testAccNewRelicCardinalityManagementDefaultConfig(250000),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "cardinality_limit", "250000"),
 				),
 			},
-			// Import
+			// Import by account_id:DEFAULT.
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -45,7 +44,7 @@ func TestAccNewRelicCardinalityManagement_Default(t *testing.T) {
 	})
 }
 
-func TestAccNewRelicCardinalityManagement_PerMetric(t *testing.T) {
+func TestAccNewRelicCardinalityManagement_PerMetric_Single(t *testing.T) {
 	resourceName := "newrelic_cardinality_management.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -54,41 +53,106 @@ func TestAccNewRelicCardinalityManagement_PerMetric(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicCardinalityManagementPerMetricDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicCardinalityManagementPerMetricConfig(
-					"test.cardinality.metric.tf",
-					150000,
-				),
+				Config: testAccNewRelicCardinalityManagementPerMetricConfig([]testMetricEntry{
+					{name: "test.cardinality.single.tf", limit: 150000},
+				}),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "mode", "PER_METRIC"),
-					resource.TestCheckResourceAttr(resourceName, "metric_name", "test.cardinality.metric.tf"),
-					resource.TestCheckResourceAttr(resourceName, "cardinality_limit", "150000"),
+					resource.TestCheckResourceAttr(resourceName, "metric.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "metric.0.name", "test.cardinality.single.tf"),
+					resource.TestCheckResourceAttr(resourceName, "metric.0.limit", "150000"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicCardinalityManagement_InvalidDefaultWithMetricName(t *testing.T) {
+func TestAccNewRelicCardinalityManagement_PerMetric_Multiple(t *testing.T) {
+	resourceName := "newrelic_cardinality_management.test"
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicCardinalityManagementPerMetricDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicCardinalityManagementInvalidDefaultWithMetricNameConfig(),
-				ExpectError: regexp.MustCompile(`metric_name must not be set when mode is "DEFAULT"`),
+				Config: testAccNewRelicCardinalityManagementPerMetricConfig([]testMetricEntry{
+					{name: "test.cardinality.multi.one.tf", limit: 150000},
+					{name: "test.cardinality.multi.two.tf", limit: 200000},
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "mode", "PER_METRIC"),
+					resource.TestCheckResourceAttr(resourceName, "metric.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "metric.0.name", "test.cardinality.multi.one.tf"),
+					resource.TestCheckResourceAttr(resourceName, "metric.0.limit", "150000"),
+					resource.TestCheckResourceAttr(resourceName, "metric.1.name", "test.cardinality.multi.two.tf"),
+					resource.TestCheckResourceAttr(resourceName, "metric.1.limit", "200000"),
+				),
+			},
+			// Add a third metric without recreating the resource.
+			{
+				Config: testAccNewRelicCardinalityManagementPerMetricConfig([]testMetricEntry{
+					{name: "test.cardinality.multi.one.tf", limit: 150000},
+					{name: "test.cardinality.multi.two.tf", limit: 200000},
+					{name: "test.cardinality.multi.three.tf", limit: 175000},
+				}),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "metric.#", "3"),
+					resource.TestCheckResourceAttr(resourceName, "metric.2.name", "test.cardinality.multi.three.tf"),
+					resource.TestCheckResourceAttr(resourceName, "metric.2.limit", "175000"),
+				),
 			},
 		},
 	})
 }
 
-func TestAccNewRelicCardinalityManagement_InvalidPerMetricWithoutMetricName(t *testing.T) {
+func TestAccNewRelicCardinalityManagement_InvalidDefault_WithMetricBlocks(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccNewRelicCardinalityManagementInvalidPerMetricWithoutMetricNameConfig(),
-				ExpectError: regexp.MustCompile(`metric_name is required when mode is "PER_METRIC"`),
+				Config:      testAccNewRelicCardinalityManagementInvalidDefaultWithMetricBlocksConfig(),
+				ExpectError: regexp.MustCompile(`metric blocks must not be set when mode is "DEFAULT"`),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicCardinalityManagement_InvalidDefault_MissingLimit(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicCardinalityManagementInvalidDefaultMissingLimitConfig(),
+				ExpectError: regexp.MustCompile(`cardinality_limit is required when mode is "DEFAULT"`),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicCardinalityManagement_InvalidPerMetric_WithTopLevelLimit(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicCardinalityManagementInvalidPerMetricWithTopLevelLimitConfig(),
+				ExpectError: regexp.MustCompile(`cardinality_limit must not be set at the top level when mode is "PER_METRIC"`),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicCardinalityManagement_InvalidPerMetric_NoMetricBlocks(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicCardinalityManagementInvalidPerMetricNoMetricBlocksConfig(),
+				ExpectError: regexp.MustCompile(`at least one metric block is required when mode is "PER_METRIC"`),
 			},
 		},
 	})
@@ -133,9 +197,15 @@ func testAccCheckNewRelicCardinalityManagementDefaultDestroy(s *terraform.State)
 }
 
 // testAccCheckNewRelicCardinalityManagementPerMetricDestroy cannot read back per-metric
-// override values via the API, so no meaningful post-destroy assertion is possible here.
+// override values via the API, so no meaningful post-destroy assertion is possible.
 func testAccCheckNewRelicCardinalityManagementPerMetricDestroy(_ *terraform.State) error {
 	return nil
+}
+
+// testMetricEntry holds a single metric name + limit for use in test configs.
+type testMetricEntry struct {
+	name  string
+	limit int
 }
 
 func testAccNewRelicCardinalityManagementDefaultConfig(limit int) string {
@@ -147,31 +217,61 @@ resource "newrelic_cardinality_management" "test" {
 `, limit)
 }
 
-func testAccNewRelicCardinalityManagementPerMetricConfig(metricName string, limit int) string {
+func testAccNewRelicCardinalityManagementPerMetricConfig(metrics []testMetricEntry) string {
+	var blocks string
+	for _, m := range metrics {
+		blocks += fmt.Sprintf(`
+  metric {
+    name  = %q
+    limit = %d
+  }`, m.name, m.limit)
+	}
 	return fmt.Sprintf(`
 resource "newrelic_cardinality_management" "test" {
-  mode              = "PER_METRIC"
-  metric_name       = %q
-  cardinality_limit = %d
+  mode = "PER_METRIC"
+%s
 }
-`, metricName, limit)
+`, blocks)
 }
 
-func testAccNewRelicCardinalityManagementInvalidDefaultWithMetricNameConfig() string {
+func testAccNewRelicCardinalityManagementInvalidDefaultWithMetricBlocksConfig() string {
 	return `
 resource "newrelic_cardinality_management" "test" {
   mode              = "DEFAULT"
-  metric_name       = "should.not.be.set"
   cardinality_limit = 100000
+  metric {
+    name  = "should.not.be.here"
+    limit = 50000
+  }
 }
 `
 }
 
-func testAccNewRelicCardinalityManagementInvalidPerMetricWithoutMetricNameConfig() string {
+func testAccNewRelicCardinalityManagementInvalidDefaultMissingLimitConfig() string {
+	return `
+resource "newrelic_cardinality_management" "test" {
+  mode = "DEFAULT"
+}
+`
+}
+
+func testAccNewRelicCardinalityManagementInvalidPerMetricWithTopLevelLimitConfig() string {
 	return `
 resource "newrelic_cardinality_management" "test" {
   mode              = "PER_METRIC"
   cardinality_limit = 100000
+  metric {
+    name  = "some.metric"
+    limit = 150000
+  }
+}
+`
+}
+
+func testAccNewRelicCardinalityManagementInvalidPerMetricNoMetricBlocksConfig() string {
+	return `
+resource "newrelic_cardinality_management" "test" {
+  mode = "PER_METRIC"
 }
 `
 }
