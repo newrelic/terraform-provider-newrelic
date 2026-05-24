@@ -69,7 +69,7 @@ func resourceNewRelicCardinalityManagement() *schema.Resource {
 							Required:    true,
 							Description: "The full name of the metric (e.g. `http.server.duration`).",
 						},
-						"limit": {
+						"cardinality_limit": {
 							Type:        schema.TypeInt,
 							Required:    true,
 							Description: "The maximum number of unique dimension-value combinations allowed per day for this metric.",
@@ -135,7 +135,7 @@ func resourceNewRelicCardinalityManagementCreate(ctx context.Context, d *schema.
 	for _, raw := range metrics {
 		m := raw.(map[string]interface{})
 		name := m["name"].(string)
-		limit := m["limit"].(int)
+		limit := m["cardinality_limit"].(int)
 
 		input := datamanagement.DataManagementAccountLimitInput{
 			Limit:          datamanagement.DataManagementLimitLookupInput{Name: cardinalityLimitName},
@@ -239,8 +239,8 @@ func resourceNewRelicCardinalityManagementDelete(ctx context.Context, d *schema.
 				Severity: diag.Warning,
 				Summary:  "Account-wide cardinality limit reset to platform default",
 				Detail: fmt.Sprintf(
-					"The account-wide cardinality limit for account %d has been reset to the New Relic platform default of %d. "+
-						"This value will apply to all metrics in the account that do not have a per-metric override. %s",
+					"The account-wide cardinality limit for account %d has been reset to the New Relic platform default of %d.\n"+
+						"This value will apply to all metrics in the account that do not have a per-metric override.\n%s",
 					accountID, cardinalityLimitPlatformDefault, cardinalityUILagNotice,
 				),
 			},

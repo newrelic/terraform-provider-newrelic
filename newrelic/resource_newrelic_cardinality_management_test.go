@@ -60,7 +60,7 @@ func TestAccNewRelicCardinalityManagement_PerMetric_Single(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "mode", "PER_METRIC"),
 					resource.TestCheckResourceAttr(resourceName, "metric.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "metric.0.name", "test.cardinality.single.tf"),
-					resource.TestCheckResourceAttr(resourceName, "metric.0.limit", "150000"),
+					resource.TestCheckResourceAttr(resourceName, "metric.0.cardinality_limit", "150000"),
 				),
 			},
 		},
@@ -84,9 +84,9 @@ func TestAccNewRelicCardinalityManagement_PerMetric_Multiple(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "mode", "PER_METRIC"),
 					resource.TestCheckResourceAttr(resourceName, "metric.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "metric.0.name", "test.cardinality.multi.one.tf"),
-					resource.TestCheckResourceAttr(resourceName, "metric.0.limit", "150000"),
+					resource.TestCheckResourceAttr(resourceName, "metric.0.cardinality_limit", "150000"),
 					resource.TestCheckResourceAttr(resourceName, "metric.1.name", "test.cardinality.multi.two.tf"),
-					resource.TestCheckResourceAttr(resourceName, "metric.1.limit", "200000"),
+					resource.TestCheckResourceAttr(resourceName, "metric.1.cardinality_limit", "200000"),
 				),
 			},
 			// Add a third metric without recreating the resource.
@@ -99,7 +99,7 @@ func TestAccNewRelicCardinalityManagement_PerMetric_Multiple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "metric.#", "3"),
 					resource.TestCheckResourceAttr(resourceName, "metric.2.name", "test.cardinality.multi.three.tf"),
-					resource.TestCheckResourceAttr(resourceName, "metric.2.limit", "175000"),
+					resource.TestCheckResourceAttr(resourceName, "metric.2.cardinality_limit", "175000"),
 				),
 			},
 		},
@@ -222,8 +222,8 @@ func testAccNewRelicCardinalityManagementPerMetricConfig(metrics []testMetricEnt
 	for _, m := range metrics {
 		blocks += fmt.Sprintf(`
   metric {
-    name  = %q
-    limit = %d
+    name              = %q
+    cardinality_limit = %d
   }`, m.name, m.limit)
 	}
 	return fmt.Sprintf(`
@@ -240,8 +240,8 @@ resource "newrelic_cardinality_management" "test" {
   mode              = "DEFAULT"
   cardinality_limit = 100000
   metric {
-    name  = "should.not.be.here"
-    limit = 50000
+    name              = "should.not.be.here"
+    cardinality_limit = 50000
   }
 }
 `
@@ -261,8 +261,8 @@ resource "newrelic_cardinality_management" "test" {
   mode              = "PER_METRIC"
   cardinality_limit = 100000
   metric {
-    name  = "some.metric"
-    limit = 150000
+    name              = "some.metric"
+    cardinality_limit = 150000
   }
 }
 `

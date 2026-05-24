@@ -53,7 +53,7 @@ resource "newrelic_cardinality_management" "per_metric" {
 
   metric {
     name  = "http.server.duration"
-    limit = 200000
+    cardinality_limit = 200000
   }
 }
 ```
@@ -66,17 +66,17 @@ resource "newrelic_cardinality_management" "high_cardinality_metrics" {
 
   metric {
     name  = "http.server.duration"
-    limit = 200000
+    cardinality_limit = 200000
   }
 
   metric {
     name  = "otelcol_nrreceiver_incoming_request_proxy"
-    limit = 300000
+    cardinality_limit = 300000
   }
 
   metric {
     name  = "k8s.pod.cpu.usage"
-    limit = 150000
+    cardinality_limit = 150000
   }
 }
 ```
@@ -111,7 +111,7 @@ resource "newrelic_cardinality_management" "per_metric" {
 
   metric {
     name  = "otelcol_nrreceiver_incoming_request_proxy"
-    limit = 300000
+    cardinality_limit = 300000
   }
 }
 ```
@@ -130,7 +130,7 @@ The following arguments are supported:
 
 * `metric` - (Optional) One or more metric override blocks. Required when `mode` is `"PER_METRIC"`; must not be set when `mode` is `"DEFAULT"`. Each block supports:
   * `name` - (Required) The full name of the metric (e.g. `"http.server.duration"`).
-  * `limit` - (Required) The maximum number of unique dimension-value combinations allowed per day for this metric.
+  * `cardinality_limit` - (Required) The maximum number of unique dimension-value combinations allowed per day for this metric.
 
 ## Attributes Reference
 
