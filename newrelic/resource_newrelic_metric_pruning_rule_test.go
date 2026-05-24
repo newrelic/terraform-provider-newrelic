@@ -101,6 +101,38 @@ func TestAccNewRelicMetricPruningRule_InvalidNRQL(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicMetricPruningRule_InvalidSelectStar verifies that SELECT * is
+// rejected — pruning rules require specific attribute names in the SELECT clause.
+func TestAccNewRelicMetricPruningRule_InvalidSelectStar(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicMetricPruningRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicMetricPruningRuleConfig("SELECT * FROM Metric WHERE metricName = 'test.pruning.selectstar'", "invalid select star"),
+				ExpectError: regexp.MustCompile(`INVALID_QUERY|INVALID_INPUT`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicMetricPruningRule_InvalidNonMetricType verifies that targeting
+// a non-Metric event type (e.g. Log) is rejected.
+func TestAccNewRelicMetricPruningRule_InvalidNonMetricType(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicMetricPruningRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicMetricPruningRuleConfig("SELECT container_name FROM Log WHERE container_name = 'noise'", "invalid non-metric type"),
+				ExpectError: regexp.MustCompile(`INVALID_QUERY|INVALID_INPUT`),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicMetricPruningRuleExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
