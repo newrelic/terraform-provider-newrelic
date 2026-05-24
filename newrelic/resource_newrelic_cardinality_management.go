@@ -150,7 +150,10 @@ func resourceNewRelicCardinalityManagementCreate(ctx context.Context, d *schema.
 
 	d.SetId(buildCardinalityLimitID(accountID, cardinalityModePerMetric))
 
-	diags := diag.Diagnostics{
+	// No Read call here — per-metric override values cannot be read back from the
+	// API, so there is nothing to reconcile. Read will surface its own advisory
+	// warning during the next plan or refresh.
+	return diag.Diagnostics{
 		{
 			Severity: diag.Warning,
 			Summary:  "Metric cardinality limit override(s) applied",
@@ -160,7 +163,6 @@ func resourceNewRelicCardinalityManagementCreate(ctx context.Context, d *schema.
 			),
 		},
 	}
-	return append(diags, resourceNewRelicCardinalityManagementRead(ctx, d, meta)...)
 }
 
 func resourceNewRelicCardinalityManagementRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
