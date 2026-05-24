@@ -12,8 +12,6 @@ Use this resource to create and manage metric pruning rules for a New Relic acco
 
 A metric pruning rule strips specific high-cardinality attributes from dimensional metric aggregates before they are stored. Unlike dropping a metric entirely, pruning keeps the metric signal intact while removing the nominated attributes — reducing cardinality without any loss of the metric itself.
 
--> **Note:** All arguments (`nrql`, `description`) force re-creation when changed. Metric pruning rules cannot be updated in place.
-
 ---
 
 ## Example Usage
@@ -43,7 +41,7 @@ The following arguments are supported:
 
 * `nrql` - (Required, Forces new resource) The NRQL query that identifies the metric and the specific attributes to prune. The `SELECT` clause must name the attributes to remove (not `SELECT *`), and the `FROM` clause must target `Metric`. Example: `SELECT collector.name FROM Metric WHERE metricName = 'my.metric.name'`.
 * `description` - (Optional, Forces new resource) A human-readable description of what this pruning rule does.
-* `account_id` - (Optional) The New Relic account ID in which to create the pruning rule. Defaults to the account ID configured on the provider.
+* `account_id` - (Optional, Forces new resource) The New Relic account ID in which to create the pruning rule. Defaults to the account ID configured on the provider.
 
 ## Attributes Reference
 

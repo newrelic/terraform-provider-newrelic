@@ -23,6 +23,7 @@ func resourceNewRelicMetricPruningRule() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "The account ID in which the pruning rule is created.",
 			},
 			"nrql": {
