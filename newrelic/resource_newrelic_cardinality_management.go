@@ -205,9 +205,9 @@ func resourceNewRelicCardinalityManagementRead(ctx context.Context, d *schema.Re
 	return diag.Diagnostics{
 		{
 			Severity: diag.Warning,
-			Summary:  "Per-metric cardinality limit values reflect the last Terraform apply",
-			Detail: "In PER_METRIC mode, cardinality limit values in state are indicative of the last configuration applied via Terraform — this is the expected behaviour for this mode.\n\n" +
-				"If any of these limits have been adjusted outside of Terraform, run terraform apply to re-apply the desired values.",
+			Summary:  "Per-metric cardinality limit values reflect the last configuration applied via terraform",
+			Detail: "In PER_METRIC mode, cardinality limit values in state are indicative of the last configuration applied via terraform — this is the expected behaviour for this mode.\n\n" +
+				"If any of these limits have been adjusted outside of terraform, run terraform apply to re-apply the desired values.",
 		},
 	}
 }
