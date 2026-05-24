@@ -14,11 +14,11 @@ Dimensional metrics in New Relic are subject to a per-metric cardinality limit �
 
 Two modes are available, selected via the required `mode` argument.
 
--> **Note:** Cardinality limit overrides are managed via reset rather than removal. Destroying this resource resets the affected limit(s) back to the platform default of **100,000**. The destroy behaviour for each mode is described in the sections below.
+-> **Note:** Cardinality limit overrides are managed via reset rather than removal. Running `terraform destroy` resets the affected limit(s) back to the platform default of **100,000**. The behaviour for each mode is described in the sections below.
 
 ---
 
-## DEFAULT Mode
+## `DEFAULT` Mode
 
 Sets a single account-wide limit that applies to every dimensional metric in the account that does not have its own per-metric override.
 
@@ -33,15 +33,15 @@ resource "newrelic_cardinality_management" "account_default" {
 
 ### Behaviour
 
-- **Create / Update** — submits the new default value. The change takes effect in the enforcement layer straight away.
-- **Read** — reads the current account-wide default and reconciles Terraform state. Drift is detected on the next `terraform plan`.
-- **Destroy** — resets the account-wide default to the platform default of **100,000** and displays a confirmation warning.
+- **`terraform apply`** — submits the new default value. The change takes effect in the enforcement layer straight away.
+- **`terraform plan` / `terraform refresh`** — reads the current account-wide default and reconciles state. Any drift is surfaced before the next apply.
+- **`terraform destroy`** — resets the account-wide default to the platform default of **100,000** and displays a confirmation warning.
 
 -> **Note:** Changes may take a few minutes to be visible in the New Relic UI, particularly if affected metrics have not sent data recently.
 
 ---
 
-## PER\_METRIC Mode
+## `PER_METRIC` Mode
 
 Sets individual cardinality limits for one or more named metrics. Each metric is configured in its own `metric` block and can have a different limit.
 
@@ -83,11 +83,11 @@ resource "newrelic_cardinality_management" "high_cardinality_metrics" {
 
 ### Behaviour
 
-- **Create / Update** — submits one override per `metric` block. A warning is displayed after apply as a reminder that updates may take a few minutes to be reflected in the UI.
-- **Read** — in PER_METRIC mode, `cardinality_limit` values in state reflect the last configuration applied via terraform — this is the expected behaviour for this mode. A note is displayed on each `terraform plan` as a reminder.
-- **Destroy** — resets each managed metric's limit to the platform default of **100,000** and displays a confirmation warning.
+- **`terraform apply`** — submits one override per `metric` block. A warning is displayed as a reminder that updates may take a few minutes to be reflected in the UI.
+- **`terraform plan` / `terraform refresh`** — in `PER_METRIC` mode, `cardinality_limit` values in state reflect the last configuration applied via terraform — this is the expected behaviour for this mode. A note is displayed as a reminder.
+- **`terraform destroy`** — resets each managed metric's limit to the platform default of **100,000** and displays a confirmation warning.
 
--> **Note:** In PER_METRIC mode, the `cardinality_limit` values within `metric` blocks reflect the last configuration applied via terraform. If any of these limits have been adjusted outside of terraform, run `terraform apply` to re-apply the desired values.
+-> **Note:** In `PER_METRIC` mode, the `cardinality_limit` values within `metric` blocks reflect the last configuration applied via terraform. If any of these limits have been adjusted outside of terraform, run `terraform apply` to re-apply the desired values.
 
 ---
 
@@ -142,13 +142,13 @@ In addition to all arguments above, the following attributes are exported:
 
 Cardinality management resources can be imported using the composite ID format `<account_id>:<mode>`.
 
-For a **DEFAULT** override:
+For a `DEFAULT` override:
 
 ```bash
 $ terraform import newrelic_cardinality_management.account_default 12345678:DEFAULT
 ```
 
-For a **PER_METRIC** override:
+For a `PER_METRIC` override:
 
 ```bash
 $ terraform import newrelic_cardinality_management.per_metric 12345678:PER_METRIC
