@@ -158,7 +158,7 @@ func resourceNewRelicCardinalityManagementCreate(ctx context.Context, d *schema.
 			Severity: diag.Warning,
 			Summary:  "Metric cardinality limit override(s) applied",
 			Detail: fmt.Sprintf(
-				"Cardinality limit overrides have been set for %d metric(s) in account %d. %s",
+				"Cardinality limit overrides have been set for %d metric(s) in account %d.\n\n%s",
 				len(metrics), accountID, cardinalityUILagNotice,
 			),
 		},
@@ -198,17 +198,16 @@ func resourceNewRelicCardinalityManagementRead(ctx context.Context, d *schema.Re
 		return nil
 	}
 
-	// PER_METRIC: the New Relic API does not return per-metric override values,
-	// so we keep whatever is already in state rather than attempting a read.
-	log.Printf("[INFO] Skipping API read for PER_METRIC cardinality limits in account %d (not supported by API)", accountID)
+	// PER_METRIC: override values are write-only in this mode — state is always
+	// preserved from the last apply rather than reconciled from a live read.
+	log.Printf("[INFO] Skipping live read for PER_METRIC cardinality limits in account %d — state reflects last apply", accountID)
 
 	return diag.Diagnostics{
 		{
 			Severity: diag.Warning,
-			Summary:  "Per-metric cardinality limit values are not available via the API",
-			Detail: "New Relic does not currently expose per-metric cardinality limit overrides through its read API. " +
-				"The values shown in state reflect the last configuration applied by Terraform. " +
-				"If you believe the limits have been changed outside of Terraform, run `terraform apply` to re-apply the desired values.",
+			Summary:  "Per-metric cardinality limit values reflect the last Terraform apply",
+			Detail: "In PER_METRIC mode, cardinality limit values in state are indicative of the last configuration applied via Terraform — this is the expected behaviour for this mode.\n\n" +
+				"If any of these limits have been adjusted outside of Terraform, run terraform apply to re-apply the desired values.",
 		},
 	}
 }
@@ -241,8 +240,8 @@ func resourceNewRelicCardinalityManagementDelete(ctx context.Context, d *schema.
 				Severity: diag.Warning,
 				Summary:  "Account-wide cardinality limit reset to platform default",
 				Detail: fmt.Sprintf(
-					"The account-wide cardinality limit for account %d has been reset to the New Relic platform default of %d.\n"+
-						"This value will apply to all metrics in the account that do not have a per-metric override.\n%s",
+					"The account-wide cardinality limit for account %d has been reset to the New Relic platform default of %d.\n\n"+
+						"This value applies to all metrics in the account that do not have a per-metric override.\n\n%s",
 					accountID, cardinalityLimitPlatformDefault, cardinalityUILagNotice,
 				),
 			},
@@ -274,7 +273,7 @@ func resourceNewRelicCardinalityManagementDelete(ctx context.Context, d *schema.
 			Severity: diag.Warning,
 			Summary:  "Per-metric cardinality limit overrides removed",
 			Detail: fmt.Sprintf(
-				"Cardinality limit overrides for %d metric(s) in account %d have been reset to the platform default of %d. %s",
+				"Cardinality limit overrides for %d metric(s) in account %d have been reset to the platform default of %d.\n\n%s",
 				len(metrics), accountID, cardinalityLimitPlatformDefault, cardinalityUILagNotice,
 			),
 		},
