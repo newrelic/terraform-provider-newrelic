@@ -1,12 +1,6 @@
 data_source_newrelic_account.go:
   test: false
   product_mapping: AUTH
-data_source_newrelic_cardinality_management.go:
-  test: true
-  product_mapping: INGEST
-data_source_newrelic_cardinality_management_test.go:
-  test: true
-  product_mapping: INGEST
 data_source_newrelic_account_test.go:
   test: true
   product_mapping: AUTH
