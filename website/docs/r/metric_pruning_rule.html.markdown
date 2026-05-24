@@ -39,9 +39,11 @@ resource "newrelic_metric_pruning_rule" "example" {
 
 The following arguments are supported:
 
-* `nrql` - (Required, Forces new resource) The NRQL query that identifies the metric and the specific attributes to prune. The `SELECT` clause must name the attributes to remove (not `SELECT *`), and the `FROM` clause must target `Metric`. Example: `SELECT collector.name FROM Metric WHERE metricName = 'my.metric.name'`.
-* `description` - (Optional, Forces new resource) A human-readable description of what this pruning rule does.
-* `account_id` - (Optional, Forces new resource) The New Relic account ID in which to create the pruning rule. Defaults to the account ID configured on the provider.
+* `nrql` - (Required) The NRQL query that identifies the metric and the specific attributes to prune. The `SELECT` clause must name the attributes to remove (not `SELECT *`), and the `FROM` clause must target `Metric`. Example: `SELECT collector.name FROM Metric WHERE metricName = 'my.metric.name'`.
+* `description` - (Optional) A human-readable description of what this pruning rule does.
+* `account_id` - (Optional) The New Relic account ID in which to create the pruning rule. Defaults to the account ID configured on the provider.
+
+-> **Note:** All arguments on this resource are immutable. Any change to an existing `newrelic_metric_pruning_rule` will cause the resource to be destroyed and recreated with the updated configuration.
 
 ## Attributes Reference
 
@@ -57,5 +59,3 @@ Metric pruning rules can be imported using the composite ID format `<account_id>
 ```bash
 $ terraform import newrelic_metric_pruning_rule.example 12345678:1234
 ```
-
--> **Note:** All attributes (`nrql`, `description`) are restored from New Relic on import.
