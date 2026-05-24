@@ -34,7 +34,7 @@ resource "newrelic_cardinality_management" "account_default" {
 ### Behaviour
 
 - **`terraform apply`** — submits the new default value. The change takes effect in the enforcement layer straight away.
-- **`terraform plan` / `terraform refresh`** — reads the current account-wide default and reconciles state. Any drift is surfaced before the next apply.
+- **`terraform plan` / `terraform refresh` on an existing resource** — reads the current account-wide default and reconciles state. Any drift is surfaced before the next apply.
 - **`terraform destroy`** — resets the account-wide default to the platform default of **100,000** and displays a confirmation warning.
 
 -> **Note:** Changes may take a few minutes to be visible in the New Relic UI, particularly if affected metrics have not sent data recently.
@@ -84,7 +84,7 @@ resource "newrelic_cardinality_management" "high_cardinality_metrics" {
 ### Behaviour
 
 - **`terraform apply`** — submits one override per `metric` block. A warning is displayed as a reminder that updates may take a few minutes to be reflected in the UI.
-- **`terraform plan` / `terraform refresh`** — in `PER_METRIC` mode, `cardinality_limit` values in state reflect the last configuration applied via terraform — this is the expected behaviour for this mode. A note is displayed as a reminder.
+- **`terraform plan` / `terraform refresh` on an existing resource** — in `PER_METRIC` mode, `cardinality_limit` values in state reflect the last configuration applied via terraform — this is the expected behaviour for this mode. A note is displayed as a reminder.
 - **`terraform destroy`** — resets each managed metric's limit to the platform default of **100,000** and displays a confirmation warning.
 
 -> **Note:** In `PER_METRIC` mode, the `cardinality_limit` values within `metric` blocks reflect the last configuration applied via terraform. If any of these limits have been adjusted outside of terraform, run `terraform apply` to re-apply the desired values.
