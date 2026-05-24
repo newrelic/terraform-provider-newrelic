@@ -18,7 +18,7 @@ Two modes are available, selected via the required `mode` argument.
 
 ---
 
-## `DEFAULT` Mode
+## DEFAULT Mode
 
 Sets a single account-wide limit that applies to every dimensional metric in the account that does not have its own per-metric override.
 
@@ -41,7 +41,7 @@ resource "newrelic_cardinality_management" "account_default" {
 
 ---
 
-## `PER_METRIC` Mode
+## PER_METRIC Mode
 
 Sets individual cardinality limits for one or more named metrics. Each metric is configured in its own `metric` block and can have a different limit.
 
