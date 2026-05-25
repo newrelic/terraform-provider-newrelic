@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   createPullRequest:
     runs-on: ubuntu-latest
