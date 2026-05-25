@@ -205,7 +205,8 @@ func resourceNewRelicFederatedLogsPartitionRead(ctx context.Context, d *schema.R
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if resp == nil {
+	if resp == nil || resp.ID == "" {
+		log.Printf("[WARN] Federated Logs Partition %s not found", d.Id())
 		d.SetId("")
 		return nil
 	}

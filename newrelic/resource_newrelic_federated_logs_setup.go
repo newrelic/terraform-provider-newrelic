@@ -263,7 +263,8 @@ func resourceNewRelicFederatedLogsSetupRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if resp == nil {
+	if resp == nil || resp.ID == "" {
+		log.Printf("[WARN] Federated Logs Setup %s not found", d.Id())
 		d.SetId("")
 		return nil
 	}

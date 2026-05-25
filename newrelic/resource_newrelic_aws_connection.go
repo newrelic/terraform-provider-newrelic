@@ -162,9 +162,10 @@ func resourceNewRelicAwsConnectionRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if resp == nil {
+	if resp == nil || *resp == nil {
+		log.Printf("[WARN] AWS Connection %s not found", entityID)
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf("entity with ID %s was nil", entityID))
+		return nil
 	}
 
 	switch entityType := (*resp).(type) {
