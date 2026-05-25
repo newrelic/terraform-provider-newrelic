@@ -6,6 +6,9 @@ on:
     # time in UTC
     - cron: "30 3,8,13,21 * * 1-5"
 
+permissions:
+  contents: read
+
 jobs:
   test-integration-all:
     runs-on: ubuntu-latest
