@@ -9,6 +9,7 @@ description: |-
 # Resource: newrelic\_aws\_connection
 
 Use this resource to create and manage an AWS Connection entity in New Relic. 
+
 ## Example Usage
 
 ```hcl
