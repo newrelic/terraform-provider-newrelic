@@ -1,0 +1,23 @@
+# Development provider override — points Terraform at the locally-built binary
+# instead of downloading from the Terraform Registry.
+#
+# Usage:
+#   export TF_CLI_CONFIG_FILE="$PWD/dev.tfrc"
+#   terraform init -upgrade
+#   terraform plan
+#
+# Build the provider first:
+#   cd ../../..   (repo root)
+#   go install
+#
+# The installed binary lands at $GOPATH/bin/terraform-provider-newrelic
+# (typically ~/go/bin/terraform-provider-newrelic).
+
+provider_installation {
+  dev_overrides {
+    "newrelic/newrelic" = "/Users/vkollipara/go/bin"
+  }
+
+  # For all other providers, use the normal registry.
+  direct {}
+}

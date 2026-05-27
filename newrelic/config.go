@@ -137,6 +137,7 @@ type ProviderConfig struct {
 	InsightsInsertClient *insights.InsertClient
 	AccountID            int
 	PersonalAPIKey       string
+	Region               string
 	userAgent            string
 }
 

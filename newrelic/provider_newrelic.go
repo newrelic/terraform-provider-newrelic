@@ -126,6 +126,7 @@ func Provider() *schema.Provider {
 			"newrelic_application":                  dataSourceNewRelicApplication(),
 			"newrelic_authentication_domain":        dataSourceNewRelicAuthenticationDomain(),
 			"newrelic_cloud_account":                dataSourceNewRelicCloudAccount(),
+			"newrelic_cloud_gcp_v2_account":         dataSourceNewRelicCloudGcpV2Account(),
 			"newrelic_entity":                       dataSourceNewRelicEntity(),
 			"newrelic_group":                        dataSourceNewRelicGroup(),
 			"newrelic_key_transaction":              dataSourceNewRelicKeyTransaction(),
@@ -159,6 +160,8 @@ func Provider() *schema.Provider {
 			"newrelic_cloud_azure_integrations":                 resourceNewRelicCloudAzureIntegrations(),
 			"newrelic_cloud_gcp_integrations":                   resourceNewrelicCloudGcpIntegrations(),
 			"newrelic_cloud_gcp_link_account":                   resourceNewRelicCloudGcpLinkAccount(),
+			"newrelic_cloud_gcp_v2_integrations":                resourceNewrelicCloudGcpV2Integrations(),
+			"newrelic_cloud_gcp_v2_link_account":                resourceNewRelicCloudGcpV2LinkAccount(),
 			"newrelic_cloud_oci_link_account":                   resourceNewRelicCloudOciAccountLinkAccount(),
 			"newrelic_alert_compound_condition":                 resourceNewRelicAlertCompoundCondition(),
 			"newrelic_data_partition_rule":                      resourceNewRelicDataPartition(),
@@ -279,6 +282,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		InsightsInsertClient: clientInsightsInsert,
 		PersonalAPIKey:       personalAPIKey,
 		AccountID:            accountID,
+		Region:               data.Get("region").(string),
 		userAgent:            cfg.userAgent,
 	}
 

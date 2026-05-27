@@ -1,0 +1,29 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit credentials.
+
+# ── New Relic ──────────────────────────────────────────────────────────────
+newrelic_account_id = 11649910
+newrelic_api_key    = "NRAK-XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+newrelic_region     = "US"   # or "EU"
+
+# ── GCP project ────────────────────────────────────────────────────────────
+gcp_project_id      = "my-gcp-project-123"
+wif_credential_file = "./wif-credential.json"
+
+# Display name shown in New Relic UI
+linked_account_name = "production-gcp-v2"
+
+# ── Polling interval ───────────────────────────────────────────────────────
+metrics_polling_interval = 300
+
+# ── Optional: reduce the set of enabled services ───────────────────────────
+# By default all 34 services are enabled.  Uncomment and edit this list to
+# enable only a subset.
+#
+# enabled_services = [
+#   "big_query",
+#   "kubernetes",
+#   "pub_sub",
+#   "api_gateway",
+#   "firebase_auth",
+# ]
