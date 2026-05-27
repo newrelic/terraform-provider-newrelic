@@ -35,6 +35,16 @@ resource "newrelic_metric_pruning_rule" "example" {
 
 ---
 
+## Behaviour
+
+- **`terraform apply`** — creates the pruning rule in New Relic. The rule begins stripping the nominated attributes from matching metric aggregates immediately after creation.
+- **`terraform plan` / `terraform refresh` on an existing resource** — reads the current state of the pruning rule from New Relic and surfaces any drift (e.g. if the rule was deleted outside of Terraform).
+- **`terraform destroy`** — permanently deletes the pruning rule. Once removed, the nominated attributes will no longer be stripped from incoming metric data. There is no reset to a default state; the rule is deleted outright.
+
+-> **Note:** Because all arguments are immutable, any in-place change (e.g. updating the NRQL or description) will trigger a destroy-and-recreate. The old rule is deleted before the new one is created, so there will be a brief window during which no pruning is active for the affected metric.
+
+---
+
 ## Argument Reference
 
 The following arguments are supported:
