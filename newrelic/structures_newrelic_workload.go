@@ -36,6 +36,14 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateI
 		createInput.StatusConfig.Automatic = expandWorkloadStatusConfigAutomaticInput(e.(*schema.Set).List())
 	}
 
+	if e, ok := d.GetOk("dynamic_flows"); ok {
+		createInput.DynamicFlows = expandWorkloadDynamicFlowInputs(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("status_config_alert_policy"); ok {
+		createInput.StatusConfig.AlertPolicy = expandWorkloadAlertPolicyInput(e.(*schema.Set).List())
+	}
+
 	return createInput
 }
 
@@ -68,6 +76,14 @@ func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.WorkloadUpdateI
 
 	if e, ok := d.GetOk("status_config_automatic"); ok {
 		updateInput.StatusConfig.Automatic = expandWorkloadStatusConfigUpdateAutomaticInput(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("dynamic_flows"); ok {
+		updateInput.DynamicFlows = expandWorkloadUpdateDynamicFlowInputs(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("status_config_alert_policy"); ok {
+		updateInput.StatusConfig.AlertPolicy = expandWorkloadUpdateAlertPolicyInput(e.(*schema.Set).List())
 	}
 
 	return updateInput
@@ -402,6 +418,18 @@ func flattenWorkload(workload *workloads.WorkloadCollection, d *schema.ResourceD
 		}
 	}
 
+	if len(workload.DynamicFlows) > 0 {
+		if err := d.Set("dynamic_flows", flattenWorkloadDynamicFlows(workload.DynamicFlows)); err != nil {
+			return err
+		}
+	}
+
+	if v, ok := d.GetOk("status_config_alert_policy"); (ok && v.(*schema.Set).Len() > 0) || workload.StatusConfig.AlertPolicy.Enabled {
+		if err := d.Set("status_config_alert_policy", flattenWorkloadAlertPolicy(workload.StatusConfig.AlertPolicy)); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -442,4 +470,79 @@ func flattenWorkloadEntitySearchQueries(in []workloads.WorkloadEntitySearchQuery
 		out[i] = m
 	}
 	return out
+}
+
+// expandWorkloadDynamicFlowInputs converts Terraform schema list to WorkloadDynamicFlowInput slice for create.
+func expandWorkloadDynamicFlowInputs(cfg []interface{}) []workloads.WorkloadDynamicFlowInput {
+	if len(cfg) == 0 {
+		return []workloads.WorkloadDynamicFlowInput{}
+	}
+
+	out := make([]workloads.WorkloadDynamicFlowInput, len(cfg))
+	for i, raw := range cfg {
+		m := raw.(map[string]interface{})
+		out[i] = workloads.WorkloadDynamicFlowInput{
+			EntityGUID:      common.EntityGUID(m["entity_guid"].(string)),
+			TransactionName: m["transaction_name"].(string),
+		}
+	}
+	return out
+}
+
+// expandWorkloadUpdateDynamicFlowInputs converts Terraform schema list to WorkloadUpdateDynamicFlowInput slice for update.
+func expandWorkloadUpdateDynamicFlowInputs(cfg []interface{}) []workloads.WorkloadUpdateDynamicFlowInput {
+	if len(cfg) == 0 {
+		return []workloads.WorkloadUpdateDynamicFlowInput{}
+	}
+
+	out := make([]workloads.WorkloadUpdateDynamicFlowInput, len(cfg))
+	for i, raw := range cfg {
+		m := raw.(map[string]interface{})
+		out[i] = workloads.WorkloadUpdateDynamicFlowInput{
+			EntityGUID:      common.EntityGUID(m["entity_guid"].(string)),
+			TransactionName: m["transaction_name"].(string),
+		}
+	}
+	return out
+}
+
+// flattenWorkloadDynamicFlows converts a WorkloadDynamicFlow slice to Terraform schema list.
+func flattenWorkloadDynamicFlows(in []workloads.WorkloadDynamicFlow) []interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		m := make(map[string]interface{})
+		m["entity_guid"] = string(e.EntityGUID)
+		m["transaction_name"] = e.TransactionName
+		out[i] = m
+	}
+	return out
+}
+
+// expandWorkloadAlertPolicyInput converts Terraform schema set to WorkloadAlertPolicyInput for create.
+func expandWorkloadAlertPolicyInput(cfg []interface{}) *workloads.WorkloadAlertPolicyInput {
+	if len(cfg) == 0 {
+		return nil
+	}
+	m := cfg[0].(map[string]interface{})
+	return &workloads.WorkloadAlertPolicyInput{
+		Enabled: m["enabled"].(bool),
+	}
+}
+
+// expandWorkloadUpdateAlertPolicyInput converts Terraform schema set to WorkloadUpdateAlertPolicyInput for update.
+func expandWorkloadUpdateAlertPolicyInput(cfg []interface{}) *workloads.WorkloadUpdateAlertPolicyInput {
+	if len(cfg) == 0 {
+		return nil
+	}
+	m := cfg[0].(map[string]interface{})
+	return &workloads.WorkloadUpdateAlertPolicyInput{
+		Enabled: m["enabled"].(bool),
+	}
+}
+
+// flattenWorkloadAlertPolicy converts a WorkloadAlertPolicy to Terraform schema list.
+func flattenWorkloadAlertPolicy(in workloads.WorkloadAlertPolicy) []interface{} {
+	m := make(map[string]interface{})
+	m["enabled"] = in.Enabled
+	return []interface{}{m}
 }
