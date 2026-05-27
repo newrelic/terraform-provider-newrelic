@@ -1,3 +1,18 @@
+<a name="v3.90.0"></a>
+## [v3.90.0] - 2026-05-24
+### Features
+- **cardinality:** add newrelic_account_cardinality_limit and newrelic_metric_pruning_rule resources ([#3091](https://github.com/newrelic/terraform-provider-newrelic/issues/3091))
+
+<a name="v3.89.0"></a>
+## [v3.89.0] - 2026-05-20
+### Features
+- **alerts:** add entity_guid computed attribute to compound condition ([#3090](https://github.com/newrelic/terraform-provider-newrelic/issues/3090))
+
+<a name="v3.88.0"></a>
+## [v3.88.0] - 2026-05-19
+### Features
+- **fleet:** newrelic_fleet_members resource ([#3087](https://github.com/newrelic/terraform-provider-newrelic/issues/3087))
+
 <a name="v3.87.4"></a>
 ## [v3.87.4] - 2026-05-18
 ### Documentation Updates
@@ -2709,7 +2724,10 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.90.0...HEAD
+[v3.90.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.89.0...v3.90.0
+[v3.89.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.88.0...v3.89.0
+[v3.88.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.4...v3.88.0
 [v3.87.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.3...v3.87.4
 [v3.87.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.2...v3.87.3
 [v3.87.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.1...v3.87.2

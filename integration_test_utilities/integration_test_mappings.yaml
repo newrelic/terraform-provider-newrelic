@@ -97,6 +97,18 @@ data_source_newrelic_user_management.go:
 data_source_newrelic_user_management_test.go:
   test: true
   product_mapping: AUTH
+resource_newrelic_cardinality_management.go:
+  test: true
+  product_mapping: INGEST
+resource_newrelic_cardinality_management_test.go:
+  test: true
+  product_mapping: INGEST
+resource_newrelic_metric_pruning_rule.go:
+  test: true
+  product_mapping: INGEST
+resource_newrelic_metric_pruning_rule_test.go:
+  test: true
+  product_mapping: INGEST
 resource_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
@@ -271,6 +283,12 @@ resource_newrelic_federated_logs_setup.go:
 resource_newrelic_federated_logs_setup_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+data_source_newrelic_fleet_members.go:
+  test: false
+  product_mapping: FLEET
+data_source_newrelic_fleet_members_test.go:
+  test: true
+  product_mapping: FLEET
 resource_newrelic_fleet.go:
   test: false
   product_mapping: FLEET
@@ -284,6 +302,12 @@ resource_newrelic_fleet_deployment.go:
   test: false
   product_mapping: FLEET
 resource_newrelic_fleet_deployment_test.go:
+  test: true
+  product_mapping: FLEET
+resource_newrelic_fleet_members.go:
+  test: false
+  product_mapping: FLEET
+resource_newrelic_fleet_members_test.go:
   test: true
   product_mapping: FLEET
 resource_newrelic_fleet_test.go:

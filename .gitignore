@@ -35,9 +35,8 @@ website/vendor
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
 
-# Ignore testing directory except for newrelic.tf
+# Ignore testing directory
 testing/*.tf
-!testing/newrelic.tf
 
 # Ignore .json, .pem files (which could include files with credentials) in directories with Terraform Executables
 testing/*.json
@@ -49,3 +48,4 @@ examples/modules/cloud-integrations/azure/*.pem
 examples/modules/cloud-integrations/gcp/*.json
 examples/modules/cloud-integrations/gcp/*.pem
 .env
+*.py

@@ -252,6 +252,7 @@ The `component_conditions` block supports the following arguments:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the compound alert condition.
+- `entity_guid` - The unique entity identifier of the compound alert condition in New Relic.
 
 ## Import
 
