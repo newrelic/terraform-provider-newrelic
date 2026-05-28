@@ -262,6 +262,13 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Elem:        cloudAwsIntegrationCommonSchemaElem(),
 				MaxItems:    1,
 			},
+			"aws_auto_discovery": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Aws Auto Discovery Integration",
+				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				MaxItems:    1,
+			},
 			"cloudfront": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -393,6 +400,13 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 				Optional:    true,
 				Description: "Sns integration",
 				Elem:        cloudAwsIntegrationSnsSchemaElem(),
+				MaxItems:    1,
+			},
+			"security_hub": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Security Hub integration",
+				Elem:        cloudAwsIntegrationSecurityHubSchemaElem(),
 				MaxItems:    1,
 			},
 		},
@@ -1088,6 +1102,25 @@ func cloudAwsIntegrationSnsSchemaElem() *schema.Resource {
 		Type:        schema.TypeBool,
 		Description: "Determine if extra inventory data be collected or not. May affect total data collection time and contribute to the Cloud provider API rate limit.",
 		Optional:    true,
+	}
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// function to add schema for SecurityHub integration
+
+func cloudAwsIntegrationSecurityHubSchemaElem() *schema.Resource {
+	s := cloudAwsIntegrationSchemaBase()
+
+	s["aws_regions"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Specify each AWS region that includes the resources that you want to monitor.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
 	}
 
 	return &schema.Resource{

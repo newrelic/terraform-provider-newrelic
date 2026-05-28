@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || LOGGING_INTEGRATIONS
 
 package newrelic
 

@@ -43,12 +43,13 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Determines the New Relic account where the notification destination will be created. Defaults to the account associated with the API key used.
 * `name` - (Required) The name of the destination.
-* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `MICROSOFT_TEAMS`. The types `SLACK` and `SLACK_COLLABORATION` can only be imported, updated and destroyed (cannot be created via terraform).
+* `type` - (Required) The type of destination.  One of: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `MICROSOFT_TEAMS`, `WORKFLOW_AUTOMATION`. The types `SLACK` and `SLACK_COLLABORATION` can only be imported, updated and destroyed (cannot be created via terraform).
 * `auth_basic` - (Optional) A nested block that describes a basic username and password authentication credentials. Only one auth_basic block is permitted per notification destination definition.  See [Nested auth_basic blocks](#nested-auth_basic-blocks) below for details.
 * `auth_token` - (Optional) A nested block that describes a token authentication credentials. Only one auth_token block is permitted per notification destination definition.  See [Nested auth_token blocks](#nested-auth_token-blocks) below for details.
-* `auth_custom_header` - (Optional) A nested block that describes a custom header authentication credentials. Multiple blocks are permitted per notification destination definition. [Nested auth_custom_header blocks](#nested-authcustomheader-blocks) below for details.
+* `auth_custom_header` - (Optional) A nested block that describes a custom header authentication credentials. This field is required when the destination type is WORKFLOW_AUTOMATION and optional for other destination types. Multiple blocks are permitted per notification destination definition. [Nested auth_custom_header blocks](#nested-authcustomheader-blocks) below for details.
 * `secure_url` - (Optional) A nested block that describes a URL that contains sensitive data at the path or parameters. Only one secure_url block is permitted per notification destination definition. See [Nested secure_url blocks](#nested-secureurl-blocks) below for details.
 * `property` - (Required) A nested block that describes a notification destination property. See [Nested property blocks](#nested-property-blocks) below for details.
+* 
 
 ### Nested `auth_basic` blocks
 
@@ -113,7 +114,27 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **NOTE:** We support all properties. The mentioned properties are just an example.
 
-##### [MICROSOFT_TEAMS](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#servicenow)
+#### [WORKFLOW_AUTOMATION]
+
+```hcl
+resource "newrelic_notification_destination" "foo" {
+  account_id = 12345678
+  name = "workflow-automation-destination-name"
+  type = "WORKFLOW_AUTOMATION"
+
+  property {
+    key   = ""
+    value = ""
+  }
+
+  auth_custom_header {
+    key = "Api-Key"
+    value = "YOUR_NR_USER_API_KEY"
+  }
+}
+```
+
+##### [MICROSOFT_TEAMS](https://docs.newrelic.com/docs/alerts/get-notified/microsoft-teams-integrations/)
 
 ```hcl
 resource "newrelic_notification_destination" "foo" {
@@ -259,9 +280,43 @@ resource "newrelic_notification_destination" "foo" {
 
 #### [Slack](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/notification-integrations/#slack)
 
+
 In order to create a Slack destination, you have to grant our application access to your workspace. This process is [based on OAuth](https://api.slack.com/authentication/oauth-v2) and can only be done through a browser.
 As a result, you cannot set up a Slack destination purely with Terraform code.
 However, if you would like to use Slack-based destinations with other resources in the New Relic Terraform Provider, the [data source `newrelic_notification_destination`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/data-sources/notification_destination) may be used to fetch the ID of the destination; alternatively, you might want to source the ID of the destination from  NerdGraph, or from the New Relic One UI.
+
+
+
+#### [Cross Account Destinations](https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/cross-account-destinations/)
+```hcl
+# Resource
+resource "newrelic_notification_destination" "foo-destination" {
+  name = "webhook-example-cross-account-destination"
+  type = "WEBHOOK"
+
+  secure_url {
+    prefix = "https://webhook.mywebhook.com/"
+    secure_suffix = "service_id/123456"
+  }
+
+  property {
+    key = "source"
+    value = "terraform"
+  }
+
+  auth_custom_header {
+    key = "API_KEY"
+    value = "test-api-key"
+  }
+  scope {
+    type = "ORGANIZATION" (type of scope)
+    id   = "00000000-0000-0000-0000-000000000000" (Organization UUID)
+  }
+}
+
+```
+Cross account destinations are destinations that can be used by multiple accounts. They are created in a specific account and then shared with other accounts in the same organization. To create a cross account destination, you need to specify the `scope` block in your resource definition, with the type of scope type (Organization and Account supported) and the ID value.
+
 
 ## Import
 
@@ -275,7 +330,9 @@ This example is especially useful for slack destinations which *must* be importe
 resource "newrelic_notification_destination" "foo" {
 }
 ```
-2. Run import command: `terraform import newrelic_notification_destination.foo <destination_id>`
+2. Run import command:
+   - **Account scope** (default): `terraform import newrelic_notification_destination.foo <destination_id>`
+   - **Organization scope**: `terraform import newrelic_notification_destination.foo <destination_id>:ORGANIZATION:<organization_id>`
 3. Run the following command after the import successfully done and copy the information to your resource:
    `terraform state show newrelic_notification_destination.foo`
 4. Add `ignore_changes` attribute on `all` in your imported resource:

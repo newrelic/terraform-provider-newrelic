@@ -134,10 +134,11 @@ func resourceNewRelicSyntheticsStepMonitorCreate(ctx context.Context, d *schema.
 	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
-		"guid":   string(resp.Monitor.GUID),
-		"name":   resp.Monitor.Name,
-		"period": string(resp.Monitor.Period),
-		"status": string(resp.Monitor.Status),
+		"guid":       string(resp.Monitor.GUID),
+		"name":       resp.Monitor.Name,
+		"period":     string(resp.Monitor.Period),
+		"status":     string(resp.Monitor.Status),
+		"monitor_id": resp.Monitor.ID,
 	})
 
 	respRuntimeType := resp.Monitor.Runtime.RuntimeType
@@ -189,10 +190,11 @@ func resourceNewRelicSyntheticsStepMonitorRead(ctx context.Context, d *schema.Re
 		_ = d.Set("period_in_minutes", int(entity.GetPeriod()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"guid":   string(e.GUID),
-			"name":   entity.Name,
-			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
-			"status": string(entity.MonitorSummary.Status),
+			"guid":       string(e.GUID),
+			"name":       entity.Name,
+			"period":     string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
+			"status":     string(entity.MonitorSummary.Status),
+			"monitor_id": entity.MonitorId,
 		})
 
 		runtimeType, runtimeTypeVersion := getRuntimeValuesFromEntityTags(entity.GetTags())

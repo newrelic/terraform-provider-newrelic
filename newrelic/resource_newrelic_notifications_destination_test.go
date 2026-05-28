@@ -1,10 +1,10 @@
-//go:build integration
-// +build integration
+//go:build integration || WORKFLOW_INTEGRATIONS
 
 package newrelic
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
@@ -251,6 +251,104 @@ func TestNewRelicNotificationDestination_secureURL_update(t *testing.T) {
 	})
 }
 
+// TODO: Uncomment when organization environment variables are available in GitHub Actions
+func TestNewRelicNotificationDestination_OrganizationScope(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+	orgUUID := "fb33fea3-4d7e-4736-9701-acb59a634fdf"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create with ORGANIZATION scope (requires UUID)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(rName, "ORGANIZATION", orgUUID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
+				),
+			},
+			// Update name only (scope remains unchanged)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(fmt.Sprintf("%s-updated", rName), "ORGANIZATION", orgUUID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ORGANIZATION"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", orgUUID),
+				),
+			},
+			// Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:ORGANIZATION:%s", rs.Primary.ID, orgUUID), nil
+				},
+			},
+		},
+	})
+}
+
+func TestNewRelicNotificationDestination_AccountScope(t *testing.T) {
+	resourceName := "newrelic_notification_destination.foo"
+	rand := acctest.RandString(5)
+	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicNotificationDestinationDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create with ACCOUNT scope (requires number)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(rName, "ACCOUNT", strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ACCOUNT"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", strconv.Itoa(testAccountID)),
+				),
+			},
+			// Update name only (scope remains unchanged)
+			{
+				Config: testNewRelicNotificationDestinationConfigWithScope(fmt.Sprintf("%s-updated", rName), "ACCOUNT", strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotificationDestinationExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ACCOUNT"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", strconv.Itoa(testAccountID)),
+				),
+			},
+			// Import
+			// Note: Import uses backward-compatible flow (sets account_id instead of scope)
+			// so we ignore both scope and account_id differences
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"account_id",
+					"scope.#",
+					"scope.0.%",
+					"scope.0.type",
+					"scope.0.id",
+				},
+			},
+		},
+	})
+}
+
 func testNewRelicNotificationDestinationConfig(accountID int, name string, auth string, url string) string {
 	var usedUrl string
 	if url == "" {
@@ -283,6 +381,26 @@ resource "newrelic_notification_destination" "foo" {
 	return sprintf
 }
 
+func testNewRelicNotificationDestinationConfigWithScope(name string, scopeType string, scopeID string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+	name = "%[1]s"
+	type = "WEBHOOK"
+	active = true
+
+	property {
+		key = "url"
+		value = "https://webhook.site/"
+	}
+
+	scope {
+		type = "%[2]s"
+		id   = "%[3]s"
+	}
+}
+`, name, scopeType, scopeID)
+}
+
 func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -292,26 +410,28 @@ func testAccNewRelicNotificationDestinationDestroy(s *terraform.State) error {
 			continue
 		}
 
-		var accountID int
 		id := r.Primary.ID
-		accountID = providerConfig.AccountID
 		filters := ai.AiNotificationsDestinationFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		resp, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
+		var resp *notifications.AiNotificationsDestinationsResponse
+		var err error
 
-		// fmt.Print("\n\n **************************** \n")
-		// fmt.Printf("\n DestinationDestroy:  %+v \n", toJSON(r.Primary.Attributes))
-		// fmt.Print("\n **************************** \n\n")
-
-		if len(resp.Entities) > 0 {
-			return fmt.Errorf("notification destination still exists")
+		scopeType := r.Primary.Attributes["scope.0.type"]
+		if scopeType == "ORGANIZATION" {
+			resp, err = client.Notifications.GetDestinationsOrganization(nil, &filters, nil)
+		} else {
+			accountID := providerConfig.AccountID
+			resp, err = client.Notifications.GetDestinationsAccount(accountID, nil, &filters, nil)
 		}
 
 		if err != nil {
 			return err
+		}
+
+		if resp != nil && len(resp.Entities) > 0 {
+			return fmt.Errorf("notification destination still exists")
 		}
 	}
 	return nil
@@ -330,21 +450,27 @@ func testAccCheckNewRelicNotificationDestinationExists(n string) resource.TestCh
 			return fmt.Errorf("no destination ID is set")
 		}
 
-		var accountID int
 		id := rs.Primary.ID
-		accountID = providerConfig.AccountID
 		filters := ai.AiNotificationsDestinationFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsDestinationSorter{}
 
-		found, err := client.Notifications.GetDestinations(accountID, "", filters, sorter)
+		var found *notifications.AiNotificationsDestinationsResponse
+		var err error
+
+		scopeType := rs.Primary.Attributes["scope.0.type"]
+		if scopeType == "ORGANIZATION" {
+			found, err = client.Notifications.GetDestinationsOrganization(nil, &filters, nil)
+		} else {
+			accountID := providerConfig.AccountID
+			found, err = client.Notifications.GetDestinationsAccount(accountID, nil, &filters, nil)
+		}
 
 		if err != nil {
 			return err
 		}
 
-		if string(found.Entities[0].ID) != rs.Primary.ID {
+		if found == nil || len(found.Entities) == 0 || string(found.Entities[0].ID) != rs.Primary.ID {
 			return fmt.Errorf("destination not found: %v - %v", rs.Primary.ID, found)
 		}
 

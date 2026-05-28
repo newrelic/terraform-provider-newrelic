@@ -153,7 +153,10 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
 
-		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+		attrs := map[string]string{
+			"guid":       string(resp.Monitor.GUID),
+			"monitor_id": resp.Monitor.ID,
+		}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
@@ -174,7 +177,10 @@ func resourceNewRelicSyntheticsScriptMonitorCreate(ctx context.Context, d *schem
 		_ = d.Set("account_id", accountID)
 		_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
 
-		attrs := map[string]string{"guid": string(resp.Monitor.GUID)}
+		attrs := map[string]string{
+			"guid":       string(resp.Monitor.GUID),
+			"monitor_id": resp.Monitor.ID,
+		}
 		if err = setSyntheticsMonitorAttributes(d, attrs); err != nil {
 			return diag.FromErr(err)
 		}
@@ -228,11 +234,12 @@ func resourceNewRelicSyntheticsScriptMonitorRead(ctx context.Context, d *schema.
 		_ = d.Set("locations_public", getPublicLocationsFromEntityTags(entity.GetTags()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name":   e.Name,
-			"type":   string(e.MonitorType),
-			"guid":   string(e.GUID),
-			"period": string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
-			"status": string(e.MonitorSummary.Status),
+			"name":       e.Name,
+			"type":       string(e.MonitorType),
+			"guid":       string(e.GUID),
+			"period":     string(syntheticsMonitorPeriodValueMap[int(e.GetPeriod())]),
+			"status":     string(e.MonitorSummary.Status),
+			"monitor_id": e.MonitorId,
 		})
 
 		_ = d.Set("period_in_minutes", int(e.GetPeriod()))

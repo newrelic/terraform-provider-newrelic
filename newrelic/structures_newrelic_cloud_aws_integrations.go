@@ -281,6 +281,14 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 				cloudDisableAwsIntegration.AwsWafv2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
+		"aws_auto_discovery": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.AwsAutoDiscovery = expandCloudAwsIntegrationAutoDiscoveryInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.AwsAutoDiscovery = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
 		"cloudfront": {
 			enableFunc: func(a []interface{}, id int) {
 				cloudAwsIntegration.Cloudfront = expandCloudAwsIntegrationCloudfrontInput(a, id)
@@ -433,6 +441,14 @@ func expandCloudAwsIntegrationsInput(d *schema.ResourceData) (cloud.CloudIntegra
 				cloudDisableAwsIntegration.Sns = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
 			},
 		},
+		"security_hub": {
+			enableFunc: func(a []interface{}, id int) {
+				cloudAwsIntegration.SecurityHub = expandCloudAwsIntegrationSecurityHubInput(a, id)
+			},
+			disableFunc: func(id int) {
+				cloudDisableAwsIntegration.SecurityHub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: id}}
+			},
+		},
 	}
 
 	for key, fun := range awsIntegrationMap {
@@ -529,6 +545,8 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("aws_waf", flattenCloudAwsWafIntegration(t))
 		case *cloud.CloudAwsWafv2Integration:
 			_ = d.Set("aws_wafv2", flattenCloudAwsWafv2Integration(t))
+		case *cloud.CloudAwsAutoDiscoveryIntegration:
+			_ = d.Set("aws_auto_discovery", flattenCloudAwsAutoDiscoveryIntegration(t))
 		case *cloud.CloudCloudfrontIntegration:
 			_ = d.Set("cloudfront", flattenCloudCloudfrontIntegration(t))
 		case *cloud.CloudDynamodbIntegration:
@@ -567,6 +585,8 @@ func flattenCloudAwsLinkedAccount(d *schema.ResourceData, linkedAccount *cloud.C
 			_ = d.Set("ses", flattenCloudSesIntegration(t))
 		case *cloud.CloudSnsIntegration:
 			_ = d.Set("sns", flattenCloudSnsIntegration(t))
+		case *cloud.CloudSecurityHubIntegration:
+			_ = d.Set("security_hub", flattenCloudSecurityHubIntegration(t))
 		}
 	}
 }
@@ -715,6 +735,10 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 		cloudDisableAwsIntegration.AwsWafv2 = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
+	if _, ok := d.GetOk("aws_auto_discovery"); ok {
+		cloudDisableAwsIntegration.AwsAutoDiscovery = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
 	if _, ok := d.GetOk("cloudfront"); ok {
 		cloudDisableAwsIntegration.Cloudfront = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -789,6 +813,10 @@ func buildDeleteInput(d *schema.ResourceData) cloud.CloudDisableIntegrationsInpu
 
 	if _, ok := d.GetOk("sns"); ok {
 		cloudDisableAwsIntegration.Sns = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
+	}
+
+	if _, ok := d.GetOk("security_hub"); ok {
+		cloudDisableAwsIntegration.SecurityHub = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
 
 	deleteInput := cloud.CloudDisableIntegrationsInput{
@@ -2990,6 +3018,80 @@ func expandCloudAwsIntegrationSnsInput(b []interface{}, linkedAccountID int) []c
 	return expanded
 }
 
+// Expanding the Aws Auto Discovery input
+
+func expandCloudAwsIntegrationAutoDiscoveryInput(b []interface{}, linkedAccountID int) []cloud.CloudAwsAutoDiscoveryIntegrationInput {
+	expanded := make([]cloud.CloudAwsAutoDiscoveryIntegrationInput, len(b))
+
+	for i, iot := range b {
+		var autoDiscoveryInput cloud.CloudAwsAutoDiscoveryIntegrationInput
+
+		if iot == nil {
+			autoDiscoveryInput.LinkedAccountId = linkedAccountID
+			expanded[i] = autoDiscoveryInput
+			return expanded
+		}
+
+		in := iot.(map[string]interface{})
+
+		autoDiscoveryInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			autoDiscoveryInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			autoDiscoveryInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = autoDiscoveryInput
+	}
+
+	return expanded
+}
+
+// Expanding the SecurityHub input
+
+func expandCloudAwsIntegrationSecurityHubInput(x []interface{}, linkedAccountID int) []cloud.CloudSecurityHubIntegrationInput {
+	expanded := make([]cloud.CloudSecurityHubIntegrationInput, len(x))
+
+	for i, securityhub := range x {
+		var securityhubInput cloud.CloudSecurityHubIntegrationInput
+
+		if securityhub == nil {
+			securityhubInput.LinkedAccountId = linkedAccountID
+			expanded[i] = securityhubInput
+			return expanded
+		}
+
+		in := securityhub.(map[string]interface{})
+
+		securityhubInput.LinkedAccountId = linkedAccountID
+
+		if a, ok := in["aws_regions"]; ok {
+			awsRegions := a.([]interface{})
+			var regions []string
+
+			for _, region := range awsRegions {
+				regions = append(regions, region.(string))
+			}
+			securityhubInput.AwsRegions = regions
+		}
+
+		if m, ok := in["metrics_polling_interval"]; ok {
+			securityhubInput.MetricsPollingInterval = m.(int)
+		}
+		expanded[i] = securityhubInput
+	}
+
+	return expanded
+}
+
 // flatten for Billing integration
 
 func flattenCloudAwsBillingIntegration(in *cloud.CloudBillingIntegration) []interface{} {
@@ -3825,6 +3927,35 @@ func flattenCloudSnsIntegration(in *cloud.CloudSnsIntegration) []interface{} {
 	out["aws_regions"] = in.AwsRegions
 	out["metrics_polling_interval"] = in.MetricsPollingInterval
 	out["fetch_extended_inventory"] = in.FetchExtendedInventory
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for Auto Discovery integration
+func flattenCloudAwsAutoDiscoveryIntegration(in *cloud.CloudAwsAutoDiscoveryIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
+
+	flattened[0] = out
+
+	return flattened
+}
+
+// flatten for SecurityHub integration
+
+func flattenCloudSecurityHubIntegration(in *cloud.CloudSecurityHubIntegration) []interface{} {
+	flattened := make([]interface{}, 1)
+
+	out := make(map[string]interface{})
+
+	out["aws_regions"] = in.AwsRegions
+	out["metrics_polling_interval"] = in.MetricsPollingInterval
 
 	flattened[0] = out
 

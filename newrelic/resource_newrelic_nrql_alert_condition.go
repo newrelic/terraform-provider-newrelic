@@ -98,6 +98,12 @@ func termSchema() *schema.Resource {
 					},
 				},
 			},
+			"disable_health_status_reporting": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Violations will not change system health status for this term.",
+			},
 		},
 	}
 }
@@ -127,6 +133,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceImportStateWithMetadata(2, "type"),
 		},
+		CustomizeDiff: validateNrqlConditionAttributes,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
@@ -155,8 +162,8 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				Default:      "static",
-				Description:  "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline'.",
-				ValidateFunc: validation.StringInSlice([]string{"static", "baseline"}, false),
+				Description:  "The type of NRQL alert condition to create. Valid values are: 'static', 'baseline', 'outlier'.",
+				ValidateFunc: validation.StringInSlice([]string{"static", "baseline", "outlier"}, false),
 			},
 			"nrql": {
 				Type:        schema.TypeList,
@@ -389,6 +396,70 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 					return strings.EqualFold(old, new) // Case fold this attribute when diffing
 				},
 			},
+			"signal_seasonality": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Seasonality under which a condition's signal(s) are evaluated. Valid values are: 'NEW_RELIC_CALCULATION', 'HOURLY', 'DAILY', 'WEEKLY', or 'NONE'. To have New Relic calculate seasonality automatically, set to 'NEW_RELIC_CALCULATION' (default). To turn off seasonality completely, set to 'NONE'.",
+				ValidateFunc: validation.StringInSlice(
+					[]string{
+						string(alerts.NrqlSignalSeasonalities.NewRelicCalculation),
+						string(alerts.NrqlSignalSeasonalities.Hourly),
+						string(alerts.NrqlSignalSeasonalities.Daily),
+						string(alerts.NrqlSignalSeasonalities.Weekly),
+						string(alerts.NrqlSignalSeasonalities.None),
+					},
+					true,
+				),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// If a value is not provided and the condition uses the default value, don't show a diff. Also case insensitive.
+					return (strings.EqualFold(old, string(alerts.NrqlSignalSeasonalities.NewRelicCalculation)) && new == "") || strings.EqualFold(old, new)
+				},
+			},
+			// Outlier ONLY
+			"outlier_configuration": {
+				Type:        schema.TypeList,
+				MinItems:    0,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "BETA PREVIEW: the `outlier_configuration` field is in limited release and only enabled for preview on a per-account basis. - Defines parameters controlling outlier detection for an `outlier` NRQL condition.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"dbscan": {
+							Type:        schema.TypeList,
+							MinItems:    1,
+							MaxItems:    1,
+							Required:    true,
+							Description: "BETA PREVIEW: the `dbscan` field is in limited release and only enabled for preview on a per-account basis. - Container for DBSCAN settings used to cluster data points and classify noise as outliers. Requires `epsilon` and `minimum_points`; optional `evaluation_group_facet` partitions data before analysis.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"epsilon": {
+										Type:         schema.TypeFloat,
+										Required:     true,
+										Description:  "BETA PREVIEW: the `epsilon` field is in limited release and only enabled for preview on a per-account basis. - Radius (distance threshold) for DBSCAN in the units of the query result. Smaller values tighten clusters; larger values broaden them. Must be > 0.",
+										ValidateFunc: validation.FloatAtLeast(0.0000001),
+									},
+									"minimum_points": {
+										Type:         schema.TypeInt,
+										Required:     true,
+										Description:  "BETA PREVIEW: the `minimum_points` field is in limited release and only enabled for preview on a per-account basis. - Minimum number of neighboring points needed to form a cluster. Must be >= 1.",
+										ValidateFunc: validation.IntAtLeast(1),
+									},
+									"evaluation_group_facet": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "BETA PREVIEW: the `evaluation_group_facet` field is in limited release and only enabled for preview on a per-account basis. - Optional NRQL facet attribute used to segment data into groups (e.g. `host`, `region`) before running outlier detection. Omit to evaluate all results together.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"target_entity": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "BETA PREVIEW: the `target_entity` field is in limited release and only enabled for preview on a per-account basis. - The GUID of the entity explicitly targeted by the condition. Issues triggered by this condition will affect the health status of this entity instead of having the affected entity detected automatically",
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
@@ -415,6 +486,8 @@ func resourceNewRelicNrqlAlertConditionCreate(ctx context.Context, d *schema.Res
 	switch d.Get("type").(string) {
 	case "baseline":
 		condition, err = client.Alerts.CreateNrqlConditionBaselineMutationWithContext(ctx, accountID, policyID, *conditionInput)
+	case "outlier":
+		condition, err = client.Alerts.CreateNrqlConditionOutlierMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	case "static":
 		condition, err = client.Alerts.CreateNrqlConditionStaticMutationWithContext(ctx, accountID, policyID, *conditionInput)
 	}
@@ -536,6 +609,8 @@ func resourceNewRelicNrqlAlertConditionUpdate(ctx context.Context, d *schema.Res
 	switch d.Get("type").(string) {
 	case "baseline":
 		_, err = client.Alerts.UpdateNrqlConditionBaselineMutationWithContext(ctx, accountID, conditionID, *conditionInput)
+	case "outlier":
+		_, err = client.Alerts.UpdateNrqlConditionOutlierMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	case "static":
 		_, err = client.Alerts.UpdateNrqlConditionStaticMutationWithContext(ctx, accountID, conditionID, *conditionInput)
 	}

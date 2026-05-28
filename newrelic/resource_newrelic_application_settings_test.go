@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || APM
 
 package newrelic
 
@@ -117,6 +116,7 @@ func testAccNewRelicApplicationConfig() string {
 			  ignored_error_codes = []
 			}
 			tracer_type = "OPT_OUT"
+			enable_slow_sql = false
 			enable_thread_profiler = false
 		}`, testExpectedApplicationName, testApplicationGUID)
 }
@@ -146,6 +146,7 @@ func testAccNewRelicApplicationConfigUpdated(name string) string {
 			  ignored_error_classes = []
 			  ignored_error_codes = []
 			}
+			enable_slow_sql = true	
 			tracer_type = "OPT_OUT"
 			enable_thread_profiler = false
 		}`, name, testApplicationGUID)
@@ -211,7 +212,7 @@ func testAccCheckNewRelicApplicationExists(resourceName string) resource.TestChe
 		time.Sleep(2 * time.Second)
 		found, err := client.Entities.GetEntity(common.EntityGUID(rs.Primary.ID))
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return err
 		}
 
 		res, foundOk := (*found).(*entities.ApmApplicationEntity)

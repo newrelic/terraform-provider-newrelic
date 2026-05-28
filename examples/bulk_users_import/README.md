@@ -3,7 +3,7 @@ The `run_bulk_users_import.sh` script is a Bash script used to run a Go program 
 
 This is specifically useful in cases where a huge number of users were created in the New Relic One UI, added to a group, and would now like to be controlled via the `newrelic_user` and `newrelic_group` resources respectively, along with future users who would be added to the group via these resources in the New Relic Terraform Provider.
 
- The script works as follows - 
+The script works as follows - 
 - Fetch users from the group with the ID specified,
 - Get details of all of such users, in alignment with expected arguments of the `newrelic_user` resource,
 - Write the attributes and values of each user (and the group specified) to strings in HCL (Terraform format),
@@ -12,11 +12,9 @@ This is specifically useful in cases where a huge number of users were created i
 
 
 #### Arguments
-`--groupId`: The ID of the group to which the users will be imported. This is a required flag.
-
-`--apiKey`: The User API key used for authentication. This is an optional flag, and can only be skipped if your environment has a `NEW_RELIC_API_KEY` that can be defaulted to.
-
-`--filePath`: The path to the file containing the user data to be imported. This is a required flag.
+- `--groupId`: The ID of the group to which the users will be imported. This is a required flag.
+- `--apiKey`: The User API key used for authentication. This is an optional flag, and can only be skipped if your environment has a `NEW_RELIC_API_KEY` that can be defaulted to.
+- `--filePath`: The path to the file containing the user data to be imported. This is a required flag.
 
 #### Example Usage
 ```sh

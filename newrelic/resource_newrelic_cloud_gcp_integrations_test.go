@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || CLOUD
 
 package newrelic
 
@@ -16,7 +15,7 @@ import (
 )
 
 func TestAccNewRelicCloudGcpIntegrations_Basic(t *testing.T) {
-	//t.Skipf("Skipping test until environment variables are added")
+	t.Skipf("Skipping test until GCP Environment Variables are fixed")
 	resourceName := "newrelic_cloud_gcp_integrations.foo1"
 	testGCPIntegrationName := fmt.Sprintf("tf_cloud_integrations_test_gcp_%s", acctest.RandString(5))
 
@@ -118,7 +117,7 @@ func testAccNewRelicCloudGcpIntegrationsDestroy(s *terraform.State) error {
 }
 
 func testAccNewRelicCloudGcpIntegrationsConfig(GCPIntegrationTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -217,11 +216,11 @@ resource "newrelic_cloud_gcp_integrations" "foo1" {
   vpc_access {
     metrics_polling_interval = 400
   }
-}`)
+}`
 }
 
 func testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + GCPIntegrationTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -318,5 +317,5 @@ func testAccNewRelicCloudGcpIntegrationsConfigUpdated(GCPIntegrationTestConfig m
 			metrics_polling_interval = 1400
 		  }
 	}
-`)
+`
 }

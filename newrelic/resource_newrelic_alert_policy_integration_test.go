@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || ALERTS
 
 package newrelic
 
@@ -26,6 +25,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 			// Test: Update
@@ -33,6 +33,7 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				Config: testAccNewRelicAlertPolicyConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAlertPolicyExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
 				),
 			},
 			// Test: Import
@@ -41,6 +42,9 @@ func TestAccNewRelicAlertPolicy_Basic(t *testing.T) {
 				ImportStateIdFunc: testAccImportStateIDFunc(resourceName, strconv.Itoa(testAccountID)),
 				ImportStateVerify: true,
 				ResourceName:      resourceName,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "entity_guid"),
+				),
 			},
 		},
 	})

@@ -1,5 +1,4 @@
 //go:build unit
-// +build unit
 
 package newrelic
 
@@ -17,8 +16,10 @@ import (
 )
 
 var (
-	testThresholdLow  = 1.0
-	testThresholdHigh = 10.9
+	testThresholdLow                  = 1.0
+	testThresholdHigh                 = 10.9
+	testDisableHealthStatusReporting  = true
+	falseDisableHealthStatusReporting = false
 )
 
 func TestExpandNrqlAlertConditionInput(t *testing.T) {
@@ -50,6 +51,10 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 	expectedNrql.Nrql.EvaluationOffset = &evalOffset
 
 	titleTemplate := "Title {{template}}"
+
+	targetEntity := "MXxBUE18QVBQTElDQVRJT058MQ"
+
+	signalSeasonality := alerts.NrqlSignalSeasonalities.Daily
 
 	cases := map[string]struct {
 		Data         map[string]interface{}
@@ -84,6 +89,80 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				BaselineDirection: &alerts.NrqlBaselineDirections.LowerOnly,
 			},
 		},
+		"outlier condition, requires outlier_configuration attr": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+			},
+			ExpectErr:    true,
+			ExpectReason: "`outlier_configuration` is required and must contain the algorithm configuration",
+		},
+		"outlier condition, requires outlier_configuration.dbscan attr": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+				"outlier_configuration": []interface{}{
+					map[string]interface{}{},
+				},
+			},
+			ExpectErr:    true,
+			ExpectReason: "`outlier_configuration` is required and must contain the algorithm configuration",
+		},
+		"outlier condition, valid outlier_configuration": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+				"outlier_configuration": []interface{}{
+					map[string]interface{}{
+						"dbscan": []interface{}{
+							map[string]interface{}{
+								"epsilon":                0.15,
+								"minimum_points":         5,
+								"evaluation_group_facet": "host",
+							},
+						},
+					},
+				},
+			},
+			ExpectErr:    false,
+			ExpectReason: "",
+			Expanded: func() *alerts.NrqlConditionCreateInput {
+				x := alerts.NrqlConditionCreateInput{}
+				facet := "host"
+				x.OutlierConfiguration = &alerts.NrqlOutlierConfigurationInput{
+					DBSCAN: alerts.NrqlOutlierDbScanConfigurationInput{
+						Epsilon:              0.15,
+						MinimumPoints:        5,
+						EvaluationGroupFacet: &facet,
+					},
+				}
+				return &x
+			}(),
+		},
+		"outlier condition, valid outlier_configuration without evaluation facet group": {
+			Data: map[string]interface{}{
+				"type": "outlier",
+				"outlier_configuration": []interface{}{
+					map[string]interface{}{
+						"dbscan": []interface{}{
+							map[string]interface{}{
+								"epsilon":        0.15,
+								"minimum_points": 5,
+							},
+						},
+					},
+				},
+			},
+			ExpectErr:    false,
+			ExpectReason: "",
+			Expanded: func() *alerts.NrqlConditionCreateInput {
+				x := alerts.NrqlConditionCreateInput{}
+				x.OutlierConfiguration = &alerts.NrqlOutlierConfigurationInput{
+					DBSCAN: alerts.NrqlOutlierDbScanConfigurationInput{
+						Epsilon:       0.15,
+						MinimumPoints: 5,
+					},
+				}
+				return &x
+			}(),
+		},
 		"critical term": {
 			Data: map[string]interface{}{
 				"nrql":     []interface{}{nrql},
@@ -96,11 +175,12 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				x := alerts.NrqlConditionCreateInput{}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            &testThresholdLow,
-						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
-						ThresholdDuration:    600,
-						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
-						Priority:             alerts.NrqlConditionPriorities.Critical,
+						Threshold:                    &testThresholdLow,
+						ThresholdOccurrences:         alerts.ThresholdOccurrences.AtLeastOnce,
+						ThresholdDuration:            600,
+						Operator:                     alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
+						Priority:                     alerts.NrqlConditionPriorities.Critical,
+						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 				}
 
@@ -120,18 +200,20 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				x := alerts.NrqlConditionCreateInput{}
 				x.Terms = []alerts.NrqlConditionTerm{
 					{
-						Threshold:            &testThresholdLow,
-						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
-						ThresholdDuration:    600,
-						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
-						Priority:             alerts.NrqlConditionPriorities.Critical,
+						Threshold:                    &testThresholdLow,
+						ThresholdOccurrences:         alerts.ThresholdOccurrences.AtLeastOnce,
+						ThresholdDuration:            600,
+						Operator:                     alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
+						Priority:                     alerts.NrqlConditionPriorities.Critical,
+						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 					{
-						Threshold:            &testThresholdHigh,
-						ThresholdOccurrences: alerts.ThresholdOccurrences.AtLeastOnce,
-						ThresholdDuration:    660,
-						Operator:             alerts.AlertsNRQLConditionTermsOperatorTypes.BELOW,
-						Priority:             alerts.NrqlConditionPriorities.Warning,
+						Threshold:                    &testThresholdHigh,
+						ThresholdOccurrences:         alerts.ThresholdOccurrences.AtLeastOnce,
+						ThresholdDuration:            660,
+						Operator:                     alerts.AlertsNRQLConditionTermsOperatorTypes.BELOW,
+						Priority:                     alerts.NrqlConditionPriorities.Warning,
+						DisableHealthStatusReporting: &falseDisableHealthStatusReporting,
 					},
 				}
 
@@ -398,6 +480,43 @@ func TestExpandNrqlAlertConditionInput(t *testing.T) {
 				},
 			},
 		},
+		"signal seasonality not nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"signal_seasonality": "daily",
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+				SignalSeasonality:       &signalSeasonality,
+			},
+		},
+		"signal seasonality nil": {
+			Data: map[string]interface{}{
+				"nrql":               []interface{}{nrql},
+				"signal_seasonality": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
+		"target entity not nil": {
+			Data: map[string]interface{}{
+				"nrql":          []interface{}{nrql},
+				"target_entity": targetEntity,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
+		"target entity nil": {
+			Data: map[string]interface{}{
+				"nrql":          []interface{}{nrql},
+				"target_entity": nil,
+			},
+			Expanded: &alerts.NrqlConditionCreateInput{
+				NrqlConditionCreateBase: alerts.NrqlConditionCreateBase{},
+			},
+		},
 	}
 
 	r := resourceNewRelicNrqlAlertCondition()
@@ -545,6 +664,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	dataAccountId := 987654
 	evalOffset := 3
 	titleTemplate := "Title {{template}}"
+	targetEntity := common.EntityGUID("MXxBUE18QVBQTElDQVRJT058MQ")
 
 	nrqlCondition := alerts.NrqlAlertCondition{
 		ID:       "1234567",
@@ -552,6 +672,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		NrqlConditionBase: alerts.NrqlConditionBase{
 			Description:   "description test",
 			TitleTemplate: &titleTemplate,
+			TargetEntity:  &targetEntity,
 			Enabled:       true,
 			Name:          "name-test",
 			Nrql: alerts.NrqlConditionQuery{
@@ -606,6 +727,20 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	nrqlConditionBaseline.Type = alerts.NrqlConditionTypes.Baseline
 	nrqlConditionBaseline.BaselineDirection = &alerts.NrqlBaselineDirections.LowerOnly
 	nrqlConditionBaseline.EntityGUID = common.EntityGUID("NDAwMzA0fEFPTkRJVElPTnwxNDMzNjc3")
+	nrqlConditionBaseline.SignalSeasonality = &alerts.NrqlSignalSeasonalities.Daily
+
+	// Outlier
+	nrqlConditionOutlier := nrqlCondition
+	nrqlConditionOutlier.Type = alerts.NrqlConditionTypes.Outlier
+	{
+		facet := "host"
+		nrqlConditionOutlier.OutlierConfiguration = &alerts.NrqlOutlierConfigurationOutput{
+			Algorithm:            "DBSCAN",
+			Epsilon:              0.15,
+			MinimumPoints:        5,
+			EvaluationGroupFacet: &facet, // omit or set to nil if not grouping
+		}
+	}
 
 	// Static
 	nrqlConditionStatic := nrqlCondition
@@ -615,6 +750,7 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 	conditions := []*alerts.NrqlAlertCondition{
 		&nrqlConditionBaseline,
 		&nrqlConditionStatic,
+		&nrqlConditionOutlier,
 	}
 
 	// Use the API object above to construct a "user-configured" critical term.
@@ -670,9 +806,13 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 		titleTemplate := d.Get("title_template").(string)
 		assert.Equal(t, "Title {{template}}", titleTemplate)
 
+		targetEntity := d.Get("target_entity").(string)
+		assert.Equal(t, "MXxBUE18QVBQTElDQVRJT058MQ", targetEntity)
+
 		switch condition.Type {
 		case alerts.NrqlConditionTypes.Baseline:
 			require.Equal(t, string(alerts.NrqlBaselineDirections.LowerOnly), d.Get("baseline_direction").(string))
+			require.Equal(t, string(alerts.NrqlSignalSeasonalities.Daily), d.Get("signal_seasonality").(string))
 			require.Equal(t, 120, d.Get("expiration_duration").(int))
 			require.True(t, d.Get("open_violation_on_expiration").(bool))
 			require.True(t, d.Get("close_violations_on_expiration").(bool))
@@ -696,6 +836,25 @@ func TestFlattenNrqlAlertCondition(t *testing.T) {
 			require.Equal(t, "60", d.Get("aggregation_timer").(string))
 			require.Equal(t, 60, d.Get("evaluation_delay").(int))
 			require.Equal(t, nrqlConditionStatic.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
+
+		case alerts.NrqlConditionTypes.Outlier:
+			require.Zero(t, d.Get("baseline_direction").(string))
+			require.Equal(t, 120, d.Get("expiration_duration").(int))
+			require.True(t, d.Get("open_violation_on_expiration").(bool))
+			require.True(t, d.Get("close_violations_on_expiration").(bool))
+			require.Equal(t, "last_value", d.Get("fill_option").(string))
+			require.Zero(t, d.Get("fill_value").(float64))
+			require.Equal(t, "cadence", d.Get("aggregation_method").(string))
+			require.Equal(t, "60", d.Get("aggregation_delay").(string))
+			require.Equal(t, "60", d.Get("aggregation_timer").(string))
+			require.Equal(t, 60, d.Get("evaluation_delay").(int))
+			require.Equal(t, nrqlConditionOutlier.EntityGUID, common.EntityGUID(d.Get("entity_guid").(string)))
+			require.NotNil(t, d.Get("outlier_configuration"))
+			outlierConfig := d.Get("outlier_configuration").([]interface{})[0].(map[string]interface{})
+			dbscan := outlierConfig["dbscan"].([]interface{})[0].(map[string]interface{})
+			require.Equal(t, 0.15, dbscan["epsilon"])
+			require.Equal(t, 5, dbscan["minimum_points"])
+			require.Equal(t, "host", dbscan["evaluation_group_facet"])
 		}
 	}
 }
@@ -714,17 +873,19 @@ func TestExpandNrqlConditionTerm(t *testing.T) {
 			Priority:      "critical",
 			ConditionType: "static",
 			Term: map[string]interface{}{
-				"threshold":             10.9,
-				"threshold_duration":    5,
-				"threshold_occurrences": "ALL",
-				"operator":              "equals",
+				"threshold":                       10.9,
+				"threshold_duration":              5,
+				"threshold_occurrences":           "ALL",
+				"operator":                        "equals",
+				"disable_health_status_reporting": true,
 			},
 			Expected: &alerts.NrqlConditionTerm{
-				Operator:             alerts.AlertsNRQLConditionTermsOperator("EQUALS"),
-				Priority:             alerts.NrqlConditionPriority("CRITICAL"),
-				Threshold:            &testThresholdHigh,
-				ThresholdDuration:    5,
-				ThresholdOccurrences: "ALL",
+				Operator:                     alerts.AlertsNRQLConditionTermsOperator("EQUALS"),
+				Priority:                     alerts.NrqlConditionPriority("CRITICAL"),
+				Threshold:                    &testThresholdHigh,
+				ThresholdDuration:            5,
+				ThresholdOccurrences:         "ALL",
+				DisableHealthStatusReporting: &testDisableHealthStatusReporting,
 			},
 		},
 		"critical explicit priority": {

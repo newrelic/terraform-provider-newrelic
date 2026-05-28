@@ -29,6 +29,11 @@ func resourceNewRelicSyntheticsCertCheckMonitor() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
+			"monitor_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the monitor",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the cert check monitor",
@@ -167,10 +172,11 @@ func resourceNewRelicSyntheticsCertCheckMonitorCreate(ctx context.Context, d *sc
 	}
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
-		"domain": resp.Monitor.Domain,
-		"name":   resp.Monitor.Name,
-		"period": string(resp.Monitor.Period),
-		"status": string(resp.Monitor.Status),
+		"domain":     resp.Monitor.Domain,
+		"name":       resp.Monitor.Name,
+		"period":     string(resp.Monitor.Period),
+		"status":     string(resp.Monitor.Status),
+		"monitor_id": resp.Monitor.ID,
 	})
 
 	if err != nil {
@@ -211,9 +217,10 @@ func resourceNewRelicSyntheticsCertCheckMonitorRead(ctx context.Context, d *sche
 		_ = d.Set("period_in_minutes", int(entity.GetPeriod()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"name":   e.Name,
-			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
-			"status": string(entity.MonitorSummary.Status),
+			"name":       e.Name,
+			"period":     string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
+			"status":     string(entity.MonitorSummary.Status),
+			"monitor_id": entity.MonitorId,
 		})
 
 		runtimeType, runtimeTypeVersion := getRuntimeValuesFromEntityTags(entity.GetTags())

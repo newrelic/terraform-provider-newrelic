@@ -1,3 +1,4 @@
+// Package main is the entry point for the New Relic Terraform Provider.
 package main
 
 import (
@@ -7,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 
-	"github.com/newrelic/terraform-provider-newrelic/v2/newrelic"
+	"github.com/newrelic/terraform-provider-newrelic/v3/newrelic"
 )
 
 var (

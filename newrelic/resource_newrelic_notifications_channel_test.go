@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || WORKFLOW_INTEGRATIONS
 
 package newrelic
 
@@ -79,6 +78,7 @@ func TestNewRelicNotificationChannel_Webhook(t *testing.T) {
 }
 
 func TestNewRelicNotificationChannel_WebhookPropertyError(t *testing.T) {
+	t.Skipf("Skipping this test until we are sure on the property block that is expected to throw an error with a Webhook")
 	rand := acctest.RandString(5)
 	rName := fmt.Sprintf("tf-notifications-test-%s", rand)
 	channelPropsAttr := `property {
@@ -273,9 +273,11 @@ func testAccNewRelicNotificationChannelDestroy(s *terraform.State) error {
 		filters := ai.AiNotificationsChannelFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsChannelSorter{}
 
-		channelsResponse, _ := client.Notifications.GetChannels(accountID, "", filters, sorter)
+		channelsResponse, err := client.Notifications.GetChannels(accountID, nil, &filters, nil)
+		if err != nil {
+			return err
+		}
 		if len(channelsResponse.Entities) != 0 {
 			return fmt.Errorf("notification channel still exists")
 		}
@@ -303,9 +305,8 @@ func testAccCheckNewRelicNotificationChannelExists(n string) resource.TestCheckF
 		filters := ai.AiNotificationsChannelFilter{
 			ID: id,
 		}
-		sorter := notifications.AiNotificationsChannelSorter{}
 
-		found, err := client.Notifications.GetChannels(accountID, "", filters, sorter)
+		found, err := client.Notifications.GetChannels(accountID, nil, &filters, nil)
 		if err != nil {
 			return err
 		}

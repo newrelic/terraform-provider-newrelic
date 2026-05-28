@@ -66,11 +66,12 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorCreate(ctx context.Context, d *
 	_ = d.Set("period_in_minutes", syntheticsMonitorPeriodInMinutesValueMap[resp.Monitor.Period])
 
 	err = setSyntheticsMonitorAttributes(d, map[string]string{
-		"guid":   string(resp.Monitor.GUID),
-		"name":   resp.Monitor.Name,
-		"period": string(resp.Monitor.Period),
-		"status": string(resp.Monitor.Status),
-		"uri":    resp.Monitor.Uri,
+		"guid":       string(resp.Monitor.GUID),
+		"name":       resp.Monitor.Name,
+		"period":     string(resp.Monitor.Period),
+		"status":     string(resp.Monitor.Status),
+		"uri":        resp.Monitor.Uri,
+		"monitor_id": resp.Monitor.ID,
 	})
 
 	respRuntimeType := resp.Monitor.Runtime.RuntimeType
@@ -115,11 +116,12 @@ func resourceNewRelicSyntheticsBrokenLinksMonitorRead(ctx context.Context, d *sc
 		_ = d.Set("period_in_minutes", int(entity.GetPeriod()))
 
 		err = setSyntheticsMonitorAttributes(d, map[string]string{
-			"guid":   string(e.GUID),
-			"name":   entity.Name,
-			"period": string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
-			"status": string(entity.MonitorSummary.Status),
-			"uri":    entity.MonitoredURL,
+			"guid":       string(e.GUID),
+			"name":       entity.Name,
+			"period":     string(syntheticsMonitorPeriodValueMap[int(entity.GetPeriod())]),
+			"status":     string(entity.MonitorSummary.Status),
+			"uri":        entity.MonitoredURL,
+			"monitor_id": entity.MonitorId,
 		})
 
 		runtimeType, runtimeTypeVersion := getRuntimeValuesFromEntityTags(entity.GetTags())

@@ -29,6 +29,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
   name                           = "foo"
   description                    = "Alert when transactions are taking too long"
   title_template                 = "Issue in environment: {{ tags.environment }}"
+  target_entity                  = "MXxBUE18QVBQTElDQVRJT058MQ"
   runbook_url                    = "https://www.example.com"
   enabled                        = true
   violation_time_limit_seconds   = 3600
@@ -72,9 +73,12 @@ The following arguments are supported:
 - `baseline_direction` - (Optional) The baseline direction of a _baseline_ NRQL alert condition. Valid values are: `lower_only`, `upper_and_lower`, `upper_only` (case insensitive).
 - `description` - (Optional) The description of the NRQL alert condition.
 - `title_template` - (Optional) The custom title to be used when incidents are opened by the condition. Setting this field will override the default title. Must be [Handlebars](https://handlebarsjs.com/) format.
+- `target_entity` - (Optional) BETA PREVIEW: The GUID of the entity explicitly targeted by the condition. Issues triggered by this condition will affect the health status of this entity instead of having the affected entity detected automatically. The entity's account ID must be either `account_id` or `nrql.data_account_id`.
 - `policy_id` - (Required) The ID of the policy where this condition should be used.
 - `name` - (Required) The title of the condition.
-- `type` - (Optional) The type of the condition. Valid values are `static` or `baseline`. Defaults to `static`.
+- `type` - (Optional) The type of the condition. Valid values are `static`, `baseline`, or `outlier`. Defaults to `static`.
+<small>\***Note**: **BETA PREVIEW: the `outlier` field is in limited release and only enabled for preview on a per-account basis.**</small>
+
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
 - `enabled` - (Optional) Whether to enable the alert condition. Valid values are `true` and `false`. Defaults to `true`.
 - `nrql` - (Required) A NRQL query. See [NRQL](#nrql) below for details.
@@ -99,6 +103,8 @@ The following arguments are supported:
 - `aggregation_timer` - (Optional) How long we wait after each data point arrives to make sure we've processed the whole batch. Use `aggregation_timer` with the `event_timer` method. The timer value can range from 0 seconds to 1200 seconds (20 minutes); the default is 60 seconds. `aggregation_timer` cannot be set with `nrql.evaluation_offset`.
 - `evaluation_delay` - (Optional) How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes).
 - `slide_by` - (Optional) Gathers data in overlapping time windows to smooth the chart line, making it easier to spot trends. The `slide_by` value is specified in seconds and must be smaller than and a factor of the `aggregation_window`.
+- `signal_seasonality` - (Optional) Seasonality under which a condition's signal(s) are evaluated. Only available for baseline conditions. Valid values are: `NEW_RELIC_CALCULATION`, `HOURLY`, `DAILY`, `WEEKLY`, or `NONE`. To have New Relic calculate seasonality automatically, set to `NEW_RELIC_CALCULATION`. To turn off seasonality completely, set to `NONE`.
+- `outlier_configuration` - (Optional) **BETA PREVIEW:** The configuration block for `outlier` NRQL alert conditions. See [Outlier Configuration](#outlier-configuration) below for details.
 
 ## NRQL
 
@@ -129,6 +135,7 @@ The `term` block supports the following arguments:
 - `duration` - (Optional) **DEPRECATED:** Use `threshold_duration` instead. The duration of time, in _minutes_, that the threshold must violate for in order to create an incident. Must be within 1-120 (inclusive).
 - `time_function` - (Optional) **DEPRECATED:** Use `threshold_occurrences` instead. The criteria for how many data points must be in violation for the specified threshold duration. Valid values are: `all` or `any`.
 - `prediction` - (Optional) **BETA PREVIEW: the `prediction` field is in limited release and only enabled for preview on a per-account basis.** Use `prediction` to open alerts when your static threshold is predicted to be reached in the future. The `prediction` field is only available for _static_ NRQL alert conditions. See [Prediction](#prediction) below for details.
+- `disable_health_status_reporting` - (Optional) `true` or `false`. Defaults to `false` when field not included in TF config. Violations will not change system health status for this term.
 
 ~> **NOTE:** When a `critical` or `warning` block is added to this resource, using either `duration` or `threshold_duration` (one of the two) is mandatory. Both of these should not be specified.
 
@@ -152,6 +159,22 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the NRQL alert condition. This is a composite ID with the format `<policy_id>:<condition_id>` - e.g. `538291:6789035`.
 - `entity_guid` - The unique entity identifier of the NRQL Condition in New Relic.
 
+## Outlier Configuration
+
+~> **BETA PREVIEW:** The `outlier` condition type is in limited release and only enabled for preview on a per-account basis.
+
+~> **NOTE:** The `outlier_configuration` block is only available for _outlier_ NRQL alert conditions.
+
+The `outlier_configuration` block supports the following nested block:
+- `dbscan` - (Required) The DBSCAN algorithm configuration block.
+
+`dbscan` supports the following arguments:
+- `epsilon` - (Required) The maximum distance between two samples for one to be considered as in the neighborhood of the other. Value must be > 0.
+- `minimum_points` - (Required) The number of samples in a neighborhood for a point to be considered as a core point. This includes the point itself. Value must be >= 1.
+- `evaluation_group_facet` - (Optional) NRQL facet attribute used to segment data into groups (e.g. `host`, `region`) before running outlier detection. Omit to evaluate all results together.
+
+Notes:
+- Currently only `dbscan` is supported.
 
 ## Additional Examples
 
@@ -180,6 +203,7 @@ resource "newrelic_nrql_alert_condition" "foo" {
 
   # baseline type only
   baseline_direction = "upper_only"
+  signal_seasonality = "weekly"
 
   nrql {
     query = "SELECT percentile(duration, 95) FROM Transaction WHERE appName = 'ExampleAppName'"
@@ -196,6 +220,50 @@ resource "newrelic_nrql_alert_condition" "foo" {
     operator              = "above"
     threshold             = 3.5
     threshold_duration    = 600
+    threshold_occurrences = "all"
+  }
+}
+```
+<br> 
+
+##### Type: `outlier`
+
+~> **BETA PREVIEW:** The `outlier` condition type is in limited release and only enabled for preview on a per-account basis.
+
+[Outlier NRQL alert conditions](https://docs.newrelic.com/docs/alerts/create-alert/set-thresholds/outlier-detection/) are dynamic in nature and adjust to the behavior of your data. The example below demonstrates an outlier NRQL alert condition for detecting anomalies using the DBSCAN clustering algorithm.
+
+```hcl
+resource "newrelic_alert_policy" "outlier_policy" {
+  name = "outlier-demo"
+}
+
+resource "newrelic_nrql_alert_condition" "outlier_condition" {
+  account_id                   = 12345678
+  policy_id                    = newrelic_alert_policy.outlier_policy.id
+  type                         = "outlier"
+  name                         = "Outlier duration anomaly"
+  description                  = "Detect hosts with anomalous average duration"
+  enabled                      = true
+  violation_time_limit_seconds = 3600
+  aggregation_window           = 60
+  aggregation_method           = "event_flow"
+
+  nrql {
+    query = "SELECT average(duration) FROM Transaction FACET host"
+  }
+  
+  outlier_configuration {
+    dbscan {
+      epsilon                = 0.15
+      minimum_points         = 5
+      evaluation_group_facet = "host"
+    }
+  }
+  
+  critical {
+    operator              = "above"
+    threshold             = 0
+    threshold_duration    = 300
     threshold_occurrences = "all"
   }
 }

@@ -200,7 +200,7 @@ var SyntheticsMonitorDowntimeModes = struct {
 	WEEKLY:  "WEEKLY",
 }
 
-// classes whose objects would be used in create/update requests
+// SyntheticsMonitorDowntimeCommonArgumentsInput objects would be used in create/update requests
 type SyntheticsMonitorDowntimeCommonArgumentsInput struct {
 	AccountID    int
 	Name         string

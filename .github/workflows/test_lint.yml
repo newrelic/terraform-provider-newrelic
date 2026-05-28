@@ -6,6 +6,11 @@ on:
     branches: [main]
   pull_request:
 
+# cancels an already running job if a new commit has triggered a new run of the job
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -13,7 +18,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: 1.24.x
 
       - name: Add GOBIN to PATH
         run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -38,10 +43,8 @@ jobs:
         run: make lint
 
       - name: Check links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        uses: JustinBeckwith/linkinator-action@v1
         with:
-          use-quiet-mode: 'yes'
-          use-verbose-mode: 'yes'
-          config-file: '.markdownlinkcheck.json'
-          folder-path: 'website/docs'
-          file-extension: '.markdown'
+          paths: 'website/docs/**/*.markdown'
+          config: '.linkinator.json'
+

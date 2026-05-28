@@ -7,8 +7,10 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/agentapplications"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
@@ -73,6 +75,10 @@ func resourceNewRelicBrowserApplication() *schema.Resource {
 				Description: "JavaScript configuration of the browser application encoded into a string.",
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+			Read:   schema.DefaultTimeout(30 * time.Second),
+		},
 	}
 }
 
@@ -83,9 +89,10 @@ func resourceNewRelicBrowserApplicationCreate(ctx context.Context, d *schema.Res
 	accountID := selectAccountID(providerConfig, d)
 	appName := d.Get("name").(string)
 	cookiesEnabled := d.Get("cookies_enabled").(bool)
+	distributedTracingEnabled := d.Get("distributed_tracing_enabled").(bool)
 	settingsInput := agentapplications.AgentApplicationBrowserSettingsInput{
 		CookiesEnabled:            &cookiesEnabled,
-		DistributedTracingEnabled: d.Get("distributed_tracing_enabled").(bool),
+		DistributedTracingEnabled: &distributedTracingEnabled,
 		LoaderType:                agentapplications.AgentApplicationBrowserLoader(strings.ToUpper(d.Get("loader_type").(string))),
 	}
 
@@ -117,38 +124,69 @@ func resourceNewRelicBrowserApplicationRead(ctx context.Context, d *schema.Resou
 
 	guid := d.Id()
 
-	resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(guid))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if resp == nil {
-		d.SetId("")
-		return diag.FromErr(fmt.Errorf("entity with GUID %s was nil", guid))
-	}
-
-	switch (*resp).(type) {
-	case *entities.BrowserApplicationEntity:
-		entity := (*resp).(*entities.BrowserApplicationEntity)
-
-		d.SetId(string(entity.GUID))
-		_ = d.Set("name", entity.Name)
-		_ = d.Set("cookies_enabled", entity.BrowserSettings.BrowserMonitoring.Privacy.CookiesEnabled)
-		_ = d.Set("distributed_tracing_enabled", entity.BrowserSettings.BrowserMonitoring.DistributedTracing.Enabled)
-		_ = d.Set("loader_type", string(entity.BrowserSettings.BrowserMonitoring.Loader))
-		_ = d.Set("guid", string(entity.GUID))
-		_ = d.Set("account_id", entity.AccountID)
-		_ = d.Set("application_id", strconv.Itoa(entity.ApplicationID))
-
-		// The following block of code encodes the JavaScript configuration of the browser application into a JSON,
-		// that is then exported as a string, which can be accessed from the Terraform Configuration using jsondecode().
-		jsonOutput, err := json.Marshal(entity.BrowserProperties.JsConfig)
+	// Retry to handle eventual consistency in New Relic's entity indexing
+	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(guid))
 		if err != nil {
-			return diag.FromErr(err)
+			return resource.NonRetryableError(err)
 		}
-		if err := d.Set("js_config", string(jsonOutput)); err != nil {
-			return diag.FromErr(err)
+
+		// When entity doesn't exist, API returns nil response with no error
+		// Retry to allow time for eventual consistency during resource creation
+		// If retries exhaust, we handle it as a deleted resource in the retryErr check below
+		if resp == nil || *resp == nil {
+			return resource.RetryableError(fmt.Errorf("entity with GUID %s not found", guid))
 		}
+
+		// Try to populate fields and verify critical data is available
+		switch (*resp).(type) {
+		case *entities.BrowserApplicationEntity:
+			entity := (*resp).(*entities.BrowserApplicationEntity)
+
+			// Check if critical fields are populated
+			if entity.ApplicationID == 0 {
+				return resource.RetryableError(fmt.Errorf("browser application entity exists but application_id not yet populated"))
+			}
+
+			// Set all fields
+			d.SetId(string(entity.GUID))
+			_ = d.Set("name", entity.Name)
+			_ = d.Set("cookies_enabled", entity.BrowserSettings.BrowserMonitoring.Privacy.CookiesEnabled)
+			_ = d.Set("distributed_tracing_enabled", entity.BrowserSettings.BrowserMonitoring.DistributedTracing.Enabled)
+			_ = d.Set("loader_type", string(entity.BrowserSettings.BrowserMonitoring.Loader))
+			_ = d.Set("guid", string(entity.GUID))
+			_ = d.Set("account_id", entity.AccountID)
+			_ = d.Set("application_id", strconv.Itoa(entity.ApplicationID))
+
+			// Encode JavaScript configuration
+			jsonOutput, err := json.Marshal(entity.BrowserProperties.JsConfig)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if err := d.Set("js_config", string(jsonOutput)); err != nil {
+				return resource.NonRetryableError(err)
+			}
+
+			// Verify application_id was set correctly
+			if d.Get("application_id").(string) == "" {
+				return resource.RetryableError(fmt.Errorf("application_id field not populated after setting"))
+			}
+		default:
+			return resource.RetryableError(fmt.Errorf("entity with GUID %s is not a BrowserApplicationEntity", guid))
+		}
+
+		return nil
+	})
+
+	if retryErr != nil {
+		// After all retries exhausted, if the entity was not found, it means it was deleted outside Terraform
+		// Clear the ID and return nil (not an error) to signal Terraform the resource should be recreated
+		if strings.Contains(retryErr.Error(), "not found") {
+			d.SetId("")
+			return nil
+		}
+		// For other errors (non-not-found), return them as actual errors
+		return diag.FromErr(retryErr)
 	}
 
 	return nil
@@ -159,11 +197,18 @@ func resourceNewRelicBrowserApplicationUpdate(ctx context.Context, d *schema.Res
 	client := providerConfig.NewClient
 
 	cookiesEnabled := d.Get("cookies_enabled").(bool)
+	loaderType := agentapplications.AgentApplicationSettingsBrowserLoaderInput(strings.ToUpper(d.Get("loader_type").(string)))
 	settingsInput := agentapplications.AgentApplicationSettingsUpdateInput{
+		// the following line has been commented, since name updates to non-APM entities are not supported
+		// by the mutation yet - this shall be uncommented after support for this is added to the NerdGraph mutation.
+
+		// Alias: d.Get("name").(string),
+
 		BrowserMonitoring: &agentapplications.AgentApplicationSettingsBrowserMonitoringInput{
 			DistributedTracing: &agentapplications.AgentApplicationSettingsBrowserDistributedTracingInput{
 				Enabled: d.Get("distributed_tracing_enabled").(bool),
 			},
+			Loader: &loaderType,
 			Privacy: &agentapplications.AgentApplicationSettingsBrowserPrivacyInput{
 				CookiesEnabled: &cookiesEnabled,
 			},

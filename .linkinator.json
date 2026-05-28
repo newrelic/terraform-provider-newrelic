@@ -1,0 +1,20 @@
+{
+    "directory": "website",
+    "linksToSkip": [
+        "^http(s)?://(?!(github.com|(www\\.)?terraform\\.io))"
+    ],
+    "urlRewriteExpressions": [
+        {
+            "pattern": "^/docs/(?!providers/newrelic/)",
+            "replacement": "https://terraform.io$1"
+        },
+        {
+            "pattern": "^/providers/newrelic(.*)",
+            "replacement": "https://registry.terraform.io$1"
+        },
+        {
+            "pattern": "^(?!http(s)?://)(.*)\\.html(#.*)?$",
+            "replacement": "$2.html.markdown$3"
+        }
+    ]
+}

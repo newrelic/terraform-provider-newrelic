@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || DASHBOARDS
 
 package newrelic
 
@@ -139,7 +138,7 @@ func TestAccNewRelicOneDashboard_UpdateInvalidNRQL(t *testing.T) {
 			// Test: Update
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("Invalid widget input"),
+				ExpectError: regexp.MustCompile(`query error; Input: \[\[PageInput: \[\[WidgetInput: \[Error parsing 'THIS IS INVALID NRQL', cause: Invalid nrql query]]]]]`),
 			},
 		},
 	})
@@ -156,7 +155,44 @@ func TestAccNewRelicOneDashboard_InvalidNRQL(t *testing.T) {
 			// Test: Create
 			{
 				Config:      testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL(rName),
-				ExpectError: regexp.MustCompile("Invalid widget input"),
+				ExpectError: regexp.MustCompile(`query error; Input: \[\[PageInput: \[\[WidgetInput: \[Error parsing 'THIS IS INVALID NRQL', cause: Invalid nrql query]]]]]`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_PageNRQLAccountIdConflict ensures that we set both multiple account_ids and a single account_id in a same NRQL query block with account_id key
+func TestAccNewRelicOneDashboard_PageNRQLAccountIdConflict(t *testing.T) {
+
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountId(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+				),
+			},
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(rName, strconv.Itoa(testAccountID)),
+				ExpectError: regexp.MustCompile(`Use a single numeric ID instead of a list`),
+			},
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(
+					rName,
+					fmt.Sprintf("%s,%s", strconv.Itoa(testAccountID), strconv.Itoa(testSubAccountID)),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 10), // Sleep waiting for entity re-indexing
+				),
+			},
+			{
+				ResourceName:      "newrelic_one_dashboard.bar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -207,6 +243,26 @@ func TestAccNewRelicOneDashboard_BillboardThresholds(t *testing.T) {
 				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithoutThresholds(rName, rWidgetName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboard_BillboardCriticalWarning("newrelic_one_dashboard.bar", rWidgetName, true, 0, 0),
+				),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_BillboardSettings Checks if billboard settings are configured correctly
+func TestAccNewRelicOneDashboard_BillboardSettings(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	rWidgetName := fmt.Sprintf("tf-test-widget-%s", acctest.RandString(5))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings(rName, rWidgetName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
 		},
@@ -283,6 +339,82 @@ func TestAccNewRelicOneDashboard_EmptyPage(t *testing.T) {
 				ResourceName:      "newrelic_one_dashboard.bar",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_Tooltip tests creating and updating dashboards with tooltip configuration
+func TestAccNewRelicOneDashboard_Tooltip(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// Create dashboard with tooltip
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_WithTooltip(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.tooltip_test", 0),
+				),
+			},
+			// Update tooltip configuration
+			{
+				Config: testAccCheckNewRelicOneDashboardConfig_WithTooltipUpdated(rName, strconv.Itoa(testAccountID)),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.tooltip_test", 0),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "newrelic_one_dashboard.tooltip_test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidTooltipMode checks for proper response if a tooltip is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidTooltipMode(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_line.0.tooltip.0.mode to be one of \[all single hidden\], got invalid`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidBillboardAlignment checks for proper response if billboard alignment is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidBillboardAlignment(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_billboard.0.billboard_settings.0.visual.0.alignment to be one of \[stacked inline\], got test_alignment`),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_InvalidBillboardDisplay checks for proper response if billboard display is not configured correctly
+func TestAccNewRelicOneDashboard_InvalidBillboardDisplay(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(rName),
+				ExpectError: regexp.MustCompile(`expected page.0.widget_billboard.0.billboard_settings.0.visual.0.display to be one of \[auto all none label value\], got test_display`),
 			},
 		},
 	})
@@ -449,6 +581,11 @@ func TestAccNewRelicOneDashboard_VariablesNRQL(t *testing.T) {
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
 				),
 			},
+			// Test: Invalid show_apply_action configuration (expects error)
+			{
+				Config:      testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(rName),
+				ExpectError: regexp.MustCompile("`show_apply_action` can only be set to true when `is_multi_selection` is true"),
+			},
 			// Import
 			{
 				ResourceName:      "newrelic_one_dashboard.bar",
@@ -488,6 +625,22 @@ func TestAccNewRelicOneDashboard_VariablesEnum(t *testing.T) {
 				ResourceName:      "newrelic_one_dashboard.bar",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicOneDashboard_VariableAccountIDsValidation tests that the validation function properly catches empty account_ids
+func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
+				ExpectError: regexp.MustCompile("`account_ids` cannot be empty for NRQL variables"),
 			},
 		},
 	})
@@ -654,6 +807,13 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         account_id = ` + accountID + `
         query      = "FROM Transaction SELECT 51 TIMESERIES"
       }
+
+      chart_styles {
+        line_interpolation = "smooth"
+        gradient {
+          enabled = true
+        }
+      }
     }
 
     widget_bar {
@@ -679,6 +839,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
       warning = 0
       critical = 2
+
+      chart_styles {
+        line_interpolation = "stepBefore"
+      }
     }
 
     widget_bullet {
@@ -717,6 +881,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       nrql_query {
         query = "FROM Transaction SELECT histogram(duration * 100, buckets: 500, width: 1)"
       }
+
+      chart_styles {
+        gradient {
+          enabled = true
+        }
+      }
     }
 
     widget_line {
@@ -737,10 +907,14 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
       }
 	  threshold {
         name     = "Duration Threshold"
-        from     = 10.8 
+        from     = 10.8
         to       = 30.7
         severity = "critical"
-      }	  	
+      }
+
+      chart_styles {
+        line_interpolation = "linear"
+      }
     }
 
     widget_markdown {
@@ -758,6 +932,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
         query      = "FROM Transaction SELECT count(*) FACET name"
       }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
+
+      chart_styles {
+        gradient {
+          enabled = false
+        }
+      }
     }
 
     widget_log_table {
@@ -810,6 +990,12 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		nrql_query {
 		  query      = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
 		}
+
+		chart_styles {
+		  gradient {
+			enabled = true
+		  }
+		}
 	}
   }
 `
@@ -835,6 +1021,7 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQL() string {
 	options {
 		excluded = true
 		ignore_time_range = true
+		show_apply_action = true
 	}
   }
 `
@@ -860,6 +1047,44 @@ func testAccCheckNewRelicOneDashboardConfig_VariableNRQLUpdated() string {
 	options {
 		excluded = false
 		ignore_time_range = false
+		show_apply_action = false
+	}
+  }
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_OnePageFullVariablesNRQLShowApplyActionInvalid(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+	name = "` + dashboardName + `"
+	permissions = "private"
+
+` + testAccCheckNewRelicOneDashboardConfig_PageSimple(dashboardName) + `
+` + testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionInvalid() + `
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_VariableNRQLShowApplyActionInvalid() string {
+	return `
+  variable {
+    default_values = ["value"]
+	is_multi_selection = false
+	item {
+		title = "item"
+		value = "ITEM"
+	}
+    name = "variableUpdated"
+	nrql_query {
+		account_ids = [3806526, 3814156]
+		query = "FROM Transaction SELECT average(duration) FACET appName"
+	}
+	replacement_strategy = "default"
+	title = "title"
+	type = "nrql"
+	options {
+		excluded = false
+		ignore_time_range = false
+		show_apply_action = true
 	}
   }
 `
@@ -1118,6 +1343,203 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
+// testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL generates a basic dashboard with Invalid Tooltip Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidTooltipNRQL(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_line {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query      = "FROM Transaction SELECT 2 TIMESERIES"
+      }
+      tooltip {
+        mode = "invalid_mode"
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_WithTooltip generates a basic dashboard with Valid Tooltip Configuration
+func testAccCheckNewRelicOneDashboardConfig_WithTooltip(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "tooltip_test" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `_page"
+
+    widget_line {
+      title = "Line widget with tooltip"
+      row = 1
+      column = 1
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT average(duration) TIMESERIES"
+      }
+
+      tooltip {
+        mode = "all"
+      }
+    }
+
+    widget_area {
+      title = "Area widget with tooltip"
+      row = 1
+      column = 7
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) TIMESERIES"
+      }
+
+      tooltip {
+	    mode = "all"
+	  }
+    }
+
+    widget_stacked_bar {
+      title = "Bar widget with tooltip"
+      row = 4
+      column = 1
+      height = 3
+      width = 12
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) FACET name"
+      }
+
+      tooltip {
+	    mode = "all"
+	  }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_WithTooltipUpdated generates a basic dashboard with Updated Tooltip Configuration
+func testAccCheckNewRelicOneDashboardConfig_WithTooltipUpdated(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "tooltip_test" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `_page"
+
+    widget_line {
+      title = "Line widget with tooltip"
+      row = 1
+      column = 1
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT average(duration) TIMESERIES"
+      }
+
+      tooltip {
+        mode = "single"
+      }
+    }
+
+    widget_area {
+      title = "Area widget with tooltip"
+      row = 1
+      column = 7
+      height = 3
+      width = 6
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) TIMESERIES"
+      }
+
+      tooltip {
+        mode = "single"
+      }
+    }
+
+    widget_stacked_bar {
+      title = "Bar widget with tooltip"
+      row = 4
+      column = 1
+      height = 3
+      width = 12
+
+      nrql_query {
+        account_id = ` + accountID + `
+        query      = "FROM Transaction SELECT count(*) FACET name"
+      }
+
+      tooltip {
+        mode = "single"
+      }
+    }
+  }
+}`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountId(dashboardName string, accountID string) string {
+
+	return `
+	resource "newrelic_one_dashboard" "bar" {
+	  name = "` + dashboardName + `"
+	  permissions = "private"
+		page {
+		name = "` + dashboardName + `"
+		widget_line {
+		  title = "foo"
+		  row = 1
+		  column = 1
+		  nrql_query {
+			account_id = ` + accountID + `
+			query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
+		  }
+		}
+	  }
+	}
+`
+}
+
+func testAccCheckNewRelicOneDashboardConfig_PageNRQLAccountIdsUpdated(dashboardName string, accountID string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_line {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+		account_id = jsonencode([` + accountID + `])
+        query      = "FROM Transaction SELECT 1 TIMESERIES LIMIT 10"
+      }
+    }
+  }
+}`
+}
+
 // testAccCheckNewRelicOneDashboardConfig_PageInvalidNRQL generates billboard with critical and warning set
 func testAccCheckNewRelicOneDashboardConfig_BillboardWithThresholds(dashboardName string, widgetName string, critical float64, warning float64) string {
 	return `
@@ -1156,6 +1578,43 @@ resource "newrelic_one_dashboard" "bar" {
       column = 1
       nrql_query {
         query      = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings generates billboard with billboard settings
+func testAccCheckNewRelicOneDashboardConfig_BillboardWithSettings(dashboardName string, widgetName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "` + widgetName + `"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "SELECT count(*) FROM ProcessSample SINCE 30 MINUTES AGO TIMESERIES"
+      }
+      billboard_settings {
+        link {
+          new_tab = true
+          title = "test"
+          url = "https://example.com"
+        }
+        visual {
+          alignment = "inline"
+          display = "auto"
+        }
+        grid_options {
+          columns = 3
+          label = 5
+          value = 8
+        }
       }
     }
   }
@@ -1392,4 +1851,95 @@ EOT
     }
 	  }
 	}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay generates a basic dashboard with Invalid Billboard Display Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardDisplay(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          display = "test_display"
+        }
+      }
+    }
+  }
+}`
+}
+
+// testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment generates a basic dashboard with Invalid Billboard Alignment Configuration
+func testAccCheckNewRelicOneDashboardConfig_InvalidBillboardAlignment(dashboardName string) string {
+	return `
+resource "newrelic_one_dashboard" "bar" {
+  name = "` + dashboardName + `"
+  permissions = "private"
+
+  page {
+    name = "` + dashboardName + `"
+
+    widget_billboard {
+      title = "foo"
+      row = 1
+      column = 1
+      nrql_query {
+        query = "FROM Transaction SELECT count(*)"
+      }
+      billboard_settings {
+        visual {
+          alignment = "test_alignment"
+        }
+      }
+    }
+  }
+}`
+}
+
+// Test configuration with variable account_ids explicitly set
+func testAccNewRelicOneDashboardConfigVariableAccountIDs(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_one_dashboard" "bar" {
+  name = "%[1]s"
+
+  page {
+    name = "Test Page"
+
+    widget_line {
+      title  = "Test Widget"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      nrql_query {
+        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+      }
+    }
+  }
+
+  variable {
+    name               = "test_variable"
+    title              = "Test Variable"
+    type               = "nrql"
+    replacement_strategy = "default"
+
+    nrql_query {
+      account_ids = []
+      query       = "FROM Transaction SELECT uniques(appName)"
+    }
+  }
+}
+`, dashboardName)
 }

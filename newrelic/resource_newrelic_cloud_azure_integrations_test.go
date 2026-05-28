@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || CLOUD
 
 package newrelic
 
@@ -144,7 +143,7 @@ func testAccCheckNewRelicCloudAzureIntegrationsDestroy(s *terraform.State) error
 }
 
 func testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 provider "newrelic" {
   account_id = "` + azureIntegrationsTestConfig["account_id"] + `"
   alias      = "cloud-integration-provider"
@@ -159,12 +158,11 @@ resource "newrelic_cloud_azure_link_account" "foo" {
   name            = "` + azureIntegrationsTestConfig["name"] + `"
   account_id      = "` + azureIntegrationsTestConfig["account_id"] + `"
 }
-`)
+`
 }
 
 func testAccNewRelicAzureIntegrationsConfig(azureIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
-` + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
+	return "\n" + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
 
 resource "newrelic_cloud_azure_integrations" "bar" {
   provider          = newrelic.cloud-integration-provider
@@ -318,16 +316,20 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  auto_discovery {
+    metrics_polling_interval = 28800
+  }
+
   vpn_gateway {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-}`)
+
+}`
 }
 
 func testAccNewRelicAzureIntegrationsConfigUpdated(azureIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
-` + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
+	return "\n" + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
 
 resource "newrelic_cloud_azure_integrations" "bar" {
   provider          = newrelic.cloud-integration-provider
@@ -493,9 +495,14 @@ resource "newrelic_cloud_azure_integrations" "bar" {
     resource_groups          = ["beyond"]
   }
 
+  auto_discovery {
+    metrics_polling_interval = 28800
+   }
+
   vpn_gateway {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
   }
-}`)
+
+}`
 }

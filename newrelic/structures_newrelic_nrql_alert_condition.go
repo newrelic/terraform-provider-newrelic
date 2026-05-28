@@ -1,12 +1,15 @@
 package newrelic
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 )
 
 var (
@@ -72,6 +75,26 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("signal_seasonality"); ok {
+			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
+		} else {
+			// Null is equivalent to the default value of `NEW_RELIC_CALCULATION` in the API
+			seasonality := alerts.NrqlSignalSeasonalities.NewRelicCalculation
+			input.SignalSeasonality = &seasonality
+		}
+	}
+
+	if conditionType == "outlier" {
+		outlierConfig, err := expandOutlierConfiguration(d)
+		if err != nil {
+			return nil, err
+		}
+
+		input.OutlierConfiguration = outlierConfig
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -79,6 +102,11 @@ func expandNrqlAlertConditionCreateInput(d *schema.ResourceData) (*alerts.NrqlCo
 	if titleTemplate, ok := d.GetOk("title_template"); ok {
 		template := titleTemplate.(string)
 		input.TitleTemplate = &template
+	}
+
+	if targetEntity, ok := d.GetOk("target_entity"); ok {
+		target := common.EntityGUID(targetEntity.(string))
+		input.TargetEntity = &target
 	}
 
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
@@ -132,6 +160,27 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		}
 	}
 
+	if conditionType == "baseline" {
+		if attr, ok := d.GetOk("signal_seasonality"); ok {
+			seasonality := alerts.NrqlSignalSeasonality(strings.ToUpper(attr.(string)))
+			input.SignalSeasonality = &seasonality
+		} else {
+			// Null is equivalent to the default value of `NEW_RELIC_CALCULATION` in the API
+			// so this effectively allows the user to null out the signal seasonality on update
+			seasonality := alerts.NrqlSignalSeasonalities.NewRelicCalculation
+			input.SignalSeasonality = &seasonality
+		}
+	}
+
+	if conditionType == "outlier" {
+		outlierConfig, err := expandOutlierConfiguration(d)
+		if err != nil {
+			return nil, err
+		}
+
+		input.OutlierConfiguration = outlierConfig
+	}
+
 	if runbookURL, ok := d.GetOk("runbook_url"); ok {
 		input.RunbookURL = runbookURL.(string)
 	}
@@ -139,6 +188,11 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 	if titleTemplate, ok := d.GetOk("title_template"); ok {
 		template := titleTemplate.(string)
 		input.TitleTemplate = &template
+	}
+
+	if targetEntity, ok := d.GetOk("target_entity"); ok {
+		target := common.EntityGUID(targetEntity.(string))
+		input.TargetEntity = &target
 	}
 
 	if violationTimeLimitSec, ok := d.GetOk("violation_time_limit_seconds"); ok {
@@ -170,6 +224,39 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 	}
 
 	return &input, nil
+}
+
+// NerdGraph
+func expandOutlierConfiguration(d *schema.ResourceData) (*alerts.NrqlOutlierConfigurationInput, error) {
+	configMapRaw, ok := d.GetOk("outlier_configuration.0.dbscan.0")
+	configMap, isMap := configMapRaw.(map[string]interface{})
+	if !ok || !isMap {
+		return nil, fmt.Errorf("`outlier_configuration` is required and must contain the algorithm configuration")
+	}
+
+	dbscan := alerts.NrqlOutlierDbScanConfigurationInput{}
+
+	epsilon, epsilonOk := configMap["epsilon"].(float64)
+	if !epsilonOk {
+		return nil, fmt.Errorf("`epsilon` is required and must be a float64")
+	}
+	dbscan.Epsilon = epsilon
+
+	minPoints, minPointsOk := configMap["minimum_points"].(int)
+	if !minPointsOk {
+		return nil, fmt.Errorf("`minimum_points` is required and must be an int")
+	}
+	dbscan.MinimumPoints = minPoints
+
+	if evalGroupFacet, evalGroupFacetOk := configMap["evaluation_group_facet"].(string); evalGroupFacetOk && evalGroupFacet != "" {
+		dbscan.EvaluationGroupFacet = &evalGroupFacet
+	}
+
+	outlierConfig := alerts.NrqlOutlierConfigurationInput{
+		DBSCAN: dbscan,
+	}
+
+	return &outlierConfig, nil
 }
 
 // NerdGraph
@@ -286,6 +373,11 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		ThresholdOccurrences: *thresholdOccurrences,
 	}
 
+	if term["disable_health_status_reporting"] != nil {
+		disableHealthStatusReporting := term["disable_health_status_reporting"].(bool)
+		expandedTerm.DisableHealthStatusReporting = &disableHealthStatusReporting
+	}
+
 	if conditionType == "baseline" {
 		return &expandedTerm, nil
 	}
@@ -379,7 +471,7 @@ func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.Nrq
 	}
 
 	if len(errs) > 0 {
-		err = fmt.Errorf(strings.Join(errs, ", "))
+		err = fmt.Errorf("%s", strings.Join(errs, ", "))
 		return expandedTerms, err
 	}
 
@@ -564,11 +656,22 @@ func flattenNrqlAlertCondition(accountID int, condition *alerts.NrqlAlertConditi
 	_ = d.Set("name", condition.Name)
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("title_template", condition.TitleTemplate)
+	_ = d.Set("target_entity", condition.TargetEntity)
 	_ = d.Set("enabled", condition.Enabled)
 	_ = d.Set("entity_guid", condition.EntityGUID)
 
 	if conditionType == "baseline" {
 		_ = d.Set("baseline_direction", string(*condition.BaselineDirection))
+
+		if condition.SignalSeasonality != nil {
+			_ = d.Set("signal_seasonality", string(*condition.SignalSeasonality))
+		}
+	}
+
+	if conditionType == "outlier" {
+		if err := flattenOutlierConfiguration(d, condition.OutlierConfiguration); err != nil {
+			return err
+		}
 	}
 
 	configuredNrql := d.Get("nrql.0").(map[string]interface{})
@@ -708,6 +811,33 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 	return nil
 }
 
+func flattenOutlierConfiguration(d *schema.ResourceData, outlierConfiguration *alerts.NrqlOutlierConfigurationOutput) error {
+	if outlierConfiguration == nil {
+		return nil
+	}
+
+	dbscan := map[string]interface{}{
+		"minimum_points": outlierConfiguration.MinimumPoints,
+		"epsilon":        outlierConfiguration.Epsilon,
+	}
+
+	if outlierConfiguration.EvaluationGroupFacet != nil {
+		dbscan["evaluation_group_facet"] = *outlierConfiguration.EvaluationGroupFacet
+	}
+
+	outlierConfig := []interface{}{
+		map[string]interface{}{
+			"dbscan": []interface{}{dbscan},
+		},
+	}
+
+	if err := d.Set("outlier_configuration", outlierConfig); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `outlier_configuration`: %v", err)
+	}
+
+	return nil
+}
+
 // NerdGraph
 func flattenNrql(nrql alerts.NrqlConditionQuery, configNrql map[string]interface{}) []interface{} {
 	out := map[string]interface{}{
@@ -781,6 +911,10 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			dst["threshold_occurrences"] = strings.ToLower(string(term.ThresholdOccurrences))
 		}
 
+		if term.DisableHealthStatusReporting != nil {
+			dst["disable_health_status_reporting"] = term.DisableHealthStatusReporting
+		}
+
 		out = append(out, dst)
 	}
 
@@ -808,6 +942,10 @@ func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string
 			dst["prediction"] = []interface{}{predictionBlockContents}
 		}
 
+		if term.DisableHealthStatusReporting != nil {
+			dst["disable_health_status_reporting"] = term.DisableHealthStatusReporting
+		}
+
 		out = append(out, dst)
 	}
 
@@ -828,19 +966,64 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 			"time_function": t["time_function"],
 
 			// NerdGraph fields
-			"threshold_duration":    t["threshold_duration"],
-			"threshold_occurrences": t["threshold_occurrences"],
+			"threshold_duration":              t["threshold_duration"],
+			"threshold_occurrences":           t["threshold_occurrences"],
+			"disable_health_status_reporting": t["disable_health_status_reporting"],
 		}
 
-		if t["prediction"] != nil {
-			trm["prediction"] = map[string]interface{}{
-				"predict_by":                  t["prediction"].(map[string]interface{})["predict_by"],
-				"prefer_prediction_violation": t["prediction"].(map[string]interface{})["prefer_prediction_violation"],
+		predictionSet := t["prediction"].(*schema.Set)
+		if predictionSet.Len() > 0 {
+			predictionMap := predictionSet.List()[0].(map[string]interface{})
+			predictionMapOut := map[string]interface{}{}
+			if predictBy, ok := predictionMap["predict_by"].(int); ok {
+				predictionMapOut["predict_by"] = predictBy
 			}
+			if preferPredictionViolation, ok := predictionMap["prefer_prediction_violation"].(bool); ok {
+				predictionMapOut["prefer_prediction_violation"] = preferPredictionViolation
+			}
+			trm["prediction"] = predictionMapOut
 		}
 
 		setTerms = append(setTerms, trm)
 	}
 
 	return setTerms
+}
+
+func validateNrqlConditionAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	var errorsList []error
+
+	_, conditionType := d.GetChange("type")
+	if conditionType != nil {
+		isNotBaselineCondition := !strings.Contains(conditionType.(string), "baseline")
+		if isNotBaselineCondition {
+			err := validateSignalSeasonality(d)
+			if err != nil {
+				errorsList = append(errorsList, err)
+			}
+		}
+	}
+
+	if len(errorsList) == 0 {
+		return nil
+	}
+
+	errorsString := "the following validation errors have been identified with the configuration of the nrql alert condition: \n"
+
+	for index, val := range errorsList {
+		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
+	}
+
+	return errors.New(errorsString)
+}
+
+func validateSignalSeasonality(d *schema.ResourceDiff) error {
+	rawConfiguration := d.GetRawConfig()
+
+	signalSeasonalityIsNotNil := !rawConfiguration.GetAttr("signal_seasonality").IsNull()
+
+	if signalSeasonalityIsNotNil {
+		return fmt.Errorf(`'signal_seasonality' is only valid on baseline conditions. Please remove this field or change the condition type`)
+	}
+	return nil
 }

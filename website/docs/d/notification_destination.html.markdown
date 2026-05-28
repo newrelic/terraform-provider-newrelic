@@ -36,7 +36,8 @@ resource "newrelic_notification_channel" "foo-channel" {
 ## Name Example Usage
 
 ```hcl
-# Data source
+# Data source (uses contains match)
+# Searching for "webhook-destination" would match "webhook-destination", "webhook-destination-1", etc.
 data "newrelic_notification_destination" "foo" {
   name = "webhook-destination"
 }
@@ -56,28 +57,93 @@ resource "newrelic_notification_channel" "foo-channel" {
 }
 ```
 
+## Exact Name Example Usage
+
+```hcl
+# Data source (uses exact match)
+# Searching for "webhook-destination" would only match "webhook-destination", not "my-webhook-destination"
+data "newrelic_notification_destination" "foo" {
+  exact_name = "webhook-destination"
+}
+
+# Resource
+resource "newrelic_notification_channel" "foo-channel" {
+  name           = "webhook-example"
+  type           = "WEBHOOK"
+  destination_id = data.newrelic_notification_destination.foo.id
+  product        = "IINT"
+
+  property {
+    key   = "payload"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+}
+```
+
+Use this data source to create cross account destination.
+
+## Cross Account Destination Creation Example 
+
+```hcl
+
+# Resource
+resource "newrelic_notification_destination" "foo-destination" {
+  name           = "webhook-example-cross-account-destination"
+  type           = "WEBHOOK"
+
+  property {
+    key   = "source"
+    value = "{\n\t\"name\": \"foo\"\n}"
+    label = "Payload Template"
+  }
+  scope {
+    type = "ORGANIZATION" (type of scope)
+    id   = "00000000-0000-0000-0000-000000000000" (Organization UUID)
+  }
+}
+
+
+# Data Source 
+data "newrelic_notification_destination" "foo-destination" {
+  id = "destination_id"
+
+  scope {
+    type = "ORGANIZATION"
+    id   = "organization_id"
+  }
+}
+```
+
+
 ## Argument Reference
 
 The following arguments are supported:
 
-Either of the following two attributes are required, and not both:
+Exactly one of the following attributes is required:
 * `id` - (Optional) The id of the notification destination in New Relic.
-* `name` - (Optional) The name of the notification destination.
+* `name` - (Optional) The name of the notification destination. Uses a **contains** match, so searching for "foo" would match "foobar", "myfoo", etc.
+* `exact_name` - (Optional) The exact name of the notification destination. Uses an **exact** match, so searching for "foo" would only match "foo", not "foobar".
 
 Optional:
-* `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
 
+* `account_id` - (Optional) The New Relic account ID to operate on.  This allows you to override the `account_id` attribute set on the provider. Defaults to the environment variable `NEW_RELIC_ACCOUNT_ID`.
+* `scope` - (Optional) The scope of destination which has two parameters scope type and ID. This is required when trying to get  either account scoped or cross account destination. The scope type can be either `ORGANIZATION` or `ACCOUNT`. If the scope type is `ORGANIZATION`, then the scope ID should be the Organization UUID. If the scope type is `ACCOUNT`, then the scope ID should be the New Relic account ID. 
+
+Note:
+    By Default account scope is considered for the destination until unless it is mentioned explicitly in the arguments. If you want to get a cross account destination, then you need to provide the scope of destination in the arguments.    
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 * `name` - The name of the notification destination.
-* `type` - The notification destination type, either: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `SLACK`, `SLACK_COLLABORATION` and `MICROSOFT_TEAMS`.
+* `type` - The notification destination type, either: `EMAIL`, `SERVICE_NOW`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `PAGERDUTY_ACCOUNT_INTEGRATION` or `PAGERDUTY_SERVICE_INTEGRATION`, `SLACK`, `SLACK_COLLABORATION`, `MICROSOFT_TEAMS` and `WORKFLOW_AUTOMATION`.
 * `property` - A nested block that describes a notification destination property.
 * `active` - An indication whether the notification destination is active or not.
 * `status` - The status of the notification destination.
 * `guid` - The unique entity identifier of the destination in New Relic.
-* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret. 
+* `secure_url` - The URL in secure format, showing only the `prefix`, as the `secure_suffix` is a secret.
+* `scope` - A nested block of scope of destination which has two parameters scope type and ID.
 
 
 ```

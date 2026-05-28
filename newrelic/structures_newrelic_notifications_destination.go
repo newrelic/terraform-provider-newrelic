@@ -4,11 +4,19 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notifications"
 )
+
+func listValidNotificationsScopeTypes() []string {
+	return []string{
+		string(notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT),
+		string(notifications.AiNotificationsEntityScopeTypeInputTypes.ORGANIZATION),
+	}
+}
 
 // migrateStateNewRelicNotificationDestinationV0toV1 currently facilitates migrating:
 // remove is_user_authenticated argument
@@ -192,6 +200,18 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return nil
 	}
 
+	isOrgScoped := destination.Scope.Type == notifications.AiNotificationsEntityScopeTypeTypes.ORGANIZATION
+
+	scopeData := []map[string]interface{}{
+		{
+			"type": string(destination.Scope.Type),
+			"id":   destination.Scope.ID,
+		},
+	}
+	if err := d.Set("scope", scopeData); err != nil {
+		return err
+	}
+
 	var err error
 
 	if err = d.Set("name", destination.Name); err != nil {
@@ -234,8 +254,11 @@ func flattenNotificationDestination(destination *notifications.AiNotificationsDe
 		return err
 	}
 
-	if err := d.Set("account_id", destination.AccountID); err != nil {
-		return err
+	// Only set account_id for non-org-scoped destinations (preserves backward compatibility)
+	if !isOrgScoped {
+		if err := d.Set("account_id", destination.AccountID); err != nil {
+			return err
+		}
 	}
 
 	if err := d.Set("status", destination.Status); err != nil {
@@ -357,7 +380,7 @@ func flattenNotificationDestinationSecureURLForDataSource(url *notifications.AiN
 	return secureURLResult
 }
 
-func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, d *schema.ResourceData) error {
+func flattenNotificationDestinationDataSource(destination *notifications.AiNotificationsDestination, scope notifications.AiNotificationsEntityScopeInput, d *schema.ResourceData) error {
 	if destination == nil {
 		return nil
 	}
@@ -398,5 +421,37 @@ func flattenNotificationDestinationDataSource(destination *notifications.AiNotif
 		return err
 	}
 
+	// Set scope from the input scope used for the query
+	scopeData := []map[string]interface{}{
+		{
+			"type": string(scope.Type),
+			"id":   scope.ID,
+		},
+	}
+	if err := d.Set("scope", scopeData); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func buildEntityScopeInput(d *schema.ResourceData, accountID int) *notifications.AiNotificationsEntityScopeInput {
+	scopeList, ok := d.GetOk("scope")
+	if ok {
+		items, ok := scopeList.([]interface{})
+		if ok && len(items) > 0 {
+			scopeMap, ok := items[0].(map[string]interface{})
+			if ok {
+				return &notifications.AiNotificationsEntityScopeInput{
+					Type: notifications.AiNotificationsEntityScopeTypeInput(scopeMap["type"].(string)),
+					ID:   scopeMap["id"].(string),
+				}
+			}
+		}
+	}
+
+	return &notifications.AiNotificationsEntityScopeInput{
+		Type: notifications.AiNotificationsEntityScopeTypeInputTypes.ACCOUNT,
+		ID:   strconv.Itoa(accountID),
+	}
 }

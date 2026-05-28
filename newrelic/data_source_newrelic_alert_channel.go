@@ -116,7 +116,7 @@ func dataSourceNewRelicAlertChannel() *schema.Resource {
 						"region": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validation.StringInSlice([]string{"US", "EU"}, false),
+							ValidateFunc: validation.StringInSlice([]string{"US", "EU", "JP"}, false),
 						},
 						"route_key": {
 							Type:      schema.TypeString,

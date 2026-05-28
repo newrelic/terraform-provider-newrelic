@@ -1,9 +1,9 @@
-//go:build integration
-// +build integration
+//go:build integration || ALERTS
 
 package newrelic
 
 import (
+	"encoding/base64"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -612,6 +612,28 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionPrediction(t *testing.T) {
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_StaticConditionDisableHealthStatusReporting(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithDisableHealthStatusReporting(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -658,6 +680,116 @@ func TestAccNewRelicNrqlAlertCondition_TitleTemplate(t *testing.T) {
 			// Test: Title template is nullable
 			{
 				Config: testAccNewRelicNrqlAlertConditionNullTitleTemplate(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_SignalSeasonality(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	signalSeasonality := "daily"
+	signalSeasonalityNRCalc := "new_relic_calculation"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create baseline condition with signal seasonality
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
+					rName,
+					signalSeasonality,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: New Relic Calculation is valid value for signal seasonality
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
+					rName,
+					signalSeasonalityNRCalc,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_OutlierConfiguration(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+	epsilon := 0.5
+	minimumPoints := 4
+	evaluationGroupFacet := "hostname"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create outlier condition with all parameters
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithOutlierConfiguration(
+					rName,
+					epsilon,
+					minimumPoints,
+					&evaluationGroupFacet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Create outlier condition without evaluation_group_facet
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithOutlierConfiguration(
+					rName,
+					epsilon,
+					minimumPoints,
+					nil,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNewRelicNrqlAlertCondition_TargetEntity(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	rawGuid := fmt.Sprintf("%d|APM|APPLICATION|12345", testAccountID)
+	targetEntity := base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(rawGuid))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create condition with target entity
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithTargetEntity(
+					rName,
+					targetEntity,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+			// Test: Target entity is nullable
+			{
+				Config: testAccNewRelicNrqlAlertConditionWithNullTargetEntity(
 					rName,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -1422,4 +1554,189 @@ resource "newrelic_nrql_alert_condition" "foo" {
 	}
 }
 `, name, predictBy)
+}
+
+func testAccNewRelicNrqlAlertConditionWithSignalSeasonality(
+	name string,
+	signalSeasonality string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "baseline"
+	enabled                        = false
+	signal_seasonality             = "%[2]s"
+	violation_time_limit_seconds   = 3600
+	baseline_direction						 = "lower_only"
+	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 1.0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+
+	`, name, signalSeasonality)
+}
+
+func testAccNewRelicNrqlAlertConditionWithOutlierConfiguration(
+	name string,
+	epsilon float64,
+	minimumPoints int,
+	evaluationGroupFacet *string,
+) string {
+	var evalGroupFacetStr string
+	if evaluationGroupFacet != nil && *evaluationGroupFacet != "" {
+		evalGroupFacetStr = fmt.Sprintf("evaluation_group_facet = \"%s\"", *evaluationGroupFacet)
+	}
+
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id   = newrelic_alert_policy.foo.id
+
+	name                           = "tf-test-%[1]s"
+	type                           = "outlier"
+	enabled                        = false
+	violation_time_limit_seconds   = 3600
+	aggregation_delay              = 120
+	aggregation_method             = "event_flow"
+
+	nrql {
+		query             = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+
+	outlier_configuration {
+		dbscan {
+			epsilon = %[2]f
+			minimum_points = %[3]d
+			%[4]s
+		}
+	}
+}
+
+	`, name, epsilon, minimumPoints, evalGroupFacetStr)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticWithDisableHealthStatusReporting(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
+
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+		disable_health_status_reporting = true
+	}
+}
+`, name)
+}
+
+func testAccNewRelicNrqlAlertConditionWithTargetEntity(
+	name string,
+	targetEntity string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
+	target_entity                = "%[2]s"
+
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+`, name, targetEntity)
+}
+
+func testAccNewRelicNrqlAlertConditionWithNullTargetEntity(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
+	target_entity                = null
+
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+	}
+}
+`, name)
 }

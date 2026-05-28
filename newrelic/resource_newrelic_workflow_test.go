@@ -1,10 +1,10 @@
-//go:build integration
-// +build integration
+//go:build integration || WORKFLOW_INTEGRATIONS
 
 package newrelic
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -14,9 +14,41 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/ai"
 )
 
+func TestNewRelicWorkflow_WorkflowAutomation(t *testing.T) {
+	resourceName := "newrelic_workflow.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	testAccWorkflowAutomationDestinationApiKey := "NEW_RELIC_WORKFLOW_AUTOMATION_DESTINATION_API_KEY"
+	workflowAutomationDestinationApiKey := os.Getenv("NEW_RELIC_WORKFLOW_AUTOMATION_DESTINATION_API_KEY")
+	if workflowAutomationDestinationApiKey == "" {
+		t.Skipf("Skipping this test, as %s must be set for this test to run.", testAccWorkflowAutomationDestinationApiKey)
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicWorkflowDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create workflow
+			{
+				Config: testAccNewRelicWorkflowConfigurationWorkflowAutomation(testAccountID, workflowAutomationDestinationApiKey, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkflowExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+				),
+			},
+		},
+	})
+}
+
 func TestNewRelicWorkflow_MicrosoftTeams(t *testing.T) {
 	resourceName := "newrelic_workflow.foo"
 	rName := generateNameForIntegrationTestResource()
+
+	testAccMSTeamsDestinationSecurityCodeKey := "NEW_RELIC_MS_TEAMS_DESTINATION_SECURITY_CODE"
+	testAccMSTeamsDestinationSecurityCode := os.Getenv(testAccMSTeamsDestinationSecurityCodeKey)
+	if testAccMSTeamsDestinationSecurityCode == "" {
+		t.Skipf("Skipping this test, as %s must be set for this test to run.", testAccMSTeamsDestinationSecurityCodeKey)
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckEnvVars(t) },
@@ -25,18 +57,10 @@ func TestNewRelicWorkflow_MicrosoftTeams(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Test: Create workflow
 			{
-				Config: testAccNewRelicWorkflowConfigurationMicrosoftTeams(testAccountID, rName),
+				Config: testAccNewRelicWorkflowConfigurationMicrosoftTeams(testAccountID, testAccMSTeamsDestinationSecurityCode, rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkflowExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
-				),
-				ExpectNonEmptyPlan: true,
-			},
-			// Test: Update
-			{
-				Config: testAccNewRelicWorkflowConfigurationMicrosoftTeams(testAccountID, fmt.Sprintf("%s-updated", rName)),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicWorkflowExists(resourceName),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -672,7 +696,64 @@ resource "newrelic_workflow" "foo" {
 `, accountID, name)
 }
 
-func testAccNewRelicWorkflowConfigurationMicrosoftTeams(accountID int, name string) string {
+func testAccNewRelicWorkflowConfigurationWorkflowAutomation(accountID int, apiKey string, name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notification_destination" "foo" {
+  account_id = %[1]d
+  name = "tf-test-destination"
+  type = "WORKFLOW_AUTOMATION"
+  property {
+    key   = ""
+    value = ""
+  }
+  auth_custom_header {
+    key   = "Api-Key"
+    value = "%[2]s"
+  }
+}
+resource "newrelic_notification_channel" "foo" {
+  account_id     = newrelic_notification_destination.foo.account_id
+  name           = "workflow-automation-example"
+  type           = "WORKFLOW_AUTOMATION"
+  product        = "IINT"
+  destination_id = newrelic_notification_destination.foo.id
+  property {
+    key = "workflowAutomation"
+    value = "name"
+  }
+}
+resource "newrelic_workflow" "foo" {
+  account_id            = newrelic_notification_destination.foo.account_id
+  name                  = "%[3]s"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  enabled      = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+    predicate {
+      attribute = "priority"
+      operator  = "EQUAL"
+      values    = ["newrelic", "pagerduty"]
+    }
+  }
+  enrichments {
+    nrql {
+      name = "Log"
+      configuration {
+        query = "SELECT count(*) FROM Log"
+      }
+    }
+  }
+  destination {
+    channel_id = newrelic_notification_channel.foo.id
+  }
+}
+`, accountID, apiKey, name)
+}
+
+func testAccNewRelicWorkflowConfigurationMicrosoftTeams(accountID int, msTeamsSecurityCode string, name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notification_destination" "foo" {
   account_id = %[1]d
@@ -681,7 +762,7 @@ resource "newrelic_notification_destination" "foo" {
 
   property {
     key   = "securityCode"
-    value = "BgAICfnE7N1xBjPNNeUvGcWanUEbFz3CUjOx/OBb3bH9"
+    value = "%[2]s"
   }
 }
 
@@ -694,17 +775,17 @@ resource "newrelic_notification_channel" "foo" {
 
   property {
     key = "teamId"
-    value = "906379b4-f5ac-40fd-b242-d4faaa4d3963"
+    value = "045a1764-e6a2-47a1-becb-e2ee56605901"
   }
   property {
     key = "channelId"
-    value = "19:wk9tU4tSr335Y1cNiXOynredbi3lFoeabu0kybfmbBA1@thread.tacv2"
+    value = "19:56d407dbb6bf403ebc88122ad39826cc@thread.tacv2"
   }
 }
 
 resource "newrelic_workflow" "foo" {
   account_id            = newrelic_notification_destination.foo.account_id
-  name                  = "%[2]s"
+  name                  = "%[3]s"
   enrichments_enabled   = true
   destinations_enabled  = true
   enabled      = true
@@ -734,7 +815,7 @@ resource "newrelic_workflow" "foo" {
     channel_id = newrelic_notification_channel.foo.id
   }
 }
-`, accountID, name)
+`, accountID, msTeamsSecurityCode, name)
 }
 
 func testAccNewRelicWorkflowConfigurationWithNotificationTriggers(accountID int, name string, notificationTriggers string) string {

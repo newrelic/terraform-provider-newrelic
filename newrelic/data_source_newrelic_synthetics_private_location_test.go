@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || SYNTHETICS
 
 package newrelic
 
@@ -32,6 +31,7 @@ func TestAccNewRelicSyntheticsPrivateLocationDataSource_Basic(t *testing.T) {
 				testAccountID,
 				"created via TF integration tests",
 				privateLocationName,
+				false,
 				false,
 			)
 

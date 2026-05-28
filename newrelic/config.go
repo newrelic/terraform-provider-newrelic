@@ -1,3 +1,4 @@
+// Package newrelic comprises the implementation of all resources in the New Relic Terraform Provider
 package newrelic
 
 import (

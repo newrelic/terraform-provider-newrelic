@@ -8,22 +8,21 @@ description: |-
 
 # Data Source: newrelic\_account
 
-Use this data source to get information about a specific account in New Relic.
-Accounts can be located by ID or name.  At most one of the two attributes can
-be provided. If neither are provided, the provider's `account_id` will be used.
+This data source allows you to retrieve information about a specific account in New Relic.
+
+## Overview
+
+You can locate accounts using either their `account_id` or `name`. However, only one of these attributes can be specified at a time. If neither attribute is provided, the provider's default `account_id` will be used.
 
 ## Example Usage
 
 ```hcl
-data "newrelic_account" "acc" {
-  scope = "global"
+data "newrelic_account" "example" {
+  name = "Test Account"
 }
 ```
 
 ## Argument Reference
-
 The following arguments are supported:
-
-* `account_id` - (Optional) The account ID in New Relic.
-* `name` - (Optional) The account name in New Relic.
-* `scope` - (Optional) The scope of the account in New Relic.  Valid values are "global" and "in_region".  Defaults to "in_region".
+- `account_id` - (Optional) The unique identifier of the account in New Relic. This must be an integer.
+- `name` - (Optional) The name of the account in New Relic. This must be a string.

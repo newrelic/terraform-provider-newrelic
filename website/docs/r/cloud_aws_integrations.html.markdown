@@ -149,6 +149,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 | `route53`               | Route53 Integration           |
 | `s3`                    | S3 Integration                |
 | `ses`                   | SES Integration               |
+| `security_hub`          | Security Hub Integration      |
 | `sns`                   | SNS Integration               |
 | `sqs`                   | SQS Integration               |
 | `trusted_advisor`       | Trusted Advisor Integration   |
@@ -190,7 +191,7 @@ In order to find the right set of arguments which go with each integration, and 
         | `cloudfront`           | `dynamodb`           | `ec2`                  |
         | `ecs`                  | `efs`                | `elasticbeanstalk`     |
         | `elasticsearch`        | `elb`                | `emr`                  |
-        | `iam`                  | `iot`                | 
+        | `iam`                  | `iot`                | `security_hub`         |
 
 
 -> **NOTE** For more information on the ranges of metric polling intervals of each of these integrations, head over to [this page](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/get-started/introduction-aws-integrations/). You may also find the range of metric polling intervals of an integration under the [Integration Blocks](#integration-blocks) section.
@@ -214,7 +215,7 @@ In order to find the right set of arguments which go with each integration, and 
         | `elasticsearch`        | `elb`                | `emr`                  |
         | `lambda`               | `iot`                | `kinesis`              |
         | `rds`                  | `ses`                | `redshift`             |
-        | `sns`                  | `sqs`                |
+        | `sns`                  | `sqs`                | `security_hub`         |   
 
 
 * `fetch_nat_gateway` - (Optional) Specify if NAT gateway should be monitored. May affect total data collection time and contribute to the Cloud provider API rate limit.
@@ -606,6 +607,17 @@ As specified above in the [Arguments to be Specified with Integration Blocks](#a
         }
 ``` 
   </details>
+    <details>
+    <summary>security hub</summary>
+*  Supported Arguments: `aws_regions` `metrics_polling_interval`
+*  Valid `metrics_polling_interval` values: 21600, 43200, 86400 (seconds)
+```hcl  
+        security_hub {
+          aws_regions              = ["us-east-1"]
+          metrics_polling_interval = 86400
+        }
+``` 
+  </details>
 </details>
 
 
@@ -888,6 +900,10 @@ resource "newrelic_cloud_aws_integrations" "bar" {
     aws_regions              = ["us-east-1"]
     fetch_extended_inventory = true
     metrics_polling_interval = 300
+  }
+  security_hub {
+    aws_regions              = ["us-east-1"]
+    metrics_polling_interval = 86400
   }
 }
 ```

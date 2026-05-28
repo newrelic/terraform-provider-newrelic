@@ -122,9 +122,10 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 			return resource.NonRetryableError(reqErr)
 		}
 
-		if entityResults.Count != 1 {
-			return resource.RetryableError(fmt.Errorf("failed to read secure credential"))
-		}
+		// commenting this checks as this check disables us to detect the changes made via UI
+		//if entityResults.Count != 1 {
+		//	return resource.RetryableError(fmt.Errorf("failed to read secure credential"))
+		//}
 
 		return nil
 	})

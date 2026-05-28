@@ -584,6 +584,7 @@ func listValidWorkflowsDestinationTypes() []string {
 		string(workflows.AiWorkflowsDestinationTypeTypes.SLACK),
 		string(workflows.AiWorkflowsDestinationTypeTypes.JIRA),
 		string(workflows.AiWorkflowsDestinationTypeTypes.MICROSOFT_TEAMS),
+		string(workflows.AiWorkflowsDestinationTypeTypes.WORKFLOW_AUTOMATION),
 	}
 }
 

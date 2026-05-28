@@ -3,36 +3,43 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/accounts"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
 
 func dataSourceNewRelicAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicAccountRead,
 		Schema: map[string]*schema.Schema{
+			NewRelicAccountManagementSchemaName: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "The name of the account in New Relic.",
+				ConflictsWith: []string{"account_id"},
+			},
+			NewRelicAccountManagementSchemaRegion: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The region code of the account (e.g., us01, eu01).",
+			},
+			"account_id": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Description:   "The ID of the account in New Relic.",
+				ConflictsWith: []string{NewRelicAccountManagementSchemaName},
+			},
+			// deprecated and no longer used by the data source; just adding this here for feature parity
 			"scope": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      string(accounts.RegionScopeTypes.IN_REGION),
 				Description:  `The scope of the account in New Relic.  Valid values are "global" and "in_region".  Defaults to "in_region".`,
 				ValidateFunc: validation.StringInSlice([]string{"global", "in_region"}, true),
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the account in New Relic.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The ID of the account in New Relic.",
 			},
 		},
 	}
@@ -41,75 +48,99 @@ func dataSourceNewRelicAccount() *schema.Resource {
 func dataSourceNewRelicAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
+	var err error
 
-	log.Printf("[INFO] Reading New Relic accounts")
-
-	scope := accounts.RegionScope(strings.ToUpper(d.Get("scope").(string)))
-
-	id, idOk := d.GetOk("account_id")
-	name, nameOk := d.GetOk("name")
-
-	params := accounts.ListAccountsParams{
-		Scope: &scope,
+	organization, err := client.Organization.GetOrganization()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to fetch organization information: %v", err))
 	}
 
-	accts, err := client.Accounts.ListAccountsWithContext(ctx, params)
+	organizationID := organization.ID
+
+	accountID, accountIDOk := d.GetOk("account_id")
+	name, nameOk := d.GetOk(NewRelicAccountManagementSchemaName)
+
+	if !accountIDOk && !nameOk {
+		// Default to the provider's AccountID if no lookup attributes are provided.
+		accountID, accountIDOk = selectAccountID(providerConfig, d), true
+	}
+
+	var account *customeradministration.OrganizationAccount
+
+	// Build filter input based on whether we're searching by ID or name
+	filterInput := customeradministration.OrganizationAccountFilterInput{
+		OrganizationId: customeradministration.OrganizationAccountOrganizationIdFilterInput{
+			Eq: organizationID,
+		},
+	}
+
+	if accountIDOk {
+		filterInput.ID = customeradministration.OrganizationAccountIdFilterInput{
+			Eq: accountID.(int),
+		}
+	}
+
+	if nameOk {
+		filterInput.Name = customeradministration.OrganizationAccountNameFilterInput{
+			Contains: name.(string),
+		}
+		// Note: Using a "Contains" filter may return multiple results, as it performs a partial match.
+		// To ensure accuracy, additional steps are required to identify the exact match from the results.
+	}
+
+	getAccountsResponse, err := client.CustomerAdministration.GetAccountsMinimized(
+		"",
+		filterInput,
+		[]customeradministration.OrganizationAccountSortInput{},
+	)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	var account *accounts.AccountOutline
+	accounts := getAccountsResponse.Items
 
-	if !idOk && !nameOk {
-		// Default to the provider's AccountID if no lookup attributes are provided.
-		id, idOk = selectAccountID(providerConfig, d), true
+	if len(accounts) == 0 {
+		return diag.FromErr(fmt.Errorf("no accounts found matching the criteria"))
 	}
 
-	if idOk && nameOk {
-		return diag.FromErr(fmt.Errorf(`exactly one of "name" or "account_id" is required to locate a New Relic account`))
-	}
-
+	// If searching by name, filter client-side
 	if nameOk {
-		for _, a := range accts {
+		var matchedAccount *customeradministration.OrganizationAccount
+		for _, a := range accounts {
 			if a.Name == name.(string) {
-				account = &a
+				matchedAccount = &a
 				break
 			}
 		}
 
-		if account == nil {
+		if matchedAccount == nil || matchedAccount.Name == "" {
 			return diag.FromErr(fmt.Errorf("the name '%s' does not match any New Relic accounts", name))
 		}
-	}
-
-	if idOk {
-		for _, a := range accts {
-			if a.ID == id.(int) {
-				account = &a
-				break
-			}
+		account = matchedAccount
+	} else {
+		// If searching by ID, we should have exactly one result
+		if len(accounts) != 1 {
+			return diag.FromErr(fmt.Errorf("expected 1 account, found %d", len(accounts)))
 		}
-
-		if account == nil {
-			return diag.FromErr(fmt.Errorf("the id '%d' does not match any New Relic accounts", id))
-		}
+		account = &accounts[0]
 	}
 
-	return diag.FromErr(flattenAccountData(account, d))
-}
+	d.SetId(strconv.Itoa(account.ID))
 
-func flattenAccountData(a *accounts.AccountOutline, d *schema.ResourceData) error {
-	d.SetId(strconv.Itoa(a.ID))
-	var err error
-
-	err = d.Set("name", a.Name)
+	err = d.Set(NewRelicAccountManagementSchemaName, account.Name)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = d.Set("account_id", a.ID)
+	err = d.Set("account_id", account.ID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
+	}
+
+	err = d.Set(NewRelicAccountManagementSchemaRegion, account.RegionCode)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

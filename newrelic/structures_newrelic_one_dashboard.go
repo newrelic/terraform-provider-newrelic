@@ -63,6 +63,48 @@ func checkForNilElements(d []interface{}) bool {
 	return false
 }
 
+func validateDashboardWidgetNRQLQueryAccountIDs(accountIDValue interface{}, key string) (warns []string, errs []error) {
+	accountIDValueAsString := accountIDValue.(string)
+	if _, err := strconv.Atoi(accountIDValueAsString); err == nil {
+		return
+	}
+
+	// the following change would not make sense, as the existence of `jsonencode()` cannot be checked for, as the account IDs are already
+	// unpacked into integers, when received by Terraform
+
+	//if strings.Contains(accountIDValueAsString, "[") && strings.Contains(accountIDValueAsString, "]") && !strings.HasPrefix(accountIDValueAsString, "jsonencode(") {
+	//	errs = append(errs, fmt.Errorf("%q contains an array declaration but is not JSON-encoded. Use `jsonencode()` to encode the array.", key))
+	//	return
+	//}
+
+	var accountIDsUnpackedFromJSONString []int
+	if err := json.Unmarshal([]byte(accountIDValueAsString), &accountIDsUnpackedFromJSONString); err == nil {
+		if len(accountIDsUnpackedFromJSONString) == 1 {
+			errs = append(
+				errs,
+				fmt.Errorf(
+					"invalid input '%s': %q contains only one ID `jsonencode([%d])`. Use a single numeric ID instead of a list, %d",
+					accountIDValueAsString,
+					key,
+					accountIDsUnpackedFromJSONString[0],
+					accountIDsUnpackedFromJSONString[0],
+				),
+			)
+			return
+		}
+		return
+	}
+	errs = append(
+		errs,
+		fmt.Errorf(
+			"invalid input '%s': %q must be a single numeric ID or a JSON-encoded array of numeric IDs",
+			accountIDValueAsString,
+			key,
+		),
+	)
+	return
+}
+
 func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
@@ -202,11 +244,27 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 		page.Widgets = []dashboards.DashboardWidgetInput{}
 		// For each of the widget type, we need to expand them as well
 		if widgets, ok := p["widget_area"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.area")
 				if err != nil {
 					return nil, err
+				}
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles (area widget supports both line_interpolation and gradient)
+				lineStyles := expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
+				gradientStyles := expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
+				if lineStyles != nil || gradientStyles != nil {
+					rawConfiguration.ChartStyles = &dashboards.DashboardWidgetChartStyles{}
+					if lineStyles != nil {
+						rawConfiguration.ChartStyles.LineInterpolation = lineStyles.LineInterpolation
+					}
+					if gradientStyles != nil {
+						rawConfiguration.ChartStyles.Gradient = gradientStyles.Gradient
+					}
 				}
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
@@ -245,6 +303,11 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				rawConfiguration.Thresholds = expandDashboardBillboardWidgetConfigurationInput(d, v.(map[string]interface{}), meta, pageIndex, widgetIndex)
 				// Set data formatting
 				rawConfiguration.DataFormat = expandDashboardTableWidgetConfigDataFormatInput(v.(map[string]interface{}))
+				// Set billboard settings
+				rawConfiguration.BillboardSettings = expandDashboardWidgetConfigurationBillboardSettingsInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles (billboard widget supports line_interpolation only)
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -310,6 +373,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 					return nil, err
 				}
 
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -328,6 +394,13 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 
 				// Set thresholds
 				rawConfiguration.Thresholds = expandDashboardLineWidgetConfigurationThresholdInput(d, pageIndex, widgetIndex)
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesLineInterpolation(v.(map[string]interface{}))
+
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
 					return nil, err
@@ -359,6 +432,9 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 				if err != nil {
 					return nil, err
 				}
+
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -424,12 +500,18 @@ func expandDashboardPageInput(d *schema.ResourceData, pages []interface{}, meta 
 			}
 		}
 		if widgets, ok := p["widget_stacked_bar"]; ok {
-			for _, v := range widgets.([]interface{}) {
+			for widgetIndex, v := range widgets.([]interface{}) {
 				// Get generic properties set
 				widget, rawConfiguration, err := expandDashboardWidgetInput(v.(map[string]interface{}), meta, "viz.stacked-bar")
 				if err != nil {
 					return nil, err
 				}
+
+				// Set tooltip
+				rawConfiguration.Tooltip = expandDashboardWidgetConfigurationTooltipInput(d, pageIndex, widgetIndex)
+
+				// Set chart styles
+				rawConfiguration.ChartStyles = expandDashboardWidgetChartStylesGradient(v.(map[string]interface{}))
 
 				widget.RawConfiguration, err = json.Marshal(rawConfiguration)
 				if err != nil {
@@ -969,6 +1051,50 @@ func expandDashboardWidgetNullValuesInput(w map[string]interface{}, cfg dashboar
 	return cfg
 }
 
+// expandDashboardWidgetChartStylesLineInterpolation expands chart styles for line widgets (lineInterpolation only)
+func expandDashboardWidgetChartStylesLineInterpolation(w map[string]interface{}) *dashboards.DashboardWidgetChartStyles {
+	if chartStylesInterface, ok := w["chart_styles"]; ok {
+		chartStylesList := chartStylesInterface.([]interface{})
+		if len(chartStylesList) > 0 && chartStylesList[0] != nil {
+			chartStylesMap := chartStylesList[0].(map[string]interface{})
+
+			// Handle lineInterpolation (only for line widgets)
+			if lineInterpolation, ok := chartStylesMap["line_interpolation"]; ok && lineInterpolation.(string) != "" {
+				return &dashboards.DashboardWidgetChartStyles{
+					LineInterpolation: dashboards.DashboardLineInterpolationType(lineInterpolation.(string)),
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// expandDashboardWidgetChartStylesGradient expands chart styles for gradient-supporting widgets (gradient only)
+func expandDashboardWidgetChartStylesGradient(w map[string]interface{}) *dashboards.DashboardWidgetChartStyles {
+	if chartStylesInterface, ok := w["chart_styles"]; ok {
+		chartStylesList := chartStylesInterface.([]interface{})
+		if len(chartStylesList) > 0 && chartStylesList[0] != nil {
+			chartStylesMap := chartStylesList[0].(map[string]interface{})
+
+			// Handle gradient (for area, stacked_bar, pie, histogram, etc.)
+			if gradientInterface, ok := chartStylesMap["gradient"]; ok {
+				gradientList := gradientInterface.([]interface{})
+				if len(gradientList) > 0 && gradientList[0] != nil {
+					gradientMap := gradientList[0].(map[string]interface{})
+					if enabled, ok := gradientMap["enabled"]; ok {
+						return &dashboards.DashboardWidgetChartStyles{
+							Gradient: &dashboards.DashboardWidgetChartStylesGradient{
+								Enabled: enabled.(bool),
+							},
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func expandLinkedEntityGUIDs(guids []interface{}) []common.EntityGUID {
 	out := make([]common.EntityGUID, len(guids))
 
@@ -990,11 +1116,24 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 		var query dashboards.DashboardWidgetNRQLQueryInput
 		q := v.(map[string]interface{})
 
-		if acct, ok := q["account_id"]; ok {
-			query.AccountID = acct.(int)
+		if acct, ok := q["account_id"]; ok && acct != "" {
+			acctStr := fmt.Sprintf("%v", acct)
+
+			var ids []int // Attempt to parse the string as a JSON array
+			err := json.Unmarshal([]byte(acctStr), &ids)
+
+			if err == nil {
+				query.AccountIDS = ids
+			} else {
+				singleID, convErr := strconv.Atoi(acctStr) // Now, convert the original string to an integer.
+				if convErr != nil {
+					return nil, fmt.Errorf("could not convert account_id '%s' to an integer: %w", acctStr, convErr)
+				}
+				query.AccountID = singleID
+			}
 		}
 
-		if query.AccountID < 1 {
+		if query.AccountID < 1 && len(query.AccountIDS) < 1 {
 			defs := meta.(map[string]interface{})
 			if acct, ok := defs["account_id"]; ok {
 				query.AccountID = acct.(int)
@@ -1017,7 +1156,7 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 	for _, v := range in {
 
 		cfg := v.(map[string]interface{})
-		var ignoreTimeRangePtr, excludedPtr *bool
+		var ignoreTimeRangePtr, excludedPtr, showApplyActionPtr *bool
 
 		if ignoreTimeRange, ok := cfg["ignore_time_range"].(bool); ok {
 			ignoreTimeRangePtr = &ignoreTimeRange
@@ -1026,9 +1165,13 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 		if excluded, ok := cfg["excluded"].(bool); ok {
 			excludedPtr = &excluded
 		}
+		if showApplyAction, ok := cfg["show_apply_action"].(bool); ok {
+			showApplyActionPtr = &showApplyAction
+		}
 		out = dashboards.DashboardVariableOptionsInput{
 			IgnoreTimeRange: ignoreTimeRangePtr,
 			Excluded:        excludedPtr,
+			ShowApplyAction: showApplyActionPtr,
 		}
 	}
 
@@ -1193,6 +1336,9 @@ func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.Res
 	if _, ignoreTimeRangeFetchedOk := option["ignore_time_range"]; ignoreTimeRangeFetchedOk {
 		n["ignore_time_range"] = in.IgnoreTimeRange
 	}
+	if _, showApplyActionOk := option["show_apply_action"]; showApplyActionOk {
+		n["show_apply_action"] = in.ShowApplyAction
+	}
 	out[0] = n
 	return out
 }
@@ -1296,6 +1442,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	if rawCfg.Colors != nil {
 		out["colors"] = flattenDashboardWidgetColors(rawCfg.Colors)
 	}
+	if rawCfg.ChartStyles != nil {
+		chartStyles := flattenDashboardWidgetChartStyles(rawCfg.ChartStyles)
+		if chartStyles != nil {
+			out["chart_styles"] = chartStyles
+		}
+	}
 	if rawCfg.RefreshRate != nil {
 		// Since schema for refresh_rate is defined as string
 		// If we get integer values in graphQL response, we need to convert to string
@@ -1312,6 +1464,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	case "viz.area":
 		widgetType = "widget_area"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
 	case "viz.bar":
 		widgetType = "widget_bar"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1343,6 +1499,10 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			if len(dataformat) > 0 {
 				out["data_format"] = dataformat
 			}
+		}
+
+		if rawCfg.BillboardSettings != nil {
+			out["billboard_settings"] = flattenDashboardWidgetBillboardSettings(rawCfg.BillboardSettings)
 		}
 
 	case "viz.bullet":
@@ -1384,12 +1544,20 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 			}
 		}
 
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
+
 	case "viz.markdown":
 		widgetType = "widget_markdown"
 		out["text"] = rawCfg.Text
 	case "viz.stacked-bar":
 		widgetType = "widget_stacked_bar"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
+
+		if rawCfg.Tooltip != nil {
+			out["tooltip"] = flattenDashboardWidgetTooltip(rawCfg.Tooltip)
+		}
 	case "viz.pie":
 		widgetType = "widget_pie"
 		out["nrql_query"] = flattenDashboardWidgetNRQLQuery(&rawCfg.NRQLQueries)
@@ -1461,8 +1629,20 @@ func flattenDashboardWidgetNRQLQuery(in *[]dashboards.DashboardWidgetNRQLQueryIn
 	for i, v := range *in {
 		m := make(map[string]interface{})
 
-		m["account_id"] = v.AccountID
 		m["query"] = v.Query
+
+		var accountIDResultantString string
+		if len(v.AccountIDS) > 1 {
+			accountIDBytes, _ := json.Marshal(v.AccountIDS)
+			accountIDResultantString = string(accountIDBytes)
+		} else {
+			if v.AccountID != 0 {
+				accountIDResultantString = strconv.Itoa(v.AccountID)
+			} else if len(v.AccountIDS) == 1 {
+				accountIDResultantString = strconv.Itoa(v.AccountIDS[0])
+			}
+		}
+		m["account_id"] = accountIDResultantString
 
 		out[i] = m
 	}
@@ -1714,10 +1894,46 @@ func flattenDashboardWidgetUnits(in *dashboards.DashboardWidgetUnits) interface{
 	return out
 }
 
+func flattenDashboardWidgetChartStyles(in *dashboards.DashboardWidgetChartStyles) interface{} {
+	if in == nil {
+		return nil
+	}
+
+	out := make([]interface{}, 1)
+	chartStylesMap := make(map[string]interface{})
+
+	// Handle lineInterpolation
+	if in.LineInterpolation != "" {
+		chartStylesMap["line_interpolation"] = string(in.LineInterpolation)
+	}
+
+	// Handle gradient
+	if in.Gradient != nil {
+		gradientList := make([]interface{}, 1)
+		gradientConfigMap := make(map[string]interface{})
+		gradientConfigMap["enabled"] = in.Gradient.Enabled
+		gradientList[0] = gradientConfigMap
+		chartStylesMap["gradient"] = gradientList
+	}
+
+	// Only return if we have any chart styles
+	if len(chartStylesMap) == 0 {
+		return nil
+	}
+
+	out[0] = chartStylesMap
+	return out
+}
+
 func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []string
 
 	err := validateDashboardVariableOptions(d)
+	if err != nil {
+		errorsList = append(errorsList, err.Error())
+	}
+
+	err = validateDashboardVariableNRQLAccountIDs(d, meta)
 	if err != nil {
 		errorsList = append(errorsList, err.Error())
 	}
@@ -1766,6 +1982,64 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
 				}
 
+				// show_apply_action validation - only valid when is_multi_selection is true
+				if showApplyAction, showApplyActionOk := optionMap["show_apply_action"]; showApplyActionOk {
+					if showApplyActionBool, ok := showApplyAction.(bool); ok && showApplyActionBool {
+						isMultiSelectionVal, isMultiSelectionOk := variableMap["is_multi_selection"].(bool)
+						if !isMultiSelectionOk || !isMultiSelectionVal {
+							return errors.New("`show_apply_action` can only be set to true when `is_multi_selection` is true for the variable")
+						}
+					}
+				}
+
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateDashboardVariableNRQLAccountIDs(d *schema.ResourceDiff, meta interface{}) error {
+
+	_, variablesListObtained := d.GetChange("variable")
+	vars := variablesListObtained.([]interface{})
+
+	// Get default account ID from provider metadata
+	var defaultAccountID int
+	if providerMeta, ok := meta.(*ProviderConfig); ok {
+		defaultAccountID = providerMeta.AccountID
+	}
+
+	for i, v := range vars {
+		variableMap := v.(map[string]interface{})
+
+		nrqlQuery, nrqlQueryOk := variableMap["nrql_query"]
+		if !nrqlQueryOk {
+			continue
+		}
+
+		nrqlQueryInterface := nrqlQuery.([]interface{})
+		if len(nrqlQueryInterface) == 0 {
+			continue
+		}
+
+		for _, query := range nrqlQueryInterface {
+			if query == nil {
+				continue
+			}
+
+			queryMap := query.(map[string]interface{})
+			accountIDs, accountIDsOk := queryMap["account_ids"]
+
+			// Check if account_ids is missing or empty
+			if !accountIDsOk {
+				return fmt.Errorf("variable[%d]: `account_ids` is required for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
+					i, defaultAccountID, defaultAccountID)
+			}
+
+			if accountIDsSlice, ok := accountIDs.([]interface{}); ok && len(accountIDsSlice) == 0 {
+				return fmt.Errorf("variable[%d]: `account_ids` cannot be empty for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
+					i, defaultAccountID, defaultAccountID)
 			}
 		}
 	}
@@ -1843,4 +2117,171 @@ func validateWidgetDataFormatterStructure(d *schema.ResourceDiff, errorsList *[]
 		}
 
 	}
+}
+
+func expandDashboardWidgetConfigurationTooltipInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetTooltip {
+
+	tooltipPath := fmt.Sprintf("page.%d.widget_line.%d.tooltip", pageIndex, widgetIndex)
+	if tooltipData, ok := d.GetOk(tooltipPath); ok && len(tooltipData.([]interface{})) > 0 {
+		tooltipList := tooltipData.([]interface{})
+		if len(tooltipList) > 0 && tooltipList[0] != nil {
+			tooltipMap := tooltipList[0].(map[string]interface{})
+
+			var tooltip dashboards.DashboardWidgetTooltip
+			if mode, ok := tooltipMap["mode"]; ok {
+				tooltip.Mode = mode.(string)
+			}
+
+			return &tooltip
+		}
+	}
+
+	return nil
+}
+
+func expandDashboardWidgetConfigurationBillboardSettingsInput(d *schema.ResourceData, pageIndex int, widgetIndex int) *dashboards.DashboardWidgetBillboardSettings {
+	billboardSettingsPath := fmt.Sprintf("page.%d.widget_billboard.%d.billboard_settings", pageIndex, widgetIndex)
+	if billboardSettingsData, ok := d.GetOk(billboardSettingsPath); ok && len(billboardSettingsData.([]interface{})) > 0 {
+		billboardSettingsList := billboardSettingsData.([]interface{})
+		if len(billboardSettingsList) > 0 && billboardSettingsList[0] != nil {
+			billboardSettingsMap := billboardSettingsList[0].(map[string]interface{})
+
+			var billboardSettings dashboards.DashboardWidgetBillboardSettings
+
+			// Handle link configuration
+			if linkData, ok := billboardSettingsMap["link"]; ok && len(linkData.([]interface{})) > 0 {
+				linkList := linkData.([]interface{})
+				if len(linkList) > 0 && linkList[0] != nil {
+					linkMap := linkList[0].(map[string]interface{})
+					var link dashboards.DashboardWidgetBillboardLink
+
+					if title, ok := linkMap["title"]; ok {
+						link.Title = title.(string)
+					}
+					if url, ok := linkMap["url"]; ok {
+						link.URL = url.(string)
+					}
+					if newTab, ok := linkMap["new_tab"]; ok {
+						link.NewTab = newTab.(bool)
+					}
+
+					billboardSettings.Link = &link
+				}
+			}
+
+			// Handle visual configuration
+			if visualData, ok := billboardSettingsMap["visual"]; ok && len(visualData.([]interface{})) > 0 {
+				visualList := visualData.([]interface{})
+				if len(visualList) > 0 && visualList[0] != nil {
+					visualMap := visualList[0].(map[string]interface{})
+					var visual dashboards.DashboardWidgetBillboardVisual
+
+					if alignment, ok := visualMap["alignment"]; ok {
+						visual.Alignment = dashboards.DashboardBillboardAlignmentType(alignment.(string))
+					}
+					if display, ok := visualMap["display"]; ok {
+						visual.Display = dashboards.DashboardBillboardDisplayType(display.(string))
+					}
+
+					billboardSettings.Visual = &visual
+				}
+			}
+
+			// Handle grid options configuration
+			if gridOptionsData, ok := billboardSettingsMap["grid_options"]; ok && len(gridOptionsData.([]interface{})) > 0 {
+				gridOptionsList := gridOptionsData.([]interface{})
+				if len(gridOptionsList) > 0 && gridOptionsList[0] != nil {
+					gridOptionsMap := gridOptionsList[0].(map[string]interface{})
+					var gridOptions dashboards.DashboardWidgetBillboardGridOptions
+
+					if value, ok := gridOptionsMap["value"]; ok {
+						gridOptions.Value = value.(int)
+					}
+					if label, ok := gridOptionsMap["label"]; ok {
+						gridOptions.Label = label.(int)
+					}
+					if columns, ok := gridOptionsMap["columns"]; ok {
+						gridOptions.Columns = columns.(int)
+					}
+
+					billboardSettings.GridOptions = &gridOptions
+				}
+			}
+
+			return &billboardSettings
+		}
+	}
+
+	return nil
+}
+
+func flattenDashboardWidgetTooltip(tooltip *dashboards.DashboardWidgetTooltip) []interface{} {
+	if tooltip == nil {
+		return nil
+	}
+
+	var tooltipFetched = make(map[string]interface{})
+	var tooltipFetchedInterface []interface{}
+
+	if tooltip.Mode != "" {
+		tooltipFetched["mode"] = tooltip.Mode
+	}
+
+	tooltipFetchedInterface = append(tooltipFetchedInterface, tooltipFetched)
+	return tooltipFetchedInterface
+}
+
+func flattenDashboardWidgetBillboardSettings(billboardSettings *dashboards.DashboardWidgetBillboardSettings) []interface{} {
+	if billboardSettings == nil {
+		return nil
+	}
+
+	var billboardSettingsFetched = make(map[string]interface{})
+	var billboardSettingsFetchedInterface []interface{}
+
+	// Handle link configuration
+	if billboardSettings.Link != nil {
+		var linkFetched = make(map[string]interface{})
+		if billboardSettings.Link.Title != "" {
+			linkFetched["title"] = billboardSettings.Link.Title
+		}
+		if billboardSettings.Link.URL != "" {
+			linkFetched["url"] = billboardSettings.Link.URL
+		}
+		linkFetched["new_tab"] = billboardSettings.Link.NewTab
+
+		billboardSettingsFetched["link"] = []interface{}{linkFetched}
+	}
+
+	// Handle visual configuration
+	if billboardSettings.Visual != nil {
+		var visualFetched = make(map[string]interface{})
+		if billboardSettings.Visual.Alignment != "" {
+			visualFetched["alignment"] = string(billboardSettings.Visual.Alignment)
+		}
+		if billboardSettings.Visual.Display != "" {
+			visualFetched["display"] = string(billboardSettings.Visual.Display)
+		}
+
+		billboardSettingsFetched["visual"] = []interface{}{visualFetched}
+	}
+
+	// Handle grid options configuration
+	if billboardSettings.GridOptions != nil {
+		var gridOptionsFetched = make(map[string]interface{})
+		if billboardSettings.GridOptions.Value != 0 {
+			gridOptionsFetched["value"] = billboardSettings.GridOptions.Value
+		}
+		if billboardSettings.GridOptions.Label != 0 {
+			gridOptionsFetched["label"] = billboardSettings.GridOptions.Label
+		}
+		if billboardSettings.GridOptions.Columns != 0 {
+			gridOptionsFetched["columns"] = billboardSettings.GridOptions.Columns
+		}
+
+		billboardSettingsFetched["grid_options"] = []interface{}{gridOptionsFetched}
+	}
+
+	billboardSettingsFetchedInterface = append(billboardSettingsFetchedInterface, billboardSettingsFetched)
+	return billboardSettingsFetchedInterface
 }

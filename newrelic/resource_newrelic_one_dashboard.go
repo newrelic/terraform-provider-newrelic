@@ -132,6 +132,11 @@ func dashboardVariableSchemaElem() *schema.Resource {
 							Optional:    true,
 							Description: "Only applies to variables of type NRQL. With this turned on, query condition defined with the variable will not be included in the query.",
 						},
+						"show_apply_action": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Show apply button when multi-selecting",
+						},
 					},
 				},
 			},
@@ -378,6 +383,13 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Optional: true,
 			Elem:     dashboardWidgetColorSchemaElem(),
 		},
+		"chart_styles": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Chart styling configuration including line interpolation and gradient settings.",
+			Elem:        dashboardWidgetChartStylesSchemaElem(),
+		},
 	}
 }
 
@@ -402,6 +414,39 @@ func dashboardWidgetColorSchemaElem() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Series name",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetChartStylesSchemaElem() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"line_interpolation": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Line interpolation style. Valid values: 'linear', 'smooth', 'stepBefore', 'stepAfter'. Applicable to line widgets.",
+				ValidateFunc: validation.StringInSlice([]string{
+					string(dashboards.DashboardLineInterpolationTypes.LINEAR),
+					string(dashboards.DashboardLineInterpolationTypes.SMOOTH),
+					string(dashboards.DashboardLineInterpolationTypes.STEPBEFORE),
+					string(dashboards.DashboardLineInterpolationTypes.STEPAFTER),
+				}, false),
+			},
+			"gradient": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Gradient configuration for area, stacked bar, pie, histogram widgets, etc.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enable or disable gradient effect.",
 						},
 					},
 				},
@@ -519,10 +564,11 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The account id used for the NRQL query.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The account ID(s) used for the NRQL query. Can be a single account ID or multiple account IDs in a JSON-encoded array.",
+				ValidateFunc: validateDashboardWidgetNRQLQueryAccountIDs,
 			},
 			"query": {
 				Type:        schema.TypeString,
@@ -535,6 +581,8 @@ func dashboardWidgetNRQLQuerySchemaElem() *schema.Resource {
 
 func dashboardWidgetAreaSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
+
+	s["tooltip"] = dashboardWidgetTooltipSchema()
 
 	return &schema.Resource{
 		Schema: s,
@@ -566,6 +614,8 @@ func dashboardWidgetBillboardSchemaElem() *schema.Resource {
 		Optional:    true,
 		Description: "The warning threshold value.",
 	}
+
+	s["billboard_settings"] = dashboardWidgetBillboardSettingsSchema()
 
 	return &schema.Resource{
 		Schema: s,
@@ -696,6 +746,8 @@ func dashboardWidgetLineSchemaElem() *schema.Resource {
 		},
 	}
 
+	s["tooltip"] = dashboardWidgetTooltipSchema()
+
 	return &schema.Resource{
 		Schema: s,
 	}
@@ -727,6 +779,8 @@ func dashboardWidgetMarkdownSchemaElem() *schema.Resource {
 
 func dashboardWidgetStackedBarSchemaElem() *schema.Resource {
 	s := dashboardWidgetSchemaBase()
+
+	s["tooltip"] = dashboardWidgetTooltipSchema()
 
 	return &schema.Resource{
 		Schema: s,
@@ -992,4 +1046,121 @@ func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	return nil
+}
+
+func dashboardWidgetTooltipSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Tooltip configuration for the widget.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"mode": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Tooltip display mode.",
+					ValidateFunc: validation.StringInSlice([]string{
+						string(dashboards.DashboardTooltipTypes.ALL),
+						string(dashboards.DashboardTooltipTypes.SINGLE),
+						string(dashboards.DashboardTooltipTypes.HIDDEN),
+					}, false),
+				},
+			},
+		},
+	}
+}
+
+func dashboardWidgetBillboardSettingsSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Billboard settings configuration for the widget.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"link": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Link configuration for the billboard widget.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"title": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The title for the link.",
+							},
+							"url": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The URL for the link.",
+							},
+							"new_tab": {
+								Type:        schema.TypeBool,
+								Optional:    true,
+								Description: "Whether to open the link in a new tab.",
+							},
+						},
+					},
+				},
+				"visual": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Visual configuration for the billboard widget.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"alignment": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Billboard alignment type.",
+								ValidateFunc: validation.StringInSlice([]string{
+									string(dashboards.DashboardBillboardAlignmentTypes.STACKED),
+									string(dashboards.DashboardBillboardAlignmentTypes.INLINE),
+								}, false),
+							},
+							"display": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Billboard display type.",
+								ValidateFunc: validation.StringInSlice([]string{
+									string(dashboards.DashboardBillboardDisplayTypes.AUTO),
+									string(dashboards.DashboardBillboardDisplayTypes.ALL),
+									string(dashboards.DashboardBillboardDisplayTypes.NONE),
+									string(dashboards.DashboardBillboardDisplayTypes.LABEL),
+									string(dashboards.DashboardBillboardDisplayTypes.VALUE),
+								}, false),
+							},
+						},
+					},
+				},
+				"grid_options": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Grid options configuration for the billboard widget.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"value": {
+								Type:        schema.TypeInt,
+								Optional:    true,
+								Description: "Grid value setting.",
+							},
+							"label": {
+								Type:        schema.TypeInt,
+								Optional:    true,
+								Description: "Grid label setting.",
+							},
+							"columns": {
+								Type:        schema.TypeInt,
+								Optional:    true,
+								Description: "Number of columns in the grid.",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }

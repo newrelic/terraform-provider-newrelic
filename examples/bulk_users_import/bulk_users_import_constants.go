@@ -64,4 +64,5 @@ query(
 }`
 
 const NERDGRAPH_API_ENDPOINT = "https://api.newrelic.com/graphql"
-const NERDGRAPH_API_ENDPOINT_EU = "https://api.newrelic.com/graphql"
+const NERDGRAPH_API_ENDPOINT_EU = "https://api.eu.newrelic.com/graphql"
+const NERDGRAPH_API_ENDPOINT_JP = "https://api.jp.newrelic.com/graphql"

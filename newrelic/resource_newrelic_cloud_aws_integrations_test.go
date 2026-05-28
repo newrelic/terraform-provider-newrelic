@@ -1,5 +1,4 @@
-//go:build integration
-// +build integration
+//go:build integration || CLOUD
 
 package newrelic
 
@@ -122,7 +121,7 @@ func testAccCheckNewRelicCloudAwsIntegrationsDestroy(s *terraform.State) error {
 }
 
 func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -414,12 +413,16 @@ func testAccNewRelicAwsIntegrationsConfig(AWSIntegrationsTestConfig map[string]s
 		  fetch_extended_inventory = true
 		  metrics_polling_interval = 6000
 		}
+		security_hub {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 86400
+		}
 	  }
-`)
+`
 }
 
 func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[string]string) string {
-	return fmt.Sprintf(`
+	return `
 	provider "newrelic" {
   		account_id = "` + AWSIntegrationsTestConfig["account_id"] + `"
   		alias      = "cloud-integration-provider"
@@ -710,6 +713,14 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 		  fetch_extended_inventory = true
 		  metrics_polling_interval = 6000
 		}
+		aws_auto_discovery {
+			aws_regions              = ["us-east-1"]
+			metrics_polling_interval = 6000
+		}
+		security_hub {
+		  aws_regions              = ["us-east-1"]
+		  metrics_polling_interval = 86400
+		}
 	  }
-`)
+`
 }
