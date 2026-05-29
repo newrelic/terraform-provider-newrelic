@@ -68,10 +68,35 @@ func resourceNewRelicAwsConnection() *schema.Resource {
 				Optional:    true,
 				Description: "Default region for this connection.",
 			},
-			"role_arn": {
-				Type:        schema.TypeString,
+			"credential": {
+				Type:        schema.TypeList,
 				Required:    true,
-				Description: "The ARN of the IAM role to assume for this connection.",
+				MaxItems:    1,
+				Description: "Credentials for accessing the AWS account.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"assume_role": {
+							Type:        schema.TypeList,
+							Required:    true,
+							MaxItems:    1,
+							Description: "AssumeRole configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"role_arn": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "ARN of the IAM role New Relic should assume.",
+									},
+									"external_id": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "External ID supplied by New Relic during AssumeRole.",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			"settings": {
 				Type:        schema.TypeList,
@@ -113,13 +138,9 @@ func resourceNewRelicAwsConnectionCreate(ctx context.Context, d *schema.Resource
 	}
 
 	input := federatedlogs.EntityManagementAwsConnectionEntityCreateInput{
-		Name:    d.Get("name").(string),
-		Enabled: getBoolPointer(d.Get("enabled").(bool)),
-		Credential: federatedlogs.EntityManagementAwsCredentialsCreateInput{
-			AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigCreateInput{
-				RoleArn: d.Get("role_arn").(string),
-			},
-		},
+		Name:       d.Get("name").(string),
+		Enabled:    getBoolPointer(d.Get("enabled").(bool)),
+		Credential: expandAwsConnectionCredential(d.Get("credential").([]interface{})),
 		Scope: federatedlogs.EntityManagementScopedReferenceInput{
 			Type: federatedlogs.EntityManagementEntityScope(scopeType),
 			ID:   scopeID,
@@ -204,7 +225,7 @@ func resourceNewRelicAwsConnectionRead(ctx context.Context, d *schema.ResourceDa
 		if err := d.Set("region", entity.Region); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := d.Set("role_arn", entity.Credential.AssumeRole.RoleArn); err != nil {
+		if err := d.Set("credential", flattenAwsConnectionCredential(entity.Credential)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := d.Set("settings", flattenAwsConnectionSettings(entity.Settings)); err != nil {
@@ -254,12 +275,8 @@ func resourceNewRelicAwsConnectionUpdate(ctx context.Context, d *schema.Resource
 	if d.HasChange("region") {
 		input.Region = d.Get("region").(string)
 	}
-	if d.HasChange("role_arn") {
-		input.Credential = &federatedlogs.EntityManagementAwsCredentialsUpdateInput{
-			AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigUpdateInput{
-				RoleArn: d.Get("role_arn").(string),
-			},
-		}
+	if d.HasChange("credential") {
+		input.Credential = expandAwsConnectionCredentialUpdate(d.Get("credential").([]interface{}))
 	}
 	if d.HasChange("settings") {
 		input.Settings = expandAwsConnectionSettingsUpdate(d.Get("settings").([]interface{}))
@@ -343,4 +360,53 @@ func flattenAwsConnectionSettings(settings []federatedlogs.EntityManagementConne
 		}
 	}
 	return result
+}
+
+func expandAwsConnectionCredential(in []interface{}) federatedlogs.EntityManagementAwsCredentialsCreateInput {
+	if len(in) == 0 {
+		return federatedlogs.EntityManagementAwsCredentialsCreateInput{}
+	}
+	cred := in[0].(map[string]interface{})
+	assumeRoleList := cred["assume_role"].([]interface{})
+	if len(assumeRoleList) == 0 {
+		return federatedlogs.EntityManagementAwsCredentialsCreateInput{}
+	}
+	ar := assumeRoleList[0].(map[string]interface{})
+	return federatedlogs.EntityManagementAwsCredentialsCreateInput{
+		AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigCreateInput{
+			RoleArn:    ar["role_arn"].(string),
+			ExternalId: federatedlogs.EntityManagementDynamicString(ar["external_id"].(string)),
+		},
+	}
+}
+
+func expandAwsConnectionCredentialUpdate(in []interface{}) *federatedlogs.EntityManagementAwsCredentialsUpdateInput {
+	if len(in) == 0 {
+		return nil
+	}
+	cred := in[0].(map[string]interface{})
+	assumeRoleList := cred["assume_role"].([]interface{})
+	if len(assumeRoleList) == 0 {
+		return nil
+	}
+	ar := assumeRoleList[0].(map[string]interface{})
+	return &federatedlogs.EntityManagementAwsCredentialsUpdateInput{
+		AssumeRole: federatedlogs.EntityManagementAwsAssumeRoleConfigUpdateInput{
+			RoleArn:    ar["role_arn"].(string),
+			ExternalId: federatedlogs.EntityManagementDynamicString(ar["external_id"].(string)),
+		},
+	}
+}
+
+func flattenAwsConnectionCredential(c federatedlogs.EntityManagementAwsCredentials) []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"assume_role": []map[string]interface{}{
+				{
+					"role_arn":    c.AssumeRole.RoleArn,
+					"external_id": string(c.AssumeRole.ExternalId),
+				},
+			},
+		},
+	}
 }

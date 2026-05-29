@@ -21,6 +21,8 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 
 	roleArn := "arn:aws:iam::123456789012:role/tf-test-role"
 	roleArnUpdated := "arn:aws:iam::123456789012:role/tf-test-role-rotated"
+	externalID := "tf-test-external-id"
+	externalIDUpdated := "tf-test-external-id-updated"
 	orgID := "fb33fea3-4d7e-4736-9701-acb59a634fdf"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -29,26 +31,28 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicAwsConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNewRelicAwsConnectionConfig(rName, "Acceptance test AWS connection", roleArn, true, "us-east-1", orgID),
+				Config: testAccNewRelicAwsConnectionConfig(rName, "Acceptance test AWS connection", roleArn, externalID, true, "us-east-1", orgID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsConnectionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Acceptance test AWS connection"),
-					resource.TestCheckResourceAttr(resourceName, "role_arn", roleArn),
+					resource.TestCheckResourceAttr(resourceName, "credential.0.assume_role.0.role_arn", roleArn),
+					resource.TestCheckResourceAttr(resourceName, "credential.0.assume_role.0.external_id", externalID),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(resourceName, "scope_id", orgID),
 					resource.TestCheckResourceAttr(resourceName, "scope_type", "ORGANIZATION"),
 				),
 			},
-			// In-place update: change description / enabled / region / role_arn.
-			// All four fields are in EntityManagementAwsConnectionEntityUpdateInput.
+			// In-place update: change role_arn / assume-role external_id /
+			// description / enabled / region. All are in EntityManagementAwsConnectionEntityUpdateInput.
 			{
-				Config: testAccNewRelicAwsConnectionConfig(rName, "Updated AWS connection", roleArnUpdated, false, "us-west-2", orgID),
+				Config: testAccNewRelicAwsConnectionConfig(rName, "Updated AWS connection", roleArnUpdated, externalIDUpdated, false, "us-west-2", orgID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicAwsConnectionExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "description", "Updated AWS connection"),
-					resource.TestCheckResourceAttr(resourceName, "role_arn", roleArnUpdated),
+					resource.TestCheckResourceAttr(resourceName, "credential.0.assume_role.0.role_arn", roleArnUpdated),
+					resource.TestCheckResourceAttr(resourceName, "credential.0.assume_role.0.external_id", externalIDUpdated),
 					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-west-2"),
 				),
@@ -62,18 +66,24 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 	})
 }
 
-func testAccNewRelicAwsConnectionConfig(name, description, roleArn string, enabled bool, region, orgID string) string {
+func testAccNewRelicAwsConnectionConfig(name, description, roleArn, externalID string, enabled bool, region, orgID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_aws_connection" "foo" {
   name        = "%[1]s"
   description = "%[2]s"
   enabled     = %[3]t
   region      = "%[4]s"
-  role_arn    = "%[5]s"
   scope_id    = "%[6]s"
   scope_type  = "ORGANIZATION"
+
+  credential {
+    assume_role {
+      role_arn    = "%[5]s"
+      external_id = "%[7]s"
+    }
+  }
 }
-`, name, description, enabled, region, roleArn, orgID)
+`, name, description, enabled, region, roleArn, orgID, externalID)
 }
 
 func testAccCheckNewRelicAwsConnectionExists(name string) resource.TestCheckFunc {
