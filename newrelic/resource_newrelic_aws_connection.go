@@ -117,6 +117,26 @@ func resourceNewRelicAwsConnection() *schema.Resource {
 					},
 				},
 			},
+			"tag": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Tags applied to the AWS Connection entity.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The tag key.",
+						},
+						"values": {
+							Type:        schema.TypeSet,
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The tag values.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -158,6 +178,9 @@ func resourceNewRelicAwsConnectionCreate(ctx context.Context, d *schema.Resource
 	}
 	if v, ok := d.GetOk("settings"); ok {
 		input.Settings = expandAwsConnectionSettings(v.([]interface{}))
+	}
+	if v, ok := d.GetOk("tag"); ok {
+		input.Tags = expandAwsConnectionTags(v.(*schema.Set).List())
 	}
 
 	resp, err := client.Federatedlogs.EntityManagementCreateAwsConnectionWithContext(ctx, input)
@@ -231,6 +254,9 @@ func resourceNewRelicAwsConnectionRead(ctx context.Context, d *schema.ResourceDa
 		if err := d.Set("settings", flattenAwsConnectionSettings(entity.Settings)); err != nil {
 			return diag.FromErr(err)
 		}
+		if err := d.Set("tag", flattenAwsConnectionTags(entity.Tags)); err != nil {
+			return diag.FromErr(err)
+		}
 	default:
 		return diag.Errorf("unexpected entity type %T for ID %s", entityType, d.Id())
 	}
@@ -280,6 +306,9 @@ func resourceNewRelicAwsConnectionUpdate(ctx context.Context, d *schema.Resource
 	}
 	if d.HasChange("settings") {
 		input.Settings = expandAwsConnectionSettingsUpdate(d.Get("settings").([]interface{}))
+	}
+	if d.HasChange("tag") {
+		input.Tags = expandAwsConnectionTags(d.Get("tag").(*schema.Set).List())
 	}
 
 	if _, err := client.Federatedlogs.EntityManagementUpdateAwsConnectionWithContext(ctx, input, entityID, awsEntity.Metadata.Version); err != nil {
@@ -409,4 +438,32 @@ func flattenAwsConnectionCredential(c federatedlogs.EntityManagementAwsCredentia
 			},
 		},
 	}
+}
+
+func expandAwsConnectionTags(in []interface{}) []federatedlogs.EntityManagementTagInput {
+	result := make([]federatedlogs.EntityManagementTagInput, 0, len(in))
+	for _, raw := range in {
+		m := raw.(map[string]interface{})
+		valuesRaw := m["values"].(*schema.Set).List()
+		values := make([]string, 0, len(valuesRaw))
+		for _, v := range valuesRaw {
+			values = append(values, v.(string))
+		}
+		result = append(result, federatedlogs.EntityManagementTagInput{
+			Key:    m["key"].(string),
+			Values: values,
+		})
+	}
+	return result
+}
+
+func flattenAwsConnectionTags(tags []federatedlogs.EntityManagementTag) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(tags))
+	for _, t := range tags {
+		result = append(result, map[string]interface{}{
+			"key":    t.Key,
+			"values": t.Values,
+		})
+	}
+	return result
 }

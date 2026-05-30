@@ -47,6 +47,10 @@ The following arguments are supported:
 * `settings` - (Optional) Optional list of connection settings. Each entry takes:
   * `key` - (Required) The setting key.
   * `value` - (Required) The setting value.
+* `tag` - (Optional) Tags applied to the AWS Connection entity. Each entry takes:
+  * `key` - (Required) The tag key.
+  * `values` - (Required) Set of tag values.
+
 
 ### Nested `credential` block
 

@@ -42,6 +42,7 @@ func TestAccNewRelicAwsConnection_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(resourceName, "scope_id", orgID),
 					resource.TestCheckResourceAttr(resourceName, "scope_type", "ORGANIZATION"),
+					resource.TestCheckResourceAttr(resourceName, "tag.#", "2"),
 				),
 			},
 			// In-place update: change role_arn / assume-role external_id /
@@ -81,6 +82,15 @@ resource "newrelic_aws_connection" "foo" {
       role_arn    = "%[5]s"
       external_id = "%[7]s"
     }
+  }
+
+  tag {
+    key    = "test_role"
+    values = ["%[2]s"]
+  }
+  tag {
+    key    = "managed_by"
+    values = ["terraform-acceptance-test"]
   }
 }
 `, name, description, enabled, region, roleArn, orgID, externalID)
