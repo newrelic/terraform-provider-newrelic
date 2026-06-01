@@ -69,14 +69,16 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 			{
 				Config: testAccNewRelicProviderConfig("JP", `nerdgraph_api_url = "https://api.newrelic.com/graphql"`, rName),
 			},
-			// Test: Case insensitivity
-			{
-				Config: testAccNewRelicProviderConfig("us", "", rName),
-			},
 			// Test: Case insensitivity for JP
 			{
 				Config:      testAccNewRelicProviderConfig("jp", "", rName),
 				ExpectError: regexp.MustCompile(expectedErrorMsgRegex),
+			},
+			// Test: Case insensitivity
+			// Kept last so the post-test destroy runs against a US-region
+			// provider (the test account is US-based).
+			{
+				Config: testAccNewRelicProviderConfig("us", "", rName),
 			},
 		},
 	})
