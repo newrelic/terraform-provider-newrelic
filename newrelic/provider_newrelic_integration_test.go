@@ -73,6 +73,11 @@ func TestAccNewRelicProvider_Region(t *testing.T) {
 			{
 				Config: testAccNewRelicProviderConfig("us", "", rName),
 			},
+			// Test: Case insensitivity for JP
+			{
+				Config:      testAccNewRelicProviderConfig("jp", "", rName),
+				ExpectError: regexp.MustCompile(expectedErrorMsgRegex),
+			},
 		},
 	})
 }
