@@ -866,7 +866,7 @@ func TestAccNewRelicWorkload_IntelligentWorkload(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "status_config_alert_policy.#", "1"),
 				),
 			},
-			// Test: Update intelligent workload (change transaction_name, disable alert_policy)
+			// Test: Update intelligent workload (update name, disable alert_policy)
 			{
 				Config: testAccNewRelicWorkloadIntelligentConfigUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -920,7 +920,7 @@ resource "newrelic_workload" "foo" {
 
 	dynamic_flows {
 		entity_guid      = data.newrelic_entity.app.guid
-		transaction_name = "WebTransaction/Action/show"
+		transaction_name = "WebTransaction/Action/index"
 	}
 
 	scope_account_ids = [%[1]d]
