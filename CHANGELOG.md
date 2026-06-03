@@ -1,3 +1,11 @@
+<a name="v3.91.0"></a>
+## [v3.91.0] - 2026-06-03
+### Bug Fixes
+- **region:** add Japan (JP) region support ([#3059](https://github.com/newrelic/terraform-provider-newrelic/issues/3059))
+
+### Features
+- **federated-logs:** add support for federated logs resources ([#3088](https://github.com/newrelic/terraform-provider-newrelic/issues/3088))
+
 <a name="v3.90.0"></a>
 ## [v3.90.0] - 2026-05-24
 ### Features
@@ -2724,7 +2732,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.90.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.0...HEAD
+[v3.91.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.90.0...v3.91.0
 [v3.90.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.89.0...v3.90.0
 [v3.89.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.88.0...v3.89.0
 [v3.88.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.87.4...v3.88.0
