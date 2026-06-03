@@ -22,6 +22,12 @@ func resourceNewRelicFederatedLogsPartition() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where the federated logs partition will live. Defaults to the provider's account_id. Changing this after creation is rejected by the API.",
+			},
 			"setup_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -166,7 +172,9 @@ func resourceNewRelicFederatedLogsPartition() *schema.Resource {
 }
 
 func resourceNewRelicFederatedLogsPartitionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	input := federatedlogs.FederatedLogsCreatePartitionInput{
 		Name:    d.Get("name").(string),
@@ -184,8 +192,7 @@ func resourceNewRelicFederatedLogsPartitionCreate(ctx context.Context, d *schema
 
 	setupID := d.Get("setup_id").(string)
 
-	log.Printf("[INFO] Creating New Relic Federated Logs Partition %s on setup %s", input.Name, setupID)
-	resp, err := client.Federatedlogs.FederatedLogsCreatePartitionWithContext(ctx, input, setupID)
+	resp, err := client.Federatedlogs.FederatedLogsCreatePartitionWithContext(ctx, accountID, input, setupID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -194,14 +201,17 @@ func resourceNewRelicFederatedLogsPartitionCreate(ctx context.Context, d *schema
 	}
 
 	d.SetId(resp.Partition.ID)
+	_ = d.Set("account_id", accountID)
 	return resourceNewRelicFederatedLogsPartitionRead(ctx, d, meta)
 }
 
 func resourceNewRelicFederatedLogsPartitionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Federated Logs Partition %s", d.Id())
-	resp, err := client.Federatedlogs.GetPartitionWithContext(ctx, d.Id())
+	resp, err := client.Federatedlogs.GetPartitionWithContext(ctx, accountID, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -218,7 +228,9 @@ func resourceNewRelicFederatedLogsPartitionRead(ctx context.Context, d *schema.R
 }
 
 func resourceNewRelicFederatedLogsPartitionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	input := federatedlogs.FederatedLogsUpdatePartitionInput{}
 	if d.HasChange("name") {
@@ -238,24 +250,26 @@ func resourceNewRelicFederatedLogsPartitionUpdate(ctx context.Context, d *schema
 	}
 
 	log.Printf("[INFO] Updating New Relic Federated Logs Partition %s", d.Id())
-	if _, err := client.Federatedlogs.FederatedLogsUpdatePartitionWithContext(ctx, d.Id(), input); err != nil {
+	if _, err := client.Federatedlogs.FederatedLogsUpdatePartitionWithContext(ctx, accountID, d.Id(), input); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceNewRelicFederatedLogsPartitionRead(ctx, d, meta)
 }
 
 func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Per IDD, partition deletion is a soft-delete via the wrapper update
+	// Partition deletion is a soft-delete via the wrapper update
 	// mutation, transitioning lifecycleStatus to DELETING.
 	// The entity is not removed outright.
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	input := federatedlogs.FederatedLogsUpdatePartitionInput{
 		LifecycleStatus: &federatedlogs.FederatedLogsLifecycleStatusInput{
 			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
 		},
 	}
-	if _, err := client.Federatedlogs.FederatedLogsUpdatePartitionWithContext(ctx, d.Id(), input); err != nil {
+	if _, err := client.Federatedlogs.FederatedLogsUpdatePartitionWithContext(ctx, accountID, d.Id(), input); err != nil {
 		return diag.FromErr(fmt.Errorf("failed to mark partition %s as DELETING: %w", d.Id(), err))
 	}
 

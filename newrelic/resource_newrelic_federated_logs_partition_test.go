@@ -141,8 +141,9 @@ func testAccCheckNewRelicFederatedLogsPartitionExists(name string) resource.Test
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no partition ID set in state")
 		}
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		resp, err := client.Federatedlogs.GetPartitionWithContext(context.Background(), rs.Primary.ID)
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		client := providerConfig.NewClient
+		resp, err := client.Federatedlogs.GetPartitionWithContext(context.Background(), providerConfig.AccountID, rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching federated logs partition %s: %w", rs.Primary.ID, err)
 		}
@@ -156,12 +157,13 @@ func testAccCheckNewRelicFederatedLogsPartitionExists(name string) resource.Test
 func testAccCheckNewRelicFederatedLogsPartitionDestroy(s *terraform.State) error {
 	// Partition deletion is a soft-delete via lifecycleStatus DELETING. The
 	// entity stays queryable state.
-	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+	providerConfig := testAccProvider.Meta().(*ProviderConfig)
+	client := providerConfig.NewClient
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "newrelic_federated_logs_partition" {
 			continue
 		}
-		resp, err := client.Federatedlogs.GetPartitionWithContext(context.Background(), rs.Primary.ID)
+		resp, err := client.Federatedlogs.GetPartitionWithContext(context.Background(), providerConfig.AccountID, rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("expected partition %s to be queryable in DELETING state, got error: %w", rs.Primary.ID, err)
 		}

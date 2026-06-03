@@ -22,6 +22,12 @@ func resourceNewRelicFederatedLogsSetup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The New Relic account ID where the federated logs setup will live. Defaults to the provider's account_id. Changing this after creation is rejected by the API.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -228,7 +234,9 @@ func resourceNewRelicFederatedLogsSetup() *schema.Resource {
 }
 
 func resourceNewRelicFederatedLogsSetupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	input := federatedlogs.FederatedLogsCreateSetupInput{
 		Name:             d.Get("name").(string),
@@ -242,8 +250,7 @@ func resourceNewRelicFederatedLogsSetupCreate(ctx context.Context, d *schema.Res
 		input.Forwarder = expandFederatedLogsForwarder(v.([]interface{}))
 	}
 
-	log.Printf("[INFO] Creating New Relic Federated Logs Setup %s", input.Name)
-	resp, err := client.Federatedlogs.FederatedLogsCreateSetupWithContext(ctx, input)
+	resp, err := client.Federatedlogs.FederatedLogsCreateSetupWithContext(ctx, accountID, input)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -252,14 +259,17 @@ func resourceNewRelicFederatedLogsSetupCreate(ctx context.Context, d *schema.Res
 	}
 
 	d.SetId(resp.Setup.ID)
+	_ = d.Set("account_id", accountID)
 	return resourceNewRelicFederatedLogsSetupRead(ctx, d, meta)
 }
 
 func resourceNewRelicFederatedLogsSetupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	log.Printf("[INFO] Reading New Relic Federated Logs Setup %s", d.Id())
-	resp, err := client.Federatedlogs.GetSetupWithContext(ctx, d.Id())
+	resp, err := client.Federatedlogs.GetSetupWithContext(ctx, accountID, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -276,7 +286,9 @@ func resourceNewRelicFederatedLogsSetupRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceNewRelicFederatedLogsSetupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	input := federatedlogs.FederatedLogsUpdateSetupInput{}
 	if d.HasChange("name") {
@@ -301,27 +313,35 @@ func resourceNewRelicFederatedLogsSetupUpdate(ctx context.Context, d *schema.Res
 		input.Forwarder = expandFederatedLogsForwarder(d.Get("forwarder").([]interface{}))
 	}
 
+	if d.HasChange("default_partition.0.data_retention_policy") {
+		input.DefaultPartition = expandFederatedLogsDefaultPartitionUpdate(
+			d.Get("default_partition.0.data_retention_policy").([]interface{}),
+		)
+	}
+
 	log.Printf("[INFO] Updating New Relic Federated Logs Setup %s", d.Id())
-	if _, err := client.Federatedlogs.FederatedLogsUpdateSetupWithContext(ctx, d.Id(), input); err != nil {
+	if _, err := client.Federatedlogs.FederatedLogsUpdateSetupWithContext(ctx, accountID, d.Id(), input); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceNewRelicFederatedLogsSetupRead(ctx, d, meta)
 }
 
 func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Per IDD, setup deletion is a soft-delete that transitions the entity to
+	// Setup deletion is a soft-delete that transitions the entity to
 	// the DELETING lifecycle state. The API cascades the DELETING state
 	// to the default partition automatically; we don't need a separate
 	// updatePartition call. Validation (no non-default partitions exist)
 	// are handled server-side.
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+	accountID := selectAccountID(providerConfig, d)
 
 	input := federatedlogs.FederatedLogsUpdateSetupInput{
 		LifecycleStatus: &federatedlogs.FederatedLogsLifecycleStatusInput{
 			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
 		},
 	}
-	if _, err := client.Federatedlogs.FederatedLogsUpdateSetupWithContext(ctx, d.Id(), input); err != nil {
+	if _, err := client.Federatedlogs.FederatedLogsUpdateSetupWithContext(ctx, accountID, d.Id(), input); err != nil {
 		return diag.FromErr(fmt.Errorf("failed to mark setup %s as DELETING: %w", d.Id(), err))
 	}
 
@@ -354,11 +374,8 @@ func validateFederatedLogsSetupDiff(_ context.Context, d *schema.ResourceDiff, _
 	if d.HasChange("default_partition.0.storage.0.data_location_uri") {
 		return immutableFieldError("default_partition.storage.data_location_uri", federatedLogsSetupRecreateHint)
 	}
-	if d.HasChange("default_partition.0.data_retention_policy.0.duration") {
-		return immutableFieldError("default_partition.data_retention_policy.duration", federatedLogsSetupRecreateHint)
-	}
-	if d.HasChange("default_partition.0.data_retention_policy.0.unit") {
-		return immutableFieldError("default_partition.data_retention_policy.unit", federatedLogsSetupRecreateHint)
-	}
+	// default_partition.data_retention_policy.{duration,unit} are intentionally
+	// allowed to change in-place — they're routed through Update via
+	// FederatedLogsUpdateSetupInput.DefaultPartition.DataRetentionPolicy.
 	return nil
 }

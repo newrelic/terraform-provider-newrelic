@@ -130,8 +130,9 @@ func testAccCheckNewRelicFederatedLogsSetupExists(name string) resource.TestChec
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("no setup ID set in state")
 		}
-		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		resp, err := client.Federatedlogs.GetSetupWithContext(context.Background(), rs.Primary.ID)
+		providerConfig := testAccProvider.Meta().(*ProviderConfig)
+		client := providerConfig.NewClient
+		resp, err := client.Federatedlogs.GetSetupWithContext(context.Background(), providerConfig.AccountID, rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error fetching federated logs setup %s: %w", rs.Primary.ID, err)
 		}
@@ -145,12 +146,13 @@ func testAccCheckNewRelicFederatedLogsSetupExists(name string) resource.TestChec
 func testAccCheckNewRelicFederatedLogsSetupDestroy(s *terraform.State) error {
 	// Setup deletion is a soft-delete: the entity stays queryable in the
 	// DELETING lifecycle state.
-	client := testAccProvider.Meta().(*ProviderConfig).NewClient
+	providerConfig := testAccProvider.Meta().(*ProviderConfig)
+	client := providerConfig.NewClient
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "newrelic_federated_logs_setup" {
 			continue
 		}
-		resp, err := client.Federatedlogs.GetSetupWithContext(context.Background(), rs.Primary.ID)
+		resp, err := client.Federatedlogs.GetSetupWithContext(context.Background(), providerConfig.AccountID, rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("expected setup %s to be queryable in DELETING state, got error: %w", rs.Primary.ID, err)
 		}

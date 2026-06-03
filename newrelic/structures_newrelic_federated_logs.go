@@ -86,6 +86,16 @@ func expandFederatedLogsDefaultPartition(in []interface{}) federatedlogs.Federat
 	return out
 }
 
+func expandFederatedLogsDefaultPartitionUpdate(in []interface{}) *federatedlogs.FederatedLogsUpdateDefaultPartitionInput {
+	policy := expandFederatedLogsRetentionPolicy(in)
+	if policy == nil {
+		return nil
+	}
+	return &federatedlogs.FederatedLogsUpdateDefaultPartitionInput{
+		DataRetentionPolicy: *policy,
+	}
+}
+
 func expandFederatedLogsForwarder(in []interface{}) *federatedlogs.FederatedLogsForwarderInput {
 	if len(in) == 0 || in[0] == nil {
 		return nil
