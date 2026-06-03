@@ -201,6 +201,9 @@ func Provider() *schema.Provider {
 			"newrelic_fleet_deployment":                         resourceNewRelicFleetDeployment(),
 			"newrelic_fleet_members":                            resourceNewRelicFleetMembers(),
 			"newrelic_workflow_automation":                      resourceNewRelicWorkflowAutomation(),
+			"newrelic_federated_logs_setup":                     resourceNewRelicFederatedLogsSetup(),
+			"newrelic_federated_logs_partition":                 resourceNewRelicFederatedLogsPartition(),
+			"newrelic_aws_connection":                           resourceNewRelicAwsConnection(),
 		},
 	}
 
