@@ -32,19 +32,19 @@ func TestAccNewRelicCloudGcpDmLinkAccount_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-v2"),
+				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-dm"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudGcpDmLinkAccountExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-v2"),
+					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-dm"),
 					resource.TestCheckResourceAttr(resourceName, "project_id", testProjectID),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
 			},
 			// Rename (Update name only — all other fields are ForceNew)
 			{
-				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-v2-renamed"),
+				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-dm-renamed"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-v2-renamed"),
+					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-dm-renamed"),
 				),
 			},
 			// Import
@@ -73,7 +73,7 @@ func testAccCheckNewRelicCloudGcpDmLinkAccountExists(n string) resource.TestChec
 
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, linkedAccountID)
 		if err != nil || linkedAccount == nil {
-			return fmt.Errorf("GCP v2 linked account not found: %w", err)
+			return fmt.Errorf("GCP Dimensional Metrics linked account not found: %w", err)
 		}
 		return nil
 	}
@@ -91,7 +91,7 @@ func testAccCheckNewRelicCloudGcpDmLinkAccountDestroyed(s *terraform.State) erro
 		}
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, linkedAccountID)
 		if linkedAccount != nil && err == nil {
-			return fmt.Errorf("GCP v2 linked account still exists: %d", linkedAccountID)
+			return fmt.Errorf("GCP Dimensional Metrics linked account still exists: %d", linkedAccountID)
 		}
 	}
 	return nil

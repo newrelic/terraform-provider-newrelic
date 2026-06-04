@@ -13,7 +13,7 @@ import (
 )
 
 // gcpDmAuthenticateMutation calls cloudAuthenticateIntegration to obtain an authReferenceId
-// for WIF-based GCP v2 account linking (Step 1 of 2-step Create).
+// for WIF-based GCP Dimensional Metrics account linking (Step 1 of 2-step Create).
 const gcpDmAuthenticateMutation = `mutation(
 	$accountId: Int!,
 	$providerSlug: CloudProviderType!,
@@ -55,7 +55,7 @@ const gcpDmLinkAccountMutation = `mutation(
 // gcpDmGetLinkedAccountQuery fetches only the basic fields of a linked account
 // (id, name, nrAccountId, externalId) without requesting integrations.
 // This avoids the "Abstract type 'Integration' must resolve to an Object type"
-// error that occurs when GetLinkedAccountWithContext encounters GCP v2-specific
+// error that occurs when GetLinkedAccountWithContext encounters GCP Dimensional Metrics-specific
 // integration types that its inline fragments don't cover.
 const gcpDmGetLinkedAccountQuery = `query($accountId: Int!, $linkedAccountId: Int!) {
 	actor {
@@ -96,7 +96,7 @@ type gcpDmAuthResp struct {
 }
 
 // gcpDmLinkAccountInput is a local GCP link account input that includes authReferenceId,
-// which is required for GCP v2 / WIF authentication but absent from cloud.CloudGcpLinkAccountInput.
+// which is required for GCP Dimensional Metrics / WIF authentication but absent from cloud.CloudGcpLinkAccountInput.
 type gcpDmLinkAccountInput struct {
 	Name            string `json:"name"`
 	ProjectId       string `json:"projectId"`
@@ -289,7 +289,7 @@ func resourceNewRelicCloudGcpDmLinkAccountRead(ctx context.Context, d *schema.Re
 
 	// Use a minimal custom query that fetches only basic fields without integrations.
 	// GetLinkedAccountWithContext uses client-go inline fragments that fail to resolve
-	// GCP v2-specific integration types, causing "Abstract type must resolve" errors.
+	// GCP Dimensional Metrics-specific integration types, causing "Abstract type must resolve" errors.
 	var resp gcpDmLinkedAccountResp
 	vars := map[string]interface{}{
 		"accountId":       accountID,

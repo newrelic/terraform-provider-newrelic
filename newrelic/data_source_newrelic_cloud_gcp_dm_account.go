@@ -23,7 +23,7 @@ func dataSourceNewRelicCloudGcpDmAccount() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the GCP v2 linked account to look up.",
+				Description: "The name of the GCP Dimensional Metrics linked account to look up.",
 			},
 		},
 	}
@@ -35,7 +35,7 @@ func dataSourceNewRelicCloudGcpDmAccountRead(ctx context.Context, d *schema.Reso
 	accountID := selectAccountID(providerConfig, d)
 	targetName := d.Get("name").(string)
 
-	// GCP v2 linked accounts use "gcp_dm" as the provider slug internally.
+	// GCP Dimensional Metrics linked accounts use "gcp_dm" as the provider slug internally.
 	// If the API does not return results for "gcp_dm", fall back to "gcp".
 	linkedAccounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, "gcp_dm")
 	if err != nil {
@@ -52,7 +52,7 @@ func dataSourceNewRelicCloudGcpDmAccountRead(ctx context.Context, d *schema.Reso
 	}
 
 	return diag.Errorf(
-		"no GCP v2 linked account named %q found for New Relic account %d",
+		"no GCP Dimensional Metrics linked account named %q found for New Relic account %d",
 		targetName, accountID,
 	)
 }

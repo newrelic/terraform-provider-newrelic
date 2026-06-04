@@ -81,10 +81,10 @@ func testAccCheckNewRelicCloudGcpDmIntegrationsExists(n string) resource.TestChe
 			return err
 		}
 		if linkedAccount == nil {
-			return fmt.Errorf("GCP v2 linked account not found: %d", linkedAccountID)
+			return fmt.Errorf("GCP Dimensional Metrics linked account not found: %d", linkedAccountID)
 		}
 		if len(linkedAccount.Integrations) == 0 {
-			return fmt.Errorf("GCP v2 integrations not configured for linked account %d", linkedAccountID)
+			return fmt.Errorf("GCP Dimensional Metrics integrations not configured for linked account %d", linkedAccountID)
 		}
 		return nil
 	}
@@ -102,7 +102,7 @@ func testAccCheckNewRelicCloudGcpDmIntegrationsDestroyed(s *terraform.State) err
 		}
 		linkedAccount, err := client.Cloud.GetLinkedAccount(testSubAccountID, linkedAccountID)
 		if linkedAccount != nil && err == nil {
-			return fmt.Errorf("GCP v2 linked account still exists: %d", linkedAccountID)
+			return fmt.Errorf("GCP Dimensional Metrics linked account still exists: %d", linkedAccountID)
 		}
 	}
 	return nil
@@ -120,7 +120,7 @@ provider "newrelic" {
 resource "newrelic_cloud_gcp_dm_link_account" "test" {
   provider       = newrelic.cloud-integration-provider
   account_id     = %d
-  name           = "tf-test-gcp-v2-integrations"
+  name           = "tf-test-gcp-dm-integrations"
   project_id     = %q
   wif_credential = %q
 }
@@ -155,7 +155,7 @@ provider "newrelic" {
 resource "newrelic_cloud_gcp_dm_link_account" "test" {
   provider       = newrelic.cloud-integration-provider
   account_id     = %d
-  name           = "tf-test-gcp-v2-integrations"
+  name           = "tf-test-gcp-dm-integrations"
   project_id     = %q
   wif_credential = %q
 }

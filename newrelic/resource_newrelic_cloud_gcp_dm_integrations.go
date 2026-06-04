@@ -11,7 +11,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
-// gcpDmConfigureIntegrationMutation configures GCP v2 integrations.
+// gcpDmConfigureIntegrationMutation configures GCP Dimensional Metrics integrations.
 // We define this locally to use a simpler response shape (errors only).
 const gcpDmConfigureIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudIntegrationsInput!) {
 	cloudConfigureIntegration(accountId: $accountId, integrations: $integrations) {
@@ -19,7 +19,7 @@ const gcpDmConfigureIntegrationMutation = `mutation($accountId: Int!, $integrati
 	}
 }`
 
-// gcpDmDisableIntegrationMutation disables GCP v2 integrations.
+// gcpDmDisableIntegrationMutation disables GCP Dimensional Metrics integrations.
 const gcpDmDisableIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudDisableIntegrationsInput!) {
 	cloudDisableIntegration(accountId: $accountId, integrations: $integrations) {
 		errors { type message }
@@ -29,7 +29,7 @@ const gcpDmDisableIntegrationMutation = `mutation($accountId: Int!, $integration
 // gcpDmCheckLinkedAccountQuery is a minimal existence-check query that verifies
 // the linked account still exists without requesting the integrations field.
 // Requesting integrations causes "Abstract type 'Integration' must resolve to an
-// Object type at runtime" errors on environments (e.g. staging) where GCP v2-specific
+// Object type at runtime" errors on environments (e.g. staging) where GCP Dimensional Metrics-specific
 // integration types are registered in the backend but not fully in the GraphQL schema.
 const gcpDmCheckLinkedAccountQuery = `query($accountID: Int!, $id: Int!) {
 	actor {
@@ -44,15 +44,15 @@ const gcpDmCheckLinkedAccountQuery = `query($accountID: Int!, $id: Int!) {
 	}
 }`
 
-// gcpDmGenericIntegrationInput is the configure input for the 7 new GCP v2 services.
-// These services exist in the NerdGraph schema but not in newrelic-client-go v2.84.0 types.
+// gcpDmGenericIntegrationInput is the configure input for the 7 new GCP Dimensional Metrics services.
+// These services exist in the NerdGraph schema but not in newrelic-client-go types.
 type gcpDmGenericIntegrationInput struct {
 	LinkedAccountId        int `json:"linkedAccountId"`
 	MetricsPollingInterval int `json:"metricsPollingInterval,omitempty"`
 }
 
 // gcpDmGcpIntegrationsInput extends cloud.CloudGcpIntegrationsInput with the 7 new
-// GCP v2 service fields. JSON marshaling promotes all embedded fields alongside the new ones.
+// GCP Dimensional Metrics service fields. JSON marshaling promotes all embedded fields alongside the new ones.
 type gcpDmGcpIntegrationsInput struct {
 	cloud.CloudGcpIntegrationsInput
 	GcpApiGateway         []gcpDmGenericIntegrationInput `json:"gcpApiGateway,omitempty"`
@@ -65,7 +65,7 @@ type gcpDmGcpIntegrationsInput struct {
 }
 
 // gcpDmGcpDisableIntegrationsInput extends cloud.CloudGcpDisableIntegrationsInput with
-// the 7 new GCP v2 service fields.
+// the 7 new GCP Dimensional Metrics service fields.
 type gcpDmGcpDisableIntegrationsInput struct {
 	cloud.CloudGcpDisableIntegrationsInput
 	GcpApiGateway         []cloud.CloudDisableAccountIntegrationInput `json:"gcpApiGateway,omitempty"`
@@ -181,7 +181,7 @@ func generateGcpDmIntegrationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Required:    true,
 			ForceNew:    true,
-			Description: "The ID of the GCP v2 linked account (from newrelic_cloud_gcp_dm_link_account).",
+			Description: "The ID of the GCP Dimensional Metrics linked account (from newrelic_cloud_gcp_dm_link_account).",
 		},
 		// ── Existing 27 services ──
 		"ai_platform":       serviceBlock("GCP Vertex AI / AI Platform.", baseSchema),
@@ -211,14 +211,14 @@ func generateGcpDmIntegrationSchema() map[string]*schema.Schema {
 		"storage":           serviceBlock("GCP Cloud Storage.", fetchTagsSchema),
 		"virtual_machines":  serviceBlock("GCP Compute Engine VMs.", baseSchema),
 		"vpc_access":        serviceBlock("GCP Serverless VPC Access.", baseSchema),
-		// ── New 7 GCP v2 services ──
-		"api_gateway":          serviceBlock("GCP API Gateway (v2 only).", baseSchema),
-		"firebase_auth":        serviceBlock("Firebase Authentication (v2 only).", baseSchema),
-		"firebase_vertex_ai":   serviceBlock("Firebase Vertex AI (v2 only; no entity synthesis).", baseSchema),
-		"istio":                serviceBlock("GCP Istio Service Mesh (v2 only; no entity synthesis).", baseSchema),
-		"managed_kafka":        serviceBlock("GCP Managed Service for Apache Kafka (v2 only).", baseSchema),
-		"memory_store":         serviceBlock("GCP Memorystore for Redis/Memcached (v2 only).", baseSchema),
-		"firebase_app_hosting": serviceBlock("Firebase App Hosting (v2 only; no entity synthesis).", baseSchema),
+		// ── New GCP Dimensional Metrics services ──
+		"api_gateway":          serviceBlock("GCP API Gateway (Dimensional Metrics only).", baseSchema),
+		"firebase_auth":        serviceBlock("Firebase Authentication (Dimensional Metrics only).", baseSchema),
+		"firebase_vertex_ai":   serviceBlock("Firebase Vertex AI (Dimensional Metrics only; no entity synthesis).", baseSchema),
+		"istio":                serviceBlock("GCP Istio Service Mesh (Dimensional Metrics only; no entity synthesis).", baseSchema),
+		"managed_kafka":        serviceBlock("GCP Managed Service for Apache Kafka (Dimensional Metrics only).", baseSchema),
+		"memory_store":         serviceBlock("GCP Memorystore for Redis/Memcached (Dimensional Metrics only).", baseSchema),
+		"firebase_app_hosting": serviceBlock("Firebase App Hosting (Dimensional Metrics only; no entity synthesis).", baseSchema),
 	}
 }
 
@@ -233,7 +233,7 @@ func serviceBlock(description string, elem map[string]*schema.Schema) *schema.Sc
 	}
 }
 
-// cloudGcpDmIntegrationSchemaBase is the minimal schema shared by all GCP v2 service blocks.
+// cloudGcpDmIntegrationSchemaBase is the minimal schema shared by all GCP Dimensional Metrics service blocks.
 func cloudGcpDmIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"metrics_polling_interval": {
@@ -300,7 +300,7 @@ func resourceNewrelicCloudGcpDmIntegrationsRead(ctx context.Context, d *schema.R
 
 	// Existence-check only — do not request integrations.
 	// Fetching the integrations field causes "Abstract type 'Integration' must resolve
-	// to an Object type" errors on environments where GCP v2 integration types are not
+	// to an Object type" errors on environments where GCP Dimensional Metrics integration types are not
 	// fully registered in the GraphQL schema (e.g. staging). The linked_account_id
 	// and account_id are already in state; this Read simply confirms the account exists.
 	var checkResp gcpDmCheckLinkedAccountResp
@@ -691,7 +691,7 @@ func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID i
 		gcpDisable.GcpVpcaccess = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
-	// ── New 7 GCP v2 services ─────────────────────────────────────────────────
+	// ── New GCP Dimensional Metrics services ─────────────────────────────────────────────────
 
 	if present("api_gateway") {
 		gcpInput.GcpApiGateway = []gcpDmGenericIntegrationInput{genericIn("api_gateway")}
