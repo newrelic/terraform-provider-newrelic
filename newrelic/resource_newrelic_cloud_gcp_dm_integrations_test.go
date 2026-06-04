@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicCloudGcpV2Integrations_Basic(t *testing.T) {
+func TestAccNewRelicCloudGcpDmIntegrations_Basic(t *testing.T) {
 	testProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
 	testWifCredential := os.Getenv("INTEGRATION_TESTING_GCP_WIF_CREDENTIAL")
 
@@ -23,18 +23,18 @@ func TestAccNewRelicCloudGcpV2Integrations_Basic(t *testing.T) {
 		t.Skip("skipping: NEW_RELIC_SUBACCOUNT_ID must be set")
 	}
 
-	resourceName := "newrelic_cloud_gcp_v2_integrations.test"
+	resourceName := "newrelic_cloud_gcp_dm_integrations.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "gcp") },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicCloudGcpV2IntegrationsDestroyed,
+		CheckDestroy: testAccCheckNewRelicCloudGcpDmIntegrationsDestroyed,
 		Steps: []resource.TestStep{
 			// Create: link account + big_query + api_gateway
 			{
-				Config: testAccNewRelicCloudGcpV2IntegrationsConfig(testProjectID, testWifCredential),
+				Config: testAccNewRelicCloudGcpDmIntegrationsConfig(testProjectID, testWifCredential),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicCloudGcpV2IntegrationsExists(resourceName),
+					testAccCheckNewRelicCloudGcpDmIntegrationsExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "linked_account_id"),
 					resource.TestCheckResourceAttr(resourceName, "big_query.0.metrics_polling_interval", "400"),
 					resource.TestCheckResourceAttr(resourceName, "big_query.0.fetch_tags", "true"),
@@ -44,9 +44,9 @@ func TestAccNewRelicCloudGcpV2Integrations_Basic(t *testing.T) {
 			},
 			// Update: add firebase_auth, remove api_gateway
 			{
-				Config: testAccNewRelicCloudGcpV2IntegrationsConfigUpdated(testProjectID, testWifCredential),
+				Config: testAccNewRelicCloudGcpDmIntegrationsConfigUpdated(testProjectID, testWifCredential),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicCloudGcpV2IntegrationsExists(resourceName),
+					testAccCheckNewRelicCloudGcpDmIntegrationsExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "big_query.0.metrics_polling_interval", "400"),
 					resource.TestCheckResourceAttr(resourceName, "firebase_auth.0.metrics_polling_interval", "400"),
 					resource.TestCheckNoResourceAttr(resourceName, "api_gateway.0.metrics_polling_interval"),
@@ -62,7 +62,7 @@ func TestAccNewRelicCloudGcpV2Integrations_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckNewRelicCloudGcpV2IntegrationsExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicCloudGcpDmIntegrationsExists(n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -90,10 +90,10 @@ func testAccCheckNewRelicCloudGcpV2IntegrationsExists(n string) resource.TestChe
 	}
 }
 
-func testAccCheckNewRelicCloudGcpV2IntegrationsDestroyed(s *terraform.State) error {
+func testAccCheckNewRelicCloudGcpDmIntegrationsDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_cloud_gcp_v2_integrations" && r.Type != "newrelic_cloud_gcp_v2_link_account" {
+		if r.Type != "newrelic_cloud_gcp_dm_integrations" && r.Type != "newrelic_cloud_gcp_dm_link_account" {
 			continue
 		}
 		linkedAccountID, err := strconv.Atoi(r.Primary.ID)
@@ -108,16 +108,16 @@ func testAccCheckNewRelicCloudGcpV2IntegrationsDestroyed(s *terraform.State) err
 	return nil
 }
 
-// testAccNewRelicCloudGcpV2IntegrationsConfig creates a link account plus integrations
+// testAccNewRelicCloudGcpDmIntegrationsConfig creates a link account plus integrations
 // with big_query (fetch_tags + fetch_table_metrics) and api_gateway enabled.
-func testAccNewRelicCloudGcpV2IntegrationsConfig(projectID, wifCredential string) string {
+func testAccNewRelicCloudGcpDmIntegrationsConfig(projectID, wifCredential string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   account_id = "%d"
   alias      = "cloud-integration-provider"
 }
 
-resource "newrelic_cloud_gcp_v2_link_account" "test" {
+resource "newrelic_cloud_gcp_dm_link_account" "test" {
   provider       = newrelic.cloud-integration-provider
   account_id     = %d
   name           = "tf-test-gcp-v2-integrations"
@@ -125,10 +125,10 @@ resource "newrelic_cloud_gcp_v2_link_account" "test" {
   wif_credential = %q
 }
 
-resource "newrelic_cloud_gcp_v2_integrations" "test" {
+resource "newrelic_cloud_gcp_dm_integrations" "test" {
   provider          = newrelic.cloud-integration-provider
   account_id        = %d
-  linked_account_id = newrelic_cloud_gcp_v2_link_account.test.id
+  linked_account_id = newrelic_cloud_gcp_dm_link_account.test.id
 
   big_query {
     metrics_polling_interval = 400
@@ -143,16 +143,16 @@ resource "newrelic_cloud_gcp_v2_integrations" "test" {
 `, testSubAccountID, testSubAccountID, projectID, wifCredential, testSubAccountID)
 }
 
-// testAccNewRelicCloudGcpV2IntegrationsConfigUpdated keeps big_query, adds firebase_auth,
+// testAccNewRelicCloudGcpDmIntegrationsConfigUpdated keeps big_query, adds firebase_auth,
 // and removes api_gateway.
-func testAccNewRelicCloudGcpV2IntegrationsConfigUpdated(projectID, wifCredential string) string {
+func testAccNewRelicCloudGcpDmIntegrationsConfigUpdated(projectID, wifCredential string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   account_id = "%d"
   alias      = "cloud-integration-provider"
 }
 
-resource "newrelic_cloud_gcp_v2_link_account" "test" {
+resource "newrelic_cloud_gcp_dm_link_account" "test" {
   provider       = newrelic.cloud-integration-provider
   account_id     = %d
   name           = "tf-test-gcp-v2-integrations"
@@ -160,10 +160,10 @@ resource "newrelic_cloud_gcp_v2_link_account" "test" {
   wif_credential = %q
 }
 
-resource "newrelic_cloud_gcp_v2_integrations" "test" {
+resource "newrelic_cloud_gcp_dm_integrations" "test" {
   provider          = newrelic.cloud-integration-provider
   account_id        = %d
-  linked_account_id = newrelic_cloud_gcp_v2_link_account.test.id
+  linked_account_id = newrelic_cloud_gcp_dm_link_account.test.id
 
   big_query {
     metrics_polling_interval = 400

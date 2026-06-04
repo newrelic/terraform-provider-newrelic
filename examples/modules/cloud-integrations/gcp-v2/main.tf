@@ -1,7 +1,7 @@
 # Link GCP project to New Relic using Workload Identity Federation (WIF).
 # The wif_credential is a write-only field — it is used during Create and
 # is never returned by the API. Changing it forces replacement of this resource.
-resource "newrelic_cloud_gcp_v2_link_account" "main" {
+resource "newrelic_cloud_gcp_dm_link_account" "main" {
   account_id     = var.newrelic_account_id
   name           = var.name
   project_id     = var.gcp_project_id
@@ -9,9 +9,9 @@ resource "newrelic_cloud_gcp_v2_link_account" "main" {
 }
 
 # Configure which GCP services New Relic polls for metrics.
-resource "newrelic_cloud_gcp_v2_integrations" "main" {
-  account_id        = newrelic_cloud_gcp_v2_link_account.main.account_id
-  linked_account_id = newrelic_cloud_gcp_v2_link_account.main.id
+resource "newrelic_cloud_gcp_dm_integrations" "main" {
+  account_id        = newrelic_cloud_gcp_dm_link_account.main.account_id
+  linked_account_id = newrelic_cloud_gcp_dm_link_account.main.id
 
   # ── Existing GCP services ─────────────────────────────────────────────────
 

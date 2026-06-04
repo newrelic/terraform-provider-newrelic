@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceNewRelicCloudGcpV2Account() *schema.Resource {
+func dataSourceNewRelicCloudGcpDmAccount() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceNewRelicCloudGcpV2AccountRead,
+		ReadContext: dataSourceNewRelicCloudGcpDmAccountRead,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -29,15 +29,15 @@ func dataSourceNewRelicCloudGcpV2Account() *schema.Resource {
 	}
 }
 
-func dataSourceNewRelicCloudGcpV2AccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceNewRelicCloudGcpDmAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 	targetName := d.Get("name").(string)
 
-	// GCP v2 linked accounts use "gcp_v2" as the provider slug internally.
-	// If the API does not return results for "gcp_v2", fall back to "gcp".
-	linkedAccounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, "gcp_v2")
+	// GCP v2 linked accounts use "gcp_dm" as the provider slug internally.
+	// If the API does not return results for "gcp_dm", fall back to "gcp".
+	linkedAccounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, "gcp_dm")
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("GetLinkedAccounts failed: %w", err))
 	}

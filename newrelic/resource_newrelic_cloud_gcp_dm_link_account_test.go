@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccNewRelicCloudGcpV2LinkAccount_Basic(t *testing.T) {
+func TestAccNewRelicCloudGcpDmLinkAccount_Basic(t *testing.T) {
 	testProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
 	testWifCredential := os.Getenv("INTEGRATION_TESTING_GCP_WIF_CREDENTIAL")
 
@@ -23,18 +23,18 @@ func TestAccNewRelicCloudGcpV2LinkAccount_Basic(t *testing.T) {
 		t.Skip("skipping: NEW_RELIC_SUBACCOUNT_ID must be set")
 	}
 
-	resourceName := "newrelic_cloud_gcp_v2_link_account.test"
+	resourceName := "newrelic_cloud_gcp_dm_link_account.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "gcp") },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicCloudGcpV2LinkAccountDestroyed,
+		CheckDestroy: testAccCheckNewRelicCloudGcpDmLinkAccountDestroyed,
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccNewRelicCloudGcpV2LinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-v2"),
+				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-v2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicCloudGcpV2LinkAccountExists(resourceName),
+					testAccCheckNewRelicCloudGcpDmLinkAccountExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-v2"),
 					resource.TestCheckResourceAttr(resourceName, "project_id", testProjectID),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -42,7 +42,7 @@ func TestAccNewRelicCloudGcpV2LinkAccount_Basic(t *testing.T) {
 			},
 			// Rename (Update name only — all other fields are ForceNew)
 			{
-				Config: testAccNewRelicCloudGcpV2LinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-v2-renamed"),
+				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-v2-renamed"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-v2-renamed"),
 				),
@@ -58,7 +58,7 @@ func TestAccNewRelicCloudGcpV2LinkAccount_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckNewRelicCloudGcpV2LinkAccountExists(n string) resource.TestCheckFunc {
+func testAccCheckNewRelicCloudGcpDmLinkAccountExists(n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -79,10 +79,10 @@ func testAccCheckNewRelicCloudGcpV2LinkAccountExists(n string) resource.TestChec
 	}
 }
 
-func testAccCheckNewRelicCloudGcpV2LinkAccountDestroyed(s *terraform.State) error {
+func testAccCheckNewRelicCloudGcpDmLinkAccountDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_cloud_gcp_v2_link_account" {
+		if r.Type != "newrelic_cloud_gcp_dm_link_account" {
 			continue
 		}
 		linkedAccountID, err := strconv.Atoi(r.Primary.ID)
@@ -97,14 +97,14 @@ func testAccCheckNewRelicCloudGcpV2LinkAccountDestroyed(s *terraform.State) erro
 	return nil
 }
 
-func testAccNewRelicCloudGcpV2LinkAccountConfig(projectID, wifCredential, name string) string {
+func testAccNewRelicCloudGcpDmLinkAccountConfig(projectID, wifCredential, name string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   account_id = "%d"
   alias      = "cloud-integration-provider"
 }
 
-resource "newrelic_cloud_gcp_v2_link_account" "test" {
+resource "newrelic_cloud_gcp_dm_link_account" "test" {
   provider       = newrelic.cloud-integration-provider
   account_id     = %d
   name           = %q

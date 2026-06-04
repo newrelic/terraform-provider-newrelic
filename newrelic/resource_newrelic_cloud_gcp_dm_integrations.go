@@ -11,27 +11,27 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
-// gcpV2ConfigureIntegrationMutation configures GCP v2 integrations.
+// gcpDmConfigureIntegrationMutation configures GCP v2 integrations.
 // We define this locally to use a simpler response shape (errors only).
-const gcpV2ConfigureIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudIntegrationsInput!) {
+const gcpDmConfigureIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudIntegrationsInput!) {
 	cloudConfigureIntegration(accountId: $accountId, integrations: $integrations) {
 		errors { type message }
 	}
 }`
 
-// gcpV2DisableIntegrationMutation disables GCP v2 integrations.
-const gcpV2DisableIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudDisableIntegrationsInput!) {
+// gcpDmDisableIntegrationMutation disables GCP v2 integrations.
+const gcpDmDisableIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudDisableIntegrationsInput!) {
 	cloudDisableIntegration(accountId: $accountId, integrations: $integrations) {
 		errors { type message }
 	}
 }`
 
-// gcpV2CheckLinkedAccountQuery is a minimal existence-check query that verifies
+// gcpDmCheckLinkedAccountQuery is a minimal existence-check query that verifies
 // the linked account still exists without requesting the integrations field.
 // Requesting integrations causes "Abstract type 'Integration' must resolve to an
 // Object type at runtime" errors on environments (e.g. staging) where GCP v2-specific
 // integration types are registered in the backend but not fully in the GraphQL schema.
-const gcpV2CheckLinkedAccountQuery = `query($accountID: Int!, $id: Int!) {
+const gcpDmCheckLinkedAccountQuery = `query($accountID: Int!, $id: Int!) {
 	actor {
 		account(id: $accountID) {
 			cloud {
@@ -44,29 +44,29 @@ const gcpV2CheckLinkedAccountQuery = `query($accountID: Int!, $id: Int!) {
 	}
 }`
 
-// gcpV2GenericIntegrationInput is the configure input for the 7 new GCP v2 services.
+// gcpDmGenericIntegrationInput is the configure input for the 7 new GCP v2 services.
 // These services exist in the NerdGraph schema but not in newrelic-client-go v2.84.0 types.
-type gcpV2GenericIntegrationInput struct {
+type gcpDmGenericIntegrationInput struct {
 	LinkedAccountId        int `json:"linkedAccountId"`
 	MetricsPollingInterval int `json:"metricsPollingInterval,omitempty"`
 }
 
-// gcpV2GcpIntegrationsInput extends cloud.CloudGcpIntegrationsInput with the 7 new
+// gcpDmGcpIntegrationsInput extends cloud.CloudGcpIntegrationsInput with the 7 new
 // GCP v2 service fields. JSON marshaling promotes all embedded fields alongside the new ones.
-type gcpV2GcpIntegrationsInput struct {
+type gcpDmGcpIntegrationsInput struct {
 	cloud.CloudGcpIntegrationsInput
-	GcpApiGateway         []gcpV2GenericIntegrationInput `json:"gcpApiGateway,omitempty"`
-	GcpFirebaseAuth       []gcpV2GenericIntegrationInput `json:"gcpFirebaseAuth,omitempty"`
-	GcpFirebaseVertexAi   []gcpV2GenericIntegrationInput `json:"gcpFirebaseVertexAi,omitempty"`
-	GcpIstio              []gcpV2GenericIntegrationInput `json:"gcpIstio,omitempty"`
-	GcpManagedKafka       []gcpV2GenericIntegrationInput `json:"gcpManagedKafka,omitempty"`
-	GcpMemoryStore        []gcpV2GenericIntegrationInput `json:"gcpMemoryStore,omitempty"`
-	GcpFirebaseAppHosting []gcpV2GenericIntegrationInput `json:"gcpFirebaseAppHosting,omitempty"`
+	GcpApiGateway         []gcpDmGenericIntegrationInput `json:"gcpApiGateway,omitempty"`
+	GcpFirebaseAuth       []gcpDmGenericIntegrationInput `json:"gcpFirebaseAuth,omitempty"`
+	GcpFirebaseVertexAi   []gcpDmGenericIntegrationInput `json:"gcpFirebaseVertexAi,omitempty"`
+	GcpIstio              []gcpDmGenericIntegrationInput `json:"gcpIstio,omitempty"`
+	GcpManagedKafka       []gcpDmGenericIntegrationInput `json:"gcpManagedKafka,omitempty"`
+	GcpMemoryStore        []gcpDmGenericIntegrationInput `json:"gcpMemoryStore,omitempty"`
+	GcpFirebaseAppHosting []gcpDmGenericIntegrationInput `json:"gcpFirebaseAppHosting,omitempty"`
 }
 
-// gcpV2GcpDisableIntegrationsInput extends cloud.CloudGcpDisableIntegrationsInput with
+// gcpDmGcpDisableIntegrationsInput extends cloud.CloudGcpDisableIntegrationsInput with
 // the 7 new GCP v2 service fields.
-type gcpV2GcpDisableIntegrationsInput struct {
+type gcpDmGcpDisableIntegrationsInput struct {
 	cloud.CloudGcpDisableIntegrationsInput
 	GcpApiGateway         []cloud.CloudDisableAccountIntegrationInput `json:"gcpApiGateway,omitempty"`
 	GcpFirebaseAuth       []cloud.CloudDisableAccountIntegrationInput `json:"gcpFirebaseAuth,omitempty"`
@@ -77,8 +77,8 @@ type gcpV2GcpDisableIntegrationsInput struct {
 	GcpFirebaseAppHosting []cloud.CloudDisableAccountIntegrationInput `json:"gcpFirebaseAppHosting,omitempty"`
 }
 
-// gcpV2ConfigureResp is the NerdGraph response for cloudConfigureIntegration.
-type gcpV2ConfigureResp struct {
+// gcpDmConfigureResp is the NerdGraph response for cloudConfigureIntegration.
+type gcpDmConfigureResp struct {
 	CloudConfigureIntegration struct {
 		Errors []struct {
 			Type    string `json:"type"`
@@ -87,8 +87,8 @@ type gcpV2ConfigureResp struct {
 	} `json:"cloudConfigureIntegration"`
 }
 
-// gcpV2DisableResp is the NerdGraph response for cloudDisableIntegration.
-type gcpV2DisableResp struct {
+// gcpDmDisableResp is the NerdGraph response for cloudDisableIntegration.
+type gcpDmDisableResp struct {
 	CloudDisableIntegration struct {
 		Errors []struct {
 			Type    string `json:"type"`
@@ -97,8 +97,8 @@ type gcpV2DisableResp struct {
 	} `json:"cloudDisableIntegration"`
 }
 
-// gcpV2CheckLinkedAccountResp is the response for gcpV2CheckLinkedAccountQuery.
-type gcpV2CheckLinkedAccountResp struct {
+// gcpDmCheckLinkedAccountResp is the response for gcpDmCheckLinkedAccountQuery.
+type gcpDmCheckLinkedAccountResp struct {
 	Actor struct {
 		Account struct {
 			Cloud struct {
@@ -111,19 +111,19 @@ type gcpV2CheckLinkedAccountResp struct {
 	} `json:"actor"`
 }
 
-// gcpV2FilterDisableErrors filters out ERR_INVALID_DATA errors from a disable
-// mutation response. These indicate the service slug is not registered on the
-// target environment (e.g. staging doesn't have the 7 new GCP v2 services),
-// so it was never enabled and there is nothing to disable — safe to skip.
+// gcpDmFilterDisableErrors filters out benign errors from a disable mutation
+// response. Both ERR_INVALID_DATA and ERR_OBJECT_NOT_FOUND indicate the service
+// was never enabled (slug unsupported on this environment, or integration simply
+// doesn't exist), so there is nothing to disable — safe to skip.
 // All other error types are aggregated and returned as a single error.
-func gcpV2FilterDisableErrors(errors []struct {
+func gcpDmFilterDisableErrors(errors []struct {
 	Type    string `json:"type"`
 	Message string `json:"message"`
 }) error {
 	var fatal []string
 	for _, e := range errors {
-		if e.Type == "ERR_INVALID_DATA" {
-			continue // service not supported on this environment — never enabled, skip
+		if e.Type == "ERR_INVALID_DATA" || e.Type == "ERR_OBJECT_NOT_FOUND" {
+			continue // service never enabled — nothing to disable, skip
 		}
 		fatal = append(fatal, e.Type+": "+e.Message)
 	}
@@ -135,22 +135,22 @@ func gcpV2FilterDisableErrors(errors []struct {
 
 // ─── Resource definition ──────────────────────────────────────────────────────
 
-func resourceNewrelicCloudGcpV2Integrations() *schema.Resource {
+func resourceNewrelicCloudGcpDmIntegrations() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewrelicCloudGcpV2IntegrationsCreate,
-		ReadContext:   resourceNewrelicCloudGcpV2IntegrationsRead,
-		UpdateContext: resourceNewrelicCloudGcpV2IntegrationsUpdate,
-		DeleteContext: resourceNewrelicCloudGcpV2IntegrationsDelete,
+		CreateContext: resourceNewrelicCloudGcpDmIntegrationsCreate,
+		ReadContext:   resourceNewrelicCloudGcpDmIntegrationsRead,
+		UpdateContext: resourceNewrelicCloudGcpDmIntegrationsUpdate,
+		DeleteContext: resourceNewrelicCloudGcpDmIntegrationsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: generateGcpV2IntegrationSchema(),
+		Schema: generateGcpDmIntegrationSchema(),
 	}
 }
 
-func generateGcpV2IntegrationSchema() map[string]*schema.Schema {
-	baseSchema := cloudGcpV2IntegrationSchemaBase()
-	bigQuerySchema := cloudGcpV2MergeSchema(baseSchema, map[string]*schema.Schema{
+func generateGcpDmIntegrationSchema() map[string]*schema.Schema {
+	baseSchema := cloudGcpDmIntegrationSchemaBase()
+	bigQuerySchema := cloudGcpDmMergeSchema(baseSchema, map[string]*schema.Schema{
 		"fetch_tags": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -162,7 +162,7 @@ func generateGcpV2IntegrationSchema() map[string]*schema.Schema {
 			Description: "Fetch metrics for each table in BigQuery.",
 		},
 	})
-	fetchTagsSchema := cloudGcpV2MergeSchema(baseSchema, map[string]*schema.Schema{
+	fetchTagsSchema := cloudGcpDmMergeSchema(baseSchema, map[string]*schema.Schema{
 		"fetch_tags": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -181,7 +181,7 @@ func generateGcpV2IntegrationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Required:    true,
 			ForceNew:    true,
-			Description: "The ID of the GCP v2 linked account (from newrelic_cloud_gcp_v2_link_account).",
+			Description: "The ID of the GCP v2 linked account (from newrelic_cloud_gcp_dm_link_account).",
 		},
 		// ── Existing 27 services ──
 		"ai_platform":       serviceBlock("GCP Vertex AI / AI Platform.", baseSchema),
@@ -233,8 +233,8 @@ func serviceBlock(description string, elem map[string]*schema.Schema) *schema.Sc
 	}
 }
 
-// cloudGcpV2IntegrationSchemaBase is the minimal schema shared by all GCP v2 service blocks.
-func cloudGcpV2IntegrationSchemaBase() map[string]*schema.Schema {
+// cloudGcpDmIntegrationSchemaBase is the minimal schema shared by all GCP v2 service blocks.
+func cloudGcpDmIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"metrics_polling_interval": {
 			Type:        schema.TypeInt,
@@ -244,8 +244,8 @@ func cloudGcpV2IntegrationSchemaBase() map[string]*schema.Schema {
 	}
 }
 
-// cloudGcpV2MergeSchema merges two schema maps into a new map (non-destructive).
-func cloudGcpV2MergeSchema(base, extra map[string]*schema.Schema) map[string]*schema.Schema {
+// cloudGcpDmMergeSchema merges two schema maps into a new map (non-destructive).
+func cloudGcpDmMergeSchema(base, extra map[string]*schema.Schema) map[string]*schema.Schema {
 	result := make(map[string]*schema.Schema, len(base)+len(extra))
 	for k, v := range base {
 		result[k] = v
@@ -258,20 +258,20 @@ func cloudGcpV2MergeSchema(base, extra map[string]*schema.Schema) map[string]*sc
 
 // ─── CRUD functions ───────────────────────────────────────────────────────────
 
-func resourceNewrelicCloudGcpV2IntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewrelicCloudGcpDmIntegrationsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 	linkedAccountID := d.Get("linked_account_id").(int)
 
-	gcpInput, _ := expandCloudGcpV2IntegrationsInput(d, linkedAccountID)
+	gcpInput, _ := expandCloudGcpDmIntegrationsInput(d, linkedAccountID)
 
-	var configResp gcpV2ConfigureResp
+	var configResp gcpDmConfigureResp
 	vars := map[string]interface{}{
 		"accountId":    accountID,
 		"integrations": map[string]interface{}{"gcp": gcpInput},
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2ConfigureIntegrationMutation, vars, &configResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmConfigureIntegrationMutation, vars, &configResp); err != nil {
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration failed: %w", err))
 	}
 	if len(configResp.CloudConfigureIntegration.Errors) > 0 {
@@ -285,10 +285,10 @@ func resourceNewrelicCloudGcpV2IntegrationsCreate(ctx context.Context, d *schema
 	d.SetId(strconv.Itoa(linkedAccountID))
 	_ = d.Set("account_id", accountID)
 
-	return resourceNewrelicCloudGcpV2IntegrationsRead(ctx, d, meta)
+	return resourceNewrelicCloudGcpDmIntegrationsRead(ctx, d, meta)
 }
 
-func resourceNewrelicCloudGcpV2IntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewrelicCloudGcpDmIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -303,12 +303,12 @@ func resourceNewrelicCloudGcpV2IntegrationsRead(ctx context.Context, d *schema.R
 	// to an Object type" errors on environments where GCP v2 integration types are not
 	// fully registered in the GraphQL schema (e.g. staging). The linked_account_id
 	// and account_id are already in state; this Read simply confirms the account exists.
-	var checkResp gcpV2CheckLinkedAccountResp
+	var checkResp gcpDmCheckLinkedAccountResp
 	vars := map[string]interface{}{
 		"accountID": accountID,
 		"id":        linkedAccountID,
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2CheckLinkedAccountQuery, vars, &checkResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmCheckLinkedAccountQuery, vars, &checkResp); err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			d.SetId("")
 			return nil
@@ -327,7 +327,7 @@ func resourceNewrelicCloudGcpV2IntegrationsRead(ctx context.Context, d *schema.R
 	return nil
 }
 
-func resourceNewrelicCloudGcpV2IntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewrelicCloudGcpDmIntegrationsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -337,28 +337,28 @@ func resourceNewrelicCloudGcpV2IntegrationsUpdate(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	gcpInput, gcpDisable := expandCloudGcpV2IntegrationsInput(d, linkedAccountID)
+	gcpInput, gcpDisable := expandCloudGcpDmIntegrationsInput(d, linkedAccountID)
 
 	// Disable removed integrations first
-	var disableResp gcpV2DisableResp
+	var disableResp gcpDmDisableResp
 	disableVars := map[string]interface{}{
 		"accountId":    accountID,
 		"integrations": map[string]interface{}{"gcp": gcpDisable},
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2DisableIntegrationMutation, disableVars, &disableResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmDisableIntegrationMutation, disableVars, &disableResp); err != nil {
 		return diag.FromErr(fmt.Errorf("cloudDisableIntegration failed: %w", err))
 	}
-	if err := gcpV2FilterDisableErrors(disableResp.CloudDisableIntegration.Errors); err != nil {
+	if err := gcpDmFilterDisableErrors(disableResp.CloudDisableIntegration.Errors); err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Enable/update present integrations
-	var configResp gcpV2ConfigureResp
+	var configResp gcpDmConfigureResp
 	configVars := map[string]interface{}{
 		"accountId":    accountID,
 		"integrations": map[string]interface{}{"gcp": gcpInput},
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2ConfigureIntegrationMutation, configVars, &configResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmConfigureIntegrationMutation, configVars, &configResp); err != nil {
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration failed: %w", err))
 	}
 	if len(configResp.CloudConfigureIntegration.Errors) > 0 {
@@ -369,10 +369,10 @@ func resourceNewrelicCloudGcpV2IntegrationsUpdate(ctx context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration errors: %s", strings.Join(msgs, "; ")))
 	}
 
-	return resourceNewrelicCloudGcpV2IntegrationsRead(ctx, d, meta)
+	return resourceNewrelicCloudGcpDmIntegrationsRead(ctx, d, meta)
 }
 
-func resourceNewrelicCloudGcpV2IntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewrelicCloudGcpDmIntegrationsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -382,17 +382,17 @@ func resourceNewrelicCloudGcpV2IntegrationsDelete(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	_, gcpDisable := expandCloudGcpV2IntegrationsInput(d, linkedAccountID)
+	_, gcpDisable := expandCloudGcpDmIntegrationsInput(d, linkedAccountID)
 
-	var disableResp gcpV2DisableResp
+	var disableResp gcpDmDisableResp
 	vars := map[string]interface{}{
 		"accountId":    accountID,
 		"integrations": map[string]interface{}{"gcp": gcpDisable},
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2DisableIntegrationMutation, vars, &disableResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmDisableIntegrationMutation, vars, &disableResp); err != nil {
 		return diag.FromErr(fmt.Errorf("cloudDisableIntegration failed: %w", err))
 	}
-	if err := gcpV2FilterDisableErrors(disableResp.CloudDisableIntegration.Errors); err != nil {
+	if err := gcpDmFilterDisableErrors(disableResp.CloudDisableIntegration.Errors); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -402,13 +402,13 @@ func resourceNewrelicCloudGcpV2IntegrationsDelete(ctx context.Context, d *schema
 
 // ─── Expand function ──────────────────────────────────────────────────────────
 
-// expandCloudGcpV2IntegrationsInput builds configure and disable inputs for all 34 GCP services.
+// expandCloudGcpDmIntegrationsInput builds configure and disable inputs for all 34 GCP services.
 // Present blocks go to configure; absent blocks go to disable.
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func expandCloudGcpV2IntegrationsInput(d *schema.ResourceData, linkedAccountID int) (gcpV2GcpIntegrationsInput, gcpV2GcpDisableIntegrationsInput) {
-	gcpInput := gcpV2GcpIntegrationsInput{}
-	gcpDisable := gcpV2GcpDisableIntegrationsInput{}
+func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID int) (gcpDmGcpIntegrationsInput, gcpDmGcpDisableIntegrationsInput) {
+	gcpInput := gcpDmGcpIntegrationsInput{}
+	gcpDisable := gcpDmGcpDisableIntegrationsInput{}
 	dis := cloud.CloudDisableAccountIntegrationInput{LinkedAccountId: linkedAccountID}
 
 	present := func(key string) bool {
@@ -434,8 +434,8 @@ func expandCloudGcpV2IntegrationsInput(d *schema.ResourceData, linkedAccountID i
 		return false
 	}
 
-	genericIn := func(key string) gcpV2GenericIntegrationInput {
-		return gcpV2GenericIntegrationInput{
+	genericIn := func(key string) gcpDmGenericIntegrationInput {
+		return gcpDmGenericIntegrationInput{
 			LinkedAccountId:        linkedAccountID,
 			MetricsPollingInterval: getInt(key + ".0.metrics_polling_interval"),
 		}
@@ -694,43 +694,43 @@ func expandCloudGcpV2IntegrationsInput(d *schema.ResourceData, linkedAccountID i
 	// ── New 7 GCP v2 services ─────────────────────────────────────────────────
 
 	if present("api_gateway") {
-		gcpInput.GcpApiGateway = []gcpV2GenericIntegrationInput{genericIn("api_gateway")}
+		gcpInput.GcpApiGateway = []gcpDmGenericIntegrationInput{genericIn("api_gateway")}
 	} else {
 		gcpDisable.GcpApiGateway = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("firebase_auth") {
-		gcpInput.GcpFirebaseAuth = []gcpV2GenericIntegrationInput{genericIn("firebase_auth")}
+		gcpInput.GcpFirebaseAuth = []gcpDmGenericIntegrationInput{genericIn("firebase_auth")}
 	} else {
 		gcpDisable.GcpFirebaseAuth = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("firebase_vertex_ai") {
-		gcpInput.GcpFirebaseVertexAi = []gcpV2GenericIntegrationInput{genericIn("firebase_vertex_ai")}
+		gcpInput.GcpFirebaseVertexAi = []gcpDmGenericIntegrationInput{genericIn("firebase_vertex_ai")}
 	} else {
 		gcpDisable.GcpFirebaseVertexAi = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("istio") {
-		gcpInput.GcpIstio = []gcpV2GenericIntegrationInput{genericIn("istio")}
+		gcpInput.GcpIstio = []gcpDmGenericIntegrationInput{genericIn("istio")}
 	} else {
 		gcpDisable.GcpIstio = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("managed_kafka") {
-		gcpInput.GcpManagedKafka = []gcpV2GenericIntegrationInput{genericIn("managed_kafka")}
+		gcpInput.GcpManagedKafka = []gcpDmGenericIntegrationInput{genericIn("managed_kafka")}
 	} else {
 		gcpDisable.GcpManagedKafka = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("memory_store") {
-		gcpInput.GcpMemoryStore = []gcpV2GenericIntegrationInput{genericIn("memory_store")}
+		gcpInput.GcpMemoryStore = []gcpDmGenericIntegrationInput{genericIn("memory_store")}
 	} else {
 		gcpDisable.GcpMemoryStore = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("firebase_app_hosting") {
-		gcpInput.GcpFirebaseAppHosting = []gcpV2GenericIntegrationInput{genericIn("firebase_app_hosting")}
+		gcpInput.GcpFirebaseAppHosting = []gcpDmGenericIntegrationInput{genericIn("firebase_app_hosting")}
 	} else {
 		gcpDisable.GcpFirebaseAppHosting = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}

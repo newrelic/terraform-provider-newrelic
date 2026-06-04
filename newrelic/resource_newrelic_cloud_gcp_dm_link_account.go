@@ -12,9 +12,9 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
-// gcpV2AuthenticateMutation calls cloudAuthenticateIntegration to obtain an authReferenceId
+// gcpDmAuthenticateMutation calls cloudAuthenticateIntegration to obtain an authReferenceId
 // for WIF-based GCP v2 account linking (Step 1 of 2-step Create).
-const gcpV2AuthenticateMutation = `mutation(
+const gcpDmAuthenticateMutation = `mutation(
 	$accountId: Int!,
 	$providerSlug: CloudProviderType!,
 	$authType: AuthenticationType!,
@@ -30,9 +30,9 @@ const gcpV2AuthenticateMutation = `mutation(
 	}
 }`
 
-// gcpV2LinkAccountMutation links a GCP project to a New Relic account using authReferenceId.
+// gcpDmLinkAccountMutation links a GCP project to a New Relic account using authReferenceId.
 // We define this locally because cloud.CloudGcpLinkAccountInput does not include authReferenceId.
-const gcpV2LinkAccountMutation = `mutation(
+const gcpDmLinkAccountMutation = `mutation(
 	$accountId: Int!,
 	$accounts: CloudLinkCloudAccountsInput!,
 ) {
@@ -52,12 +52,12 @@ const gcpV2LinkAccountMutation = `mutation(
 	}
 }`
 
-// gcpV2GetLinkedAccountQuery fetches only the basic fields of a linked account
+// gcpDmGetLinkedAccountQuery fetches only the basic fields of a linked account
 // (id, name, nrAccountId, externalId) without requesting integrations.
 // This avoids the "Abstract type 'Integration' must resolve to an Object type"
 // error that occurs when GetLinkedAccountWithContext encounters GCP v2-specific
 // integration types that its inline fragments don't cover.
-const gcpV2GetLinkedAccountQuery = `query($accountId: Int!, $linkedAccountId: Int!) {
+const gcpDmGetLinkedAccountQuery = `query($accountId: Int!, $linkedAccountId: Int!) {
 	actor {
 		account(id: $accountId) {
 			cloud {
@@ -72,8 +72,8 @@ const gcpV2GetLinkedAccountQuery = `query($accountId: Int!, $linkedAccountId: In
 	}
 }`
 
-// gcpV2LinkedAccountResp is the response type for gcpV2GetLinkedAccountQuery.
-type gcpV2LinkedAccountResp struct {
+// gcpDmLinkedAccountResp is the response type for gcpDmGetLinkedAccountQuery.
+type gcpDmLinkedAccountResp struct {
 	Actor struct {
 		Account struct {
 			Cloud struct {
@@ -88,23 +88,23 @@ type gcpV2LinkedAccountResp struct {
 	} `json:"actor"`
 }
 
-// gcpV2AuthResp is the NerdGraph response for cloudAuthenticateIntegration.
-type gcpV2AuthResp struct {
+// gcpDmAuthResp is the NerdGraph response for cloudAuthenticateIntegration.
+type gcpDmAuthResp struct {
 	CloudAuthenticateIntegration struct {
 		AuthReferenceId string `json:"authReferenceId"`
 	} `json:"cloudAuthenticateIntegration"`
 }
 
-// gcpV2LinkAccountInput is a local GCP link account input that includes authReferenceId,
+// gcpDmLinkAccountInput is a local GCP link account input that includes authReferenceId,
 // which is required for GCP v2 / WIF authentication but absent from cloud.CloudGcpLinkAccountInput.
-type gcpV2LinkAccountInput struct {
+type gcpDmLinkAccountInput struct {
 	Name            string `json:"name"`
 	ProjectId       string `json:"projectId"`
 	AuthReferenceId string `json:"authReferenceId,omitempty"`
 }
 
-// gcpV2LinkResp is the NerdGraph response for cloudLinkAccount.
-type gcpV2LinkResp struct {
+// gcpDmLinkResp is the NerdGraph response for cloudLinkAccount.
+type gcpDmLinkResp struct {
 	CloudLinkAccount struct {
 		LinkedAccounts []struct {
 			ID          int    `json:"id"`
@@ -118,12 +118,12 @@ type gcpV2LinkResp struct {
 	} `json:"cloudLinkAccount"`
 }
 
-func resourceNewRelicCloudGcpV2LinkAccount() *schema.Resource {
+func resourceNewRelicCloudGcpDmLinkAccount() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNewRelicCloudGcpV2LinkAccountCreate,
-		ReadContext:   resourceNewRelicCloudGcpV2LinkAccountRead,
-		UpdateContext: resourceNewRelicCloudGcpV2LinkAccountUpdate,
-		DeleteContext: resourceNewRelicCloudGcpV2LinkAccountDelete,
+		CreateContext: resourceNewRelicCloudGcpDmLinkAccountCreate,
+		ReadContext:   resourceNewRelicCloudGcpDmLinkAccountRead,
+		UpdateContext: resourceNewRelicCloudGcpDmLinkAccountUpdate,
+		DeleteContext: resourceNewRelicCloudGcpDmLinkAccountDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -169,10 +169,10 @@ func resourceNewRelicCloudGcpV2LinkAccount() *schema.Resource {
 	}
 }
 
-// gcpV2OIDCEndpoint returns the New Relic OIDC token endpoint for the given provider region.
+// gcpDmOIDCEndpoint returns the New Relic OIDC token endpoint for the given provider region.
 // This URL is set as credential_source.url in the WIF credential JSON and tells GCP STS
 // where to fetch the subject token from.
-func gcpV2OIDCEndpoint(region string) string {
+func gcpDmOIDCEndpoint(region string) string {
 	switch strings.ToLower(strings.TrimSpace(region)) {
 	case "eu":
 		return "https://oidc.eu.newrelic.com/r/gcp-cmp"
@@ -183,11 +183,11 @@ func gcpV2OIDCEndpoint(region string) string {
 	}
 }
 
-// gcpV2BuildWIFCredential constructs the GCP Workload Identity Federation credential
+// gcpDmBuildWIFCredential constructs the GCP Workload Identity Federation credential
 // JSON string that cloudAuthenticateIntegration expects as its payload.
 // All fixed fields (universe_domain, type, subject_token_type, token_url, format)
 // are set to their required values; the caller supplies only the environment-specific inputs.
-func gcpV2BuildWIFCredential(audience, serviceAccountEmail, region string) (string, error) {
+func gcpDmBuildWIFCredential(audience, serviceAccountEmail, region string) (string, error) {
 	cred := map[string]interface{}{
 		"universe_domain":    "googleapis.com",
 		"type":               "external_account",
@@ -195,7 +195,7 @@ func gcpV2BuildWIFCredential(audience, serviceAccountEmail, region string) (stri
 		"subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
 		"token_url":          "https://sts.googleapis.com/v1/token",
 		"credential_source": map[string]interface{}{
-			"url":     gcpV2OIDCEndpoint(region),
+			"url":     gcpDmOIDCEndpoint(region),
 			"headers": map[string]interface{}{},
 			"format": map[string]interface{}{
 				"type":                    "json",
@@ -212,13 +212,13 @@ func gcpV2BuildWIFCredential(audience, serviceAccountEmail, region string) (stri
 	return string(b), nil
 }
 
-func resourceNewRelicCloudGcpV2LinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudGcpDmLinkAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
 	// Build the WIF credential JSON from individual fields.
-	wifCredential, err := gcpV2BuildWIFCredential(
+	wifCredential, err := gcpDmBuildWIFCredential(
 		d.Get("audience").(string),
 		d.Get("service_account_email").(string),
 		providerConfig.Region,
@@ -228,14 +228,14 @@ func resourceNewRelicCloudGcpV2LinkAccountCreate(ctx context.Context, d *schema.
 	}
 
 	// Step 1: Authenticate via WIF to obtain an authReferenceId (30-min TTL).
-	var authResp gcpV2AuthResp
+	var authResp gcpDmAuthResp
 	authVars := map[string]interface{}{
 		"accountId":    accountID,
 		"providerSlug": "GCP",
 		"authType":     "WIF",
 		"payload":      wifCredential,
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2AuthenticateMutation, authVars, &authResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmAuthenticateMutation, authVars, &authResp); err != nil {
 		return diag.FromErr(fmt.Errorf("cloudAuthenticateIntegration failed: %w", err))
 	}
 	authReferenceId := authResp.CloudAuthenticateIntegration.AuthReferenceId
@@ -244,18 +244,18 @@ func resourceNewRelicCloudGcpV2LinkAccountCreate(ctx context.Context, d *schema.
 	}
 
 	// Step 2: Link GCP project to New Relic using the authReferenceId.
-	var linkResp gcpV2LinkResp
+	var linkResp gcpDmLinkResp
 	linkVars := map[string]interface{}{
 		"accountId": accountID,
 		"accounts": map[string]interface{}{
-			"gcp": []gcpV2LinkAccountInput{{
+			"gcp": []gcpDmLinkAccountInput{{
 				Name:            d.Get("name").(string),
 				ProjectId:       d.Get("project_id").(string),
 				AuthReferenceId: authReferenceId,
 			}},
 		},
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2LinkAccountMutation, linkVars, &linkResp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmLinkAccountMutation, linkVars, &linkResp); err != nil {
 		return diag.FromErr(fmt.Errorf("cloudLinkAccount failed: %w", err))
 	}
 
@@ -274,10 +274,10 @@ func resourceNewRelicCloudGcpV2LinkAccountCreate(ctx context.Context, d *schema.
 	d.SetId(strconv.Itoa(linkResp.CloudLinkAccount.LinkedAccounts[0].ID))
 	_ = d.Set("account_id", accountID)
 
-	return resourceNewRelicCloudGcpV2LinkAccountRead(ctx, d, meta)
+	return resourceNewRelicCloudGcpDmLinkAccountRead(ctx, d, meta)
 }
 
-func resourceNewRelicCloudGcpV2LinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudGcpDmLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -290,12 +290,12 @@ func resourceNewRelicCloudGcpV2LinkAccountRead(ctx context.Context, d *schema.Re
 	// Use a minimal custom query that fetches only basic fields without integrations.
 	// GetLinkedAccountWithContext uses client-go inline fragments that fail to resolve
 	// GCP v2-specific integration types, causing "Abstract type must resolve" errors.
-	var resp gcpV2LinkedAccountResp
+	var resp gcpDmLinkedAccountResp
 	vars := map[string]interface{}{
 		"accountId":       accountID,
 		"linkedAccountId": linkedAccountID,
 	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpV2GetLinkedAccountQuery, vars, &resp); err != nil {
+	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmGetLinkedAccountQuery, vars, &resp); err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			d.SetId("")
 			return nil
@@ -318,7 +318,7 @@ func resourceNewRelicCloudGcpV2LinkAccountRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceNewRelicCloudGcpV2LinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudGcpDmLinkAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
@@ -351,10 +351,10 @@ func resourceNewRelicCloudGcpV2LinkAccountUpdate(ctx context.Context, d *schema.
 		return diags
 	}
 
-	return resourceNewRelicCloudGcpV2LinkAccountRead(ctx, d, meta)
+	return resourceNewRelicCloudGcpDmLinkAccountRead(ctx, d, meta)
 }
 
-func resourceNewRelicCloudGcpV2LinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNewRelicCloudGcpDmLinkAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
