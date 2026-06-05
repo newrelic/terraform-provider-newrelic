@@ -231,7 +231,6 @@ func TestAccNewRelicFleetDeployment_WithTags(t *testing.T) {
 	})
 }
 
-
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 func testAccCheckNewRelicFleetDeploymentExists(n string) resource.TestCheckFunc {
@@ -424,7 +423,6 @@ resource "newrelic_fleet_deployment" "tagged" {
 }
 `, name, fleetID, name)
 }
-
 
 func testAccFleetDeploymentZeroAgents(name, fleetID string) string {
 	return fmt.Sprintf(`

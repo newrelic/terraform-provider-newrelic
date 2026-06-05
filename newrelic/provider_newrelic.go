@@ -137,6 +137,7 @@ func Provider() *schema.Provider {
 			"newrelic_service_level_alert_helper":   dataSourceNewRelicServiceLevelAlertHelper(),
 			"newrelic_user":                         dataSourceNewRelicUser(),
 			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
+			"newrelic_fleet_members":                dataSourceNewRelicFleetMembers(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -175,6 +176,8 @@ func Provider() *schema.Provider {
 			"newrelic_notification_channel":                     resourceNewRelicNotificationChannel(),
 			"newrelic_notification_destination":                 resourceNewRelicNotificationDestination(),
 			"newrelic_nrql_alert_condition":                     resourceNewRelicNrqlAlertCondition(),
+			"newrelic_cardinality_management":                   resourceNewRelicCardinalityManagement(),
+			"newrelic_metric_pruning_rule":                      resourceNewRelicMetricPruningRule(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
@@ -198,7 +201,11 @@ func Provider() *schema.Provider {
 			"newrelic_fleet":                                    resourceNewRelicFleet(),
 			"newrelic_fleet_configuration":                      resourceNewRelicFleetConfiguration(),
 			"newrelic_fleet_deployment":                         resourceNewRelicFleetDeployment(),
+			"newrelic_fleet_members":                            resourceNewRelicFleetMembers(),
 			"newrelic_workflow_automation":                      resourceNewRelicWorkflowAutomation(),
+			"newrelic_federated_logs_setup":                     resourceNewRelicFederatedLogsSetup(),
+			"newrelic_federated_logs_partition":                 resourceNewRelicFederatedLogsPartition(),
+			"newrelic_aws_connection":                           resourceNewRelicAwsConnection(),
 		},
 	}
 
