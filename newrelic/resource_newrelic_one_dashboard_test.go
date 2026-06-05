@@ -630,17 +630,22 @@ func TestAccNewRelicOneDashboard_VariablesEnum(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicOneDashboard_VariableAccountIDsValidation tests that the validation function properly catches empty account_ids
-func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
+// TestAccNewRelicOneDashboard_VariableAccountIDsDefault tests that omitting or leaving account_ids
+// empty in an NRQL variable block defaults to the provider's configured account ID.
+func TestAccNewRelicOneDashboard_VariableAccountIDsDefault(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
 		Steps: []resource.TestStep{
+			// Empty account_ids should be accepted and default to provider account ID
 			{
-				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
-				ExpectError: regexp.MustCompile("`account_ids` cannot be empty for NRQL variables"),
+				Config: testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
+			},
+			// Omitted account_ids should also be accepted
+			{
+				Config: testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(rName),
 			},
 		},
 	})
@@ -1907,7 +1912,8 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
-// Test configuration with variable account_ids explicitly set
+// testAccNewRelicOneDashboardConfigVariableAccountIDs creates a dashboard with an NRQL variable
+// that has an explicitly empty account_ids list. The provider should default to its account ID.
 func testAccNewRelicOneDashboardConfigVariableAccountIDs(dashboardName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_one_dashboard" "bar" {
@@ -1930,14 +1936,51 @@ resource "newrelic_one_dashboard" "bar" {
   }
 
   variable {
-    name               = "test_variable"
-    title              = "Test Variable"
-    type               = "nrql"
+    name                 = "test_variable"
+    title                = "Test Variable"
+    type                 = "nrql"
     replacement_strategy = "default"
 
     nrql_query {
       account_ids = []
       query       = "FROM Transaction SELECT uniques(appName)"
+    }
+  }
+}
+`, dashboardName)
+}
+
+// testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted creates a dashboard with an NRQL
+// variable where account_ids is omitted entirely. The provider should default to its account ID.
+func testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_one_dashboard" "bar" {
+  name = "%[1]s"
+
+  page {
+    name = "Test Page"
+
+    widget_line {
+      title  = "Test Widget"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      nrql_query {
+        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+      }
+    }
+  }
+
+  variable {
+    name                 = "test_variable"
+    title                = "Test Variable"
+    type                 = "nrql"
+    replacement_strategy = "default"
+
+    nrql_query {
+      query = "FROM Transaction SELECT uniques(appName)"
     }
   }
 }
