@@ -98,6 +98,8 @@ The following arguments are supported (current provider schema):
 - `ingest_vault_ocid` - (Required) Vault secret OCID containing an ingest secret.
 - `user_vault_ocid` - (Required) Vault secret OCID containing a user or auxiliary secret.
 - `instrumentation_type` - (Optional) Specifies the type of integration, such as metrics, logs, or a combination of logs and metrics (e.g., `METRICS`, `LOGS`, `METRICS,LOGS`).
+- `trust_type` - (Optional, ForceNew) The OCI WIF trust type. Allowed values are `UPST` (default) or `RPST`. Set this to `RPST` to use Resource Principal Session Token (claim-based) authorization instead of the default User Principal Session Token (service-user-based) flow. The corresponding identity propagation trust must be configured with the matching trust type in your OCI tenancy. Cannot be changed after creation — re-create the linked account to switch trust types. See the [WIF setup module](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci/wif-setup) for details.
+- `resource_tag` - (Optional, ForceNew, RPST only) A value propagated as the `ext_resource_tag` claim on the RPST so customer IAM policies can scope authorization on a specific tag value (for example, `env=prod`). Ignored when `trust_type = "UPST"`. Cannot be changed after creation.
 - `oci_region` - (Optional, Update-only) OCI region for the linkage (ignored on create, applied on update).
 - `metric_stack_ocid` - (Optional, Update-only) Metric stack OCID (ignored on create, applied on update).
 - `logging_stack_ocid` - (Optional) The Logging stack identifier for the OCI account.
