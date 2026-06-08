@@ -107,7 +107,6 @@ func termSchema() *schema.Resource {
 			"disable_event_creation": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
 				Description: "BETA PREVIEW: the `disable_event_creation` field is in limited release and only enabled for preview on a per-account basis. When set to true, violations will not create events.",
 			},
 		},

@@ -378,9 +378,8 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		expandedTerm.DisableHealthStatusReporting = &disableHealthStatusReporting
 	}
 
-	if term["disable_event_creation"] != nil {
-		disableEventCreation := term["disable_event_creation"].(bool)
-		expandedTerm.DisableEventCreation = &disableEventCreation
+	if v, ok := term["disable_event_creation"].(bool); ok && v {
+		expandedTerm.DisableEventCreation = &v
 	}
 
 	if conditionType == "baseline" {
