@@ -33,6 +33,36 @@ resource "newrelic_metric_pruning_rule" "example" {
 }
 ```
 
+### Pruning the same attribute from many metrics in bulk
+
+When the same attribute needs to be stripped from a set of metrics, keep the metric list in `locals` and use `for_each` with a templated `nrql` and `description`. Only the metric name varies between rules — the rest of the configuration is shared.
+
+```hcl
+locals {
+  # The attribute to prune from every metric in the list below.
+  pruned_attribute = "collector.name"
+
+  # Metrics to apply the pruning rule to.
+  # Add or remove entries here to manage rules in bulk.
+  metrics_to_prune = toset([
+    "http.server.duration",
+    "http.client.duration",
+    "rpc.server.duration",
+    "k8s.pod.cpu.usage",
+    "k8s.pod.memory.usage",
+    # ...add more entries here
+  ])
+}
+
+resource "newrelic_metric_pruning_rule" "bulk" {
+  for_each    = local.metrics_to_prune
+  nrql        = "SELECT ${local.pruned_attribute} FROM Metric WHERE metricName = '${each.value}'"
+  description = "Remove ${local.pruned_attribute} from ${each.value} to reduce cardinality"
+}
+```
+
+Each entry in `metrics_to_prune` produces an independent `newrelic_metric_pruning_rule` resource (e.g. `newrelic_metric_pruning_rule.bulk["http.server.duration"]`) that can be inspected, imported, or destroyed individually.
+
 ---
 
 ## Behaviour
