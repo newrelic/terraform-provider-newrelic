@@ -189,7 +189,7 @@ func expandOciCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloud
 	}
 
 	if trustType, ok := d.GetOk("trust_type"); ok {
-		ociAccount.TrustType = cloud.OciTrustType(trustType.(string))
+		ociAccount.TrustType = cloud.CloudOciTrustType(trustType.(string))
 	}
 
 	if resourceTag, ok := d.GetOk("resource_tag"); ok {
