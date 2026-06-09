@@ -303,6 +303,17 @@ module "oci_wif_setup" {
 
   # Optional: OAuth apps activation
   activate_oauth_apps = true
+
+  # Optional: trust type — "UPST" (default, service-user impersonation) or "RPST"
+  # (claim-based ephemeral principal). RPST is recommended when one OCI tenancy
+  # is monitored by multiple New Relic accounts, when the OCI IAM policy-statement
+  # limit is a concern, or when claim-based authorization is preferred.
+  trust_type          = "UPST"
+  newrelic_account_id = ""    # Required when trust_type = "RPST"; baked into the
+                              # IAM policy claim match for that flow.
+  resource_tag        = ""    # RPST only. When set, propagated as the
+                              # `ext_resource_tag` claim on the RPST so customer
+                              # IAM policies can scope on a specific tag value.
 }
 
 # Output the credentials needed for policy-setup
@@ -325,6 +336,9 @@ Key variables:
 * `resource_prefix` (Optional) – Prefix for all created resources (defaults to `newrelic`).
 * `trust_name` (Optional) – Name for the identity propagation trust (defaults to `newrelic-wif-trust`).
 * `activate_oauth_apps` (Optional) – Whether to activate OAuth applications (defaults to `true`).
+* `trust_type` (Optional) – `"UPST"` (default) or `"RPST"`. UPST impersonates a dedicated service user; RPST uses a claim-based ephemeral principal (`identityfederateddomainapp`) and skips the service user/group entirely. Switching after creation requires re-applying the module.
+* `newrelic_account_id` (Required when `trust_type = "RPST"`) – Your New Relic account id. Baked into the OCI IAM policy as `request.principal.ext_account_id` so only RPSTs minted for this account can act in the tenancy.
+* `resource_tag` (Optional, RPST only) – When set, New Relic stamps `ext_resource_tag` on every JWT exchanged for an RPST. Customers can use this in their own IAM policy statements to bind one integration to a specific tag value.
 
 The module outputs `newrelic_integration_details` containing:
 * `iam_domain_url` – The IAM domain URL required by New Relic
@@ -378,6 +392,11 @@ module "oci_policy_setup" {
 
   # Enable metrics & logs policies (example)
   instrumentation_type = "METRICS,LOGS"
+
+  # Optional: trust type — must match what the wif-setup module created.
+  # Wire from module.oci_wif_setup.newrelic_integration_details outputs.
+  trust_type   = "UPST"   # or "RPST"
+  resource_tag = ""       # RPST only — propagated as ext_resource_tag claim
 }
 ```
 
@@ -387,6 +406,8 @@ Key variables:
 * `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
 * `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US` or `EU`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
+* `trust_type` (Optional) – `"UPST"` (default) or `"RPST"`. Must match the trust type the `wif-setup` module created. Wire from `module.oci_wif_setup.newrelic_integration_details.trust_type` for consistency.
+* `resource_tag` (Optional, RPST only) – Propagated as the `ext_resource_tag` claim on the RPST so customer IAM policies can scope on a specific tag value. Wire from `module.oci_wif_setup.newrelic_integration_details.resource_tag`.
 
 #### Example: Metrics integration module
 
