@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,6 +21,7 @@ func resourceNewRelicFleet() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: resourceNewRelicFleetCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -70,6 +72,21 @@ func resourceNewRelicFleet() *schema.Resource {
 	}
 }
 
+// resourceNewRelicFleetCustomizeDiff enforces the operating_system / managed_entity_type
+// pairing at plan time so users see the error before apply.
+func resourceNewRelicFleetCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	managedEntityType := d.Get("managed_entity_type").(string)
+	_, hasOS := d.GetOk("operating_system")
+
+	if managedEntityType == "HOST" && !hasOS {
+		return fmt.Errorf("operating_system is required when managed_entity_type is HOST")
+	}
+	if managedEntityType == "KUBERNETESCLUSTER" && hasOS {
+		return fmt.Errorf("operating_system must not be set when managed_entity_type is KUBERNETESCLUSTER")
+	}
+	return nil
+}
+
 func resourceNewRelicFleetCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 
@@ -79,16 +96,8 @@ func resourceNewRelicFleetCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	// Validate operating system requirements
 	managedEntityType := d.Get("managed_entity_type").(string)
 	operatingSystem, hasOS := d.GetOk("operating_system")
-
-	if managedEntityType == "HOST" && !hasOS {
-		return diag.Errorf("operating_system is required when managed_entity_type is HOST")
-	}
-	if managedEntityType == "KUBERNETESCLUSTER" && hasOS {
-		return diag.Errorf("operating_system should not be specified for KUBERNETESCLUSTER fleets")
-	}
 
 	// Map managed entity type
 	entityType, err := mapManagedEntityType(managedEntityType)

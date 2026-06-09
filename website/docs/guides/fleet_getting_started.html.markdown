@@ -47,61 +47,59 @@ resource "newrelic_fleet" "prod_linux" {
 
 ## Step 2 — Define an agent configuration
 
-A fleet configuration holds the YAML or JSON settings for an agent type. Content is organised into **versions**: each `version` block represents one immutable snapshot of the configuration. You cannot edit the content of an existing version — to update the configuration in use, add a new `version` block with the revised content and remove the old one.
+A fleet configuration holds the YAML or JSON settings for an agent type. The content is declared as a single top-level `configuration_content` attribute. Each change to that attribute creates a new immutable version on the API automatically — much like how AWS launch templates work. The resource ID never changes across updates.
 
 ```hcl
 resource "newrelic_fleet_configuration" "infra" {
-  name                = "Production Infra Config"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-        file: /var/log/newrelic-infra/newrelic-infra.log
-      metrics:
-        enabled: true
-        system_sample_rate: 15
-    EOT
-  }
+  name                  = "Production Infra Config"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = <<-EOT
+    log:
+      level: info
+      file: /var/log/newrelic-infra/newrelic-infra.log
+    metrics:
+      enabled: true
+      system_sample_rate: 15
+  EOT
 }
 ```
 
 For larger configurations, load the content from a file instead of an inline heredoc:
 
 ```hcl
-  version {
-    configuration_content = file("${path.module}/configs/infra-v1.yaml")
-  }
+  configuration_content = file("${path.module}/configs/infra.yaml")
 ```
 
-After apply, each `version` block exposes `version_number` (an integer assigned by the API) and `version_entity_id` (the GUID used when creating a deployment). The resource also exports `latest_version_entity_id` and `latest_version_number` at the top level, which always reflect the highest-numbered version currently in the configuration.
+After apply, the resource exports:
+
+- `latest_version_number` — the current version number (1 on first create, increments on every content change).
+- `latest_version_entity_id` — the entity GUID of the current latest version.
+- `version_entity_ids` — every version GUID, oldest first. Use `version_entity_ids[N]` to pin a deployment to a specific historical version.
+- `total_versions` — total number of versions accumulated.
 
 ### Rolling out a config update
 
-When you need to update the agent settings, add a new `version` block alongside the existing one. Terraform will create the new version on `apply`. Once you are ready to retire the old content, remove its `version` block in a subsequent change:
+To update the agent settings, simply edit `configuration_content` and run `terraform apply`. The provider creates a new version on the API; `latest_version_entity_id` and `latest_version_number` advance to point at it. Older versions are retained — they're accessible via `version_entity_ids` and the `data.newrelic_fleet_configuration` data source.
 
 ```hcl
 resource "newrelic_fleet_configuration" "infra" {
-  name                = "Production Infra Config"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-
-  # v1 is kept in the configuration until the deployment referencing it
-  # has completed, after which its block can be removed.
-  version {
-    configuration_content = file("${path.module}/configs/infra-v1.yaml")
-  }
-
-  # New version with updated settings.
-  version {
-    configuration_content = file("${path.module}/configs/infra-v2.yaml")
-  }
+  name                  = "Production Infra Config"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = file("${path.module}/configs/infra.yaml")
 }
 ```
+
+### Rolling back
+
+To revert to a previous configuration, set `configuration_content` back to the older content and apply. The provider creates a new version with that content (it does **not** resurrect the old version GUID — version numbers are never reused). `latest_version_entity_id` will point at the new version.
+
+### Renaming a configuration
+
+`name` is **immutable**. Changing it forces resource recreation: Terraform will destroy the existing configuration and create a new one with the new name. Plan output will explicitly show `# forces replacement` for `name` so this is never a surprise at apply time.
 
 ## Step 3 — Assign member entities to the fleet
 
@@ -157,7 +155,7 @@ On every `plan`, Terraform compares the declared `entity_ids` against the live m
 
 ## Step 4 — Create a deployment
 
-A deployment triggers the actual rollout: it tells the fleet which agent version (and optionally which configuration version) to push to its members.
+A deployment triggers the actual rollout: it tells the fleet which agent version and which configuration version to push to its members.
 
 ```hcl
 resource "newrelic_fleet_deployment" "infra_v1" {
@@ -173,11 +171,43 @@ resource "newrelic_fleet_deployment" "infra_v1" {
 }
 ```
 
-`configuration_version_id` is optional — omit it to deploy the agent version alone without changing the running configuration.
+A deployment may also be created or updated with **zero** `agent` blocks — useful to drain all agent assignments from a deployment, or to seed a deployment record before adding agents while it's still in `CREATED` phase. Within a deployment, each `agent_type` may appear at most once.
+
+### Pinning to a specific configuration version
+
+Referencing `latest_version_entity_id` ties the deployment to whichever version of the configuration is current at plan time. If you later edit the configuration's `configuration_content`, `latest_version_entity_id` changes — and any deployment using that reference will show a planned update. For deployments that have already started executing (phase != `CREATED`), that planned update will be **blocked by the phase-gate** described below.
+
+For long-lived deployments that should remain stable, pin to a specific historical version GUID via `version_entity_ids[N]` instead:
+
+```hcl
+resource "newrelic_fleet_deployment" "stable" {
+  fleet_id = newrelic_fleet.prod_linux.id
+  name     = "Stable v1 rollout"
+
+  agent {
+    agent_type               = "NRInfra"
+    version                  = "1.58.0"
+    # First-ever version — won't drift when the config is later updated.
+    configuration_version_id = newrelic_fleet_configuration.infra.version_entity_ids[0]
+  }
+}
+```
 
 ### Deployment lifecycle and immutability
 
-A deployment can only be modified while its `phase` is `CREATED`. Once the Fleet Control backend begins executing it (`IN_PROGRESS`, `COMPLETED`, or `FAILED`), the `name`, `description`, `agent`, and `tags` fields are locked. Attempting a `plan` against a live deployment will produce an error. To issue a follow-up deployment (e.g. to roll out `v1.59.0`), destroy the current deployment resource and create a new one:
+A deployment can only be modified while its `phase` is `CREATED`. Once the Fleet Control backend begins executing it (`IN_PROGRESS`, `COMPLETED`, or `FAILED`), the `name`, `description`, `agent`, and `tags` fields are locked. Any `plan` that proposes to change a locked field is rejected at plan time with a clear error.
+
+To recover from a stuck plan after the deployment has executed:
+
+1. **Preferred:** drop the executed deployment from Terraform state without touching the API:
+   ```shell
+   terraform state rm newrelic_fleet_deployment.infra_v1
+   ```
+   Or use a [`removed` block](https://developer.hashicorp.com/terraform/language/state/remove). Then re-declare a fresh deployment with the desired configuration.
+
+2. `terraform destroy` works only if your HCL has no pending changes for the deployment — otherwise the same plan-time gate fires during the destroy plan.
+
+To issue a follow-up rollout (e.g. roll out `v1.59.0`), declare a new deployment resource. The previous one stays in the API as a historical record:
 
 ```hcl
 resource "newrelic_fleet_deployment" "infra_v2" {
@@ -260,14 +290,11 @@ resource "newrelic_fleet" "prod_linux" {
 # ── Agent configuration ──────────────────────────────────────────────────────
 
 resource "newrelic_fleet_configuration" "infra" {
-  name                = "Production Infra Config"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-
-  version {
-    configuration_content = file("${path.module}/configs/infra-v1.yaml")
-  }
+  name                  = "Production Infra Config"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = file("${path.module}/configs/infra.yaml")
 }
 
 # ── Fleet membership ─────────────────────────────────────────────────────────
@@ -349,7 +376,7 @@ After importing fleet members, review the `ring` blocks that Terraform generates
 ## Next steps
 
 - [newrelic_fleet](/providers/newrelic/newrelic/latest/docs/resources/fleet) — full argument reference for fleet creation
-- [newrelic_fleet_configuration](/providers/newrelic/newrelic/latest/docs/resources/fleet_configuration) — version immutability rules, version numbering, and external-deletion handling
+- [newrelic_fleet_configuration](/providers/newrelic/newrelic/latest/docs/resources/fleet_configuration) — flat `configuration_content` model, version numbering, rollback, and out-of-band drift warnings
 - [newrelic_fleet_members](/providers/newrelic/newrelic/latest/docs/resources/fleet_members) — opt-in management model, adoption of Agent Control entities, and multi-ring moves
 - [newrelic_fleet_deployment](/providers/newrelic/newrelic/latest/docs/resources/fleet_deployment) — deployment lifecycle, phase-gate immutability, and multi-agent deployments
 - [data.newrelic_fleet_configuration](/providers/newrelic/newrelic/latest/docs/data-sources/fleet_configuration) — three lookup modes (by GUID, version GUID, or name)
