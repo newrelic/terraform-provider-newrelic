@@ -6,12 +6,6 @@ variable "tenancy_ocid" {
   type        = string
 }
 
-# Required: User OCID (needed for OCI API key authentication)
-variable "user_ocid" {
-  description = "The OCID of the OCI user whose API key is used to manage the resources this module creates"
-  type        = string
-}
-
 # Identity Domain Configuration
 variable "identity_domain_name" {
   description = "Name of the identity domain to use"

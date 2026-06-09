@@ -73,7 +73,6 @@ provider "oci" {
   region       = var.home_region
   fingerprint  = var.fingerprint
   private_key  = var.private_key
-  user_ocid    = var.user_ocid
 }
 
 module "newrelic_wif" {
