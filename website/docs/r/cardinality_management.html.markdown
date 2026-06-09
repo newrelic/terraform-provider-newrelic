@@ -81,6 +81,34 @@ resource "newrelic_cardinality_management" "high_cardinality_metrics" {
 }
 ```
 
+### Example — managing many metrics in bulk
+
+If you have a long list of metrics to manage, you can keep a single source of truth in `locals` and use a `dynamic` block to expand them into `metric` blocks at apply time. Adding or removing a metric is then a one-line edit.
+
+```hcl
+locals {
+  high_cardinality_metrics = [
+    { name = "http.server.duration",                      limit = 200000 },
+    { name = "otelcol_nrreceiver_incoming_request_proxy", limit = 300000 },
+    { name = "k8s.pod.cpu.usage",                         limit = 150000 },
+    { name = "k8s.pod.memory.usage",                      limit = 150000 },
+    # ...add more entries here
+  ]
+}
+
+resource "newrelic_cardinality_management" "bulk" {
+  mode = "PER_METRIC"
+
+  dynamic "metric" {
+    for_each = local.high_cardinality_metrics
+    content {
+      name              = metric.value.name
+      cardinality_limit = metric.value.limit
+    }
+  }
+}
+```
+
 ### Behaviour
 
 - **`terraform apply`** — submits one override per `metric` block. A warning is displayed as a reminder that updates may take a few minutes to be reflected in the UI.
