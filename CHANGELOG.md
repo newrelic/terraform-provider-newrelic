@@ -1,3 +1,8 @@
+<a name="v3.92.0"></a>
+## [v3.92.0] - 2026-06-09
+### Features
+- **cloud-oci:** support RPST trust type for OCI integration (NR-562518) ([#3101](https://github.com/newrelic/terraform-provider-newrelic/issues/3101))
+
 <a name="v3.91.1"></a>
 ## [v3.91.1] - 2026-06-09
 ### Documentation Updates
@@ -2738,7 +2743,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...HEAD
+[v3.92.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.1...v3.92.0
 [v3.91.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.0...v3.91.1
 [v3.91.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.90.0...v3.91.0
 [v3.90.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.89.0...v3.90.0
