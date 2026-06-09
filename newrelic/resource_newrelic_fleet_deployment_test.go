@@ -170,19 +170,24 @@ func TestAccNewRelicFleetDeployment_ZeroAgentsOnUpdate(t *testing.T) {
 }
 
 // TestAccNewRelicFleetDeployment_ZeroAgentsOnCreate verifies that creating a
-// deployment without any agent block is rejected at plan time.
+// deployment with zero agent blocks is allowed (matches the API, which accepts
+// empty agents on create).
 func TestAccNewRelicFleetDeployment_ZeroAgentsOnCreate(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-deploy-nocreate-%s", acctest.RandString(5))
+	rName := fmt.Sprintf("tf-test-deploy-zerocreate-%s", acctest.RandString(5))
 
 	setupFleetTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckFleetEnvVars(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccFleetDeploymentZeroAgents(rName, testAccFleetDeploymentFleetID),
-				ExpectError: regexp.MustCompile(`at least one agent block is required`),
+				Config: testAccFleetDeploymentZeroAgents(rName, testAccFleetDeploymentFleetID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetDeploymentExists("newrelic_fleet_deployment.basic"),
+					resource.TestCheckResourceAttr("newrelic_fleet_deployment.basic", "agent.#", "0"),
+				),
 			},
 		},
 	})
@@ -280,13 +285,11 @@ func testAccCheckNewRelicFleetDeploymentDestroy(s *terraform.State) error {
 func testAccFleetDeploymentBasic(name, fleetID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "basic_cfg" {
-  name                = "%s-cfg"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n"
-  }
+  name                  = "%s-cfg"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n"
 }
 
 resource "newrelic_fleet_deployment" "basic" {
@@ -306,17 +309,15 @@ resource "newrelic_fleet_deployment" "basic" {
 func testAccFleetDeploymentWithConfiguration(name, fleetID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "deploy_cfg" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-      # deployment-config-test
-    EOT
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = <<-EOT
+    log:
+      level: info
+    # deployment-config-test
+  EOT
 }
 
 resource "newrelic_fleet_deployment" "with_config" {
@@ -336,23 +337,19 @@ resource "newrelic_fleet_deployment" "with_config" {
 func testAccFleetDeploymentMultipleAgents(name, fleetID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "multi_cfg_infra" {
-  name                = "%s-cfg-infra"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n"
-  }
+  name                  = "%s-cfg-infra"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n"
 }
 
 resource "newrelic_fleet_configuration" "multi_cfg_fb" {
-  name                = "%s-cfg-fb"
-  agent_type          = "FluentBit"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n"
-  }
+  name                  = "%s-cfg-fb"
+  agent_type            = "FluentBit"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n"
 }
 
 resource "newrelic_fleet_deployment" "multi" {
@@ -400,13 +397,11 @@ resource "newrelic_fleet_deployment" "dup" {
 func testAccFleetDeploymentWithTags(name, fleetID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "tags_cfg" {
-  name                = "%s-cfg"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n"
-  }
+  name                  = "%s-cfg"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n"
 }
 
 resource "newrelic_fleet_deployment" "tagged" {
@@ -441,13 +436,11 @@ resource "newrelic_fleet_deployment" "basic" {
 func testAccFleetDeploymentZeroAgentsKeepCfg(name, fleetID string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "basic_cfg" {
-  name                = "%s-cfg"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n"
-  }
+  name                  = "%s-cfg"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n"
 }
 
 resource "newrelic_fleet_deployment" "basic" {
