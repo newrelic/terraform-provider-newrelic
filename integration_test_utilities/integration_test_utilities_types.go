@@ -53,6 +53,7 @@ var ProductMappingTypes = struct {
 var productMappings = map[ProductMapping][]string{
 	ProductMappingTypes.ALERTS: {
 		"alert",
+		"nrql_alert_condition",
 	},
 	ProductMappingTypes.AlertsDeprecated: {
 		"alert_channel",

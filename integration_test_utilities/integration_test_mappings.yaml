@@ -363,10 +363,10 @@ resource_newrelic_notifications_destination_test.go:
   product_mapping: WORKFLOW_INTEGRATIONS
 resource_newrelic_nrql_alert_condition.go:
   test: false
-  product_mapping: ALERTS_DEPRECATED
+  product_mapping: ALERTS
 resource_newrelic_nrql_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS_DEPRECATED
+  product_mapping: ALERTS
 resource_newrelic_nrql_drop_rule.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -576,10 +576,10 @@ structures_newrelic_notifications_destination_test.go:
   product_mapping: WORKFLOW_INTEGRATIONS
 structures_newrelic_nrql_alert_condition.go:
   test: false
-  product_mapping: ALERTS_DEPRECATED
+  product_mapping: ALERTS
 structures_newrelic_nrql_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS_DEPRECATED
+  product_mapping: ALERTS
 structures_newrelic_one_dashboard.go:
   test: false
   product_mapping: DASHBOARDS
