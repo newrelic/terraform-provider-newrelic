@@ -1,4 +1,4 @@
-//go:build integration || ALERTS
+//go:build integration || ALERTS_DEPRECATED
 
 package newrelic
 
