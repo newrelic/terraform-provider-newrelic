@@ -634,6 +634,28 @@ func TestAccNewRelicNrqlAlertCondition_StaticConditionDisableHealthStatusReporti
 	})
 }
 
+func TestAccNewRelicNrqlAlertCondition_StaticConditionDisableEventCreation(t *testing.T) {
+	resourceName := "newrelic_nrql_alert_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlAlertConditionDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create
+			{
+				Config: testAccNewRelicNrqlAlertConditionStaticWithDisableEventCreation(
+					rName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlAlertConditionExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicNrqlAlertCondition_StaticConditionExpectedTermination(t *testing.T) {
 	resourceName := "newrelic_nrql_alert_condition.foo"
 	rName := acctest.RandString(5)
@@ -1669,6 +1691,39 @@ resource "newrelic_nrql_alert_condition" "foo" {
 		threshold_duration    = 120
 		threshold_occurrences = "ALL"
 		disable_health_status_reporting = true
+	}
+}
+`, name)
+}
+
+func testAccNewRelicNrqlAlertConditionStaticWithDisableEventCreation(
+	name string,
+) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "foo" {
+	policy_id = newrelic_alert_policy.foo.id
+
+	name                         = "tf-test-%[1]s"
+	type                         = "static"
+	enabled                      = false
+	violation_time_limit_seconds = 3600
+	aggregation_delay            = 120
+	aggregation_method           = "event_flow"
+
+	nrql {
+		query = "SELECT uniqueCount(hostname) FROM ComputeSample"
+	}
+
+	critical {
+		operator              = "below"
+		threshold             = 0
+		threshold_duration    = 120
+		threshold_occurrences = "ALL"
+		disable_event_creation = true
 	}
 }
 `, name)
