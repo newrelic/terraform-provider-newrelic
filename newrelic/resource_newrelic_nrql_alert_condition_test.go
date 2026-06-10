@@ -1,4 +1,5 @@
 //go:build integration || ALERTS
+
 package newrelic
 
 import (
