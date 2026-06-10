@@ -12,6 +12,7 @@ type FileMapping struct {
 
 var ProductMappingTypes = struct {
 	ALERTS               ProductMapping
+	AlertsDeprecated     ProductMapping
 	APM                  ProductMapping
 	APIKS                ProductMapping
 	AUTH                 ProductMapping
@@ -30,6 +31,7 @@ var ProductMappingTypes = struct {
 	WORKLOADS            ProductMapping
 }{
 	ALERTS:               "ALERTS",
+	AlertsDeprecated:     "ALERTS_DEPRECATED",
 	APIKS:                "APIKS",
 	APM:                  "APM",
 	AUTH:                 "AUTH",
@@ -51,6 +53,15 @@ var ProductMappingTypes = struct {
 var productMappings = map[ProductMapping][]string{
 	ProductMappingTypes.ALERTS: {
 		"alert",
+		"nrql_alert_condition",
+	},
+	ProductMappingTypes.AlertsDeprecated: {
+		"alert_channel",
+		"alert_policy_channel",
+		"alert_condition",
+		"infra_alert_condition",
+		"synthetics_alert_condition",
+		"synthetics_multilocation_alert_condition",
 	},
 	ProductMappingTypes.APIKS: {
 		"api_access",
@@ -59,6 +70,7 @@ var productMappings = map[ProductMapping][]string{
 		"application",
 	},
 	ProductMappingTypes.AUTH: {
+		"account",
 		"account_management",
 		"authentication_domain",
 		"group",
@@ -85,7 +97,7 @@ var productMappings = map[ProductMapping][]string{
 	},
 	ProductMappingTypes.INGEST: {
 		"cardinality",
-		"pruning_rule",
+		"metric_pruning_rule",
 	},
 	ProductMappingTypes.KeyTransactions: {
 		"key_transaction",
@@ -96,6 +108,8 @@ var productMappings = map[ProductMapping][]string{
 		"grok",
 		"log_parsing_rule",
 		"obfuscation",
+		"federated_logs",
+		"aws_connection",
 	},
 	ProductMappingTypes.NGEP: {
 		"pipeline_cloud_rule",
