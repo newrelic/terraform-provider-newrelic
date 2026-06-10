@@ -13,18 +13,32 @@ data "oci_identity_compartment" "root" {
 locals {
   identity_domain_id  = data.oci_identity_domains.domain.domains[0].id
   identity_domain_url = data.oci_identity_domains.domain.domains[0].url
-  suffix = "tf"
+  suffix              = "tf"
 
-  # New Relic configuration based on region
+  # NR-562518: trust-type derived flags + counts so module is idempotent for both flows.
+  is_upst = var.trust_type == "UPST"
+  is_rpst = var.trust_type == "RPST"
+
+  # New Relic configuration based on region. UPST and RPST share the same JWKS endpoint
+  # (NR reuses the existing UPST signing key for RPST) but use different issuer/subject strings
+  # because OCI enforces one Identity Propagation Trust per issuer per Identity Domain.
   newrelic_config = var.newrelic_region == "US" ? {
-    issuer_name      = "newrelic-oci-us-production-issuer"
-    subject_name     = "newrelic-oci-us-production-user"
-    public_jwks_url  = "https://publickeys.newrelic.com/r/oci-cmp/us/c5623ba5-1cc7-491a-8ec3-eeee809374f7/jwks.json"
-  } : {
-    issuer_name      = "newrelic-oci-eu-production-issuer"
-    subject_name     = "newrelic-oci-eu-production-user"
-    public_jwks_url  = "https://publickeys.eu.newrelic.com/r/oci-cmp/eu/f923dba9-84a8-491c-b714-6c0e61b90c5b/jwks.json"
+    issuer_name       = "newrelic-oci-us-production-issuer"
+    subject_name      = "newrelic-oci-us-production-user"
+    rpst_issuer_name  = "newrelic-oci-us-production-rpst-issuer"
+    rpst_subject_name = "newrelic-oci-us-production-rpst-user"
+    public_jwks_url   = "https://publickeys.newrelic.com/r/oci-cmp/us/c5623ba5-1cc7-491a-8ec3-eeee809374f7/jwks.json"
+    } : {
+    issuer_name       = "newrelic-oci-eu-production-issuer"
+    subject_name      = "newrelic-oci-eu-production-user"
+    rpst_issuer_name  = "newrelic-oci-eu-production-rpst-issuer"
+    rpst_subject_name = "newrelic-oci-eu-production-rpst-user"
+    public_jwks_url   = "https://publickeys.eu.newrelic.com/r/oci-cmp/eu/f923dba9-84a8-491c-b714-6c0e61b90c5b/jwks.json"
   }
+
+  # NR-562518: static value pasted into the OCI trust as `impersonatingResource` and sent by NR
+  # as `res_type` during token exchange. Same string for every NR-OCI integration.
+  impersonating_resource = "newrelic-integration"
 
   # Common resource naming
   resource_prefix = var.resource_prefix != "" ? var.resource_prefix : "newrelic"

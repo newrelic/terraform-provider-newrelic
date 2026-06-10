@@ -60,6 +60,12 @@ func TestAccNewRelicCloudOciLinkAccount_Basic(t *testing.T) {
 	testOciLoggingStackOcid := os.Getenv("INTEGRATION_TESTING_OCI_LOGGING_STACK_OCID")
 	testOciInstrumentationType := "METRICS" // Default to metrics for testing
 
+	// NR-562518: trust_type defaults to UPST when env var not set; tests still pass for UPST customers.
+	testOciTrustType := os.Getenv("INTEGRATION_TESTING_OCI_TRUST_TYPE")
+	if testOciTrustType == "" {
+		testOciTrustType = "UPST"
+	}
+
 	OciLinkAccountTestConfig := map[string]string{
 		"name":                 testOciLinkAccountName,
 		"account_id":           strconv.Itoa(testSubAccountID),
@@ -75,6 +81,7 @@ func TestAccNewRelicCloudOciLinkAccount_Basic(t *testing.T) {
 		"user_vault_ocid":      testOciUserVaultOcid,
 		"instrumentation_type": testOciInstrumentationType,
 		"logging_stack_ocid":   testOciLoggingStackOcid,
+		"trust_type":           testOciTrustType,
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -213,6 +220,11 @@ func testAccNewRelicOciLinkAccountConfig(OciLinkAccountTestConfig map[string]str
 	if OciLinkAccountTestConfig["logging_stack_ocid"] != "" && updated == true {
 		config += fmt.Sprintf(`
 		logging_stack_ocid     = "%s"`, OciLinkAccountTestConfig["logging_stack_ocid"])
+	}
+
+	if OciLinkAccountTestConfig["trust_type"] != "" {
+		config += fmt.Sprintf(`
+		trust_type             = "%s"`, OciLinkAccountTestConfig["trust_type"])
 	}
 
 	config += `

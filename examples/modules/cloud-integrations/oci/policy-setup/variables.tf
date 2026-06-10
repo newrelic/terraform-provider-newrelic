@@ -84,3 +84,23 @@ variable "ingest_key_secret_ocid" {
     default     = ""
     description = "The OCID of the secret containing the New Relic Ingest License API key"
 }
+
+# NR-562518: trust_type + resource_tag are propagated to the newrelic_cloud_oci_link_account
+# resource that this module creates internally. UPST (default) preserves existing behavior;
+# RPST customers wire these inputs from the wif-setup module's outputs so the linked account
+# is registered with the matching trust shape.
+variable "trust_type" {
+  type        = string
+  default     = "UPST"
+  description = "OCI WIF trust type. UPST (default, service-user impersonation) or RPST (claim-based ephemeral principal). Must match what the wif-setup module created."
+  validation {
+    condition     = contains(["UPST", "RPST"], var.trust_type)
+    error_message = "trust_type must be either 'UPST' or 'RPST'."
+  }
+}
+
+variable "resource_tag" {
+  type        = string
+  default     = ""
+  description = "Optional value propagated as the ext_resource_tag claim on the RPST. Customers use this for tag-based resource scoping in their IAM policies. Ignored for UPST."
+}

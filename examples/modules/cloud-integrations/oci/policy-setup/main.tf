@@ -138,6 +138,10 @@ resource "newrelic_cloud_oci_link_account" "linkAccount" {
   oci_client_secret    = var.client_secret
   oci_domain_url       = var.oci_domain_url
   instrumentation_type = var.instrumentation_type
+  # NR-562518: propagate the trust shape created by wif-setup to the linked account so the
+  # worker mints the matching token type. Defaults preserve UPST behavior for existing callers.
+  trust_type   = var.trust_type
+  resource_tag = var.resource_tag
 }
 
 output "compartment_ocid" {
