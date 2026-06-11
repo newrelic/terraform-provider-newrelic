@@ -155,7 +155,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		}
 
 		if options, ok := v["options"]; ok && len(options.([]interface{})) > 0 {
-			variable.Options = expandVariableOptions(options.([]interface{}))
+			variable.Options = expandVariableOptions(options.([]interface{}), variable.Type)
 		}
 
 		expanded[i] = variable
@@ -1150,7 +1150,7 @@ func expandDashboardWidgetNRQLQueryInput(queries []interface{}, meta interface{}
 	return expanded, nil
 }
 
-func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOptionsInput {
+func expandVariableOptions(in []interface{}, variableType dashboards.DashboardVariableType) *dashboards.DashboardVariableOptionsInput {
 	var out dashboards.DashboardVariableOptionsInput
 
 	for _, v := range in {
@@ -1158,16 +1158,20 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 		cfg := v.(map[string]interface{})
 		var ignoreTimeRangePtr, excludedPtr, showApplyActionPtr *bool
 
-		if ignoreTimeRange, ok := cfg["ignore_time_range"].(bool); ok {
-			ignoreTimeRangePtr = &ignoreTimeRange
+		if variableType == dashboards.DashboardVariableTypeTypes.NRQL {
+			if ignoreTimeRange, ok := cfg["ignore_time_range"].(bool); ok {
+				ignoreTimeRangePtr = &ignoreTimeRange
+			}
+
+			if excluded, ok := cfg["excluded"].(bool); ok {
+				excludedPtr = &excluded
+			}
 		}
 
-		if excluded, ok := cfg["excluded"].(bool); ok {
-			excludedPtr = &excluded
-		}
 		if showApplyAction, ok := cfg["show_apply_action"].(bool); ok {
 			showApplyActionPtr = &showApplyAction
 		}
+
 		out = dashboards.DashboardVariableOptionsInput{
 			IgnoreTimeRange: ignoreTimeRangePtr,
 			Excluded:        excludedPtr,
@@ -1976,10 +1980,16 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 					return errors.New("`options` block(s) specified cannot be empty")
 				}
 				optionMap := o.(map[string]interface{})
-				_, ignoreTimeRangeOk := optionMap["ignore_time_range"]
 				variableType, variableTypeOk := variableMap["type"]
-				if ignoreTimeRangeOk && variableTypeOk && variableType != "nrql" {
-					return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
+				if ignoreTimeRange, ignoreTimeRangeOk := optionMap["ignore_time_range"]; ignoreTimeRangeOk && variableTypeOk && variableType != "nrql" {
+					if ignoreTimeRangeBool, ok := ignoreTimeRange.(bool); ok && ignoreTimeRangeBool {
+						return errors.New("`ignore_time_range` in `options` can only be used with the variable type `nrql`")
+					}
+				}
+				if excluded, excludedOk := optionMap["excluded"]; excludedOk && variableTypeOk && variableType != "nrql" {
+					if excludedBool, ok := excluded.(bool); ok && excludedBool {
+						return errors.New("`excluded` in `options` can only be used with the variable type `nrql`")
+					}
 				}
 
 				// show_apply_action validation - only valid when is_multi_selection is true
