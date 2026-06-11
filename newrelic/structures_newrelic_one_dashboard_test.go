@@ -9,6 +9,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestExpandVariableNRQLQuery_DefaultsToProviderAccountID(t *testing.T) {
+	providerAccountID := 12345
+
+	// account_ids omitted (empty slice) — should default to provider account
+	in := []interface{}{
+		map[string]interface{}{
+			"account_ids": []interface{}{},
+			"query":       "FROM Transaction SELECT uniques(appName)",
+		},
+	}
+	out := expandVariableNRQLQuery(in, providerAccountID)
+	assert.Equal(t, []int{providerAccountID}, out.AccountIDs)
+}
+
+func TestExpandVariableNRQLQuery_ExplicitAccountIDs(t *testing.T) {
+	providerAccountID := 12345
+
+	in := []interface{}{
+		map[string]interface{}{
+			"account_ids": []interface{}{111, 222},
+			"query":       "FROM Transaction SELECT uniques(appName)",
+		},
+	}
+	out := expandVariableNRQLQuery(in, providerAccountID)
+	assert.Equal(t, []int{111, 222}, out.AccountIDs)
+}
+
 func TestExpandDashboardBillboardThreshold(t *testing.T) {
 	dashboard := entities.DashboardWidget{
 		ID: "abcde",
