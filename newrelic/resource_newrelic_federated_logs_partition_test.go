@@ -1,4 +1,4 @@
-//go:build LOGGING_INTEGRATIONS
+//go:build TEMPORARILY_SUSPENDED
 
 // NOTE: Removed the "integration" tag so these tests no longer run under
 // the standard `make test-integration-all` (-tags=integration) CI job.

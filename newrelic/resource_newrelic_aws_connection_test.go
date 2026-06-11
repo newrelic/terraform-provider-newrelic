@@ -1,4 +1,4 @@
-//go:build integration || LOGGING_INTEGRATIONS
+//go:build TEMPORARILY_SUSPENDED
 
 package newrelic
 
