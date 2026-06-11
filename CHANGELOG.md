@@ -1,3 +1,8 @@
+<a name="v3.93.0"></a>
+## [v3.93.0] - 2026-06-10
+### Features
+- add disable_event_creation field to nrql_alert_condition ([#3100](https://github.com/newrelic/terraform-provider-newrelic/issues/3100))
+
 <a name="v3.92.0"></a>
 ## [v3.92.0] - 2026-06-09
 ### Features
@@ -2743,7 +2748,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...HEAD
+[v3.93.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...v3.93.0
 [v3.92.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.1...v3.92.0
 [v3.91.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.0...v3.91.1
 [v3.91.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.90.0...v3.91.0

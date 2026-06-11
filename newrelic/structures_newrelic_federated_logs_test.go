@@ -1,5 +1,5 @@
-//go:build unit_fedlogs_skip
-// +build unit_fedlogs_skip
+//go:build TEMPORARILY_SUSPENDED
+// +build TEMPORARILY_SUSPENDED
 
 // NOTE: These unit tests are temporarily disabled. The federated-logs flow
 // in newrelic-client-go is gated behind an account entitlement that the
