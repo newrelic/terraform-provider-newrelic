@@ -12,9 +12,9 @@ Use this resource to create and manage New Relic Workflow Automation.
 
 Workflow Automation allows you to define automated workflows using YAML definitions. These workflows can scope to either an account or an organization and support various automation steps and configurations.
 
-## **Example Usage**
+## Example Usage
 
-### **Basic Workflow Automation with ACCOUNT Scope**
+### Basic Workflow Automation with ACCOUNT Scope
 
 ```
 resource "newrelic_workflow_automation" "test_query" {
@@ -40,7 +40,7 @@ resource "newrelic_workflow_automation" "test_query" {
 }
 ```
 
-### **Workflow Automation with ORGANIZATION Scope**
+### Workflow Automation with ORGANIZATION Scope
 
 ```
 resource "newrelic_workflow_automation" "org_query" {
@@ -66,42 +66,42 @@ resource "newrelic_workflow_automation" "org_query" {
 }
 ```
 
-## **Argument Reference**
+## Argument Reference
 
 This resource supports the following arguments:
 
-* **`name`** \- (Required) The name of the workflow. This must match the `name` field in the YAML `definition`. **Important**: Changing this field will force a new resource to be created.
-* **`definition`** \- (Required) The YAML definition of the workflow. This must be a valid YAML string that defines the workflow's configuration.
-* **`scope_type`** \- (Required) The scope type for the workflow. Must be either `ACCOUNT` or `ORGANIZATION`. **Important**: Changing this field will force a new resource to be created.
-* **`scope_id`** \- (Required) The ID of the scope for the workflow. For `ACCOUNT` scope, this is your New Relic account ID (numeric). For `ORGANIZATION` scope, this is your organization ID (string). **Important**: Changing this field will force a new resource to be created.
+* `name` \- (Required) The name of the workflow. This must match the `name` field in the YAML `definition`. **Important**: Changing this field will force a new resource to be created.
+* `definition` \- (Required) The YAML definition of the workflow. This must be a valid YAML string that defines the workflow's configuration.
+* `scope_type` \- (Required) The scope type for the workflow. Must be either `ACCOUNT` or `ORGANIZATION`. **Important**: Changing this field will force a new resource to be created.
+* `scope_id` \- (Required) The ID of the scope for the workflow. For `ACCOUNT` scope, this is your New Relic account ID (numeric). For `ORGANIZATION` scope, this is your organization ID (string). **Important**: Changing this field will force a new resource to be created.
 
-## **Attributes Reference**
+## Attributes Reference
 
 In addition to the arguments above, the resource exports the following attributes:
 
-* **`id`** \- The composite ID of the workflow, with the format `<scope_type>#<scope_id>#<workflow_name>`.
+* `id` \- The composite ID of the workflow, with the format `<scope_type>#<scope_id>#<workflow_name>`.
   * Example:
     * ACCOUNT\#123456789\#MyWorkflow
     * ORGANIZATION\#c400b54f-2abd-45b7-987c-dc1920ce701d\#MyWorkflow
-* **`description`** \- The description of the workflow, as defined in the YAML.
-* **`version`** \- The current version number of the workflow. This number increments with each update to the `definition`.
+* `description` \- The description of the workflow, as defined in the YAML.
+* `version` \- The current version number of the workflow. This number increments with each update to the `definition`.
 
-## [**YAML Definition Structure**](https://docs.newrelic.com/docs/workflow-automation/workflow-automation-apis/definition-schema/)
+## [YAML Definition Structure](https://docs.newrelic.com/docs/workflow-automation/workflow-automation-apis/definition-schema/)
 
 The `definition` argument accepts a YAML string that defines the workflow's structure and logic.
 
-### **Top-Level Fields**
+### Top-Level Fields
 
 | Field | Type | Required | Description |
 | ----- | ----- | ----- | ----- |
-| `name` | String | **Yes** | The name of the workflow. Must match the `name` argument in the Terraform resource. |
+| `name` | String | Yes | The name of the workflow. Must match the `name` argument in the Terraform resource. |
 | `description` | String | No | A brief summary of what the workflow does. Recommended for clarity. |
 | `workflowInputs` | Object | No | A map of input variables that can be passed to the workflow at runtime. |
-| `steps` | Array | **Yes** | An ordered array of step objects that define the workflow's logic. |
+| `steps` | Array | Yes | An ordered array of step objects that define the workflow's logic. |
 
 ---
 
-### **Workflow Inputs**
+### Workflow Inputs
 
 Define inputs to make your workflows more flexible and reusable.
 
@@ -117,13 +117,13 @@ workflowInputs:
         pattern: ^[a-zA-Z0-9]+$
 ```
 
-#### Inputs can reference secrets using the syntax: `${{ :secrets:secretName }}`
+* Inputs can reference secrets using the syntax: `${{ :secrets:secretName }}`
 
-#### **Input Validation Types**
+#### Input Validation Types
 
 Workflow inputs support various validation types to ensure data integrity:
 
-##### [Regex Validation:](https://docs.newrelic.com/docs/workflow-automation/workflow-automation-apis/definition-schema/#validation-types)
+* [Regex Validation:](https://docs.newrelic.com/docs/workflow-automation/workflow-automation-apis/definition-schema/#validation-types)
 
 ```
 emailDestinationId:
@@ -134,7 +134,7 @@ emailDestinationId:
       pattern: ^[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}$
 ```
 
-Integer Range Validation:
+* Integer Range Validation:
 
 ```
 threshold:
@@ -151,7 +151,7 @@ threshold:
 
 **Note**: By default, integer variables accept both positive and negative values. If you define a *minIntValue* validation, the field rejects any value below that threshold. For example, setting *minIntValue: 0* prevents negative integers from being entered.
 
-List Type:
+* List Type:
 
 ```
 skipUsers:
@@ -167,7 +167,7 @@ skipUsers:
 
 Each object in the `steps` array defines a single unit of work. The primary step types are [`action`, `wait`, `switch`, and `loop`.](https://docs.newrelic.com/docs/workflow-automation/create-a-workflow-automation/create-your-own/#core-concepts)
 
-#### **Action Steps**
+#### Action Steps
 
 Executes a specific function, such as querying data or sending a notification.
 
@@ -197,7 +197,7 @@ Example:
 **Available actions**
 A complete list of available actions, their versions, and required inputs can be found in the [**Workflow Action Catalog**](https://docs.newrelic.com/docs/workflow-automation/actions-catalog/).
 
-#### **Wait steps**
+#### Wait steps
 
 Pauses the workflow for a specified duration or until it receives a signal.
 
@@ -214,7 +214,7 @@ Example:
     seconds: 15
 ```
 
-#### **Switch steps**
+#### Switch steps
 
 Provides conditional branching logic.
 
@@ -235,7 +235,7 @@ Example:
         next: displaySuccess
 ```
 
-#### **Loop steps**
+#### Loop steps
 
 Iterates over a set of values and executes a sequence of steps for each iteration.
 
@@ -263,7 +263,7 @@ Example:
 
 ---
 
-### **Referencing Data in Workflows**
+### Referencing Data in Workflows
 
 You can dynamically reference data from inputs, secrets, and other steps using JQ-like template expressions.
 
@@ -400,9 +400,9 @@ See, [Create accounts and organizations](https://docs.newrelic.com/docs/accounts
 
 The following attributes, when changed, will force creation of a new resource :
 
-* **`name`** \- Changing the workflow name creates a new resource.
-* **`scope_id`** \- Changing the scope ID creates a new resource.
-* **`scope_type`** \- Changing between **ACCOUNT** and **ORGANIZATION** creates a new resource.
+* `name` \- Changing the workflow name creates a new resource.
+* `scope_id` \- Changing the scope ID creates a new resource.
+* `scope_type` \- Changing between **ACCOUNT** and **ORGANIZATION** creates a new resource.
 
 ### YAML validation
 
@@ -417,16 +417,16 @@ Invalid YAML or missing required fields will result in an error.
 Example YAML validation errors:
 
   YAML Validation Error
-  1\. *waitStep* has invalid type "waitAgain". Valid types are:
+  1. *waitStep* has invalid type "waitAgain". Valid types are:
    action, loop, switch, wait, assign
 
-###   2\. Workflow definition names can not be changed.
+  2. Workflow definition names can not be changed.
 
 ### *Versioning*
 
 Each time you update the `definition` of a workflow automation, New Relic automatically increments the `version` attribute. This allows you to track changes to your workflow automation over time.
 
-## **Best practices**
+## Best practices
 
 1. **Use Heredoc Syntax**: For multi-line YAML, use the `<<-YAML ... YAML` heredoc syntax for better readability.
 2. **External YAML Files**: For complex workflows, store YAML in separate files and reference them using Terraform's `file()` or `templatefile()` function.
@@ -446,20 +446,20 @@ Each time you update the `definition` of a workflow automation, New Relic automa
 5. **Naming Conventions**: Use clear and consistent naming conventions for your workflows to make them easier to manage.
 6. **Manage Secrets Securely**: For sensitive values like API keys or tokens, always use [New Relic secrets](https://docs.newrelic.com/docs/infrastructure/host-integrations/installation/secrets-management/). Avoid hardcoding sensitive information directly in your YAML definitions.
 
-## **Troubleshooting**
+## Troubleshooting
 
-#### **Name Mismatch Error**
+### Name Mismatch Error
 
 If you get an error like "`name in resource configuration does not match name in YAML definition"`, ensure the `name` attribute in your Terraform resource exactly matches the `name` field in your YAML, including capitalization and spacing.
 
-#### **Scope ID Format Error**
+### Scope ID Format Error
 
 If you receive an error about invalid `scope_id` format for **ACCOUNT** scope:
 
 * Ensure your `account ID` is numeric (e.g., "**1234567**", not "**account-1234567**").
 * For **ACCOUNT** scope, the `scope_id` should be a string representation of your numeric account ID.
 
-#### **Invalid YAML Error**
+### Invalid YAML Error
 
 If you receive a YAML parsing error:
 
