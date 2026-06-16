@@ -1,3 +1,8 @@
+<a name="v3.93.1"></a>
+## [v3.93.1] - 2026-06-16
+### Documentation Updates
+- **workflowautomation:** updates to resource documentation ([#3112](https://github.com/newrelic/terraform-provider-newrelic/issues/3112))
+
 <a name="v3.93.0"></a>
 ## [v3.93.0] - 2026-06-10
 ### Features
@@ -2748,7 +2753,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...HEAD
+[v3.93.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...v3.93.1
 [v3.93.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...v3.93.0
 [v3.92.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.1...v3.92.0
 [v3.91.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.0...v3.91.1
