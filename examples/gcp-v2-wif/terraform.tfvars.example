@@ -1,0 +1,37 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit credentials.
+
+# ── New Relic ──────────────────────────────────────────────────────────────
+newrelic_account_id = 123456789
+newrelic_api_key    = "NRAK-<your-api-key>"
+newrelic_region     = "US"   # or "EU" or "Staging"
+
+# ── GCP project ────────────────────────────────────────────────────────────
+gcp_project_id      = "my-gcp-project-123"
+gcp_org_id          = "123456789012"   # numeric GCP organization ID; required for folderViewer role
+
+# Display name shown in New Relic UI
+linked_account_name = "production-gcp-dm"
+
+# ── GCP WIF infrastructure IDs ─────────────────────────────────────────────
+# These are created by Terraform — change them if they already exist in your project.
+wif_pool_id      = "newrelic-pool"
+wif_provider_id  = "newrelic-provider"
+newrelic_sa_name = "newrelic-integration"
+
+# ── Polling interval ───────────────────────────────────────────────────────
+metrics_polling_interval = 300
+
+# fetch_tags is optional; disable on staging if not yet supported
+enable_fetch_tags = false
+
+# ── Optional: reduce the set of enabled services ───────────────────────────
+# By default all services are enabled.  Uncomment and edit this list to
+# enable only a subset.
+#
+# enabled_services = [
+#   "big_query",
+#   "kubernetes",
+#   "pub_sub",
+#   "firebase_auth",
+# ]
