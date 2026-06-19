@@ -241,16 +241,16 @@ The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrati
 
 |                        |                           |                          |
 |------------------------|---------------------------|--------------------------|
-| `AI Platform`          | `AlloyDB`                 | `App Engine`             |
-| `BigQuery`             | `Bigtable`                | `Cloud Composer`         |
-| `Dataflow`             | `Dataproc`                | `Datastore`              |
+| `AI Platform`          | `AlloyDB` (supports 1m polling) | `App Engine`        |
+| `BigQuery` (supports 1m polling) | `Bigtable`       | `Cloud Composer`         |
+| `Dataflow` (supports 1m polling) | `Dataproc` (supports 1m polling) | `Datastore` |
 | `Firebase Database`    | `Firebase Hosting`        | `Firebase Storage`       |
 | `Firestore`            | `Cloud Functions`         | `Cloud Interconnect`     |
-| `Kubernetes Engine`    | `Cloud Load Balancing`    | `Memcache`               |
-| `Cloud Pub/Sub`        | `Memorystore (Redis)`     | `Cloud Router`           |
-| `Cloud Run`            | `Cloud Spanner`           | `Cloud SQL`              |
+| `Kubernetes Engine` (supports 1m polling) | `Cloud Load Balancing` (supports 1m polling) | `Memcache` |
+| `Cloud Pub/Sub` (supports 1m polling) | `Memorystore (Redis)` | `Cloud Router`     |
+| `Cloud Run`            | `Cloud Spanner` (supports 1m polling) | `Cloud SQL`     |
 | `Cloud Storage`        | `Virtual Machines`        | `VPC Access`             |
-| `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only)* | `Managed Kafka` *(DM only)* |
+| `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
 | `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only)* |                           |
 
 #### Prerequisites
