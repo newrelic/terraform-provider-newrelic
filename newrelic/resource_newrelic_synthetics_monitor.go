@@ -124,7 +124,6 @@ func resourceNewRelicSyntheticsMonitor() *schema.Resource {
 				Optional:    true,
 				Description: "The programing language that should execute the script",
 			},
-			SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 			"tag": {
 				Type:        schema.TypeSet,
 				Optional:    true,
