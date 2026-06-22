@@ -1,3 +1,9 @@
+<a name="v3.93.2"></a>
+## [v3.93.2] - 2026-06-22
+### Bug Fixes
+- **cloud-oci:** strip :443 from IDCS endpoint URL to prevent auth  ([#3113](https://github.com/newrelic/terraform-provider-newrelic/issues/3113))
+- **fleet:** redesign configuration to flat content model and fix UX gaps across the fleet family ([#3098](https://github.com/newrelic/terraform-provider-newrelic/issues/3098))
+
 <a name="v3.93.1"></a>
 ## [v3.93.1] - 2026-06-16
 ### Documentation Updates
@@ -2753,7 +2759,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...HEAD
+[v3.93.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...v3.93.2
 [v3.93.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...v3.93.1
 [v3.93.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...v3.93.0
 [v3.92.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.1...v3.92.0
