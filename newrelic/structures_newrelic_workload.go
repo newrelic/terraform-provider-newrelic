@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/workloads"
@@ -107,7 +109,7 @@ func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.
 	queryInput := workloads.WorkloadEntitySearchQueryInput{}
 
 	if query, ok := cfg["query"]; ok {
-		queryInput.Query = query.(string)
+		queryInput.Query = formatEntitySearchQueryTags(query.(string))
 	}
 
 	return queryInput
@@ -144,7 +146,7 @@ func expandWorkloadUpdateCollectionEntitySearchQueryInput(cfg map[string]interfa
 	queryInput := workloads.WorkloadUpdateCollectionEntitySearchQueryInput{}
 
 	if query, ok := cfg["query"]; ok {
-		queryInput.Query = query.(string)
+		queryInput.Query = formatEntitySearchQueryTags(query.(string))
 	}
 
 	return queryInput
@@ -442,4 +444,33 @@ func flattenWorkloadEntitySearchQueries(in []workloads.WorkloadEntitySearchQuery
 		out[i] = m
 	}
 	return out
+}
+
+func formatEntitySearchQueryTags(query string) string {
+	tagPattern := regexp.MustCompile(`tags(?:\.[a-zA-Z_][a-zA-Z0-9_]*)+`)
+
+	result := query
+	offset := 0
+
+	matches := tagPattern.FindAllStringIndex(query, -1)
+	for _, match := range matches {
+		start := match[0] + offset
+		end := match[1] + offset
+		alreadyBackticked := false
+		if start > 0 && result[start-1] == '`' {
+			alreadyBackticked = true
+		}
+		if !alreadyBackticked && end < len(result) && result[end] == '`' {
+			alreadyBackticked = true
+		}
+
+		if !alreadyBackticked {
+			tagText := result[start:end]
+			wrapped := "`" + tagText + "`"
+			result = result[:start] + wrapped + result[end:]
+			offset += 2
+		}
+	}
+
+	return result
 }
