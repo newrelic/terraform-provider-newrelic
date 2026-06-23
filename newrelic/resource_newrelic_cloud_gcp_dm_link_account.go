@@ -12,46 +12,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
-// gcpDmAuthenticateMutation calls cloudAuthenticateIntegration to obtain an authReferenceId
-// for WIF-based GCP Dimensional Metrics account linking (Step 1 of 2-step Create).
-const gcpDmAuthenticateMutation = `mutation(
-	$accountId: Int!,
-	$providerSlug: CloudProviderType!,
-	$authType: AuthenticationType!,
-	$payload: String!,
-) {
-	cloudAuthenticateIntegration(
-		accountId: $accountId
-		providerSlug: $providerSlug
-		authType: $authType
-		payload: $payload
-	) {
-		authReferenceId
-	}
-}`
-
-// gcpDmLinkAccountMutation links a GCP project to a New Relic account using authReferenceId.
-// We define this locally because cloud.CloudGcpLinkAccountInput does not include authReferenceId.
-const gcpDmLinkAccountMutation = `mutation(
-	$accountId: Int!,
-	$accounts: CloudLinkCloudAccountsInput!,
-) {
-	cloudLinkAccount(
-		accountId: $accountId
-		accounts: $accounts
-	) {
-		linkedAccounts {
-			id
-			nrAccountId
-			name
-		}
-		errors {
-			type
-			message
-		}
-	}
-}`
-
 // gcpDmGetLinkedAccountQuery fetches only the basic fields of a linked account
 // (id, name, nrAccountId, externalId) without requesting integrations.
 // This avoids the "Abstract type 'Integration' must resolve to an Object type"
@@ -86,36 +46,6 @@ type gcpDmLinkedAccountResp struct {
 			} `json:"cloud"`
 		} `json:"account"`
 	} `json:"actor"`
-}
-
-// gcpDmAuthResp is the NerdGraph response for cloudAuthenticateIntegration.
-type gcpDmAuthResp struct {
-	CloudAuthenticateIntegration struct {
-		AuthReferenceId string `json:"authReferenceId"`
-	} `json:"cloudAuthenticateIntegration"`
-}
-
-// gcpDmLinkAccountInput is a local GCP link account input that includes authReferenceId,
-// which is required for GCP Dimensional Metrics / WIF authentication but absent from cloud.CloudGcpLinkAccountInput.
-type gcpDmLinkAccountInput struct {
-	Name            string `json:"name"`
-	ProjectId       string `json:"projectId"`
-	AuthReferenceId string `json:"authReferenceId,omitempty"`
-}
-
-// gcpDmLinkResp is the NerdGraph response for cloudLinkAccount.
-type gcpDmLinkResp struct {
-	CloudLinkAccount struct {
-		LinkedAccounts []struct {
-			ID          int    `json:"id"`
-			NrAccountId int    `json:"nrAccountId"`
-			Name        string `json:"name"`
-		} `json:"linkedAccounts"`
-		Errors []struct {
-			Type    string `json:"type"`
-			Message string `json:"message"`
-		} `json:"errors"`
-	} `json:"cloudLinkAccount"`
 }
 
 func resourceNewRelicCloudGcpDmLinkAccount() *schema.Resource {
@@ -228,50 +158,39 @@ func resourceNewRelicCloudGcpDmLinkAccountCreate(ctx context.Context, d *schema.
 	}
 
 	// Step 1: Authenticate via WIF to obtain an authReferenceId (30-min TTL).
-	var authResp gcpDmAuthResp
-	authVars := map[string]interface{}{
-		"accountId":    accountID,
-		"providerSlug": "GCP",
-		"authType":     "WIF",
-		"payload":      wifCredential,
-	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmAuthenticateMutation, authVars, &authResp); err != nil {
+	authPayload, err := client.Cloud.CloudAuthenticateIntegrationWithContext(ctx, accountID, "GCP", "WIF", wifCredential)
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudAuthenticateIntegration failed: %w", err))
 	}
-	authReferenceId := authResp.CloudAuthenticateIntegration.AuthReferenceId
-	if authReferenceId == "" {
+	if authPayload.AuthReferenceId == "" {
 		return diag.FromErr(fmt.Errorf("cloudAuthenticateIntegration returned empty authReferenceId"))
 	}
 
 	// Step 2: Link GCP project to New Relic using the authReferenceId.
-	var linkResp gcpDmLinkResp
-	linkVars := map[string]interface{}{
-		"accountId": accountID,
-		"accounts": map[string]interface{}{
-			"gcp": []gcpDmLinkAccountInput{{
-				Name:            d.Get("name").(string),
-				ProjectId:       d.Get("project_id").(string),
-				AuthReferenceId: authReferenceId,
-			}},
-		},
-	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmLinkAccountMutation, linkVars, &linkResp); err != nil {
+	linkPayload, err := client.Cloud.CloudLinkAccountWithContext(ctx, accountID, cloud.CloudLinkCloudAccountsInput{
+		Gcp: []cloud.CloudGcpLinkAccountInput{{
+			Name:            d.Get("name").(string),
+			ProjectId:       d.Get("project_id").(string),
+			AuthReferenceId: authPayload.AuthReferenceId,
+		}},
+	})
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudLinkAccount failed: %w", err))
 	}
 
-	if len(linkResp.CloudLinkAccount.Errors) > 0 {
-		msgs := make([]string, 0, len(linkResp.CloudLinkAccount.Errors))
-		for _, e := range linkResp.CloudLinkAccount.Errors {
-			msgs = append(msgs, e.Type+": "+e.Message)
+	if len(linkPayload.Errors) > 0 {
+		msgs := make([]string, 0, len(linkPayload.Errors))
+		for _, e := range linkPayload.Errors {
+			msgs = append(msgs, e.Type+" "+e.Message)
 		}
 		return diag.FromErr(fmt.Errorf("cloudLinkAccount errors: %s", strings.Join(msgs, "; ")))
 	}
 
-	if len(linkResp.CloudLinkAccount.LinkedAccounts) == 0 {
+	if len(linkPayload.LinkedAccounts) == 0 {
 		return diag.FromErr(fmt.Errorf("cloudLinkAccount returned no linked accounts"))
 	}
 
-	d.SetId(strconv.Itoa(linkResp.CloudLinkAccount.LinkedAccounts[0].ID))
+	d.SetId(strconv.Itoa(linkPayload.LinkedAccounts[0].ID))
 	_ = d.Set("account_id", accountID)
 
 	return resourceNewRelicCloudGcpDmLinkAccountRead(ctx, d, meta)
