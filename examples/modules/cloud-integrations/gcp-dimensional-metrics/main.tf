@@ -66,6 +66,13 @@ resource "google_project_iam_member" "newrelic_cloud_asset_viewer" {
   member  = google_service_account.newrelic.member
 }
 
+# ── IAM: Folder-level resource discovery — must be at org level, not project ──
+resource "google_organization_iam_member" "newrelic_folder_viewer" {
+  org_id = var.gcp_org_id
+  role   = "roles/resourcemanager.folderViewer"
+  member = google_service_account.newrelic.member
+}
+
 # ── IAM: Allow WIF pool to impersonate the service account ────────────────────
 resource "google_service_account_iam_member" "newrelic_wif" {
   service_account_id = google_service_account.newrelic.name
@@ -82,10 +89,11 @@ resource "newrelic_cloud_gcp_dm_link_account" "this" {
   audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [
-    google_service_account_iam_member.newrelic_wif,
     google_project_iam_member.newrelic_viewer,
     google_project_iam_member.newrelic_service_usage,
     google_project_iam_member.newrelic_cloud_asset_viewer,
+    google_organization_iam_member.newrelic_folder_viewer,
+    google_service_account_iam_member.newrelic_wif,
   ]
 }
 

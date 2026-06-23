@@ -35,6 +35,11 @@ variable "wif_provider_id" {
   description = "ID for the WIF OIDC provider inside the pool (e.g. 'newrelic-oidc-provider')."
 }
 
+variable "gcp_org_id" {
+  type        = string
+  description = "The numeric GCP organization ID. Required to grant roles/resourcemanager.folderViewer at the org level for folder-level resource discovery."
+}
+
 variable "newrelic_sa_name" {
   type        = string
   description = "Name for the GCP service account that New Relic will impersonate (e.g. 'newrelic-integration')."
