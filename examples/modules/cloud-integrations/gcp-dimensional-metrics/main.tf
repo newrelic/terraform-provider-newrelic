@@ -66,9 +66,12 @@ resource "google_project_iam_member" "newrelic_cloud_asset_viewer" {
   member  = google_service_account.newrelic.member
 }
 
-# ── IAM: Folder-level resource discovery — must be at org level, not project ──
-resource "google_organization_iam_member" "newrelic_folder_viewer" {
-  org_id = var.gcp_org_id
+# ── IAM: Folder-level resource discovery ─────────────────────────────────────
+# Grant folderViewer at the folder level so New Relic can discover resources
+# organised under that folder. This must be applied at the folder level (not
+# project level) — pass the numeric folder ID (without the "folders/" prefix).
+resource "google_folder_iam_member" "newrelic_folder_viewer" {
+  folder = "folders/${var.gcp_folder_id}"
   role   = "roles/resourcemanager.folderViewer"
   member = google_service_account.newrelic.member
 }
@@ -92,7 +95,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "this" {
     google_project_iam_member.newrelic_viewer,
     google_project_iam_member.newrelic_service_usage,
     google_project_iam_member.newrelic_cloud_asset_viewer,
-    google_organization_iam_member.newrelic_folder_viewer,
+    google_folder_iam_member.newrelic_folder_viewer,
     google_service_account_iam_member.newrelic_wif,
   ]
 }

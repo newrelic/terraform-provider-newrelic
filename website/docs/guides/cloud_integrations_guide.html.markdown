@@ -235,7 +235,7 @@ GCP Dimensional Metrics (`gcp_dm`) is the next-generation GCP integration in New
 
 * **Keyless authentication** — credentials are issued on-demand via WIF; no JSON key file is created or managed.
 * **Expanded service coverage** — includes all services from the classic integration plus GCP Dimensional Metrics-only services such as Firebase Authentication, Firebase Vertex AI, Managed Apache Kafka, Memorystore, and Firebase App Hosting.
-* **Four GCP roles required** on the service account: `roles/monitoring.viewer` (metrics), `roles/serviceusage.serviceUsageConsumer` (API quota), `roles/cloudasset.viewer` (resource discovery via Cloud Asset APIs), and `roles/resourcemanager.folderViewer` (folder-level resource discovery — must be granted at the **organization** level, not project level).
+* **Four GCP roles required** on the service account: `roles/monitoring.viewer` (metrics), `roles/serviceusage.serviceUsageConsumer` (API quota), `roles/cloudasset.viewer` (resource discovery via Cloud Asset APIs), and `roles/resourcemanager.folderViewer` (folder-level resource discovery — must be granted at the **folder** level, not project level).
 
 The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrations` resource:
 
@@ -259,7 +259,7 @@ Before linking the GCP project to New Relic, you must create the following GCP i
 
 1. A **Workload Identity Pool** configured with New Relic's OIDC issuer URI.
 2. An **OIDC provider** inside the pool with `allowed_audiences = ["newrelic-gcp-integrations"]` and an `attribute_condition` restricting tokens to your specific New Relic account ID.
-3. A **GCP service account** granted `roles/monitoring.viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **organization** level.
+3. A **GCP service account** granted `roles/monitoring.viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **folder** level.
 4. A `roles/iam.workloadIdentityUser` binding on the service account scoped to the WIF pool using the `attribute.nr_account_id` attribute (not the wildcard `/*` form).
 
 The OIDC issuer URI is region-specific:
@@ -299,7 +299,7 @@ variable "newrelic_account_id"       { type = number }
 variable "newrelic_api_key"          { type = string; sensitive = true }
 variable "newrelic_region"           { type = string; default = "US" }  # "US" or "EU"
 variable "gcp_project_id"            { type = string }
-variable "gcp_org_id"                { type = string }  # GCP organization ID (numeric); required for folderViewer role
+variable "gcp_folder_id"             { type = string }  # GCP folder ID (numeric, without "folders/" prefix); required for folderViewer role
 variable "linked_account_name"       { type = string; default = "production-gcp-dm" }
 variable "wif_pool_id"               { type = string; default = "newrelic-pool" }
 variable "wif_provider_id"           { type = string; default = "newrelic-provider" }
@@ -370,9 +370,9 @@ resource "google_project_iam_member" "newrelic_cloud_asset_viewer" {
   member  = "serviceAccount:${google_service_account.newrelic.email}"
 }
 
-# Folder-level resource discovery — must be granted at the org level, not project level
-resource "google_organization_iam_member" "newrelic_folder_viewer" {
-  org_id = var.gcp_org_id
+# Folder-level resource discovery — must be granted at the folder level, not project level
+resource "google_folder_iam_member" "newrelic_folder_viewer" {
+  folder = "folders/${var.gcp_folder_id}"
   role   = "roles/resourcemanager.folderViewer"
   member = "serviceAccount:${google_service_account.newrelic.email}"
 }
@@ -401,7 +401,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "main" {
     google_project_iam_member.newrelic_viewer,
     google_project_iam_member.newrelic_service_usage,
     google_project_iam_member.newrelic_cloud_asset_viewer,
-    google_organization_iam_member.newrelic_folder_viewer,
+    google_folder_iam_member.newrelic_folder_viewer,
     google_service_account_iam_member.newrelic_wif,
   ]
 }
@@ -460,6 +460,7 @@ Variables:
 * `newrelic_api_key`: A New Relic User API key with the `NerdGraph` scope.
 * `newrelic_region` (Optional): New Relic region — `US` or `EU`. Determines which OIDC issuer URI is used. Defaults to `US`.
 * `gcp_project_id`: The GCP project ID to monitor (e.g. `my-project-123`).
+* `gcp_folder_id`: The numeric GCP folder ID (without the `folders/` prefix) where the project lives. Required to grant `roles/resourcemanager.folderViewer` at the folder level.
 * `linked_account_name` (Optional): Display name shown in the New Relic UI. Defaults to `production-gcp-dm`.
 * `wif_pool_id` (Optional): ID for the Workload Identity Pool created in GCP. Defaults to `newrelic-pool`.
 * `wif_provider_id` (Optional): ID for the OIDC provider inside the pool. Defaults to `newrelic-provider`.
