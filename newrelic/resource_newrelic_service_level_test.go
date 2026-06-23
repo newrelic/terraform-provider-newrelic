@@ -47,7 +47,7 @@ resource "newrelic_workload" "workload" {
 	name = "%[2]s"
 	account_id = %[1]d
 	entity_search_query {
-		query = "`+"`tags.namespace`"+` like '%%App%%' "
+		query = "tags.namespace like '%%App%%' "
 	}
 	scope_account_ids =  [%[1]d]
 }
@@ -128,7 +128,7 @@ resource "newrelic_workload" "workload" {
 	name = "%[2]s"
 	account_id = %[1]d
 	entity_search_query {
-		query = "`+"`tags.namespace`"+` like '%%App%%' "
+		query = "tags.namespace like '%%App%%' "
 	}
 	scope_account_ids =  [%[1]d]
 }

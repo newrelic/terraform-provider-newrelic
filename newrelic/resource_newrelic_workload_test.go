@@ -579,7 +579,7 @@ resource "newrelic_workload" "foo" {
 	account_id = %[1]d
 
 	entity_search_query {
-		query = "`+"`tags.namespace`"+` like '%%App%%' "
+		query = "tags.namespace like '%%App%%' "
 	}
 
 	entity_search_query {

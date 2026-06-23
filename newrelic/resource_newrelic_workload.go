@@ -53,6 +53,16 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Optional:     true,
 				Description:  "A list of search queries that define a dynamic workload.",
 				AtLeastOneOf: []string{"entity_guids", "entity_search_query"},
+				Set: func(v interface{}) int {
+					// Custom hash function that normalizes queries before hashing
+					// This ensures queries that only differ in backtick formatting are treated as identical
+					m := v.(map[string]interface{})
+					if query, ok := m["query"].(string); ok {
+						normalizedQuery := formatEntitySearchQueryTags(query)
+						return schema.HashString(normalizedQuery)
+					}
+					return 0
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"query": {
