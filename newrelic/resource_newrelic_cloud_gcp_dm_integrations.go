@@ -11,21 +11,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
-// gcpDmConfigureIntegrationMutation configures GCP Dimensional Metrics integrations.
-// We define this locally to use a simpler response shape (errors only).
-const gcpDmConfigureIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudIntegrationsInput!) {
-	cloudConfigureIntegration(accountId: $accountId, integrations: $integrations) {
-		errors { type message }
-	}
-}`
-
-// gcpDmDisableIntegrationMutation disables GCP Dimensional Metrics integrations.
-const gcpDmDisableIntegrationMutation = `mutation($accountId: Int!, $integrations: CloudDisableIntegrationsInput!) {
-	cloudDisableIntegration(accountId: $accountId, integrations: $integrations) {
-		errors { type message }
-	}
-}`
-
 // gcpDmCheckLinkedAccountQuery is a minimal existence-check query that verifies
 // the linked account still exists without requesting the integrations field.
 // Requesting integrations causes "Abstract type 'Integration' must resolve to an
@@ -43,59 +28,6 @@ const gcpDmCheckLinkedAccountQuery = `query($accountID: Int!, $id: Int!) {
 		}
 	}
 }`
-
-// gcpDmGenericIntegrationInput is the configure input for the 7 new GCP Dimensional Metrics services.
-// These services exist in the NerdGraph schema but not in newrelic-client-go types.
-type gcpDmGenericIntegrationInput struct {
-	LinkedAccountId        int `json:"linkedAccountId"`
-	MetricsPollingInterval int `json:"metricsPollingInterval,omitempty"`
-}
-
-// gcpDmGcpIntegrationsInput extends cloud.CloudGcpIntegrationsInput with the 7 new
-// GCP Dimensional Metrics service fields. JSON marshaling promotes all embedded fields alongside the new ones.
-type gcpDmGcpIntegrationsInput struct {
-	cloud.CloudGcpIntegrationsInput
-	GcpApiGateway         []gcpDmGenericIntegrationInput `json:"gcpApiGateway,omitempty"`
-	GcpFirebaseAuth       []gcpDmGenericIntegrationInput `json:"gcpFirebaseAuth,omitempty"`
-	GcpFirebaseVertexAi   []gcpDmGenericIntegrationInput `json:"gcpFirebaseVertexAi,omitempty"`
-	GcpIstio              []gcpDmGenericIntegrationInput `json:"gcpIstio,omitempty"`
-	GcpManagedKafka       []gcpDmGenericIntegrationInput `json:"gcpManagedKafka,omitempty"`
-	GcpMemoryStore        []gcpDmGenericIntegrationInput `json:"gcpMemoryStore,omitempty"`
-	GcpFirebaseAppHosting []gcpDmGenericIntegrationInput `json:"gcpFirebaseAppHosting,omitempty"`
-}
-
-// gcpDmGcpDisableIntegrationsInput extends cloud.CloudGcpDisableIntegrationsInput with
-// the 7 new GCP Dimensional Metrics service fields.
-type gcpDmGcpDisableIntegrationsInput struct {
-	cloud.CloudGcpDisableIntegrationsInput
-	GcpApiGateway         []cloud.CloudDisableAccountIntegrationInput `json:"gcpApiGateway,omitempty"`
-	GcpFirebaseAuth       []cloud.CloudDisableAccountIntegrationInput `json:"gcpFirebaseAuth,omitempty"`
-	GcpFirebaseVertexAi   []cloud.CloudDisableAccountIntegrationInput `json:"gcpFirebaseVertexAi,omitempty"`
-	GcpIstio              []cloud.CloudDisableAccountIntegrationInput `json:"gcpIstio,omitempty"`
-	GcpManagedKafka       []cloud.CloudDisableAccountIntegrationInput `json:"gcpManagedKafka,omitempty"`
-	GcpMemoryStore        []cloud.CloudDisableAccountIntegrationInput `json:"gcpMemoryStore,omitempty"`
-	GcpFirebaseAppHosting []cloud.CloudDisableAccountIntegrationInput `json:"gcpFirebaseAppHosting,omitempty"`
-}
-
-// gcpDmConfigureResp is the NerdGraph response for cloudConfigureIntegration.
-type gcpDmConfigureResp struct {
-	CloudConfigureIntegration struct {
-		Errors []struct {
-			Type    string `json:"type"`
-			Message string `json:"message"`
-		} `json:"errors"`
-	} `json:"cloudConfigureIntegration"`
-}
-
-// gcpDmDisableResp is the NerdGraph response for cloudDisableIntegration.
-type gcpDmDisableResp struct {
-	CloudDisableIntegration struct {
-		Errors []struct {
-			Type    string `json:"type"`
-			Message string `json:"message"`
-		} `json:"errors"`
-	} `json:"cloudDisableIntegration"`
-}
 
 // gcpDmCheckLinkedAccountResp is the response for gcpDmCheckLinkedAccountQuery.
 type gcpDmCheckLinkedAccountResp struct {
@@ -116,10 +48,7 @@ type gcpDmCheckLinkedAccountResp struct {
 // was never enabled (slug unsupported on this environment, or integration simply
 // doesn't exist), so there is nothing to disable — safe to skip.
 // All other error types are aggregated and returned as a single error.
-func gcpDmFilterDisableErrors(errors []struct {
-	Type    string `json:"type"`
-	Message string `json:"message"`
-}) error {
+func gcpDmFilterDisableErrors(errors []cloud.CloudIntegrationMutationError) error {
 	var fatal []string
 	for _, e := range errors {
 		if e.Type == "ERR_INVALID_DATA" || e.Type == "ERR_OBJECT_NOT_FOUND" {
@@ -266,17 +195,13 @@ func resourceNewrelicCloudGcpDmIntegrationsCreate(ctx context.Context, d *schema
 
 	gcpInput, _ := expandCloudGcpDmIntegrationsInput(d, linkedAccountID)
 
-	var configResp gcpDmConfigureResp
-	vars := map[string]interface{}{
-		"accountId":    accountID,
-		"integrations": map[string]interface{}{"gcp": gcpInput},
-	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmConfigureIntegrationMutation, vars, &configResp); err != nil {
+	configPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloud.CloudIntegrationsInput{Gcp: gcpInput})
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration failed: %w", err))
 	}
-	if len(configResp.CloudConfigureIntegration.Errors) > 0 {
-		msgs := make([]string, 0, len(configResp.CloudConfigureIntegration.Errors))
-		for _, e := range configResp.CloudConfigureIntegration.Errors {
+	if len(configPayload.Errors) > 0 {
+		msgs := make([]string, 0, len(configPayload.Errors))
+		for _, e := range configPayload.Errors {
 			msgs = append(msgs, e.Type+": "+e.Message)
 		}
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration errors: %s", strings.Join(msgs, "; ")))
@@ -340,30 +265,22 @@ func resourceNewrelicCloudGcpDmIntegrationsUpdate(ctx context.Context, d *schema
 	gcpInput, gcpDisable := expandCloudGcpDmIntegrationsInput(d, linkedAccountID)
 
 	// Disable removed integrations first
-	var disableResp gcpDmDisableResp
-	disableVars := map[string]interface{}{
-		"accountId":    accountID,
-		"integrations": map[string]interface{}{"gcp": gcpDisable},
-	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmDisableIntegrationMutation, disableVars, &disableResp); err != nil {
+	disablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, cloud.CloudDisableIntegrationsInput{Gcp: gcpDisable})
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudDisableIntegration failed: %w", err))
 	}
-	if err := gcpDmFilterDisableErrors(disableResp.CloudDisableIntegration.Errors); err != nil {
+	if err := gcpDmFilterDisableErrors(disablePayload.Errors); err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Enable/update present integrations
-	var configResp gcpDmConfigureResp
-	configVars := map[string]interface{}{
-		"accountId":    accountID,
-		"integrations": map[string]interface{}{"gcp": gcpInput},
-	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmConfigureIntegrationMutation, configVars, &configResp); err != nil {
+	configPayload, err := client.Cloud.CloudConfigureIntegrationWithContext(ctx, accountID, cloud.CloudIntegrationsInput{Gcp: gcpInput})
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration failed: %w", err))
 	}
-	if len(configResp.CloudConfigureIntegration.Errors) > 0 {
-		msgs := make([]string, 0, len(configResp.CloudConfigureIntegration.Errors))
-		for _, e := range configResp.CloudConfigureIntegration.Errors {
+	if len(configPayload.Errors) > 0 {
+		msgs := make([]string, 0, len(configPayload.Errors))
+		for _, e := range configPayload.Errors {
 			msgs = append(msgs, e.Type+": "+e.Message)
 		}
 		return diag.FromErr(fmt.Errorf("cloudConfigureIntegration errors: %s", strings.Join(msgs, "; ")))
@@ -384,15 +301,11 @@ func resourceNewrelicCloudGcpDmIntegrationsDelete(ctx context.Context, d *schema
 
 	_, gcpDisable := expandCloudGcpDmIntegrationsInput(d, linkedAccountID)
 
-	var disableResp gcpDmDisableResp
-	vars := map[string]interface{}{
-		"accountId":    accountID,
-		"integrations": map[string]interface{}{"gcp": gcpDisable},
-	}
-	if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpDmDisableIntegrationMutation, vars, &disableResp); err != nil {
+	disablePayload, err := client.Cloud.CloudDisableIntegrationWithContext(ctx, accountID, cloud.CloudDisableIntegrationsInput{Gcp: gcpDisable})
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudDisableIntegration failed: %w", err))
 	}
-	if err := gcpDmFilterDisableErrors(disableResp.CloudDisableIntegration.Errors); err != nil {
+	if err := gcpDmFilterDisableErrors(disablePayload.Errors); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -406,9 +319,9 @@ func resourceNewrelicCloudGcpDmIntegrationsDelete(ctx context.Context, d *schema
 // Present blocks go to configure; absent blocks go to disable.
 // TODO: Reduce the cyclomatic complexity of this func
 // nolint:gocyclo
-func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID int) (gcpDmGcpIntegrationsInput, gcpDmGcpDisableIntegrationsInput) {
-	gcpInput := gcpDmGcpIntegrationsInput{}
-	gcpDisable := gcpDmGcpDisableIntegrationsInput{}
+func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID int) (cloud.CloudGcpIntegrationsInput, cloud.CloudGcpDisableIntegrationsInput) {
+	gcpInput := cloud.CloudGcpIntegrationsInput{}
+	gcpDisable := cloud.CloudGcpDisableIntegrationsInput{}
 	dis := cloud.CloudDisableAccountIntegrationInput{LinkedAccountId: linkedAccountID}
 
 	present := func(key string) bool {
@@ -432,13 +345,6 @@ func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID i
 			return v.(bool)
 		}
 		return false
-	}
-
-	genericIn := func(key string) gcpDmGenericIntegrationInput {
-		return gcpDmGenericIntegrationInput{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt(key + ".0.metrics_polling_interval"),
-		}
 	}
 
 	// ── Existing 27 services ─────────────────────────────────────────────────
@@ -694,43 +600,64 @@ func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID i
 	// ── New GCP Dimensional Metrics services ─────────────────────────────────────────────────
 
 	if present("api_gateway") {
-		gcpInput.GcpApiGateway = []gcpDmGenericIntegrationInput{genericIn("api_gateway")}
+		gcpInput.GcpApiGateway = []cloud.CloudGcpApiGatewayIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("api_gateway.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpApiGateway = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("firebase_auth") {
-		gcpInput.GcpFirebaseAuth = []gcpDmGenericIntegrationInput{genericIn("firebase_auth")}
+		gcpInput.GcpFirebaseAuth = []cloud.CloudGcpFirebaseAuthIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("firebase_auth.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpFirebaseAuth = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("firebase_vertex_ai") {
-		gcpInput.GcpFirebaseVertexAi = []gcpDmGenericIntegrationInput{genericIn("firebase_vertex_ai")}
+		gcpInput.GcpFirebaseVertexAi = []cloud.CloudGcpFirebaseVertexAiIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("firebase_vertex_ai.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpFirebaseVertexAi = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("istio") {
-		gcpInput.GcpIstio = []gcpDmGenericIntegrationInput{genericIn("istio")}
+		gcpInput.GcpIstio = []cloud.CloudGcpIstioIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("istio.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpIstio = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("managed_kafka") {
-		gcpInput.GcpManagedKafka = []gcpDmGenericIntegrationInput{genericIn("managed_kafka")}
+		gcpInput.GcpManagedKafka = []cloud.CloudGcpManagedKafkaIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("managed_kafka.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpManagedKafka = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("memory_store") {
-		gcpInput.GcpMemoryStore = []gcpDmGenericIntegrationInput{genericIn("memory_store")}
+		gcpInput.GcpMemoryStore = []cloud.CloudGcpMemoryStoreIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("memory_store.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpMemoryStore = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
 
 	if present("firebase_app_hosting") {
-		gcpInput.GcpFirebaseAppHosting = []gcpDmGenericIntegrationInput{genericIn("firebase_app_hosting")}
+		gcpInput.GcpFirebaseAppHosting = []cloud.CloudGcpFirebaseAppHostingIntegrationInput{{
+			LinkedAccountId:        linkedAccountID,
+			MetricsPollingInterval: getInt("firebase_app_hosting.0.metrics_polling_interval"),
+		}}
 	} else {
 		gcpDisable.GcpFirebaseAppHosting = []cloud.CloudDisableAccountIntegrationInput{dis}
 	}
