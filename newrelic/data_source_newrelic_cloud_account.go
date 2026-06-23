@@ -12,36 +12,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
-// gcpDmLinkedAccountsQuery fetches linked accounts for GCP Dimensional Metrics
-// (provider slug "gcp_v2") without requesting the integrations field.
-// GetLinkedAccountsWithContext("gcp_v2") fails because client-go cannot
-// deserialize CloudGcpGenericIntegration in the integrations field.
-// gcpDmLinkedAccountsQuery uses the actor-level cloud path (not the account-scoped
-// path) because only actor.cloud.linkedAccounts accepts the provider argument.
-const gcpDmLinkedAccountsQuery = `query($provider: String) {
-	actor {
-		cloud {
-			linkedAccounts(provider: $provider) {
-				id
-				name
-				nrAccountId
-			}
-		}
-	}
-}`
-
-type gcpDmLinkedAccountsResp struct {
-	Actor struct {
-		Cloud struct {
-			LinkedAccounts []struct {
-				ID          int    `json:"id"`
-				Name        string `json:"name"`
-				NrAccountId int    `json:"nrAccountId"`
-			} `json:"linkedAccounts"`
-		} `json:"cloud"`
-	} `json:"actor"`
-}
-
 func dataSourceNewRelicCloudAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicCloudAccountRead,
@@ -84,19 +54,13 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	isDM := d.Get("is_dimensional_metrics").(bool)
 
 	// GCP Dimensional Metrics accounts use the "gcp_v2" provider slug internally.
-	// GetLinkedAccountsWithContext("gcp_v2") fails because client-go cannot
-	// deserialize CloudGcpGenericIntegration, so we use a raw NerdGraph query.
 	if isDM && strings.EqualFold(provider, "gcp") {
-		var resp gcpDmLinkedAccountsResp
-		if err := client.NerdGraph.QueryWithResponseAndContext(ctx,
-			gcpDmLinkedAccountsQuery,
-			map[string]interface{}{"provider": "gcp_v2"},
-			&resp,
-		); err != nil {
+		accounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, "gcp_v2")
+		if err != nil {
 			return diag.FromErr(fmt.Errorf("listing GCP Dimensional Metrics linked accounts: %w", err))
 		}
 
-		for _, a := range resp.Actor.Cloud.LinkedAccounts {
+		for _, a := range *accounts {
 			if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
 				d.SetId(strconv.Itoa(a.ID))
 				_ = d.Set("account_id", a.NrAccountId)
