@@ -14,10 +14,11 @@ import (
 
 func TestAccNewRelicCloudGcpDmIntegrations_Basic(t *testing.T) {
 	testProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
-	testWifCredential := os.Getenv("INTEGRATION_TESTING_GCP_WIF_CREDENTIAL")
+	testAudience := os.Getenv("INTEGRATION_TESTING_GCP_WIF_AUDIENCE")
+	testSAEmail := os.Getenv("INTEGRATION_TESTING_GCP_WIF_SA_EMAIL")
 
-	if testProjectID == "" || testWifCredential == "" {
-		t.Skip("skipping: INTEGRATION_TESTING_GCP_PROJECT_ID and INTEGRATION_TESTING_GCP_WIF_CREDENTIAL must be set")
+	if testProjectID == "" || testAudience == "" || testSAEmail == "" {
+		t.Skip("skipping: INTEGRATION_TESTING_GCP_PROJECT_ID, INTEGRATION_TESTING_GCP_WIF_AUDIENCE and INTEGRATION_TESTING_GCP_WIF_SA_EMAIL must be set")
 	}
 	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
 		t.Skip("skipping: NEW_RELIC_SUBACCOUNT_ID must be set")
@@ -32,7 +33,7 @@ func TestAccNewRelicCloudGcpDmIntegrations_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create: link account + big_query + api_gateway
 			{
-				Config: testAccNewRelicCloudGcpDmIntegrationsConfig(testProjectID, testWifCredential),
+				Config: testAccNewRelicCloudGcpDmIntegrationsConfig(testProjectID, testAudience, testSAEmail),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudGcpDmIntegrationsExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "linked_account_id"),
@@ -44,7 +45,7 @@ func TestAccNewRelicCloudGcpDmIntegrations_Basic(t *testing.T) {
 			},
 			// Update: add firebase_auth, remove api_gateway
 			{
-				Config: testAccNewRelicCloudGcpDmIntegrationsConfigUpdated(testProjectID, testWifCredential),
+				Config: testAccNewRelicCloudGcpDmIntegrationsConfigUpdated(testProjectID, testAudience, testSAEmail),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudGcpDmIntegrationsExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "big_query.0.metrics_polling_interval", "400"),
@@ -110,7 +111,7 @@ func testAccCheckNewRelicCloudGcpDmIntegrationsDestroyed(s *terraform.State) err
 
 // testAccNewRelicCloudGcpDmIntegrationsConfig creates a link account plus integrations
 // with big_query (fetch_tags + fetch_table_metrics) and api_gateway enabled.
-func testAccNewRelicCloudGcpDmIntegrationsConfig(projectID, wifCredential string) string {
+func testAccNewRelicCloudGcpDmIntegrationsConfig(projectID, audience, serviceAccountEmail string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   account_id = "%d"
@@ -118,11 +119,12 @@ provider "newrelic" {
 }
 
 resource "newrelic_cloud_gcp_dm_link_account" "test" {
-  provider       = newrelic.cloud-integration-provider
-  account_id     = %d
-  name           = "tf-test-gcp-dm-integrations"
-  project_id     = %q
-  wif_credential = %q
+  provider              = newrelic.cloud-integration-provider
+  account_id            = %d
+  name                  = "tf-test-gcp-dm-integrations"
+  project_id            = %q
+  audience              = %q
+  service_account_email = %q
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "test" {
@@ -140,12 +142,12 @@ resource "newrelic_cloud_gcp_dm_integrations" "test" {
     metrics_polling_interval = 400
   }
 }
-`, testSubAccountID, testSubAccountID, projectID, wifCredential, testSubAccountID)
+`, testSubAccountID, testSubAccountID, projectID, audience, serviceAccountEmail, testSubAccountID)
 }
 
 // testAccNewRelicCloudGcpDmIntegrationsConfigUpdated keeps big_query, adds firebase_auth,
 // and removes api_gateway.
-func testAccNewRelicCloudGcpDmIntegrationsConfigUpdated(projectID, wifCredential string) string {
+func testAccNewRelicCloudGcpDmIntegrationsConfigUpdated(projectID, audience, serviceAccountEmail string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   account_id = "%d"
@@ -153,11 +155,12 @@ provider "newrelic" {
 }
 
 resource "newrelic_cloud_gcp_dm_link_account" "test" {
-  provider       = newrelic.cloud-integration-provider
-  account_id     = %d
-  name           = "tf-test-gcp-dm-integrations"
-  project_id     = %q
-  wif_credential = %q
+  provider              = newrelic.cloud-integration-provider
+  account_id            = %d
+  name                  = "tf-test-gcp-dm-integrations"
+  project_id            = %q
+  audience              = %q
+  service_account_email = %q
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "test" {
@@ -175,5 +178,5 @@ resource "newrelic_cloud_gcp_dm_integrations" "test" {
     metrics_polling_interval = 400
   }
 }
-`, testSubAccountID, testSubAccountID, projectID, wifCredential, testSubAccountID)
+`, testSubAccountID, testSubAccountID, projectID, audience, serviceAccountEmail, testSubAccountID)
 }

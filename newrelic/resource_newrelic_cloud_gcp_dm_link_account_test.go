@@ -14,10 +14,11 @@ import (
 
 func TestAccNewRelicCloudGcpDmLinkAccount_Basic(t *testing.T) {
 	testProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
-	testWifCredential := os.Getenv("INTEGRATION_TESTING_GCP_WIF_CREDENTIAL")
+	testAudience := os.Getenv("INTEGRATION_TESTING_GCP_WIF_AUDIENCE")
+	testSAEmail := os.Getenv("INTEGRATION_TESTING_GCP_WIF_SA_EMAIL")
 
-	if testProjectID == "" || testWifCredential == "" {
-		t.Skip("skipping: INTEGRATION_TESTING_GCP_PROJECT_ID and INTEGRATION_TESTING_GCP_WIF_CREDENTIAL must be set")
+	if testProjectID == "" || testAudience == "" || testSAEmail == "" {
+		t.Skip("skipping: INTEGRATION_TESTING_GCP_PROJECT_ID, INTEGRATION_TESTING_GCP_WIF_AUDIENCE and INTEGRATION_TESTING_GCP_WIF_SA_EMAIL must be set")
 	}
 	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
 		t.Skip("skipping: NEW_RELIC_SUBACCOUNT_ID must be set")
@@ -32,7 +33,7 @@ func TestAccNewRelicCloudGcpDmLinkAccount_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-dm"),
+				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testAudience, testSAEmail, "tf-test-gcp-dm"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicCloudGcpDmLinkAccountExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-dm"),
@@ -42,7 +43,7 @@ func TestAccNewRelicCloudGcpDmLinkAccount_Basic(t *testing.T) {
 			},
 			// Rename (Update name only — all other fields are ForceNew)
 			{
-				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testWifCredential, "tf-test-gcp-dm-renamed"),
+				Config: testAccNewRelicCloudGcpDmLinkAccountConfig(testProjectID, testAudience, testSAEmail, "tf-test-gcp-dm-renamed"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-dm-renamed"),
 				),
@@ -52,7 +53,7 @@ func TestAccNewRelicCloudGcpDmLinkAccount_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"wif_credential"}, // write-only; not returned by API
+				ImportStateVerifyIgnore: []string{"audience", "service_account_email"}, // write-only; not returned by API
 			},
 		},
 	})
@@ -97,7 +98,7 @@ func testAccCheckNewRelicCloudGcpDmLinkAccountDestroyed(s *terraform.State) erro
 	return nil
 }
 
-func testAccNewRelicCloudGcpDmLinkAccountConfig(projectID, wifCredential, name string) string {
+func testAccNewRelicCloudGcpDmLinkAccountConfig(projectID, audience, serviceAccountEmail, name string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
   account_id = "%d"
@@ -105,11 +106,12 @@ provider "newrelic" {
 }
 
 resource "newrelic_cloud_gcp_dm_link_account" "test" {
-  provider       = newrelic.cloud-integration-provider
-  account_id     = %d
-  name           = %q
-  project_id     = %q
-  wif_credential = %q
+  provider              = newrelic.cloud-integration-provider
+  account_id            = %d
+  name                  = %q
+  project_id            = %q
+  audience              = %q
+  service_account_email = %q
 }
-`, testSubAccountID, testSubAccountID, name, projectID, wifCredential)
+`, testSubAccountID, testSubAccountID, name, projectID, audience, serviceAccountEmail)
 }
