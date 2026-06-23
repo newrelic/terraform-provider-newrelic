@@ -31,13 +31,19 @@ func dataSourceNewRelicCloudAccount() *schema.Resource {
 				Required:    true,
 				Description: "The name of the cloud account.",
 			},
+			"is_dimensional_metrics": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Description: "Set to true when looking up a GCP Dimensional Metrics linked account " +
+					"(cloud_provider must be \"gcp\"). Internally uses the gcp_v2 provider slug.",
+			},
 		},
 	}
 }
 
 func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cfg := meta.(*ProviderConfig)
-
 	client := cfg.NewClient
 
 	log.Printf("[INFO] Reading New Relic Cloud Accounts")
@@ -45,15 +51,33 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	name := d.Get("name").(string)
 	provider := d.Get("cloud_provider").(string)
 	accountID := selectAccountID(cfg, d)
+	isDM := d.Get("is_dimensional_metrics").(bool)
+
+	// GCP Dimensional Metrics accounts use the "gcp_v2" provider slug internally.
+	if isDM && strings.EqualFold(provider, "gcp") {
+		accounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, "gcp_v2")
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("listing GCP Dimensional Metrics linked accounts: %w", err))
+		}
+
+		for _, a := range *accounts {
+			if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
+				d.SetId(strconv.Itoa(a.ID))
+				_ = d.Set("account_id", a.NrAccountId)
+				_ = d.Set("name", a.Name)
+				return nil
+			}
+		}
+
+		return diag.Errorf("no GCP Dimensional Metrics linked account named %q found for New Relic account %d", name, accountID)
+	}
 
 	accounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, provider)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var account *cloud.CloudLinkedAccount
-
 	for _, a := range *accounts {
 		if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
 			account = &a
