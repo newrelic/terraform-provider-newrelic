@@ -65,6 +65,26 @@ func resourceNewRelicCloudOciAccountLinkAccount() *schema.Resource {
 				Description: "The home region of the tenancy.",
 				Required:    true,
 			},
+			"trust_type": {
+				Type:        schema.TypeString,
+				Description: "OCI WIF trust type. Allowed: UPST (default), RPST. RPST uses claim-based ephemeral principals; UPST impersonates a service user. Cannot be changed after creation — re-create the linked account to switch trust types.",
+				Optional:    true,
+				Default:     "UPST",
+				ForceNew:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					if v != "UPST" && v != "RPST" {
+						errs = append(errs, fmt.Errorf("%q must be one of UPST or RPST, got %q", key, v))
+					}
+					return
+				},
+			},
+			"resource_tag": {
+				Type:        schema.TypeString,
+				Description: "Optional value propagated as the ext_resource_tag claim on the RPST for tag-based scoping in customer IAM policies. Ignored for UPST. Cannot be changed after creation.",
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"oci_region": {
 				Type:        schema.TypeString,
 				Description: "The OCI region for the account. This field is only used for updates, not during initial creation.",
@@ -166,6 +186,14 @@ func expandOciCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloud
 
 	if ociHomeRegion, ok := d.GetOk("oci_home_region"); ok {
 		ociAccount.OciHomeRegion = ociHomeRegion.(string)
+	}
+
+	if trustType, ok := d.GetOk("trust_type"); ok {
+		ociAccount.TrustType = cloud.CloudOciTrustType(trustType.(string))
+	}
+
+	if resourceTag, ok := d.GetOk("resource_tag"); ok {
+		ociAccount.ResourceTag = resourceTag.(string)
 	}
 
 	if ingestVaultOcid, ok := d.GetOk("ingest_vault_ocid"); ok {

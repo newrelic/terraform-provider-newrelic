@@ -1,3 +1,30 @@
+<a name="v3.93.2"></a>
+## [v3.93.2] - 2026-06-22
+### Bug Fixes
+- **cloud-oci:** strip :443 from IDCS endpoint URL to prevent auth  ([#3113](https://github.com/newrelic/terraform-provider-newrelic/issues/3113))
+- **fleet:** redesign configuration to flat content model and fix UX gaps across the fleet family ([#3098](https://github.com/newrelic/terraform-provider-newrelic/issues/3098))
+
+<a name="v3.93.1"></a>
+## [v3.93.1] - 2026-06-16
+### Documentation Updates
+- **workflowautomation:** updates to resource documentation ([#3112](https://github.com/newrelic/terraform-provider-newrelic/issues/3112))
+
+<a name="v3.93.0"></a>
+## [v3.93.0] - 2026-06-10
+### Features
+- add disable_event_creation field to nrql_alert_condition ([#3100](https://github.com/newrelic/terraform-provider-newrelic/issues/3100))
+
+<a name="v3.92.0"></a>
+## [v3.92.0] - 2026-06-09
+### Features
+- **cloud-oci:** support RPST trust type for OCI integration (NR-562518) ([#3101](https://github.com/newrelic/terraform-provider-newrelic/issues/3101))
+
+<a name="v3.91.1"></a>
+## [v3.91.1] - 2026-06-09
+### Documentation Updates
+- consolidate cardinality and pruning rule v2 docs into canonical files ([#3105](https://github.com/newrelic/terraform-provider-newrelic/issues/3105))
+- cardinality management and metric pruning rule documentation (review) ([#3092](https://github.com/newrelic/terraform-provider-newrelic/issues/3092))
+
 <a name="v3.91.0"></a>
 ## [v3.91.0] - 2026-06-03
 ### Bug Fixes
@@ -2062,10 +2089,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -2732,7 +2759,12 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...HEAD
+[v3.93.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...v3.93.2
+[v3.93.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...v3.93.1
+[v3.93.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...v3.93.0
+[v3.92.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.1...v3.92.0
+[v3.91.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.91.0...v3.91.1
 [v3.91.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.90.0...v3.91.0
 [v3.90.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.89.0...v3.90.0
 [v3.89.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.88.0...v3.89.0
@@ -2995,9 +3027,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

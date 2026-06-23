@@ -27,8 +27,49 @@ locals {
   ida_oauth_token = data.external.ida_oauth_token[0].result.access_token
 }
 
-# Creates the Identity Propagation Trust between New Relic and OCI
-# This trust enables New Relic to exchange JWT tokens for OCI access tokens
+locals {
+  # NR-562518: Build the trust JSON body conditionally. UPST uses User-type subject + service-user
+  # impersonation mapping; RPST uses Resource-type subject + impersonatingResource + claim
+  # propagation. Same JWKS endpoint either way (NR reuses the existing UPST signing key).
+  trust_body_upst = jsonencode({
+    active             = true
+    allowImpersonation = true
+    issuer             = local.newrelic_config.issuer_name
+    name               = "newrelic-trust-setup"
+    oauthClients       = [oci_identity_domains_app.token_exchange_app.name]
+    publicKeyEndpoint  = local.newrelic_config.public_jwks_url
+    impersonationServiceUsers = local.is_upst ? [{
+      rule  = "sub eq '${local.newrelic_config.subject_name}'"
+      value = oci_identity_domains_user.svc_user[0].id
+    }] : []
+    subjectType = "User"
+    type        = "JWT"
+    schemas     = ["urn:ietf:params:scim:schemas:oracle:idcs:IdentityPropagationTrust"]
+  })
+  trust_body_rpst = jsonencode({
+    active                = true
+    allowImpersonation    = true
+    issuer                = local.newrelic_config.rpst_issuer_name
+    name                  = "newrelic-rpst-trust-setup"
+    oauthClients          = [oci_identity_domains_app.token_exchange_app.name]
+    publicKeyEndpoint     = local.newrelic_config.public_jwks_url
+    impersonatingResource = local.impersonating_resource
+    # NR-562518: propagate every claim NR may send so customer IAM policies can scope on any of
+    # them. NR's worker/api-v2 always send `account_id` and `tenancy_id`; `resource_tag` is sent
+    # only when configured in `params.oci.custom_claims`. OCI silently skips propagating claims
+    # that aren't present in the JWT, so listing all three is safe.
+    claimPropagations = ["ext_account_id", "ext_tenancy_id", "ext_resource_tag"]
+    subjectType       = "Resource"
+    type              = "JWT"
+    schemas           = ["urn:ietf:params:scim:schemas:oracle:idcs:IdentityPropagationTrust"]
+  })
+  trust_body = local.is_upst ? local.trust_body_upst : local.trust_body_rpst
+}
+
+# Creates the Identity Propagation Trust between New Relic and OCI.
+# UPST: maps NR's `sub eq '<subject>'` to a customer service user (impersonation).
+# RPST: validates `res_type` matches `impersonatingResource` and propagates `ext_account_id`
+# from the JWT into the RPST so customer IAM policies can reference it.
 resource "null_resource" "trust_setup" {
   provisioner "local-exec" {
     command = <<EOT
@@ -36,21 +77,7 @@ resource "null_resource" "trust_setup" {
       RESPONSE=$(curl --location '${local.identity_domain_url}/admin/v1/IdentityPropagationTrusts' \
       --header 'Content-Type: application/json' \
       --header 'Authorization: Bearer ${local.ida_oauth_token}' \
-      --data '{
-        "active": true,
-        "allowImpersonation": true,
-        "issuer": "${local.newrelic_config.issuer_name}",
-        "name": "newrelic-trust-setup",
-        "oauthClients": ["${oci_identity_domains_app.token_exchange_app.name}"],
-        "publicKeyEndpoint": "${local.newrelic_config.public_jwks_url}",
-        "impersonationServiceUsers": [{
-          "rule": "sub eq '${local.newrelic_config.subject_name}'",
-          "value": "${oci_identity_domains_user.svc_user.id}"
-        }],
-        "subjectType": "User",
-        "type": "JWT",
-        "schemas": ["urn:ietf:params:scim:schemas:oracle:idcs:IdentityPropagationTrust"]
-      }')
+      --data '${local.trust_body}')
       TRUST_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
       sleep 20
       if [ -n "$TRUST_ID" ] && [ "$TRUST_ID" != "null" ]; then

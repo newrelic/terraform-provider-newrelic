@@ -1,0 +1,55 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# DO NOT commit terraform.tfvars to source control — it contains your private key.
+
+# ============================================================================
+# OCI side
+# ============================================================================
+
+# Your OCI tenancy OCID. Find at: OCI Console → Profile → Tenancy
+tenancy_ocid = "ocid1.tenancy.oc1..aaaaaaaa..."
+
+# Identity Domain name (usually "Default" unless you've created custom ones)
+identity_domain_name = "Default"
+
+# OCI home region of your tenancy. e.g., "us-ashburn-1", "ap-mumbai-1"
+home_region = "us-ashburn-1"
+
+# OCI API key — Console → Profile → API Keys → Add API Key
+fingerprint = "aa:bb:cc:dd:ee:ff:..."
+private_key = <<-EOT
+  -----BEGIN PRIVATE KEY-----
+  ...your PEM content here...
+  -----END PRIVATE KEY-----
+EOT
+
+# Compartment where the IAM policy gets created. Defaults to tenancy root if empty.
+compartment_id = ""
+
+# ============================================================================
+# New Relic side
+# ============================================================================
+
+# Your NR account ID. Find at: one.newrelic.com → bottom-left account name → Account ID
+newrelic_account_id = "2222222"
+
+# NR region: "US" or "EU"
+newrelic_region = "US"
+
+# Optional: prefix for resource names (default: "newrelic")
+resource_prefix = "newrelic"
+
+# ============================================================================
+# Trust type — UPST (default) or RPST (NR-562518)
+# ============================================================================
+
+# UPST (default — leave commented for existing customers):
+# trust_type = "UPST"
+
+# RPST (recommended for multi-NR-account customers, or if you've hit OCI's
+# IAM policy statement limit). Uncomment to opt in:
+trust_type = "RPST"
+
+# Optional (RPST only): tag value scoped into the IAM policy as ext_resource_tag.
+# Leave empty to grant on ext_account_id alone. Set to e.g. "prod" to bind the
+# integration to a specific tag value.
+# resource_tag = "prod"

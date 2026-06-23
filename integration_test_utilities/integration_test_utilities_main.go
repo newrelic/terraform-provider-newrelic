@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -207,12 +208,24 @@ func updateYAML(yamlFile string, mappings FileMappings, missingInYAML, notInDire
 }
 
 func assignProductMapping(file string, productMappingKeys []ProductMapping) string {
+	type patternProduct struct {
+		pattern string
+		product ProductMapping
+	}
+	var all []patternProduct
 	for _, product := range productMappingKeys {
-		patterns := productMappings[product]
-		for _, pattern := range patterns {
-			if strings.Contains(file, pattern) {
-				return string(product)
-			}
+		for _, pattern := range productMappings[product] {
+			all = append(all, patternProduct{pattern, product})
+		}
+	}
+	// Evaluate longer (more specific) patterns first so e.g. "synthetics_alert_condition"
+	// beats "alert" when both could match the same file.
+	sort.Slice(all, func(i, j int) bool {
+		return len(all[i].pattern) > len(all[j].pattern)
+	})
+	for _, p := range all {
+		if strings.Contains(file, p.pattern) {
+			return string(p.product)
 		}
 	}
 	return "UNKNOWN"

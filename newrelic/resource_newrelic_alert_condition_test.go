@@ -1,4 +1,4 @@
-//go:build integration || unit || ALERTS
+//go:build integration || unit || ALERTS_DEPRECATED
 
 //
 // Test helpers

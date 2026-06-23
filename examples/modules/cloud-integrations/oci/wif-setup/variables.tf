@@ -74,3 +74,34 @@ variable "private_key" {
   type        = string
   sensitive   = true
 }
+
+# NR-562518: OCI WIF trust type. UPST (default) impersonates a service user; RPST uses
+# claim-based ephemeral principals via `identityfederateddomainapp`. Backward compatible —
+# existing customers default to UPST and see no change.
+variable "trust_type" {
+  description = "OCI WIF trust type. UPST (default) or RPST."
+  type        = string
+  default     = "UPST"
+  validation {
+    condition     = contains(["UPST", "RPST"], var.trust_type)
+    error_message = "trust_type must be either 'UPST' or 'RPST'."
+  }
+}
+
+# NR-562518: NR account id used for the propagated `account_id` claim (becomes
+# `ext_account_id` on the RPST and is referenced in IAM policies as
+# `request.principal.ext_account_id`). Required when trust_type = RPST.
+variable "newrelic_account_id" {
+  description = "New Relic account id. Used as the `account_id` JWT claim value for RPST."
+  type        = string
+  default     = ""
+}
+
+# NR-562518: optional value propagated as `ext_resource_tag` on the RPST. When set, the IAM
+# policy additionally scopes by this tag so customers can tie an integration to a specific tag
+# value (e.g. environment=prod). Ignored for UPST.
+variable "resource_tag" {
+  description = "Optional value propagated as ext_resource_tag claim on the RPST for tag-based IAM scoping. Ignored for UPST."
+  type        = string
+  default     = ""
+}

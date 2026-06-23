@@ -6,10 +6,10 @@ data_source_newrelic_account_test.go:
   product_mapping: AUTH
 data_source_newrelic_alert_channel.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 data_source_newrelic_alert_channel_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 data_source_newrelic_alert_policy.go:
   test: false
   product_mapping: ALERTS
@@ -47,6 +47,12 @@ data_source_newrelic_fleet_configuration.go:
   test: false
   product_mapping: FLEET
 data_source_newrelic_fleet_configuration_test.go:
+  test: true
+  product_mapping: FLEET
+data_source_newrelic_fleet_members.go:
+  test: false
+  product_mapping: FLEET
+data_source_newrelic_fleet_members_test.go:
   test: true
   product_mapping: FLEET
 data_source_newrelic_group_management.go:
@@ -97,18 +103,6 @@ data_source_newrelic_user_management.go:
 data_source_newrelic_user_management_test.go:
   test: true
   product_mapping: AUTH
-resource_newrelic_cardinality_management.go:
-  test: true
-  product_mapping: INGEST
-resource_newrelic_cardinality_management_test.go:
-  test: true
-  product_mapping: INGEST
-resource_newrelic_metric_pruning_rule.go:
-  test: true
-  product_mapping: INGEST
-resource_newrelic_metric_pruning_rule_test.go:
-  test: true
-  product_mapping: INGEST
 resource_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
@@ -123,10 +117,10 @@ resource_newrelic_agent_application_browser_integration_test.go:
   product_mapping: APM
 resource_newrelic_alert_channel.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_channel_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_compound_condition.go:
   test: false
   product_mapping: ALERTS
@@ -135,16 +129,16 @@ resource_newrelic_alert_compound_condition_test.go:
   product_mapping: ALERTS
 resource_newrelic_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_condition_integration_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_condition_unit_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_muting_rule.go:
   test: false
   product_mapping: ALERTS
@@ -156,10 +150,10 @@ resource_newrelic_alert_policy.go:
   product_mapping: ALERTS
 resource_newrelic_alert_policy_channel.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_policy_channel_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_alert_policy_integration_test.go:
   test: true
   product_mapping: ALERTS
@@ -187,6 +181,12 @@ resource_newrelic_aws_connection.go:
 resource_newrelic_aws_connection_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_cardinality_management.go:
+  test: false
+  product_mapping: INGEST
+resource_newrelic_cardinality_management_test.go:
+  test: true
+  product_mapping: INGEST
 resource_newrelic_cloud_aws_eu_sovereign_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -283,12 +283,6 @@ resource_newrelic_federated_logs_setup.go:
 resource_newrelic_federated_logs_setup_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
-data_source_newrelic_fleet_members.go:
-  test: false
-  product_mapping: FLEET
-data_source_newrelic_fleet_members_test.go:
-  test: true
-  product_mapping: FLEET
 resource_newrelic_fleet.go:
   test: false
   product_mapping: FLEET
@@ -321,10 +315,10 @@ resource_newrelic_group_management_test.go:
   product_mapping: AUTH
 resource_newrelic_infra_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_infra_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_insights_event.go:
   test: false
   product_mapping: EVENTS
@@ -343,6 +337,12 @@ resource_newrelic_log_parsing_rule.go:
 resource_newrelic_log_parsing_rule_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_metric_pruning_rule.go:
+  test: false
+  product_mapping: INGEST
+resource_newrelic_metric_pruning_rule_test.go:
+  test: true
+  product_mapping: INGEST
 resource_newrelic_monitor_downtime.go:
   test: false
   product_mapping: SYNTHETICS
@@ -417,10 +417,10 @@ resource_newrelic_service_level_test.go:
   product_mapping: WORKLOADS
 resource_newrelic_synthetics_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_synthetics_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_synthetics_broken_links_monitor.go:
   test: false
   product_mapping: SYNTHETICS
@@ -441,10 +441,10 @@ resource_newrelic_synthetics_monitor_test.go:
   product_mapping: SYNTHETICS
 resource_newrelic_synthetics_multilocation_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_synthetics_multilocation_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 resource_newrelic_synthetics_private_location.go:
   test: false
   product_mapping: SYNTHETICS
@@ -495,10 +495,10 @@ resource_newrelic_workload_test.go:
   product_mapping: WORKLOADS
 structures_newrelic_alert_channel.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_alert_channel_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_alert_compound_condition.go:
   test: false
   product_mapping: ALERTS
@@ -507,10 +507,10 @@ structures_newrelic_alert_compound_condition_test.go:
   product_mapping: ALERTS
 structures_newrelic_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_alert_muting_rule.go:
   test: false
   product_mapping: ALERTS
@@ -522,10 +522,10 @@ structures_newrelic_alert_policy.go:
   product_mapping: ALERTS
 structures_newrelic_alert_policy_channel.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_alert_policy_channel_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_alert_policy_test.go:
   test: true
   product_mapping: ALERTS
@@ -555,10 +555,10 @@ structures_newrelic_fleet.go:
   product_mapping: FLEET
 structures_newrelic_infra_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_infra_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_monitor_downtime.go:
   test: false
   product_mapping: SYNTHETICS
@@ -606,10 +606,10 @@ structures_newrelic_synthetics_broken_links_monitor.go:
   product_mapping: SYNTHETICS
 structures_newrelic_synthetics_multilocation_alert_condition.go:
   test: false
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_synthetics_multilocation_alert_condition_test.go:
   test: true
-  product_mapping: ALERTS
+  product_mapping: ALERTS_DEPRECATED
 structures_newrelic_synthetics_script_api_monitor.go:
   test: false
   product_mapping: SYNTHETICS

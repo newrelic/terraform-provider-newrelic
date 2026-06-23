@@ -378,6 +378,11 @@ func expandNrqlConditionTerm(term map[string]interface{}, conditionType, priorit
 		expandedTerm.DisableHealthStatusReporting = &disableHealthStatusReporting
 	}
 
+	if term["disable_event_creation"] != nil {
+		disableEventCreation := term["disable_event_creation"].(bool)
+		expandedTerm.DisableEventCreation = &disableEventCreation
+	}
+
 	if conditionType == "baseline" {
 		return &expandedTerm, nil
 	}
@@ -915,6 +920,10 @@ func flattenNrqlTerms(terms []alerts.NrqlConditionTerm, configTerms []interface{
 			dst["disable_health_status_reporting"] = term.DisableHealthStatusReporting
 		}
 
+		if term.DisableEventCreation != nil {
+			dst["disable_event_creation"] = term.DisableEventCreation
+		}
+
 		out = append(out, dst)
 	}
 
@@ -946,6 +955,10 @@ func handleImportFlattenNrqlTerms(terms []alerts.NrqlConditionTerm) []map[string
 			dst["disable_health_status_reporting"] = term.DisableHealthStatusReporting
 		}
 
+		if term.DisableEventCreation != nil {
+			dst["disable_event_creation"] = term.DisableEventCreation
+		}
+
 		out = append(out, dst)
 	}
 
@@ -969,6 +982,7 @@ func getConfiguredTerms(configTerms []interface{}) []map[string]interface{} {
 			"threshold_duration":              t["threshold_duration"],
 			"threshold_occurrences":           t["threshold_occurrences"],
 			"disable_health_status_reporting": t["disable_health_status_reporting"],
+			"disable_event_creation":          t["disable_event_creation"],
 		}
 
 		predictionSet := t["prediction"].(*schema.Set)
