@@ -18,9 +18,10 @@ func expandNotificationChannel(d *schema.ResourceData) notifications.AiNotificat
 }
 
 func expandNotificationChannelUpdate(d *schema.ResourceData) notifications.AiNotificationsChannelUpdate {
+	active := d.Get("active").(bool)
 	channel := notifications.AiNotificationsChannelUpdate{
 		Name:   d.Get("name").(string),
-		Active: d.Get("active").(bool),
+		Active: &active,
 	}
 	channel.Properties = expandNotificationDestinationProperties(d.Get("property").(*schema.Set).List())
 
