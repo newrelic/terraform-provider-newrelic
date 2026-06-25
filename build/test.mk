@@ -46,9 +46,13 @@ test-integration: tools
 test-integration-all: tools
 	@echo "=== $(PROJECT_NAME) === [ test-integration-all ]: running all integration tests..."
 	@mkdir -p $(COVERAGE_DIR)
-	@TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=4 --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/integration.report \
-		-- -v -parallel 14 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
-		   -timeout 120m -ldflags=$(LDFLAGS_TEST)
+	@if [ "$(TEST_MAPPER_SCRIPT_OUTPUT)" = "-tags=integration" ]; then \
+		echo "=== $(PROJECT_NAME) === [ test-integration-all ]: skipping the test-integration-all suite, as the test-integration suite is currently running all tests..."; \
+	else \
+		TF_ACC=1 $(TEST_RUNNER) -f testname --junitfile $(COVERAGE_DIR)/integration.xml --rerun-fails=4 --packages "$(GO_PKGS)" --jsonfile $(COVERAGE_DIR)/integration.report \
+			-- -v -parallel 14 -tags=integration $(TEST_ARGS) -covermode=$(COVERMODE) -coverprofile $(COVERAGE_DIR)/integration.tmp \
+			   -timeout 120m -ldflags=$(LDFLAGS_TEST); \
+	fi
 
 #
 # Coverage
