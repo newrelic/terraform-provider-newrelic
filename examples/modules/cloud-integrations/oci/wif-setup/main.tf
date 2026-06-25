@@ -12,7 +12,7 @@ data "oci_identity_compartment" "root" {
 
 locals {
   identity_domain_id  = data.oci_identity_domains.domain.domains[0].id
-  identity_domain_url = data.oci_identity_domains.domain.domains[0].url
+  identity_domain_url = trimsuffix(data.oci_identity_domains.domain.domains[0].url, ":443")
   suffix              = "tf"
 
   # NR-562518: trust-type derived flags + counts so module is idempotent for both flows.
