@@ -847,10 +847,17 @@ resource "newrelic_workload" "foo" {
 `, testAccountID, name, testAccExpectedApplicationName)
 }
 
-
-
 func TestAccNewRelicWorkload_CrossAccountEntityGUIDs(t *testing.T) {
 	t.Skipf("Skipping this resource until the bug associated with cross-account entity GUIDs is resolved.")
+
+	resourceName := "newrelic_workload.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
+		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicWorkload_CrossAccountEntityGUIDs(rName, testAccountID, testSubAccountID),
 				Check: resource.ComposeTestCheckFunc(
@@ -927,7 +934,6 @@ resource "newrelic_workload" "foo" {
 `, name, testAccountID)
 }
 
-
 func TestAccNewRelicWorkload_IntelligentWorkload(t *testing.T) {
 	resourceName := "newrelic_workload.foo"
 	rName := generateNameForIntegrationTestResource()
@@ -936,9 +942,9 @@ func TestAccNewRelicWorkload_IntelligentWorkload(t *testing.T) {
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
-    // Test: Create intelligent workload with dynamic_flows and status_config_alert_policy
 		Steps: []resource.TestStep{
-      {
+			// Test: Create intelligent workload with dynamic_flows and status_config_alert_policy
+			{
 				Config: testAccNewRelicWorkloadIntelligentConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicWorkloadExists(resourceName),
@@ -960,7 +966,7 @@ func TestAccNewRelicWorkload_IntelligentWorkload(t *testing.T) {
 		},
 	})
 }
-			
+
 func testAccNewRelicWorkloadIntelligentConfig(name string) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "app" {
