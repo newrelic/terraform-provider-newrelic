@@ -45,14 +45,14 @@ func resourceNewRelicWorkload() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "A list of entity GUIDs manually assigned to this workload.",
-				AtLeastOneOf: []string{"entity_guids", "entity_search_query"},
+				AtLeastOneOf: []string{"entity_guids", "entity_search_query", "dynamic_flows"},
 				Elem:         &schema.Schema{Type: schema.TypeString},
 			},
 			"entity_search_query": {
 				Type:         schema.TypeSet,
 				Optional:     true,
 				Description:  "A list of search queries that define a dynamic workload.",
-				AtLeastOneOf: []string{"entity_guids", "entity_search_query"},
+			  AtLeastOneOf: []string{"entity_guids", "entity_search_query", "dynamic_flows"},
 				Set: func(v interface{}) int {
 					// Custom hash function that normalizes queries before hashing
 					// This ensures queries that only differ in backtick formatting are treated as identical
@@ -74,6 +74,26 @@ func resourceNewRelicWorkload() *schema.Resource {
 								validation.StringIsNotWhiteSpace,
 								validation.NoZeroValues,
 							),
+						},
+					},
+				},
+			},
+			"dynamic_flows": {
+				Type:         schema.TypeSet,
+				Optional:     true,
+				Description:  "A list of dynamic flow entries that define an intelligent workload. If it is set alongside entity_guids or entity_search_query, dynamic_flows takes precedence and an intelligent workload is created.",
+				AtLeastOneOf: []string{"entity_guids", "entity_search_query", "dynamic_flows"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"entity_guid": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique entity identifier of the dynamic flow entry.",
+						},
+						"transaction_name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The transaction name associated with the dynamic flow entry.",
 						},
 					},
 				},
@@ -186,6 +206,22 @@ func resourceNewRelicWorkload() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A short description of the status of the workload.",
+						},
+					},
+				},
+			},
+			"status_config_alert_policy": {
+				Type:         schema.TypeSet,
+				Optional:     true,
+				MaxItems:     1,
+				Description:  "An alert policy status configuration for intelligent workloads. Requires dynamic_flows to be set.",
+				RequiredWith: []string{"dynamic_flows"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Whether the alert policy status configuration is enabled or not.",
 						},
 					},
 				},

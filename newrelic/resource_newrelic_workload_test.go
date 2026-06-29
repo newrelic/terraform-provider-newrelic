@@ -851,15 +851,6 @@ resource "newrelic_workload" "foo" {
 
 func TestAccNewRelicWorkload_CrossAccountEntityGUIDs(t *testing.T) {
 	t.Skipf("Skipping this resource until the bug associated with cross-account entity GUIDs is resolved.")
-
-	resourceName := "newrelic_workload.foo"
-	rName := generateNameForIntegrationTestResource()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
-		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicWorkload_CrossAccountEntityGUIDs(rName, testAccountID, testSubAccountID),
 				Check: resource.ComposeTestCheckFunc(
@@ -889,6 +880,7 @@ func testAccNewRelicWorkload_CrossAccountEntityGUIDs(name string, testAccountID 
 	}
 `, name, testAccountID, testSubAccountID)
 }
+
 // TestAccNewRelicWorkload_EntitySearchQueryBackticksNoDrift verifies that an
 // un-backticked tag query (e.g. "tags.env = 'prod'") in entity_search_query
 // does not cause perpetual drift on subsequent plans. The provider's expand
@@ -933,4 +925,90 @@ resource "newrelic_workload" "foo" {
   scope_account_ids = [%[2]d]
 }
 `, name, testAccountID)
+}
+
+
+func TestAccNewRelicWorkload_IntelligentWorkload(t *testing.T) {
+	resourceName := "newrelic_workload.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
+    // Test: Create intelligent workload with dynamic_flows and status_config_alert_policy
+		Steps: []resource.TestStep{
+      {
+				Config: testAccNewRelicWorkloadIntelligentConfig(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkloadExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "dynamic_flows.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "status_config_alert_policy.#", "1"),
+				),
+			},
+			// Test: Update intelligent workload (update name, disable alert_policy)
+			{
+				Config: testAccNewRelicWorkloadIntelligentConfigUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkloadExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", rName+"-updated"),
+					resource.TestCheckResourceAttr(resourceName, "dynamic_flows.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "status_config_alert_policy.#", "1"),
+				),
+			},
+		},
+	})
+}
+			
+func testAccNewRelicWorkloadIntelligentConfig(name string) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name   = "%[3]s"
+	domain = "APM"
+	type   = "APPLICATION"
+}
+
+resource "newrelic_workload" "foo" {
+	name       = "%[2]s"
+	account_id = %[1]d
+
+	dynamic_flows {
+		entity_guid      = data.newrelic_entity.app.guid
+		transaction_name = "WebTransaction/Action/index"
+	}
+
+	scope_account_ids = [%[1]d]
+
+	status_config_alert_policy {
+		enabled = true
+	}
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+func testAccNewRelicWorkloadIntelligentConfigUpdated(name string) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name   = "%[3]s"
+	domain = "APM"
+	type   = "APPLICATION"
+}
+
+resource "newrelic_workload" "foo" {
+	name       = "%[2]s-updated"
+	account_id = %[1]d
+
+	dynamic_flows {
+		entity_guid      = data.newrelic_entity.app.guid
+		transaction_name = "WebTransaction/Action/index"
+	}
+
+	scope_account_ids = [%[1]d]
+
+	status_config_alert_policy {
+		enabled = false
+	}
+}
+`, testAccountID, name, testAccExpectedApplicationName)
 }
