@@ -846,3 +846,91 @@ resource "newrelic_workload" "foo" {
 }
 `, testAccountID, name, testAccExpectedApplicationName)
 }
+
+
+
+func TestAccNewRelicWorkload_CrossAccountEntityGUIDs(t *testing.T) {
+	t.Skipf("Skipping this resource until the bug associated with cross-account entity GUIDs is resolved.")
+
+	resourceName := "newrelic_workload.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicWorkload_CrossAccountEntityGUIDs(rName, testAccountID, testSubAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkloadExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "entity_guids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicWorkload_CrossAccountEntityGUIDs(name string, testAccountID int, testSubAccountID int) string {
+	return fmt.Sprintf(`
+
+	data "newrelic_entity" "app" {
+	  name       = "Dummy App Two Max"
+	  domain     = "APM"
+	  type       = "APPLICATION"
+	  account_id = %[3]d
+	}
+	
+	resource "newrelic_workload" "foo" {
+	  name              = "%[1]s"
+	  account_id        = %[2]d
+	  entity_guids      = [data.newrelic_entity.app.guid]
+	  scope_account_ids = [%[2]d]
+	}
+`, name, testAccountID, testSubAccountID)
+}
+// TestAccNewRelicWorkload_EntitySearchQueryBackticksNoDrift verifies that an
+// un-backticked tag query (e.g. "tags.env = 'prod'") in entity_search_query
+// does not cause perpetual drift on subsequent plans. The provider's expand
+// rewrites tags.* -> `tags.*` before sending to NerdGraph, so the API stores
+// the backticked form. Without the custom Set hash on entity_search_query,
+// the SDK sees config (un-backticked) and Read's response (backticked) as
+// different elements, leaving state mismatched with config and producing
+// perpetual drift. With the Set hash that normalizes before hashing, both
+// forms map to the same identity, the SDK keeps config's form in state
+// (Optional-only set rule), and plan stays empty. The framework's automatic
+// post-apply refresh-then-plan check is what enforces this — no explicit
+// assertion is needed.
+func TestAccNewRelicWorkload_EntitySearchQueryBackticksNoDrift(t *testing.T) {
+	resourceName := "newrelic_workload.foo"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicWorkloadDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicWorkloadConfigEntitySearchQueryUnBackticked(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicWorkloadExists(resourceName),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicWorkloadConfigEntitySearchQueryUnBackticked(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workload" "foo" {
+  name       	= "%[1]s"
+  account_id 	= %[2]d
+
+  entity_search_query {
+    query = "tags.environment = 'prod'"
+  }
+
+  scope_account_ids = [%[2]d]
+}
+`, name, testAccountID)
+}
