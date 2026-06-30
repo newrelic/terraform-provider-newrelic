@@ -562,6 +562,9 @@ structures_newrelic_infra_alert_condition_test.go:
 structures_newrelic_monitor_downtime.go:
   test: false
   product_mapping: SYNTHETICS
+structures_newrelic_monitor_downtime_test.go:
+  test: true
+  product_mapping: SYNTHETICS
 structures_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
