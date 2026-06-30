@@ -241,7 +241,13 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 		if err != nil {
 			return resource.RetryableError(err)
 		}
-		entity = (*resp).(*entities.GenericEntity)
+		// The entity may be nil or a different concrete type if it isn't indexed yet; guard the
+		// type assertion so a transient nil response retries instead of panicking the plugin.
+		genericEntity, ok := (*resp).(*entities.GenericEntity)
+		if !ok || genericEntity == nil {
+			return resource.RetryableError(fmt.Errorf("monitor downtime %s not found yet, retrying", d.Id()))
+		}
+		entity = genericEntity
 		tags = entity.GetTags()
 		if len(tags) < 4 {
 			return resource.RetryableError(fmt.Errorf("enough tags not found. retrying"))
@@ -249,8 +255,10 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 		return nil
 	})
 
+	// Never call log.Fatal* from a provider: it os.Exit()s the plugin process, which Terraform
+	// reports as an opaque "Plugin did not respond" crash. Surface a normal error instead.
 	if retryErr != nil {
-		log.Fatalf("Unable to find application entity: %s", retryErr)
+		return diag.FromErr(fmt.Errorf("error reading monitor downtime %s: %w", d.Id(), retryErr))
 	}
 
 	mode := setMonitorDowntimeMode(tags)
