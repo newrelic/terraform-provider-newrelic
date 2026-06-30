@@ -677,14 +677,23 @@ func convertSyntheticsMonitorDowntimeMaintenanceDays(maintenanceDays []string) (
 	return maintenanceDaysTypeCasted, nil
 }
 
-func getStringEntityTag(tags []entities.EntityTag, attributeName string) string {
-	out := []string{}
+// findEntityTagValue returns the first value of the named tag and a presence
+// flag. Returns ("", false) if the tag is absent or carries no values, so
+// callers can distinguish "missing" from "empty string" when it matters.
+func findEntityTagValue(tags []entities.EntityTag, key string) (string, bool) {
 	for _, t := range tags {
-		if t.Key == attributeName {
-			out = append(out, t.Values...)
+		if t.Key == key && len(t.Values) > 0 {
+			return t.Values[0], true
 		}
 	}
-	return out[0]
+	return "", false
+}
+
+// getStringEntityTag returns the first value for the named tag, or empty
+// string if absent. Use findEntityTagValue when "absent" vs "empty" matters.
+func getStringEntityTag(tags []entities.EntityTag, key string) string {
+	v, _ := findEntityTagValue(tags, key)
+	return v
 }
 
 // Functions which help set values in the state
@@ -817,19 +826,29 @@ func setMonitorDowntimeTimezone(tags []entities.EntityTag) string {
 }
 
 func setMonitorDowntimeStartTime(tags []entities.EntityTag) string {
-	startTime := getStringEntityTag(tags, "startTime")
-	startTimeIntParsed, _ := strconv.ParseInt(startTime, 10, 64)
-	timezone := getStringEntityTag(tags, "timezone")
-	dt := time.Unix(startTimeIntParsed/1000, 0)
-	loc, _ := time.LoadLocation(timezone)
-	return dt.In(loc).Format("2006-01-02T15:04:05")
+	return formatMonitorDowntimeTimeTag(tags, "startTime")
 }
 
 func setMonitorDowntimeEndTime(tags []entities.EntityTag) string {
-	endTime := getStringEntityTag(tags, "endTime")
-	endTimeIntParsed, _ := strconv.ParseInt(endTime, 10, 64)
-	timezone := getStringEntityTag(tags, "timezone")
-	dt := time.Unix(endTimeIntParsed/1000, 0)
-	loc, _ := time.LoadLocation(timezone)
-	return dt.In(loc).Format("2006-01-02T15:04:05")
+	return formatMonitorDowntimeTimeTag(tags, "endTime")
+}
+
+// formatMonitorDowntimeTimeTag renders an epoch-ms tag value as the
+// "2006-01-02T15:04:05" string the schema expects. Returns "" when the tag
+// is absent or unparseable so the read doesn't write a stale 1970-01-01
+// timestamp into state.
+func formatMonitorDowntimeTimeTag(tags []entities.EntityTag, key string) string {
+	raw, ok := findEntityTagValue(tags, key)
+	if !ok || raw == "" {
+		return ""
+	}
+	epochMs, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return ""
+	}
+	loc, err := time.LoadLocation(getStringEntityTag(tags, "timezone"))
+	if err != nil {
+		loc = time.UTC
+	}
+	return time.Unix(epochMs/1000, 0).In(loc).Format("2006-01-02T15:04:05")
 }

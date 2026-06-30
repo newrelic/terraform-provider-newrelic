@@ -106,20 +106,20 @@ func TestAccNewRelicSyntheticsScriptBrowserMonitor(t *testing.T) {
 func testAccNewRelicSyntheticsScriptAPIMonitorConfig(name string, scriptMonitorType string) string {
 	return fmt.Sprintf(`
 		resource "newrelic_synthetics_script_monitor" "foo" {
-			name					=	"%s"
-			type					=	"%s"
+			name					=	"%[1]s"
+			type					=	"%[2]s"
 			locations_public		=	["AP_SOUTH_1"]
 			period					=	"EVERY_HOUR"
 			status					=	"ENABLED"
 			script					=	"console.log('terraform integration test')"
 			script_language			=	"JAVASCRIPT"
-			runtime_type			=	"NODE_API"
-			runtime_type_version	=	"16.10"
+			runtime_type			=	"%[3]s"
+			runtime_type_version	=	"%[4]s"
 			tag {
 				key	=	"some_key"
 				values	=	["some_value"]
 			}
-		}`, name, scriptMonitorType)
+		}`, name, scriptMonitorType, SyntheticsNodeRuntimeType, SyntheticsNodeNewRuntimeTypeVersion)
 }
 
 func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
@@ -132,8 +132,8 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 			status	=	"ENABLED"
 			type	=	"SCRIPT_BROWSER"
 
-			runtime_type_version	=	"100"
-			runtime_type	=	"CHROME_BROWSER"
+			runtime_type_version	=	"%[3]s"
+			runtime_type	=	"%[2]s"
 			script_language	=	"JAVASCRIPT"
 			script	=	"$browser.get('https://one.newrelic.com')"
 
@@ -143,7 +143,7 @@ func testAccNewRelicSyntheticsScriptBrowserMonitorConfig(name string) string {
 				key	= "Name"
 				values	= ["scriptedMonitor"]
 			}
-		}`, name)
+		}`, name, SyntheticsChromeBrowserRuntimeType, SyntheticsChromeBrowserNewRuntimeTypeVersion)
 }
 
 func testAccCheckNewRelicSyntheticsScriptMonitorExists(n string) resource.TestCheckFunc {
