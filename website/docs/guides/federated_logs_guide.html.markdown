@@ -20,6 +20,7 @@ Use the links below to go to the relevant sections:
 - [End-to-end onboarding with the `terraform-aws-federated-logs` modules](#onboarding)
   - [Stage 1: Data Processing (per fleet)](#stage-1-data-processing)
   - [Stage 2: Federated Logs Setup (per setup)](#stage-2-federated-logs-setup)
+- [Activate the data path](#activate)
 - [Adding partitions to an existing setup](#adding-partitions)
 - [Querying federated logs](#query-federated-logs)
 - [Cleaning up a setup while preserving stored logs](#cleanup)
@@ -50,6 +51,7 @@ Before you onboard Federated Logs through Terraform, confirm the following:
 
 * Your New Relic organization is **enrolled in the Federated Logs limited preview**.
 * A **Pipeline Control Gateway fleet** is already deployed in your Kubernetes environment, with its DNS endpoint reachable from your log sources, and you know its **`fleet_entity_guid`**. If you don't yet have a fleet, follow [Getting Started with New Relic Fleet Control](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/fleet_getting_started) and the [Pipeline Control Gateway documentation](https://docs.newrelic.com/docs/new-relic-control/pipeline-control/overview/).
+* Your **log sources are pointed at the gateway endpoint** rather than sending logs directly to New Relic. The per-source configuration (APM agents, infrastructure agent, Fluent Bit, Fluentd) is covered in [Configure your log source](https://docs-preview.newrelic.com/docs/federated-logs/#configure-source) in the product docs.
 * Federated Logs currently supports **AWS only**, and the Query engine is deployed in **`us-west-2`**. Provision your AWS resources in that region for the preview.
 * You have an **AWS account** with permissions to create S3 buckets, SQS queues, Glue catalogs, AWS Managed Flink applications, and IAM roles.
 * You have **Terraform >= 1.6.0**, the **New Relic provider >= 3.91.0**, and the **AWS provider >= 6.36.0** configured.
@@ -201,6 +203,14 @@ Useful outputs:
 * `newrelic_query_connection_id` — The entity GUID of the per-setup `newrelic_aws_connection` wrapping the reader role.
 * `s3_bucket_name`, `glue_database_name`, `pcg_writer_role_arn`, `nr_reader_role_arn`, `iceberg_tables` — Underlying AWS resources.
 
+<a id="activate"></a>
+### Activate the data path
+
+`terraform apply` creates the setup and ties it to your fleet, but logs only start flowing after two steps:
+
+1. **Set routing conditions and deploy the gateway config** — [docs](https://docs-preview.newrelic.com/docs/federated-logs/#set-up-routing-conditions).
+2. **Verify with "Simulate test log received"** — [docs](https://docs-preview.newrelic.com/docs/federated-logs/#test-the-setup).
+
 <a id="adding-partitions"></a>
 ### Adding partitions to an existing setup
 
@@ -228,6 +238,8 @@ module "federated_logs" {
 ```
 
 Each entry in `partition_tables` may optionally override `retention_in_days`, `description`, `routing_expression`, `table_parameters`, and `optimizer_configuration`. Apply the change with the usual `terraform plan` / `terraform apply`; the new partition becomes visible in the New Relic UI under **Logs > Data Partitions > Federated Logs**.
+
+As with the initial setup, a new partition only starts receiving logs once you define its routing condition and roll the gateway configuration out from the wizard. The product docs cover the same steps for partitions in [Set up routing conditions](https://docs-preview.newrelic.com/docs/federated-logs/#set-up-routing-conditions-1) and [Update gateway configuration](https://docs-preview.newrelic.com/docs/federated-logs/#update-gateway-configuration-1).
 
 <a id="query-federated-logs"></a>
 ### Querying federated logs
