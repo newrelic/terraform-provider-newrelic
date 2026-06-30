@@ -1,3 +1,11 @@
+<a name="v3.94.0"></a>
+## [v3.94.0] - 2026-06-30
+### Bug Fixes
+- **workload:** add backticks automatically within workload terraform  ([#3114](https://github.com/newrelic/terraform-provider-newrelic/issues/3114))
+
+### Features
+- **workload:** add intelligent workload support with dynamic_flows and status_config_alert_policy ([#3102](https://github.com/newrelic/terraform-provider-newrelic/issues/3102))
+
 <a name="v3.93.2"></a>
 ## [v3.93.2] - 2026-06-22
 ### Bug Fixes
@@ -2759,7 +2767,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.0...HEAD
+[v3.94.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...v3.94.0
 [v3.93.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...v3.93.2
 [v3.93.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...v3.93.1
 [v3.93.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...v3.93.0
