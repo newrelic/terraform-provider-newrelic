@@ -121,11 +121,20 @@ const SyntheticsUseLegacyRuntimeAttrLabel string = "use_unsupported_legacy_runti
 
 const SyntheticsNodeRuntimeType string = "NODE_API"
 const SyntheticsNodeLegacyRuntimeTypeVersion string = "10"
-const SyntheticsNodeNewRuntimeTypeVersion string = "16.10"
+
+// SyntheticsNodeNewRuntimeTypeVersion tracks the current Node runtime that
+// the Synthetics API exposes. The API silently upgrades earlier values
+// (e.g. "16.10") to the active runtime on read, which causes perpetual
+// drift in any test config still pinning the older string.
+const SyntheticsNodeNewRuntimeTypeVersion string = "22.20.0"
 
 const SyntheticsChromeBrowserRuntimeType string = "CHROME_BROWSER"
 const SyntheticsChromeBrowserLegacyRuntimeTypeVersion string = "72"
-const SyntheticsChromeBrowserNewRuntimeTypeVersion string = "100"
+
+// SyntheticsChromeBrowserNewRuntimeTypeVersion is "LATEST" — the
+// Chrome Browser runtime no longer exposes a specific version number
+// on read, so any pinned numeric value (e.g. "100") drifts immediately.
+const SyntheticsChromeBrowserNewRuntimeTypeVersion string = "LATEST"
 
 var SyntheticsUseLegacyRuntimeSchema = &schema.Schema{
 	Type:             schema.TypeBool,
