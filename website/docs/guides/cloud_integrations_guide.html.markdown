@@ -16,6 +16,7 @@ We have different instructions for each cloud provider, use the links below to g
 - [AWS EU Sovereign](#aws-eu-sovereign)
 - [Azure](#azure)
 - [Google Cloud Platform](#gcp)
+- [GCP Dimensional Metrics](#gcp-dimensional-metrics)
 - [Oracle Cloud Infrastructure](#oci)
 
 If you encounter issues or bugs, please [report those on Github repository](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose).
@@ -224,6 +225,249 @@ Variables:
 * name: A unique name used throughout the module to name the resources.
 * service_account_id: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
 * project_id: The ID of the project you want to receive data from in GCP.
+
+<a id="gcp-dimensional-metrics"></a>
+### GCP Dimensional Metrics
+
+GCP Dimensional Metrics (`gcp_dm`) is the next-generation GCP integration in New Relic. It uses [Workload Identity Federation (WIF)](https://cloud.google.com/iam/docs/workload-identity-federation) instead of a service account key file, so no long-lived credentials are stored or rotated. New Relic authenticates by presenting a short-lived OIDC token that GCP validates directly against New Relic's OIDC endpoint.
+
+**Key differences from the classic GCP integration:**
+
+* **Keyless authentication** — credentials are issued on-demand via WIF; no JSON key file is created or managed.
+* **Expanded service coverage** — includes all services from the classic integration plus GCP Dimensional Metrics-only services such as Firebase Authentication, Firebase Vertex AI, Managed Apache Kafka, Memorystore, and Firebase App Hosting.
+* **Four GCP roles required** on the service account: `roles/monitoring.viewer` (metrics), `roles/serviceusage.serviceUsageConsumer` (API quota), `roles/cloudasset.viewer` (resource discovery via Cloud Asset APIs), and `roles/resourcemanager.folderViewer` (folder-level resource discovery — must be granted at the **folder** level, not project level).
+
+The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrations` resource:
+
+|                        |                           |                          |
+|------------------------|---------------------------|--------------------------|
+| `AI Platform`          | `AlloyDB` (supports 1m polling) | `App Engine`        |
+| `BigQuery` (supports 1m polling) | `Bigtable`       | `Cloud Composer`         |
+| `Dataflow` (supports 1m polling) | `Dataproc` (supports 1m polling) | `Datastore` |
+| `Firebase Database`    | `Firebase Hosting`        | `Firebase Storage`       |
+| `Firestore`            | `Cloud Functions`         | `Cloud Interconnect`     |
+| `Kubernetes Engine` (supports 1m polling) | `Cloud Load Balancing` (supports 1m polling) | `Memcache` |
+| `Cloud Pub/Sub` (supports 1m polling) | `Memorystore (Redis)` | `Cloud Router`     |
+| `Cloud Run`            | `Cloud Spanner` (supports 1m polling) | `Cloud SQL`     |
+| `Cloud Storage`        | `Virtual Machines`        | `VPC Access`             |
+| `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
+| `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only)* |                           |
+
+#### Prerequisites
+
+Before linking the GCP project to New Relic, you must create the following GCP infrastructure:
+
+1. A **Workload Identity Pool** configured with New Relic's OIDC issuer URI.
+2. An **OIDC provider** inside the pool with `allowed_audiences = ["newrelic-gcp-integrations"]` and an `attribute_condition` restricting tokens to your specific New Relic account ID.
+3. A **GCP service account** granted `roles/monitoring.viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **folder** level.
+4. A `roles/iam.workloadIdentityUser` binding on the service account scoped to the WIF pool using the `attribute.nr_account_id` attribute (not the wildcard `/*` form).
+
+The OIDC issuer URI is region-specific:
+
+| New Relic region | Issuer URI |
+|---|---|
+| US | `https://oidc.newrelic.com/r/gcp-cmp` |
+| EU | `https://oidc.eu.newrelic.com/r/gcp-cmp` |
+
+#### Sample configuration
+
+The example below creates the full WIF infrastructure in GCP and links the project to New Relic in a single Terraform configuration. Copy it as a starting point, replace the placeholder values, and run `terraform init && terraform apply`.
+
+-> **NOTE:** This configuration requires both the `newrelic` and `google` Terraform providers. Make sure both are configured with the correct credentials before applying.
+
+```hcl
+terraform {
+  required_providers {
+    newrelic = { source = "newrelic/newrelic" }
+    google   = { source = "hashicorp/google" }
+  }
+}
+
+provider "newrelic" {
+  account_id = var.newrelic_account_id
+  api_key    = var.newrelic_api_key
+  region     = var.newrelic_region  # "US" or "EU"
+}
+
+provider "google" {
+  project = var.gcp_project_id
+}
+
+# ── Variables ──────────────────────────────────────────────────────────────────
+
+variable "newrelic_account_id"       { type = number }
+variable "newrelic_api_key"          { type = string; sensitive = true }
+variable "newrelic_region"           { type = string; default = "US" }  # "US" or "EU"
+variable "gcp_project_id"            { type = string }
+variable "gcp_folder_id"             { type = string }  # GCP folder ID (numeric, without "folders/" prefix); required for folderViewer role
+variable "linked_account_name"       { type = string; default = "production-gcp-dm" }
+variable "wif_pool_id"               { type = string; default = "newrelic-pool" }
+variable "wif_provider_id"           { type = string; default = "newrelic-provider" }
+variable "newrelic_sa_name"          { type = string; default = "newrelic-integration" }
+variable "metrics_polling_interval"  { type = number; default = 300 }
+
+# ── Locals ─────────────────────────────────────────────────────────────────────
+
+locals {
+  newrelic_oidc_issuer = (
+    var.newrelic_region == "EU" ? "https://oidc.eu.newrelic.com/r/gcp-cmp" :
+    "https://oidc.newrelic.com/r/gcp-cmp"
+  )
+}
+
+# ── GCP: Workload Identity Federation ──────────────────────────────────────────
+
+resource "google_iam_workload_identity_pool" "newrelic" {
+  workload_identity_pool_id = var.wif_pool_id
+  display_name              = "New Relic"
+  description               = "WIF pool for New Relic GCP Dimensional Metrics integration"
+}
+
+resource "google_iam_workload_identity_pool_provider" "newrelic" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.newrelic.workload_identity_pool_id
+  workload_identity_pool_provider_id = var.wif_provider_id
+  display_name                       = "New Relic OIDC provider"
+
+  oidc {
+    # GCP fetches {issuer_uri}/.well-known/openid-configuration to validate tokens.
+    issuer_uri        = local.newrelic_oidc_issuer
+    allowed_audiences = ["newrelic-gcp-integrations"]
+  }
+
+  attribute_mapping = {
+    "google.subject"          = "assertion.sub"
+    "attribute.nr_account_id" = "assertion.nr_account_id"
+  }
+
+  # Restrict impersonation to tokens issued for this specific New Relic account.
+  attribute_condition = "assertion.nr_account_id == \"${var.newrelic_account_id}\""
+}
+
+resource "google_service_account" "newrelic" {
+  account_id   = var.newrelic_sa_name
+  display_name = "New Relic Integration"
+  description  = "Impersonated by New Relic via WIF to collect GCP metrics"
+}
+
+# Metrics collection
+resource "google_project_iam_member" "newrelic_viewer" {
+  project = var.gcp_project_id
+  role    = "roles/monitoring.viewer"
+  member  = "serviceAccount:${google_service_account.newrelic.email}"
+}
+
+# API quota
+resource "google_project_iam_member" "newrelic_service_usage" {
+  project = var.gcp_project_id
+  role    = "roles/serviceusage.serviceUsageConsumer"
+  member  = "serviceAccount:${google_service_account.newrelic.email}"
+}
+
+# Resource discovery (Cloud Asset search/list APIs)
+resource "google_project_iam_member" "newrelic_cloud_asset_viewer" {
+  project = var.gcp_project_id
+  role    = "roles/cloudasset.viewer"
+  member  = "serviceAccount:${google_service_account.newrelic.email}"
+}
+
+# Folder-level resource discovery — must be granted at the folder level, not project level
+resource "google_folder_iam_member" "newrelic_folder_viewer" {
+  folder = "folders/${var.gcp_folder_id}"
+  role   = "roles/resourcemanager.folderViewer"
+  member = "serviceAccount:${google_service_account.newrelic.email}"
+}
+
+# Allow New Relic's WIF pool (scoped to this account) to impersonate the SA.
+# Must use the attribute-scoped principalSet — the wildcard form does NOT grant
+# iam.serviceAccounts.getAccessToken on the service account.
+resource "google_service_account_iam_member" "newrelic_wif" {
+  service_account_id = google_service_account.newrelic.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.newrelic.name}/attribute.nr_account_id/${var.newrelic_account_id}"
+}
+
+# ── New Relic: Step 1 — link GCP project ──────────────────────────────────────
+
+resource "newrelic_cloud_gcp_dm_link_account" "main" {
+  account_id = var.newrelic_account_id
+  name       = var.linked_account_name
+  project_id = var.gcp_project_id
+
+  # The provider builds the WIF credential JSON internally from these two fields.
+  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  service_account_email = google_service_account.newrelic.email
+
+  depends_on = [
+    google_project_iam_member.newrelic_viewer,
+    google_project_iam_member.newrelic_service_usage,
+    google_project_iam_member.newrelic_cloud_asset_viewer,
+    google_folder_iam_member.newrelic_folder_viewer,
+    google_service_account_iam_member.newrelic_wif,
+  ]
+}
+
+# ── New Relic: Step 2 — configure which services to poll ──────────────────────
+
+resource "newrelic_cloud_gcp_dm_integrations" "main" {
+  account_id        = newrelic_cloud_gcp_dm_link_account.main.account_id
+  linked_account_id = newrelic_cloud_gcp_dm_link_account.main.id
+
+  # Classic GCP services
+  app_engine       { metrics_polling_interval = var.metrics_polling_interval }
+  big_query        { metrics_polling_interval = var.metrics_polling_interval }
+  big_table        { metrics_polling_interval = var.metrics_polling_interval }
+  composer         { metrics_polling_interval = var.metrics_polling_interval }
+  data_flow        { metrics_polling_interval = var.metrics_polling_interval }
+  data_proc        { metrics_polling_interval = var.metrics_polling_interval }
+  data_store       { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_hosting { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_storage { metrics_polling_interval = var.metrics_polling_interval }
+  firestore        { metrics_polling_interval = var.metrics_polling_interval }
+  functions        { metrics_polling_interval = var.metrics_polling_interval }
+  interconnect     { metrics_polling_interval = var.metrics_polling_interval }
+  kubernetes       { metrics_polling_interval = var.metrics_polling_interval }
+  load_balancing   { metrics_polling_interval = var.metrics_polling_interval }
+  mem_cache        { metrics_polling_interval = var.metrics_polling_interval }
+  pub_sub          { metrics_polling_interval = var.metrics_polling_interval }
+  redis            { metrics_polling_interval = var.metrics_polling_interval }
+  router           { metrics_polling_interval = var.metrics_polling_interval }
+  run              { metrics_polling_interval = var.metrics_polling_interval }
+  spanner          { metrics_polling_interval = var.metrics_polling_interval }
+  sql              { metrics_polling_interval = var.metrics_polling_interval }
+  storage          { metrics_polling_interval = var.metrics_polling_interval }
+  virtual_machines { metrics_polling_interval = var.metrics_polling_interval }
+  vpc_access       { metrics_polling_interval = var.metrics_polling_interval }
+
+  # GCP Dimensional Metrics-only services
+  firebase_auth        { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_vertex_ai   { metrics_polling_interval = var.metrics_polling_interval }
+  managed_kafka        { metrics_polling_interval = var.metrics_polling_interval }
+  memory_store         { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_app_hosting { metrics_polling_interval = var.metrics_polling_interval }
+}
+
+# ── Outputs ────────────────────────────────────────────────────────────────────
+
+output "linked_account_id" {
+  description = "New Relic linked account ID for the GCP DM integration."
+  value       = newrelic_cloud_gcp_dm_link_account.main.id
+}
+```
+
+Variables:
+
+* `newrelic_account_id`: The New Relic account ID to link the GCP project to.
+* `newrelic_api_key`: A New Relic User API key with the `NerdGraph` scope.
+* `newrelic_region` (Optional): New Relic region — `US` or `EU`. Determines which OIDC issuer URI is used. Defaults to `US`.
+* `gcp_project_id`: The GCP project ID to monitor (e.g. `my-project-123`).
+* `gcp_folder_id`: The numeric GCP folder ID (without the `folders/` prefix) where the project lives. Required to grant `roles/resourcemanager.folderViewer` at the folder level.
+* `linked_account_name` (Optional): Display name shown in the New Relic UI. Defaults to `production-gcp-dm`.
+* `wif_pool_id` (Optional): ID for the Workload Identity Pool created in GCP. Defaults to `newrelic-pool`.
+* `wif_provider_id` (Optional): ID for the OIDC provider inside the pool. Defaults to `newrelic-provider`.
+* `newrelic_sa_name` (Optional): Name for the GCP service account New Relic impersonates. Defaults to `newrelic-integration`.
+* `metrics_polling_interval` (Optional): How often (in seconds) New Relic polls each service for metrics. Defaults to `300`.
+
+-> **NOTE:** `audience` and `service_account_email` in `newrelic_cloud_gcp_dm_link_account` are write-only, ForceNew fields. They are used to construct the WIF credential JSON internally and are never returned by the API. If you need to import an existing linked account, use `terraform import newrelic_cloud_gcp_dm_link_account.<name> <linked_account_id>` and then run `terraform apply` to reconcile those fields (Terraform will destroy and recreate the resource).
 
 <a id="oci"></a>
 ### Oracle Cloud Infrastructure
