@@ -22,19 +22,29 @@ locals {
   # New Relic configuration based on region. UPST and RPST share the same JWKS endpoint
   # (NR reuses the existing UPST signing key for RPST) but use different issuer/subject strings
   # because OCI enforces one Identity Propagation Trust per issuer per Identity Domain.
-  newrelic_config = var.newrelic_region == "US" ? {
-    issuer_name       = "newrelic-oci-us-production-issuer"
-    subject_name      = "newrelic-oci-us-production-user"
-    rpst_issuer_name  = "newrelic-oci-us-production-rpst-issuer"
-    rpst_subject_name = "newrelic-oci-us-production-rpst-user"
-    public_jwks_url   = "https://publickeys.newrelic.com/r/oci-cmp/us/c5623ba5-1cc7-491a-8ec3-eeee809374f7/jwks.json"
-    } : {
-    issuer_name       = "newrelic-oci-eu-production-issuer"
-    subject_name      = "newrelic-oci-eu-production-user"
-    rpst_issuer_name  = "newrelic-oci-eu-production-rpst-issuer"
-    rpst_subject_name = "newrelic-oci-eu-production-rpst-user"
-    public_jwks_url   = "https://publickeys.eu.newrelic.com/r/oci-cmp/eu/f923dba9-84a8-491c-b714-6c0e61b90c5b/jwks.json"
-  }
+  newrelic_config = {
+    US = {
+      issuer_name       = "newrelic-oci-us-production-issuer"
+      subject_name      = "newrelic-oci-us-production-user"
+      rpst_issuer_name  = "newrelic-oci-us-production-rpst-issuer"
+      rpst_subject_name = "newrelic-oci-us-production-rpst-user"
+      public_jwks_url   = "https://publickeys.newrelic.com/r/oci-cmp/us/c5623ba5-1cc7-491a-8ec3-eeee809374f7/jwks.json"
+    }
+    EU = {
+      issuer_name       = "newrelic-oci-eu-production-issuer"
+      subject_name      = "newrelic-oci-eu-production-user"
+      rpst_issuer_name  = "newrelic-oci-eu-production-rpst-issuer"
+      rpst_subject_name = "newrelic-oci-eu-production-rpst-user"
+      public_jwks_url   = "https://publickeys.eu.newrelic.com/r/oci-cmp/eu/f923dba9-84a8-491c-b714-6c0e61b90c5b/jwks.json"
+    }
+    JP = {
+      issuer_name       = "newrelic-oci-jp-production-issuer"
+      subject_name      = "newrelic-oci-jp-production-user"
+      rpst_issuer_name  = "newrelic-oci-jp-production-rpst-issuer"
+      rpst_subject_name = "newrelic-oci-jp-production-rpst-user"
+      public_jwks_url   = "https://publickeys.jp.newrelic.com/r/oci-cmp/jp/89625529-5f3e-47b8-a13a-25229f85989d/jwks.json"
+    }
+  }[var.newrelic_region]
 
   # NR-562518: static value pasted into the OCI trust as `impersonatingResource` and sent by NR
   # as `res_type` during token exchange. Same string for every NR-OCI integration.

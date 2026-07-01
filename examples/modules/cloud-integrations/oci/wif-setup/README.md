@@ -36,7 +36,7 @@ Both flows are backward-compatible. Existing UPST customers can adopt RPST by se
 |----------|------|---------|----------|-------|
 | `tenancy_ocid` | string | — | yes | Your OCI tenancy OCID |
 | `identity_domain_name` | string | `"Default"` | no | Identity Domain to use |
-| `newrelic_region` | string | `"US"` | yes | `US` or `EU` |
+| `newrelic_region` | string | `"US"` | yes | `US`, `EU`, or `JP` |
 | `home_region` | string | — | yes | OCI home region (e.g. `us-ashburn-1`) |
 | `fingerprint` | string | — | yes | OCI API key fingerprint |
 | `private_key` | string (sensitive) | — | yes | OCI API key PEM content |
