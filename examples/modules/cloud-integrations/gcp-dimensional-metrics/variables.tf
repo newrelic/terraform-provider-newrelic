@@ -1,6 +1,6 @@
 variable "newrelic_account_id" {
   type        = number
-  description = "The New Relic account ID to link the GCP project to."
+  description = "The New Relic account ID to link the GCP projects to."
 }
 
 variable "newrelic_api_key" {
@@ -15,14 +15,27 @@ variable "newrelic_region" {
   description = "New Relic data-center region: US or EU."
 }
 
-variable "gcp_project_id" {
+variable "gcp_sa_project_id" {
   type        = string
-  description = "The GCP project ID to integrate with New Relic."
+  description = "GCP project in which the service account and WIF pool are created. The SA will be used to collect metrics from all projects in gcp_projects."
 }
 
-variable "linked_account_name" {
+variable "gcp_folder_id" {
   type        = string
-  description = "Display name for this linked GCP account in New Relic."
+  description = "Numeric GCP folder ID (without the 'folders/' prefix). All four IAM roles are granted at this folder level, covering every project under it."
+}
+
+variable "gcp_projects" {
+  type        = map(string)
+  description = <<-EOT
+    Map of display-name => GCP project ID for each project to link to New Relic.
+    The display-name becomes the linked account name shown in the New Relic UI.
+    Example:
+      {
+        "prod-payments" = "my-payments-project-123"
+        "prod-analytics" = "my-analytics-project-456"
+      }
+  EOT
 }
 
 variable "wif_pool_id" {
@@ -33,11 +46,6 @@ variable "wif_pool_id" {
 variable "wif_provider_id" {
   type        = string
   description = "ID for the WIF OIDC provider inside the pool (e.g. 'newrelic-oidc-provider')."
-}
-
-variable "gcp_folder_id" {
-  type        = string
-  description = "The numeric GCP folder ID (without the 'folders/' prefix) to grant roles/resourcemanager.folderViewer for folder-level resource discovery."
 }
 
 variable "newrelic_sa_name" {

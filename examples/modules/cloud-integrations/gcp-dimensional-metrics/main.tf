@@ -11,8 +11,9 @@ provider "newrelic" {
   region     = var.newrelic_region
 }
 
+# SA and WIF pool are always created in the designated SA project.
 provider "google" {
-  project = var.gcp_project_id
+  project = var.gcp_sa_project_id
 }
 
 # ── Workload Identity Federation: Pool ────────────────────────────────────────
@@ -47,29 +48,27 @@ resource "google_service_account" "newrelic" {
   description  = "Impersonated by New Relic via WIF to collect GCP Dimensional Metrics"
 }
 
-# ── IAM: Grant service account monitoring and asset-viewer access ─────────────
-resource "google_project_iam_member" "newrelic_viewer" {
-  project = var.gcp_project_id
-  role    = "roles/monitoring.viewer"
-  member  = google_service_account.newrelic.member
+# ── IAM: Folder-level bindings covering all projects under the folder ─────────
+# Granting at the folder level means a single SA covers every project in
+# gcp_projects without per-project IAM changes when new projects are added.
+resource "google_folder_iam_member" "newrelic_monitoring_viewer" {
+  folder = "folders/${var.gcp_folder_id}"
+  role   = "roles/monitoring.viewer"
+  member = google_service_account.newrelic.member
 }
 
-resource "google_project_iam_member" "newrelic_service_usage" {
-  project = var.gcp_project_id
-  role    = "roles/serviceusage.serviceUsageConsumer"
-  member  = google_service_account.newrelic.member
+resource "google_folder_iam_member" "newrelic_service_usage" {
+  folder = "folders/${var.gcp_folder_id}"
+  role   = "roles/serviceusage.serviceUsageConsumer"
+  member = google_service_account.newrelic.member
 }
 
-resource "google_project_iam_member" "newrelic_cloud_asset_viewer" {
-  project = var.gcp_project_id
-  role    = "roles/cloudasset.viewer"
-  member  = google_service_account.newrelic.member
+resource "google_folder_iam_member" "newrelic_cloud_asset_viewer" {
+  folder = "folders/${var.gcp_folder_id}"
+  role   = "roles/cloudasset.viewer"
+  member = google_service_account.newrelic.member
 }
 
-# ── IAM: Folder-level resource discovery ─────────────────────────────────────
-# Grant folderViewer at the folder level so New Relic can discover resources
-# organised under that folder. This must be applied at the folder level (not
-# project level) — pass the numeric folder ID (without the "folders/" prefix).
 resource "google_folder_iam_member" "newrelic_folder_viewer" {
   folder = "folders/${var.gcp_folder_id}"
   role   = "roles/resourcemanager.folderViewer"
@@ -83,18 +82,20 @@ resource "google_service_account_iam_member" "newrelic_wif" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.newrelic.name}/attribute.nr_account_id/${var.newrelic_account_id}"
 }
 
-# ── New Relic: Link GCP Project ───────────────────────────────────────────────
+# ── New Relic: Link one account per GCP project ───────────────────────────────
 resource "newrelic_cloud_gcp_dm_link_account" "this" {
+  for_each = var.gcp_projects
+
   account_id            = var.newrelic_account_id
-  name                  = var.linked_account_name
-  project_id            = var.gcp_project_id
+  name                  = each.key
+  project_id            = each.value
   service_account_email = google_service_account.newrelic.email
   audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [
-    google_project_iam_member.newrelic_viewer,
-    google_project_iam_member.newrelic_service_usage,
-    google_project_iam_member.newrelic_cloud_asset_viewer,
+    google_folder_iam_member.newrelic_monitoring_viewer,
+    google_folder_iam_member.newrelic_service_usage,
+    google_folder_iam_member.newrelic_cloud_asset_viewer,
     google_folder_iam_member.newrelic_folder_viewer,
     google_service_account_iam_member.newrelic_wif,
   ]
@@ -102,8 +103,10 @@ resource "newrelic_cloud_gcp_dm_link_account" "this" {
 
 # ── New Relic: Enable Integrations ────────────────────────────────────────────
 resource "newrelic_cloud_gcp_dm_integrations" "this" {
+  for_each = newrelic_cloud_gcp_dm_link_account.this
+
   account_id        = var.newrelic_account_id
-  linked_account_id = tonumber(newrelic_cloud_gcp_dm_link_account.this.id)
+  linked_account_id = tonumber(each.value.id)
 
   # Services with confirmed 1-minute polling support
   dynamic "data_flow" {
@@ -255,9 +258,9 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
 }
 
 # ── Outputs ───────────────────────────────────────────────────────────────────
-output "linked_account_id" {
-  description = "The New Relic linked account ID for this GCP project."
-  value       = newrelic_cloud_gcp_dm_link_account.this.id
+output "linked_account_ids" {
+  description = "Map of display-name => New Relic linked account ID for each linked GCP project."
+  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.this : k => v.id }
 }
 
 output "wif_pool_name" {
