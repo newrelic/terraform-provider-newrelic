@@ -32,7 +32,7 @@ compartment_id = ""
 # Your NR account ID. Find at: one.newrelic.com → bottom-left account name → Account ID
 newrelic_account_id = "2222222"
 
-# NR region: "US" or "EU"
+# NR region: "US", "EU", or "JP"
 newrelic_region = "US"
 
 # Optional: prefix for resource names (default: "newrelic")
