@@ -1,3 +1,13 @@
+# Scenario: GCP Dimensional Metrics — multi-project with folder-level IAM
+#
+# Creates a single WIF pool, OIDC provider, and service account in a
+# designated SA project. Four IAM roles are granted once at the GCP folder
+# level, covering every project under that folder without per-project changes.
+# One New Relic linked account is created for each entry in gcp_projects.
+#
+# Use this when: you manage multiple GCP projects under a common folder and
+# have permission to bind IAM at the folder level.
+
 locals {
   on = toset(var.enabled_services)
 

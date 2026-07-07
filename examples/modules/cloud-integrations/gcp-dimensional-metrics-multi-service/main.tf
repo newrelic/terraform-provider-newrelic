@@ -1,3 +1,15 @@
+# Scenario: GCP Dimensional Metrics — different services per project group
+#
+# Creates shared GCP infrastructure (WIF pool, OIDC provider, service account,
+# and folder-level IAM) used across two distinct project groups that each have
+# different monitoring needs:
+#   - analytics_projects: BigQuery, PubSub, Spanner, Storage, DataFlow, DataProc
+#   - compute_projects:   VMs, SQL, Kubernetes, Cloud Run, Load Balancing, Functions
+#
+# Use this when: your GCP projects serve different workloads and you want to
+# enable only the relevant GCP services in New Relic per group, while sharing
+# a single WIF identity setup to avoid duplicating GCP infrastructure.
+
 terraform {
   required_providers {
     newrelic = {
