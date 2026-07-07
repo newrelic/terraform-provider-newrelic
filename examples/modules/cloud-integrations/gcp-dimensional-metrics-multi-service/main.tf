@@ -10,22 +10,6 @@
 # enable only the relevant GCP services in New Relic per group, while sharing
 # a single WIF identity setup to avoid duplicating GCP infrastructure.
 
-terraform {
-  required_providers {
-    newrelic = {
-      source = "newrelic/newrelic"
-    }
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 7.0"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.10"
-    }
-  }
-}
-
 # ── Locals ────────────────────────────────────────────────────────────────────
 locals {
   oidc_issuer_uri = (var.newrelic_region == "EU"
