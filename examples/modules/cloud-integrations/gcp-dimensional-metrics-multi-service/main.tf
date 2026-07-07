@@ -26,41 +26,13 @@ terraform {
   }
 }
 
-# ── Variables ─────────────────────────────────────────────────────────────────
-variable "newrelic_account_id" { type = string }
-variable "newrelic_api_key" {
-  type      = string
-  sensitive = true
-}
-variable "newrelic_region" {
-  type    = string
-  default = "US"
-}
-variable "gcp_sa_project_id" {
-  type        = string
-  description = "GCP project in which the service account and WIF pool are created."
-}
-variable "gcp_folder_id" {
-  type        = string
-  description = "Numeric folder ID (without 'folders/' prefix). All IAM roles are granted at this folder level, covering every project under it."
-}
-variable "wif_pool_id"      { type = string }
-variable "wif_provider_id"  { type = string }
-variable "newrelic_sa_name" { type = string }
-
-# Two project groups, each with their own set of services.
-variable "analytics_projects" {
-  type        = map(string)
-  description = "Map of display-name => GCP project ID for analytics projects (BigQuery, PubSub, Spanner, etc.)."
-}
-variable "compute_projects" {
-  type        = map(string)
-  description = "Map of display-name => GCP project ID for compute projects (VMs, SQL, Kubernetes, Cloud Run, etc.)."
-}
-
-variable "metrics_polling_interval" {
-  type    = number
-  default = 300
+# ── Locals ────────────────────────────────────────────────────────────────────
+locals {
+  oidc_issuer_uri = (var.newrelic_region == "EU"
+    ? "https://oidc.eu.newrelic.com/r/gcp-cmp"
+    : var.newrelic_region == "Staging"
+    ? "https://oidc-staging.newrelic.com/r/gcp-cmp"
+    : "https://oidc.newrelic.com/r/gcp-cmp")
 }
 
 # ── Providers ─────────────────────────────────────────────────────────────────
@@ -96,7 +68,7 @@ resource "google_iam_workload_identity_pool_provider" "newrelic" {
   attribute_condition = "assertion.nr_account_id == \"${var.newrelic_account_id}\""
 
   oidc {
-    issuer_uri        = var.newrelic_region == "EU" ? "https://oidc.eu.newrelic.com/r/gcp-cmp" : "https://oidc.newrelic.com/r/gcp-cmp"
+    issuer_uri        = local.oidc_issuer_uri
     allowed_audiences = ["newrelic-gcp-integrations"]
   }
 }
@@ -171,7 +143,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
 
   big_query {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = true
+    fetch_tags               = var.enable_fetch_tags
   }
   data_flow {
     metrics_polling_interval = var.metrics_polling_interval
@@ -181,15 +153,15 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
   }
   pub_sub {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = true
+    fetch_tags               = var.enable_fetch_tags
   }
   spanner {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = true
+    fetch_tags               = var.enable_fetch_tags
   }
   storage {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = true
+    fetch_tags               = var.enable_fetch_tags
   }
 }
 
