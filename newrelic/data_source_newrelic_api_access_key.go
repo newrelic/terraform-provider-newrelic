@@ -137,11 +137,11 @@ func searchNewRelicAPIAccessKey(ctx context.Context, providerConfig *ProviderCon
 	}
 
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("no New Relic API access key found matching the given criteria; try specifying `key_id`, `name`, `ingest_type` or `user_id` to narrow down the search")
+		return nil, fmt.Errorf("no New Relic API access key found matching the given criteria; try adjusting `name`, `ingest_type` or `user_id`, or specify `key_id` to look up a key directly")
 	}
 
 	if len(matches) > 1 {
-		return nil, fmt.Errorf("found %d New Relic API access keys matching the given criteria; please specify additional attributes such as `key_id`, `name`, `ingest_type` or `user_id` to narrow down the search to a single key", len(matches))
+		return nil, fmt.Errorf("found %d New Relic API access keys matching the given criteria; add or refine `name`, `ingest_type` or `user_id` to narrow the result to a single key, or specify `key_id` to look up a key directly", len(matches))
 	}
 
 	return &matches[0], nil
