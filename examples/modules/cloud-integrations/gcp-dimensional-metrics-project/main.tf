@@ -48,31 +48,35 @@ resource "google_service_account" "newrelic" {
   description  = "Impersonated by New Relic via WIF to collect GCP Dimensional Metrics"
 }
 
-# ── IAM: Folder-level bindings covering all projects under the folder ─────────
-# Granting at the folder level means a single SA covers every project in
-# gcp_projects without per-project IAM changes when new projects are added.
-resource "google_folder_iam_member" "newrelic_monitoring_viewer" {
-  folder = "folders/${var.gcp_folder_id}"
-  role   = "roles/monitoring.viewer"
-  member = google_service_account.newrelic.member
+# ── IAM: Project-level bindings — one set per project in gcp_projects ─────────
+# Use this module when you do not have GCP folder-level IAM access.
+# Each project in gcp_projects receives 4 IAM bindings directly.
+resource "google_project_iam_member" "newrelic_monitoring_viewer" {
+  for_each = var.gcp_projects
+  project  = each.value
+  role     = "roles/monitoring.viewer"
+  member   = google_service_account.newrelic.member
 }
 
-resource "google_folder_iam_member" "newrelic_service_usage" {
-  folder = "folders/${var.gcp_folder_id}"
-  role   = "roles/serviceusage.serviceUsageConsumer"
-  member = google_service_account.newrelic.member
+resource "google_project_iam_member" "newrelic_service_usage" {
+  for_each = var.gcp_projects
+  project  = each.value
+  role     = "roles/serviceusage.serviceUsageConsumer"
+  member   = google_service_account.newrelic.member
 }
 
-resource "google_folder_iam_member" "newrelic_cloud_asset_viewer" {
-  folder = "folders/${var.gcp_folder_id}"
-  role   = "roles/cloudasset.viewer"
-  member = google_service_account.newrelic.member
+resource "google_project_iam_member" "newrelic_cloud_asset_viewer" {
+  for_each = var.gcp_projects
+  project  = each.value
+  role     = "roles/cloudasset.viewer"
+  member   = google_service_account.newrelic.member
 }
 
-resource "google_folder_iam_member" "newrelic_folder_viewer" {
-  folder = "folders/${var.gcp_folder_id}"
-  role   = "roles/resourcemanager.folderViewer"
-  member = google_service_account.newrelic.member
+resource "google_project_iam_member" "newrelic_browser_viewer" {
+  for_each = var.gcp_projects
+  project  = each.value
+  role     = "roles/browser"
+  member   = google_service_account.newrelic.member
 }
 
 # ── IAM: Allow WIF pool to impersonate the service account ────────────────────
@@ -89,10 +93,10 @@ resource "time_sleep" "iam_propagation" {
   create_duration = "90s"
   depends_on = [
     google_service_account_iam_member.newrelic_wif,
-    google_folder_iam_member.newrelic_monitoring_viewer,
-    google_folder_iam_member.newrelic_service_usage,
-    google_folder_iam_member.newrelic_cloud_asset_viewer,
-    google_folder_iam_member.newrelic_folder_viewer,
+    google_project_iam_member.newrelic_monitoring_viewer,
+    google_project_iam_member.newrelic_service_usage,
+    google_project_iam_member.newrelic_cloud_asset_viewer,
+    google_project_iam_member.newrelic_browser_viewer,
   ]
 }
 

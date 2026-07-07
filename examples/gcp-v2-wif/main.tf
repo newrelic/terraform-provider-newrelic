@@ -1,8 +1,58 @@
+terraform {
+  required_providers {
+    newrelic = {
+      source = "newrelic/newrelic"
+    }
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 7.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.10"
+    }
+  }
+}
+
+variable "newrelic_account_id" { type = string }
+variable "newrelic_api_key" {
+  type      = string
+  sensitive = true
+}
+variable "newrelic_region" {
+  type    = string
+  default = "US"
+}
+variable "gcp_sa_project_id" {
+  type        = string
+  description = "GCP project in which the service account and WIF pool are created (e.g. cmp-dev-proj-1)."
+}
+variable "gcp_folder_id" {
+  type        = string
+  description = "Numeric folder ID (without 'folders/' prefix). All 4 IAM roles are granted at this folder level, covering every project under it."
+}
+variable "gcp_projects" {
+  type        = map(string)
+  description = "Map of display-name => GCP project ID for each project to link. e.g. { \"proj-1\" = \"cmp-dev-proj-1\", \"proj-2\" = \"cmp-dev-proj-2\" }"
+}
+variable "wif_pool_id"      { type = string }
+variable "wif_provider_id"  { type = string }
+variable "newrelic_sa_name" { type = string }
+variable "metrics_polling_interval" {
+  type    = number
+  default = 300
+}
+variable "enable_fetch_tags" {
+  type    = bool
+  default = false
+}
+variable "enabled_services" {
+  type    = list(string)
+  default = []
+}
+
 locals {
   on = toset(var.enabled_services)
-
-  # Derive the OIDC issuer URI based on the New Relic region.
-  oidc_issuer_uri = var.newrelic_region == "EU" ? "https://oidc.eu.newrelic.com/r/gcp-cmp" : "https://oidc.newrelic.com/r/gcp-cmp"
 }
 
 provider "newrelic" {
@@ -16,14 +66,14 @@ provider "google" {
   project = var.gcp_sa_project_id
 }
 
-# ── Workload Identity Federation: Pool ────────────────────────────────────────
+# ── WIF Pool ──────────────────────────────────────────────────────────────────
 resource "google_iam_workload_identity_pool" "newrelic" {
   workload_identity_pool_id = var.wif_pool_id
   display_name              = "New Relic"
-  description               = "WIF pool for the New Relic GCP Dimensional Metrics integration"
+  description               = "WIF pool for New Relic GCP Dimensional Metrics integration"
 }
 
-# ── Workload Identity Federation: OIDC Provider ───────────────────────────────
+# ── WIF Provider ──────────────────────────────────────────────────────────────
 resource "google_iam_workload_identity_pool_provider" "newrelic" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.newrelic.workload_identity_pool_id
   workload_identity_pool_provider_id = var.wif_provider_id
@@ -36,21 +86,19 @@ resource "google_iam_workload_identity_pool_provider" "newrelic" {
   attribute_condition = "assertion.nr_account_id == \"${var.newrelic_account_id}\""
 
   oidc {
-    issuer_uri        = local.oidc_issuer_uri
+    issuer_uri        = "https://oidc-staging.newrelic.com/r/gcp-cmp"
     allowed_audiences = ["newrelic-gcp-integrations"]
   }
 }
 
-# ── GCP Service Account ───────────────────────────────────────────────────────
+# ── Service Account ───────────────────────────────────────────────────────────
 resource "google_service_account" "newrelic" {
   account_id   = var.newrelic_sa_name
   display_name = "New Relic Integration"
   description  = "Impersonated by New Relic via WIF to collect GCP Dimensional Metrics"
 }
 
-# ── IAM: Folder-level bindings covering all projects under the folder ─────────
-# Granting at the folder level means a single SA covers every project in
-# gcp_projects without per-project IAM changes when new projects are added.
+# ── Folder-level IAM: all 4 roles cover every project under the folder ────────
 resource "google_folder_iam_member" "newrelic_monitoring_viewer" {
   folder = "folders/${var.gcp_folder_id}"
   role   = "roles/monitoring.viewer"
@@ -75,7 +123,7 @@ resource "google_folder_iam_member" "newrelic_folder_viewer" {
   member = google_service_account.newrelic.member
 }
 
-# ── IAM: Allow WIF pool to impersonate the service account ────────────────────
+# ── WIF impersonation binding ─────────────────────────────────────────────────
 resource "google_service_account_iam_member" "newrelic_wif" {
   service_account_id = google_service_account.newrelic.name
   role               = "roles/iam.workloadIdentityUser"
@@ -96,11 +144,11 @@ resource "time_sleep" "iam_propagation" {
   ]
 }
 
-# ── New Relic: Link one account per GCP project ───────────────────────────────
+# ── New Relic: one linked account per GCP project ─────────────────────────────
 resource "newrelic_cloud_gcp_dm_link_account" "this" {
   for_each = var.gcp_projects
 
-  account_id            = var.newrelic_account_id
+  account_id            = tonumber(var.newrelic_account_id)
   name                  = each.key
   project_id            = each.value
   service_account_email = google_service_account.newrelic.email
@@ -109,29 +157,23 @@ resource "newrelic_cloud_gcp_dm_link_account" "this" {
   depends_on = [time_sleep.iam_propagation]
 }
 
-# ── New Relic: Enable Integrations ────────────────────────────────────────────
+# ── New Relic: integrations per linked account ────────────────────────────────
 resource "newrelic_cloud_gcp_dm_integrations" "this" {
   for_each = newrelic_cloud_gcp_dm_link_account.this
 
-  account_id        = var.newrelic_account_id
+  account_id        = tonumber(var.newrelic_account_id)
   linked_account_id = tonumber(each.value.id)
 
   # All services use metrics_polling_interval (default 300 s / 5 min).
-  # The following services also support low-polling (LP) at 60 s / 1 min:
+  # LP (low-polling) services support down to 60 s:
   #   alloy_db, big_query, data_flow, data_proc, load_balancing,
   #   managed_kafka, pub_sub, spanner
-  # To enable 1-minute polling for those services, set:
-  #   metrics_polling_interval = 60
   dynamic "ai_platform" {
     for_each = contains(local.on, "ai_platform") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
   dynamic "alloy_db" {
     for_each = contains(local.on, "alloy_db") ? [1] : []
-    content { metrics_polling_interval = var.metrics_polling_interval }
-  }
-  dynamic "api_gateway" {
-    for_each = contains(local.on, "api_gateway") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
   dynamic "app_engine" {
@@ -199,10 +241,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
   }
   dynamic "interconnect" {
     for_each = contains(local.on, "interconnect") ? [1] : []
-    content { metrics_polling_interval = var.metrics_polling_interval }
-  }
-  dynamic "istio" {
-    for_each = contains(local.on, "istio") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
   dynamic "kubernetes" {
@@ -274,21 +312,18 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
 
 # ── Outputs ───────────────────────────────────────────────────────────────────
 output "linked_account_ids" {
-  description = "Map of display-name => New Relic linked account ID for each linked GCP project."
+  description = "Map of display-name => New Relic linked account ID."
   value       = { for k, v in newrelic_cloud_gcp_dm_link_account.this : k => v.id }
 }
 
 output "wif_pool_name" {
-  description = "The full resource name of the WIF pool."
-  value       = google_iam_workload_identity_pool.newrelic.name
+  value = google_iam_workload_identity_pool.newrelic.name
 }
 
 output "wif_provider_name" {
-  description = "The full resource name of the WIF OIDC provider."
-  value       = google_iam_workload_identity_pool_provider.newrelic.name
+  value = google_iam_workload_identity_pool_provider.newrelic.name
 }
 
 output "newrelic_service_account_email" {
-  description = "Email of the GCP service account impersonated by New Relic."
-  value       = google_service_account.newrelic.email
+  value = google_service_account.newrelic.email
 }
