@@ -33,7 +33,7 @@ func TestAccNewRelicFleetConfigurationDataSource_ByConfigurationID(t *testing.T)
 					// Data source content must match the resource's latest version content
 					resource.TestCheckResourceAttrPair(
 						dataSourceName, "configuration_content",
-						resourceName, "version.0.configuration_content",
+						resourceName, "configuration_content",
 					),
 				),
 			},
@@ -88,7 +88,7 @@ func TestAccNewRelicFleetConfigurationDataSource_ByName(t *testing.T) {
 					// Name-based lookup must resolve the same content as the resource
 					resource.TestCheckResourceAttrPair(
 						dataSourceName, "configuration_content",
-						resourceName, "version.0.configuration_content",
+						resourceName, "configuration_content",
 					),
 				),
 			},
@@ -135,13 +135,11 @@ func TestAccNewRelicFleetConfigurationDataSource_MutuallyExclusive(t *testing.T)
 func testAccFleetConfigDataSourceByID(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "src" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n# ds-by-id\n"
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n# ds-by-id\n"
 }
 
 data "newrelic_fleet_configuration" "by_id" {
@@ -153,13 +151,11 @@ data "newrelic_fleet_configuration" "by_id" {
 func testAccFleetConfigDataSourceByVersionID(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "src" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n# ds-by-version\n"
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n# ds-by-version\n"
 }
 
 data "newrelic_fleet_configuration" "by_version" {
@@ -171,13 +167,11 @@ data "newrelic_fleet_configuration" "by_version" {
 func testAccFleetConfigDataSourceByName(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "src" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = "log:\n  level: info\n# ds-by-name\n"
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = "log:\n  level: info\n# ds-by-name\n"
 }
 
 data "newrelic_fleet_configuration" "by_name" {

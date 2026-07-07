@@ -634,3 +634,6 @@ structures_newrelic_workflow_test.go:
 structures_newrelic_workload.go:
   test: false
   product_mapping: WORKLOADS
+structures_newrelic_workload_test.go:
+  test: true
+  product_mapping: WORKLOADS

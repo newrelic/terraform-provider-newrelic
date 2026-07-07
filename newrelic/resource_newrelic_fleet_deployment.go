@@ -31,7 +31,7 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "The name of the deployment.",
 			},
 			"description": {
@@ -42,7 +42,7 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 			"agent": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "One or more agent blocks on create. May be empty on update to uninstall all agents. Each agent type may appear at most once per deployment.",
+				Description: "Zero or more agent blocks. An empty list creates or updates a deployment with no agents. Each agent type may appear at most once per deployment.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"agent_type": {
@@ -105,13 +105,11 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 //  2. If the deployment already exists and its phase is not CREATED, any
 //     attempt to change mutable fields is rejected with a clear error so the
 //     user is informed before apply rather than receiving an opaque API error.
+//
+// The API accepts zero-agent deployments on both create and update, so we don't
+// constrain agent count in either direction.
 func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	agentsRaw := d.Get("agent").([]interface{})
-
-	// Require at least one agent block on create.
-	if d.Id() == "" && len(agentsRaw) == 0 {
-		return fmt.Errorf("at least one agent block is required when creating a fleet deployment")
-	}
 
 	// Reject duplicate agent_type within a single deployment.
 	seen := make(map[string]int, len(agentsRaw))
@@ -135,7 +133,9 @@ func resourceNewRelicFleetDeploymentCustomizeDiff(_ context.Context, d *schema.R
 			return fmt.Errorf(
 				"cannot update fleet deployment %s: it is in phase %q, which means execution has already begun or completed — "+
 					"only deployments in the CREATED phase can be modified. "+
-					"Run 'terraform destroy' to remove this deployment from state, then re-create it with the desired configuration",
+					"To remove it from Terraform state, run 'terraform state rm <resource_address>', or use a 'removed' block "+
+					"(https://developer.hashicorp.com/terraform/language/state/remove). "+
+					"After removing from state, re-create the deployment with the desired configuration",
 				d.Id(), phase,
 			)
 		}
@@ -189,20 +189,26 @@ func resourceNewRelicFleetDeploymentCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceNewRelicFleetDeploymentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	providerConfig := meta.(*ProviderConfig)
 
 	entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, d.Id())
-	if err != nil {
-		if _, ok := err.(*nrErrors.NotFound); ok {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(fmt.Errorf("error reading fleet deployment %s: %w", d.Id(), err))
-	}
-
-	if entityInterface == nil {
+	// NerdGraph returns {entity: null} + a GraphQLErrorResponse for missing
+	// GUIDs (nrErrors.NotFound never matches). Treat as deleted only when the
+	// entity is nil AND the error either is absent or signals "not found" —
+	// transient errors (401, network, GraphQL server errors) also return a nil
+	// entity but must NOT be misread as a deletion.
+	missing := entityInterface == nil || *entityInterface == nil
+	if missing && (err == nil || isFleetNotFoundError(err)) {
 		d.SetId("")
 		return nil
+	}
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error reading fleet deployment %s: %w", d.Id(), err))
+	}
+	if missing {
+		// Defensive: nil entity with no error and no NotFound signal — surface as error.
+		return diag.Errorf("fleet deployment %s returned no data from the API", d.Id())
 	}
 
 	entity, ok := (*entityInterface).(*fleetcontrol.EntityManagementFleetDeploymentEntity)
@@ -256,7 +262,7 @@ func resourceNewRelicFleetDeploymentRead(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return nil
+	return diags
 }
 
 func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -278,7 +284,9 @@ func resourceNewRelicFleetDeploymentUpdate(ctx context.Context, d *schema.Resour
 	// 		Detail: fmt.Sprintf(
 	// 			"The deployment is in phase %q — execution has already begun or completed "+
 	// 				"and the API does not accept updates at this stage. No changes were sent. "+
-	// 				"Run 'terraform destroy' to remove the deployment from state and re-create it.",
+	// 				"To remove it from Terraform state, run 'terraform state rm <resource_address>', or use a 'removed' block "+
+	// 				"(https://developer.hashicorp.com/terraform/language/state/remove). "+
+	// 				"After removing from state, re-create the deployment with the desired configuration.",
 	// 			phase,
 	// 		),
 	// 	}}
@@ -320,7 +328,7 @@ func resourceNewRelicFleetDeploymentDelete(ctx context.Context, d *schema.Resour
 	// CustomizeDiff) does not flush the refreshed state to disk, so d.Get("phase")
 	// can be stale (still "CREATED") even when the deployment has advanced.
 	currentPhase := d.Get("phase").(string)
-	if entityInterface, err := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, id); err == nil && entityInterface != nil {
+	if entityInterface, _ := providerConfig.NewClient.FleetControl.GetEntityWithContext(ctx, id); entityInterface != nil && *entityInterface != nil {
 		if entity, ok := (*entityInterface).(*fleetcontrol.EntityManagementFleetDeploymentEntity); ok && entity.Phase != "" {
 			currentPhase = string(entity.Phase)
 		}

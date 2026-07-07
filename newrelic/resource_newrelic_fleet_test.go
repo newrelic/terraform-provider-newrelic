@@ -179,7 +179,7 @@ func TestAccNewRelicFleet_OperatingSystemForKubernetes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccNewRelicFleetConfigKubernetesWithOS(rName),
-				ExpectError: regexp.MustCompile("operating_system should not be specified for KUBERNETESCLUSTER fleets"),
+				ExpectError: regexp.MustCompile("operating_system must not be set when managed_entity_type is KUBERNETESCLUSTER"),
 			},
 		},
 	})

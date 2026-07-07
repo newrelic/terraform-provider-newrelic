@@ -68,13 +68,11 @@ A common pattern is to use this data source alongside a `newrelic_fleet_configur
 
 ```hcl
 resource "newrelic_fleet_configuration" "infra" {
-  name                = "my-infra-config"
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = file("${path.module}/config.yaml")
-  }
+  name                  = "my-infra-config"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = file("${path.module}/config.yaml")
 }
 
 data "newrelic_fleet_configuration" "infra" {

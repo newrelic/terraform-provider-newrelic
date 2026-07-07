@@ -12,9 +12,8 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/fleetcontrol"
 )
 
-// TestAccNewRelicFleetConfiguration_Basic covers the create → read → import → destroy lifecycle
-// with a single version block. Also verifies computed fields are populated after a single apply
-// (no second-apply required for output variables).
+// TestAccNewRelicFleetConfiguration_Basic covers the create → read → import → destroy lifecycle.
+// Also verifies zero-diff on a subsequent plan (no drift after a single apply).
 func TestAccNewRelicFleetConfiguration_Basic(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-config-%s", acctest.RandString(5))
 	resourceName := "newrelic_fleet_configuration.foo"
@@ -35,17 +34,20 @@ func TestAccNewRelicFleetConfiguration_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
 					resource.TestCheckResourceAttrSet(resourceName, "configuration_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "configuration_content"),
 					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
 					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "latest_version_entity_id"),
-					// TypeList positional checks
-					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "version.0.version_entity_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "version.0.configuration_content"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
 				),
 			},
-			// Import — compound ID reconstructs non-API-readable fields (agent_type, etc.)
+			// No drift expected after a single apply.
+			{
+				Config:             testAccFleetConfigBasic(rName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Import — composite ID "<guid>:<managed_entity_type>" reconstructs all attributes.
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -56,11 +58,12 @@ func TestAccNewRelicFleetConfiguration_Basic(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicFleetConfiguration_SingleApplyOutputs verifies that all computed fields
-// (including version_entity_id and version_number) are populated after a single apply,
-// confirming the Read-at-end-of-Create fix.
-func TestAccNewRelicFleetConfiguration_SingleApplyOutputs(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-output-%s", acctest.RandString(5))
+// TestAccNewRelicFleetConfiguration_ContentUpdate verifies the launch-template-style update path:
+// changing configuration_content creates a new immutable API version transparently.
+// The resource ID stays constant; total_versions, latest_version_number, latest_version_entity_id,
+// and version_entity_ids all advance accordingly.
+func TestAccNewRelicFleetConfiguration_ContentUpdate(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-update-%s", acctest.RandString(5))
 	resourceName := "newrelic_fleet_configuration.foo"
 
 	setupFleetTestCredentials(t)
@@ -70,188 +73,33 @@ func TestAccNewRelicFleetConfiguration_SingleApplyOutputs(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
 		Steps: []resource.TestStep{
-			// Single apply — all fields must be set without a follow-up plan/apply cycle
+			// Step 1: Create with initial content (version 1).
 			{
-				Config: testAccFleetConfigBasic(rName),
-				Check: resource.ComposeTestCheckFunc(
-					// These would be empty string if Read was not called at end of Create
-					resource.TestCheckResourceAttrSet(resourceName, "version.0.version_entity_id"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "latest_version_entity_id"),
-					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "1"),
-				),
-			},
-			// Plan-only step: zero diff expected (no "known after apply" drift)
-			{
-				Config:             testAccFleetConfigBasic(rName),
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: false,
-			},
-		},
-	})
-}
-
-// TestAccNewRelicFleetConfiguration_MultiVersion creates a configuration with two versions
-// and verifies both are tracked correctly with unique entity IDs and version numbers.
-func TestAccNewRelicFleetConfiguration_MultiVersion(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-multi-%s", acctest.RandString(5))
-	resourceName := "newrelic_fleet_configuration.multi"
-
-	setupFleetTestCredentials(t)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: Create with v1 only
-			{
-				Config: testAccFleetConfigOneVersion(rName),
+				Config: testAccFleetConfigWithContent(rName, "log:\n  level: info\n# v1\n"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicFleetConfigurationExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "configuration_id"),
 					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
 					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "version.0.version_entity_id"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_version_entity_id"),
 				),
 			},
-			// Step 2: Add v2 — verify v1 entity_id is preserved, latest_version_number advances
+			// Step 2: Change content — provider creates a new API version transparently.
 			{
-				Config: testAccFleetConfigTwoVersions(rName),
+				Config: testAccFleetConfigWithContent(rName, "log:\n  level: debug\n# v2\n"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "total_versions", "2"),
 					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "2"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.1.version_number", "2"),
-					resource.TestCheckResourceAttrSet(resourceName, "version.0.version_entity_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "version.1.version_entity_id"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_version_entity_id"),
 				),
 			},
-		},
-	})
-}
-
-// TestAccNewRelicFleetConfiguration_VersionSequence exercises the full add/remove sequence:
-// v1 → +v2 → +v3 → -v2 → +v4+v5 → -v1-v5
-// Verifies that entity_ids for unchanged versions remain stable (TypeList key advantage).
-func TestAccNewRelicFleetConfiguration_VersionSequence(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-seq-%s", acctest.RandString(5))
-	resourceName := "newrelic_fleet_configuration.seq"
-
-	setupFleetTestCredentials(t)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
-		Steps: []resource.TestStep{
-			// v1 only
+			// Step 3: Same content — no new version, no diff.
 			{
-				Config: testAccFleetConfigSeq(rName, true, false, false, false, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-				),
-			},
-			// +v2
-			{
-				Config: testAccFleetConfigSeq(rName, true, true, false, false, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "2"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.1.version_number", "2"),
-				),
-			},
-			// +v3 (v1, v2, v3)
-			{
-				Config: testAccFleetConfigSeq(rName, true, true, true, false, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "3"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "3"),
-					resource.TestCheckResourceAttr(resourceName, "version.2.version_number", "3"),
-				),
-			},
-			// -v2 (v1, v3 remain) — content-based matching must delete v2's entity, not position
-			{
-				Config: testAccFleetConfigSeq(rName, true, false, true, false, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "2"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.1.version_number", "3"),
-				),
-			},
-			// +v4+v5 simultaneously (v1, v3, v4, v5)
-			{
-				Config: testAccFleetConfigSeq(rName, true, false, true, true, true),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "4"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "4"),
-				),
-			},
-			// -v1-v5 simultaneously (v3, v4 remain)
-			{
-				Config: testAccFleetConfigSeq(rName, false, false, true, true, false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "2"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "3"),
-				),
-			},
-		},
-	})
-}
-
-// TestAccNewRelicFleetConfiguration_RollbackWorkflow exercises the rollback pattern:
-// v1(A) → v2(B) → v3(A) — verifies that re-using version A's content creates a new version
-// rather than resurrecting the old entity_id, since the TypeList in-place edit guard only
-// fires when block count stays the same and a block's content changes.
-func TestAccNewRelicFleetConfiguration_RollbackWorkflow(t *testing.T) {
-	rName := fmt.Sprintf("tf-test-rollback-%s", acctest.RandString(5))
-	resourceName := "newrelic_fleet_configuration.rollback"
-
-	const contentA = "log:\n  level: info\n# rollback-a\n"
-	const contentB = "log:\n  level: debug\n# rollback-b\n"
-
-	setupFleetTestCredentials(t)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: Create with content A (version 1)
-			{
-				Config: testAccFleetConfigRollback(rName, []string{contentA}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
-					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "1"),
-				),
-			},
-			// Step 2: Add content B (version 2)
-			{
-				Config: testAccFleetConfigRollback(rName, []string{contentA, contentB}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "version.1.version_number", "2"),
-					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "2"),
-				),
-			},
-			// Step 3: Add content A again (version 3 — rollback to same content as v1)
-			// This must succeed: adding a block with content that previously existed
-			// but is not currently in state is a pure addition, not an in-place edit.
-			{
-				Config: testAccFleetConfigRollback(rName, []string{contentA, contentB, contentA + "# copy\n"}),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "version.#", "3"),
-					resource.TestCheckResourceAttr(resourceName, "total_versions", "3"),
-					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "3"),
-				),
+				Config:             testAccFleetConfigWithContent(rName, "log:\n  level: debug\n# v2\n"),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -277,7 +125,8 @@ func TestAccNewRelicFleetConfiguration_WithOperatingSystem(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
 					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
 					resource.TestCheckResourceAttr(resourceName, "operating_system", "LINUX"),
-					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
 				),
 			},
 			{
@@ -308,9 +157,9 @@ func TestAccNewRelicFleetConfiguration_Kubernetes(t *testing.T) {
 					testAccCheckNewRelicFleetConfigurationExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
 					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "KUBERNETESCLUSTER"),
-					resource.TestCheckResourceAttr(resourceName, "version.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
-					resource.TestCheckResourceAttr(resourceName, "version.0.version_number", "1"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version_number", "1"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
 				),
 			},
 			{
@@ -326,8 +175,8 @@ func TestAccNewRelicFleetConfiguration_Kubernetes(t *testing.T) {
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 // testAccFleetConfigImportID returns "<guid>:<managed_entity_type>" as the import ID.
-// managed_entity_type cannot be fetched from GetEntity (GraphQL nullability
-// conflict), so it must be encoded in the import ID.
+// managed_entity_type is not returned by the GetEntity GraphQL query and must be
+// embedded in the import ID.
 func testAccFleetConfigImportID(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -396,187 +245,46 @@ func testAccCheckNewRelicFleetConfigurationDestroy(s *terraform.State) error {
 func testAccFleetConfigBasic(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "foo" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-      metrics:
-        enabled: true
-      # v1
-    EOT
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = <<-EOT
+    log:
+      level: info
+    metrics:
+      enabled: true
+    # v1
+  EOT
 }
 `, name)
 }
 
-func testAccFleetConfigOneVersion(name string) string {
+func testAccFleetConfigWithContent(name, content string) string {
 	return fmt.Sprintf(`
-resource "newrelic_fleet_configuration" "multi" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-      # v1
-    EOT
-  }
+resource "newrelic_fleet_configuration" "foo" {
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = %q
 }
-`, name)
-}
-
-func testAccFleetConfigTwoVersions(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_fleet_configuration" "multi" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-      # v1
-    EOT
-  }
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: debug
-      # v2
-    EOT
-  }
-}
-`, name)
-}
-
-// testAccFleetConfigSeq generates a config for the version sequence test.
-// Each boolean flag controls whether that version block is included.
-func testAccFleetConfigSeq(name string, v1, v2, v3, v4, v5 bool) string {
-	cfg := fmt.Sprintf(`
-resource "newrelic_fleet_configuration" "seq" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-`, name)
-
-	if v1 {
-		cfg += `
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-      metrics:
-        enabled: true
-        sample_rate: 30
-      # v1
-    EOT
-  }
-`
-	}
-	if v2 {
-		cfg += `
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: debug
-      metrics:
-        enabled: true
-        sample_rate: 10
-      # v2
-    EOT
-  }
-`
-	}
-	if v3 {
-		cfg += `
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: warn
-      metrics:
-        enabled: false
-      # v3
-    EOT
-  }
-`
-	}
-	if v4 {
-		cfg += `
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: error
-      metrics:
-        enabled: true
-        sample_rate: 60
-      # v4
-    EOT
-  }
-`
-	}
-	if v5 {
-		cfg += `
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: trace
-      metrics:
-        enabled: true
-        sample_rate: 5
-      # v5
-    EOT
-  }
-`
-	}
-
-	cfg += "}\n"
-	return cfg
-}
-
-func testAccFleetConfigRollback(name string, contents []string) string {
-	cfg := fmt.Sprintf(`
-resource "newrelic_fleet_configuration" "rollback" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-`, name)
-
-	for _, c := range contents {
-		cfg += fmt.Sprintf(`
-  version {
-    configuration_content = %q
-  }
-`, c)
-	}
-
-	cfg += "}\n"
-	return cfg
+`, name, content)
 }
 
 func testAccFleetConfigKubernetes(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "k8s" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "KUBERNETESCLUSTER"
-
-  version {
-    configuration_content = <<-EOT
-      cluster:
-        enabled: true
-      prometheus:
-        enabled: true
-      # v1
-    EOT
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "KUBERNETESCLUSTER"
+  configuration_content = <<-EOT
+    cluster:
+      enabled: true
+    prometheus:
+      enabled: true
+    # v1
+  EOT
 }
 `, name)
 }
@@ -584,18 +292,15 @@ resource "newrelic_fleet_configuration" "k8s" {
 func testAccFleetConfigWithOperatingSystem(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_fleet_configuration" "with_os" {
-  name                = %q
-  agent_type          = "NRInfra"
-  managed_entity_type = "HOST"
-  operating_system    = "LINUX"
-
-  version {
-    configuration_content = <<-EOT
-      log:
-        level: info
-      # os-test-v1
-    EOT
-  }
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_content = <<-EOT
+    log:
+      level: info
+    # os-test-v1
+  EOT
 }
 `, name)
 }
