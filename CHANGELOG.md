@@ -1,3 +1,8 @@
+<a name="v3.94.1"></a>
+## [v3.94.1] - 2026-07-07
+### Bug Fixes
+- **api-access-key:** add data source ([#3115](https://github.com/newrelic/terraform-provider-newrelic/issues/3115))
+
 <a name="v3.94.0"></a>
 ## [v3.94.0] - 2026-06-30
 ### Bug Fixes
@@ -2767,7 +2772,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.1...HEAD
+[v3.94.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.0...v3.94.1
 [v3.94.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...v3.94.0
 [v3.93.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...v3.93.2
 [v3.93.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...v3.93.1
