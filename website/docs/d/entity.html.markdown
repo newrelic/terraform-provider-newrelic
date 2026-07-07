@@ -100,11 +100,12 @@ provider "newrelic" {
   ..
 }
 
-# A subaccount is created using the `newrelic_account_management` 
-# resource.
-resource "newrelic_account_management" "default" { 
-  name   = "Sample Subaccount"
-  region = "us01"
+# A subaccount is created using the `newrelic_account_management`
+# resource. The subaccount is created in the region of the organization
+# tied to the caller's API key — the `region` argument is deprecated and
+# should be omitted for new configurations.
+resource "newrelic_account_management" "default" {
+  name = "Sample Subaccount"
 }
 
 # The ID of the subaccount is specified in the configuration

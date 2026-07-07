@@ -73,9 +73,13 @@ func TestAccNewRelicAccountManagement_Import(t *testing.T) {
 		},
 	})
 }
+// TestAccNewRelicAccountManagementInvalidRegion verifies that the schema's
+// StringInSlice validator on `region` still catches typos, even though the
+// value itself is now silently ignored by the resource (see the deprecation
+// notice on the `region` argument).
 func TestAccNewRelicAccountManagementInvalidRegion(t *testing.T) {
 	rName := acctest.RandString(7)
-	expectedErrorMsg := regexp.MustCompile(`expected region to be one of \[us01 eu01\], got abcd01`)
+	expectedErrorMsg := regexp.MustCompile(`expected region to be one of.*got abcd01`)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheckEnvVars(t) },
 		Providers: testAccProviders,
@@ -88,45 +92,44 @@ func TestAccNewRelicAccountManagementInvalidRegion(t *testing.T) {
 		},
 	})
 }
-func TestAccNewRelicAccountManagementInCorrectRegion(t *testing.T) {
-	rName := acctest.RandString(7)
-	expectedErrorMsg := regexp.MustCompile(`An error occurred resolving this field|cannot create account -- no configured parent account`)
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckEnvVars(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			//create
-			{
-				Config:      testAccNewRelicAccountCreateConfigInCorrectRegion("Test " + rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
 
+// NOTE: `TestAccNewRelicAccountManagementInCorrectRegion` (which asserted
+// that supplying a `region` mismatched with the caller's organization region
+// caused an API error) was removed with the deprecation of the `regionCode`
+// argument. The provider no longer forwards `regionCode` to the API, so this
+// scenario is no longer reachable — the account is always created in the
+// region of the organization tied to the caller's API key, and any user-
+// supplied `region` value is silently ignored (with a Terraform deprecation
+// warning). See the #help-iam thread on 2026-07-06 for the upstream
+// deprecation context.
+
+// testAccNewRelicAccountImportConfig — `region` intentionally omitted; the
+// account is created in the region of the organization tied to the caller's
+// API key.
 func testAccNewRelicAccountImportConfig() string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo" {
-  name   = ""
-  region = "us01"
+  name = ""
 }
 `)
 }
 
+// testAccNewRelicAccountCreateConfig — `region` intentionally omitted; see
+// note on testAccNewRelicAccountImportConfig.
 func testAccNewRelicAccountCreateConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "us01"
+resource "newrelic_account_management" "foo" {
+  name = "%[1]s"
 }
 `, name)
 }
 
+// testAccNewRelicAccountUpdateConfig — `region` intentionally omitted; see
+// note on testAccNewRelicAccountImportConfig.
 func testAccNewRelicAccountUpdateConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "us01"
+resource "newrelic_account_management" "foo" {
+  name = "%[1]s"
 }
 `, name)
 }
@@ -196,20 +199,15 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 	}
 }
 
+// testAccNewRelicAccountCreateInvalidRegionConfig — exercises the schema's
+// StringInSlice validator by passing an obviously-invalid region string.
+// Even though `region` is deprecated/ignored, the validator still catches
+// typos at plan time.
 func testAccNewRelicAccountCreateInvalidRegionConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "abcd01"
-}
-`, name)
-}
-
-func testAccNewRelicAccountCreateConfigInCorrectRegion(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "eu01"
+resource "newrelic_account_management" "foo" {
+  name   = "%[1]s"
+  region = "abcd01"
 }
 `, name)
 }

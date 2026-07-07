@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -39,10 +40,20 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 				Required:    true,
 			},
 			NewRelicAccountManagementSchemaRegion: {
-				Type:         schema.TypeString,
-				Description:  "A description of what this parsing rule represents.",
-				ValidateFunc: validation.StringInSlice([]string{"us01", "eu01"}, false),
-				Required:     true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				Description: "DEPRECATED. The `region` (a.k.a. `regionCode`) argument is no longer meaningful: " +
+					"New Relic organizations are single-region, and the account is created in the region of the " +
+					"organization associated with the provided API key. This field will be removed in a future " +
+					"major release. Leave it unset unless you are managing one of the legacy multi-region " +
+					"organizations that are still being migrated.",
+				Deprecated: "The `regionCode` field on `accountManagementCreateAccount` has been deprecated " +
+					"upstream — organizations are now single-region and the region is determined by the org " +
+					"tied to the caller's credentials. Leave `region` unset for new configurations. See " +
+					"https://docs.newrelic.com/docs/accounts/accounts-billing/general-account-settings/regions-availability/ " +
+					"for regional org structure.",
+				ValidateFunc: validation.StringInSlice([]string{"", "jp01", "us01", "eu01"}, false),
 			},
 			NewRelicAccountManagementSchemaStatus: {
 				Type:        schema.TypeString,
@@ -61,9 +72,21 @@ func resourceNewRelicAccountCreate(ctx context.Context, d *schema.ResourceData, 
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
+	// `regionCode` is intentionally not passed to the API. Per the IAM team
+	// (Frank Treadwell, #help-iam thread on 2026-07-06), the `regionCode`
+	// field on `accountManagementCreateAccount` is deprecated — New Relic
+	// organizations are now single-region and the account is created in the
+	// region of the organization tied to the caller's credentials. The
+	// provider retains the `region` schema argument only for backward
+	// compatibility (terraform emits a deprecation warning when it's set).
+	if v := d.Get(NewRelicAccountManagementSchemaRegion).(string); v != "" {
+		log.Printf(
+			"[WARN] `region` argument on `newrelic_account_management` is deprecated and ignored (single-region orgs); the account will be created in the region of the organization associated with your API key. Ignored value: %q",
+			v,
+		)
+	}
 	createAccountInput := accountmanagement.AccountManagementCreateInput{
-		Name:       d.Get(NewRelicAccountManagementSchemaName).(string),
-		RegionCode: d.Get(NewRelicAccountManagementSchemaRegion).(string),
+		Name: d.Get(NewRelicAccountManagementSchemaName).(string),
 	}
 	created, err := client.AccountManagement.AccountManagementCreateAccount(createAccountInput)
 

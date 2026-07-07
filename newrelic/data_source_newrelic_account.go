@@ -23,9 +23,11 @@ func dataSourceNewRelicAccount() *schema.Resource {
 				ConflictsWith: []string{"account_id"},
 			},
 			NewRelicAccountManagementSchemaRegion: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The region code of the account (e.g., us01, eu01).",
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "The region code of the account, as reported by New Relic (e.g., " +
+					"`us01`, `eu01`, `jp01`). Read-only; used only to surface the region an account " +
+					"already lives in.",
 			},
 			"account_id": {
 				Type:          schema.TypeInt,
