@@ -1,3 +1,8 @@
+<a name="v3.94.2"></a>
+## [v3.94.2] - 2026-07-08
+### Bug Fixes
+- **security:** resolve 37 Dependabot alerts across go.mod and tools/go.mod ([#3126](https://github.com/newrelic/terraform-provider-newrelic/issues/3126))
+
 <a name="v3.94.1"></a>
 ## [v3.94.1] - 2026-07-07
 ### Bug Fixes
@@ -2348,13 +2353,13 @@ new synthetics resources use GraphQL API schema
 - prep for v2.x, isolate v1.x docs
 - DEPRECATION notice for 1.x
 - update index header with improved words
-- include v1 index.html in sidebar
+- update getting started guide to reference new material
 - update README with new pointers
 - tidy up after review
-- add table for current endpoint in use per resource
-- update getting started guide to reference new material
+- include v1 index.html in sidebar
 - add callout to top of each v1.x doc page
 - include documentation about upgrading the provider to 2.x
+- add table for current endpoint in use per resource
 - **alert_channel:** fix broken 'nested config' anchor link
 - **alerts:** update examples to reflect deprecation
 - **alerts:** update wording to avoid implementation details
@@ -2772,7 +2777,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.2...HEAD
+[v3.94.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.1...v3.94.2
 [v3.94.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.0...v3.94.1
 [v3.94.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...v3.94.0
 [v3.93.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...v3.93.2
