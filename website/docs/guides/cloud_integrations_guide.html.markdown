@@ -246,12 +246,15 @@ The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrati
 | `Dataflow` (supports 1m polling) | `Dataproc` (supports 1m polling) | `Datastore` |
 | `Firebase Database`    | `Firebase Hosting`        | `Firebase Storage`       |
 | `Firestore`            | `Cloud Functions`         | `Cloud Interconnect`     |
-| `Kubernetes Engine` (supports 1m polling) | `Cloud Load Balancing` (supports 1m polling) | `Memcache` |
+| `Kubernetes Engine` | `Cloud Load Balancing` (supports 1m polling) | `Memcache` |
 | `Cloud Pub/Sub` (supports 1m polling) | `Memorystore (Redis)` | `Cloud Router`     |
 | `Cloud Run`            | `Cloud Spanner` (supports 1m polling) | `Cloud SQL`     |
 | `Cloud Storage`        | `Virtual Machines`        | `VPC Access`             |
-| `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
-| `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only)* |                           |
+| `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only, metrics only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
+| `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only, metrics only)* | `Istio` *(metrics only)* |
+| `API Gateway`          |                           |                          |
+
+-> **NOTE:** Services marked *(supports 1m polling)* accept a `metrics_polling_interval` as low as **60 seconds**. This includes: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
 
 #### Prerequisites
 
@@ -412,38 +415,45 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
   account_id        = newrelic_cloud_gcp_dm_link_account.main.account_id
   linked_account_id = newrelic_cloud_gcp_dm_link_account.main.id
 
-  # Classic GCP services
-  app_engine       { metrics_polling_interval = var.metrics_polling_interval }
-  big_query        { metrics_polling_interval = var.metrics_polling_interval }
-  big_table        { metrics_polling_interval = var.metrics_polling_interval }
-  composer         { metrics_polling_interval = var.metrics_polling_interval }
-  data_flow        { metrics_polling_interval = var.metrics_polling_interval }
-  data_proc        { metrics_polling_interval = var.metrics_polling_interval }
-  data_store       { metrics_polling_interval = var.metrics_polling_interval }
-  firebase_hosting { metrics_polling_interval = var.metrics_polling_interval }
-  firebase_storage { metrics_polling_interval = var.metrics_polling_interval }
-  firestore        { metrics_polling_interval = var.metrics_polling_interval }
-  functions        { metrics_polling_interval = var.metrics_polling_interval }
-  interconnect     { metrics_polling_interval = var.metrics_polling_interval }
-  kubernetes       { metrics_polling_interval = var.metrics_polling_interval }
-  load_balancing   { metrics_polling_interval = var.metrics_polling_interval }
-  mem_cache        { metrics_polling_interval = var.metrics_polling_interval }
-  pub_sub          { metrics_polling_interval = var.metrics_polling_interval }
-  redis            { metrics_polling_interval = var.metrics_polling_interval }
-  router           { metrics_polling_interval = var.metrics_polling_interval }
-  run              { metrics_polling_interval = var.metrics_polling_interval }
-  spanner          { metrics_polling_interval = var.metrics_polling_interval }
-  sql              { metrics_polling_interval = var.metrics_polling_interval }
-  storage          { metrics_polling_interval = var.metrics_polling_interval }
-  virtual_machines { metrics_polling_interval = var.metrics_polling_interval }
-  vpc_access       { metrics_polling_interval = var.metrics_polling_interval }
+  # All GCP services (300 s minimum for most; 60 s minimum for LP services — see note below)
+  # LP services (support metrics_polling_interval = 60): alloy_db, big_query, data_flow,
+  # data_proc, load_balancing, managed_kafka, pub_sub, spanner
+  ai_platform       { metrics_polling_interval = var.metrics_polling_interval }
+  alloy_db          { metrics_polling_interval = var.metrics_polling_interval }
+  api_gateway       { metrics_polling_interval = var.metrics_polling_interval }
+  app_engine        { metrics_polling_interval = var.metrics_polling_interval }
+  big_query         { metrics_polling_interval = var.metrics_polling_interval }
+  big_table         { metrics_polling_interval = var.metrics_polling_interval }
+  composer          { metrics_polling_interval = var.metrics_polling_interval }
+  data_flow         { metrics_polling_interval = var.metrics_polling_interval }
+  data_proc         { metrics_polling_interval = var.metrics_polling_interval }
+  data_store        { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_database { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_hosting  { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_storage  { metrics_polling_interval = var.metrics_polling_interval }
+  firestore         { metrics_polling_interval = var.metrics_polling_interval }
+  functions         { metrics_polling_interval = var.metrics_polling_interval }
+  interconnect      { metrics_polling_interval = var.metrics_polling_interval }
+  istio             { metrics_polling_interval = var.metrics_polling_interval }  # metrics only
+  kubernetes        { metrics_polling_interval = var.metrics_polling_interval }
+  load_balancing    { metrics_polling_interval = var.metrics_polling_interval }
+  mem_cache         { metrics_polling_interval = var.metrics_polling_interval }
+  pub_sub           { metrics_polling_interval = var.metrics_polling_interval }
+  redis             { metrics_polling_interval = var.metrics_polling_interval }
+  router            { metrics_polling_interval = var.metrics_polling_interval }
+  run               { metrics_polling_interval = var.metrics_polling_interval }
+  spanner           { metrics_polling_interval = var.metrics_polling_interval }
+  sql               { metrics_polling_interval = var.metrics_polling_interval }
+  storage           { metrics_polling_interval = var.metrics_polling_interval }
+  virtual_machines  { metrics_polling_interval = var.metrics_polling_interval }
+  vpc_access        { metrics_polling_interval = var.metrics_polling_interval }
 
   # GCP Dimensional Metrics-only services
+  firebase_app_hosting { metrics_polling_interval = var.metrics_polling_interval }  # metrics only
   firebase_auth        { metrics_polling_interval = var.metrics_polling_interval }
-  firebase_vertex_ai   { metrics_polling_interval = var.metrics_polling_interval }
+  firebase_vertex_ai   { metrics_polling_interval = var.metrics_polling_interval }  # metrics only
   managed_kafka        { metrics_polling_interval = var.metrics_polling_interval }
   memory_store         { metrics_polling_interval = var.metrics_polling_interval }
-  firebase_app_hosting { metrics_polling_interval = var.metrics_polling_interval }
 }
 
 # ── Outputs ────────────────────────────────────────────────────────────────────
