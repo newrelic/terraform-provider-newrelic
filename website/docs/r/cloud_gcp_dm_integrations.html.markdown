@@ -58,14 +58,14 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 
   # Low-polling (LP) services — support a 60 s minimum polling interval
   alloy_db       { metrics_polling_interval = 60 }
-  big_query      { metrics_polling_interval = 60; fetch_tags = true }
+  big_query      { metrics_polling_interval = 60 }
   data_flow      { metrics_polling_interval = 60 }
   data_proc      { metrics_polling_interval = 60 }
   load_balancing { metrics_polling_interval = 60 }
   managed_kafka  { metrics_polling_interval = 60 }
-  pub_sub        { metrics_polling_interval = 60; fetch_tags = true }
-  spanner        { metrics_polling_interval = 60; fetch_tags = true }
-  storage        { metrics_polling_interval = 300; fetch_tags = true }
+  pub_sub        { metrics_polling_interval = 60 }
+  spanner        { metrics_polling_interval = 60 }
+  storage        { metrics_polling_interval = 300 }
 }
 ```
 
@@ -99,7 +99,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 * `router` - (Optional) Cloud Router integration. See [Integration blocks](#integration-blocks) below.
 * `run` - (Optional) Cloud Run integration. See [Integration blocks](#integration-blocks) below.
 * `sql` - (Optional) Cloud SQL integration. See [Integration blocks](#integration-blocks) below.
-* `storage` - (Optional) Cloud Storage integration. Supports `fetch_tags`. See [Integration blocks](#integration-blocks) below.
+* `storage` - (Optional) Cloud Storage integration. See [Integration blocks](#integration-blocks) below.
 * `virtual_machines` - (Optional) Compute Engine (virtual machines) integration. See [Integration blocks](#integration-blocks) below.
 * `vpc_access` - (Optional) VPC Access integration. See [Integration blocks](#integration-blocks) below.
 * `firebase_app_hosting` - (Optional) Firebase App Hosting integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
@@ -110,24 +110,19 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 The following services support a lower polling floor of **60 seconds**. Set `metrics_polling_interval = 60` to reduce metric latency for these services.
 
 * `alloy_db` - (Optional) AlloyDB integration. See [Integration blocks](#integration-blocks) below.
-* `big_query` - (Optional) BigQuery integration. Supports `fetch_tags`. See [Integration blocks](#integration-blocks) below.
+* `big_query` - (Optional) BigQuery integration. See [Integration blocks](#integration-blocks) below.
 * `data_flow` - (Optional) Dataflow integration. See [Integration blocks](#integration-blocks) below.
 * `data_proc` - (Optional) Dataproc integration. See [Integration blocks](#integration-blocks) below.
 * `load_balancing` - (Optional) Cloud Load Balancing integration. See [Integration blocks](#integration-blocks) below.
 * `managed_kafka` - (Optional) Managed Apache Kafka integration. See [Integration blocks](#integration-blocks) below.
-* `pub_sub` - (Optional) Cloud Pub/Sub integration. Supports `fetch_tags`. See [Integration blocks](#integration-blocks) below.
-* `spanner` - (Optional) Cloud Spanner integration. Supports `fetch_tags`. See [Integration blocks](#integration-blocks) below.
+* `pub_sub` - (Optional) Cloud Pub/Sub integration. See [Integration blocks](#integration-blocks) below.
+* `spanner` - (Optional) Cloud Spanner integration. See [Integration blocks](#integration-blocks) below.
 
 ### Integration blocks
 
 All integration blocks support the following argument:
 
 * `metrics_polling_interval` - (Optional) How often New Relic polls the service for metrics, **in seconds**. Minimum values: **60 s** for LP services (`alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, `spanner`); **300 s** for all other services.
-
-The following integration blocks additionally support:
-
-* `big_query`, `pub_sub`, `spanner`, `storage`
-  * `fetch_tags` - (Optional) When `true`, New Relic also collects resource labels and extended inventory for the service. May increase data collection time and contribute to GCP API rate limits.
 
 ## Attributes Reference
 
