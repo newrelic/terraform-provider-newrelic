@@ -16,6 +16,12 @@ data_source_newrelic_alert_policy.go:
 data_source_newrelic_alert_policy_test.go:
   test: true
   product_mapping: ALERTS
+data_source_newrelic_api_access_key.go:
+  test: false
+  product_mapping: APIKS
+data_source_newrelic_api_access_key_test.go:
+  test: true
+  product_mapping: APIKS
 data_source_newrelic_application.go:
   test: false
   product_mapping: APM
@@ -633,4 +639,7 @@ structures_newrelic_workflow_test.go:
   product_mapping: WORKFLOW_INTEGRATIONS
 structures_newrelic_workload.go:
   test: false
+  product_mapping: WORKLOADS
+structures_newrelic_workload_test.go:
+  test: true
   product_mapping: WORKLOADS

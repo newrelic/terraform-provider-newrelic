@@ -1,6 +1,8 @@
 package newrelic
 
 import (
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/workloads"
@@ -36,6 +38,14 @@ func expandWorkloadCreateInput(d *schema.ResourceData) workloads.WorkloadCreateI
 		createInput.StatusConfig.Automatic = expandWorkloadStatusConfigAutomaticInput(e.(*schema.Set).List())
 	}
 
+	if e, ok := d.GetOk("dynamic_flows"); ok {
+		createInput.DynamicFlows = expandWorkloadDynamicFlowInputs(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("status_config_alert_policy"); ok {
+		createInput.StatusConfig.AlertPolicy = expandWorkloadAlertPolicyInput(e.(*schema.Set).List())
+	}
+
 	return createInput
 }
 
@@ -68,6 +78,14 @@ func expandWorkloadUpdateInput(d *schema.ResourceData) workloads.WorkloadUpdateI
 
 	if e, ok := d.GetOk("status_config_automatic"); ok {
 		updateInput.StatusConfig.Automatic = expandWorkloadStatusConfigUpdateAutomaticInput(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("dynamic_flows"); ok {
+		updateInput.DynamicFlows = expandWorkloadUpdateDynamicFlowInputs(e.(*schema.Set).List())
+	}
+
+	if e, ok := d.GetOk("status_config_alert_policy"); ok {
+		updateInput.StatusConfig.AlertPolicy = expandWorkloadUpdateAlertPolicyInput(e.(*schema.Set).List())
 	}
 
 	return updateInput
@@ -107,7 +125,7 @@ func expandWorkloadEntitySearchQueryInput(cfg map[string]interface{}) workloads.
 	queryInput := workloads.WorkloadEntitySearchQueryInput{}
 
 	if query, ok := cfg["query"]; ok {
-		queryInput.Query = query.(string)
+		queryInput.Query = formatEntitySearchQueryTags(query.(string))
 	}
 
 	return queryInput
@@ -144,7 +162,7 @@ func expandWorkloadUpdateCollectionEntitySearchQueryInput(cfg map[string]interfa
 	queryInput := workloads.WorkloadUpdateCollectionEntitySearchQueryInput{}
 
 	if query, ok := cfg["query"]; ok {
-		queryInput.Query = query.(string)
+		queryInput.Query = formatEntitySearchQueryTags(query.(string))
 	}
 
 	return queryInput
@@ -402,6 +420,18 @@ func flattenWorkload(workload *workloads.WorkloadCollection, d *schema.ResourceD
 		}
 	}
 
+	if len(workload.DynamicFlows) > 0 {
+		if err := d.Set("dynamic_flows", flattenWorkloadDynamicFlows(workload.DynamicFlows)); err != nil {
+			return err
+		}
+	}
+
+	if v, ok := d.GetOk("status_config_alert_policy"); (ok && v.(*schema.Set).Len() > 0) || workload.StatusConfig.AlertPolicy.Enabled {
+		if err := d.Set("status_config_alert_policy", flattenWorkloadAlertPolicy(workload.StatusConfig.AlertPolicy)); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -442,4 +472,107 @@ func flattenWorkloadEntitySearchQueries(in []workloads.WorkloadEntitySearchQuery
 		out[i] = m
 	}
 	return out
+}
+
+func formatEntitySearchQueryTags(query string) string {
+	tagPattern := regexp.MustCompile(`tags(?:\.[a-zA-Z_][a-zA-Z0-9_]*)+`)
+
+	result := query
+	offset := 0
+
+	matches := tagPattern.FindAllStringIndex(query, -1)
+	for _, match := range matches {
+		start := match[0] + offset
+		end := match[1] + offset
+		alreadyBackticked := false
+		if start > 0 && result[start-1] == '`' {
+			alreadyBackticked = true
+		}
+		if !alreadyBackticked && end < len(result) && result[end] == '`' {
+			alreadyBackticked = true
+		}
+
+		if !alreadyBackticked {
+			tagText := result[start:end]
+			wrapped := "`" + tagText + "`"
+			result = result[:start] + wrapped + result[end:]
+			offset += 2
+		}
+	}
+	return result
+}
+
+// expandWorkloadDynamicFlowInputs converts Terraform schema list to WorkloadDynamicFlowInput slice for create.
+func expandWorkloadDynamicFlowInputs(cfg []interface{}) []workloads.WorkloadDynamicFlowInput {
+	if len(cfg) == 0 {
+		return []workloads.WorkloadDynamicFlowInput{}
+	}
+
+	out := make([]workloads.WorkloadDynamicFlowInput, len(cfg))
+	for i, raw := range cfg {
+		m := raw.(map[string]interface{})
+		out[i] = workloads.WorkloadDynamicFlowInput{
+			EntityGUID:      common.EntityGUID(m["entity_guid"].(string)),
+			TransactionName: m["transaction_name"].(string),
+		}
+	}
+	return out
+}
+
+// expandWorkloadUpdateDynamicFlowInputs converts Terraform schema list to WorkloadDynamicFlowInput slice for update.
+func expandWorkloadUpdateDynamicFlowInputs(cfg []interface{}) []workloads.WorkloadDynamicFlowInput {
+	if len(cfg) == 0 {
+		return []workloads.WorkloadDynamicFlowInput{}
+	}
+
+	out := make([]workloads.WorkloadDynamicFlowInput, len(cfg))
+	for i, raw := range cfg {
+		m := raw.(map[string]interface{})
+		out[i] = workloads.WorkloadDynamicFlowInput{
+			EntityGUID:      common.EntityGUID(m["entity_guid"].(string)),
+			TransactionName: m["transaction_name"].(string),
+		}
+	}
+	return out
+}
+
+// flattenWorkloadDynamicFlows converts a WorkloadDynamicFlow slice to Terraform schema list.
+func flattenWorkloadDynamicFlows(in []workloads.WorkloadDynamicFlow) []interface{} {
+	out := make([]interface{}, len(in))
+	for i, e := range in {
+		m := make(map[string]interface{})
+		m["entity_guid"] = string(e.EntityGUID)
+		m["transaction_name"] = e.TransactionName
+		out[i] = m
+	}
+	return out
+}
+
+// expandWorkloadAlertPolicyInput converts Terraform schema set to WorkloadAlertPolicyInput for create.
+func expandWorkloadAlertPolicyInput(cfg []interface{}) *workloads.WorkloadAlertPolicyInput {
+	if len(cfg) == 0 {
+		return nil
+	}
+	m := cfg[0].(map[string]interface{})
+	return &workloads.WorkloadAlertPolicyInput{
+		Enabled: m["enabled"].(bool),
+	}
+}
+
+// expandWorkloadUpdateAlertPolicyInput converts Terraform schema set to WorkloadAlertPolicyInput for update.
+func expandWorkloadUpdateAlertPolicyInput(cfg []interface{}) *workloads.WorkloadAlertPolicyInput {
+	if len(cfg) == 0 {
+		return nil
+	}
+	m := cfg[0].(map[string]interface{})
+	return &workloads.WorkloadAlertPolicyInput{
+		Enabled: m["enabled"].(bool),
+	}
+}
+
+// flattenWorkloadAlertPolicy converts a WorkloadAlertPolicyStatus to Terraform schema list.
+func flattenWorkloadAlertPolicy(in workloads.WorkloadAlertPolicyStatus) []interface{} {
+	m := make(map[string]interface{})
+	m["enabled"] = in.Enabled
+	return []interface{}{m}
 }
