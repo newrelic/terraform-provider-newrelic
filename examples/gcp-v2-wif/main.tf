@@ -4,8 +4,8 @@
 # designated SA project and binds IAM at the folder level so every project
 # under that folder is covered without per-project changes.
 #
-# All 34 GCP services are enabled.  The following services are in Limited Preview (LP)
-# and are set to 60 s to demonstrate minimum-interval polling; the rest run at 300 s:
+# All 34 GCP services are enabled.  1-minute polling is in Limited Preview (LP)
+# and available only for select services; those are set to 60 s below, the rest run at 300 s:
 #   alloy_db, big_query, data_flow, data_proc, load_balancing,
 #   managed_kafka, pub_sub, spanner
 
@@ -116,7 +116,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "this" {
 }
 
 # ── New Relic: Enable all GCP integrations ────────────────────────────────────
-# LP = Limited Preview (these services are in LP and also support a 60 s minimum).
+# LP = 1-minute polling is in Limited Preview for these services.
 
 resource "newrelic_cloud_gcp_dm_integrations" "this" {
   for_each = newrelic_cloud_gcp_dm_link_account.this
@@ -205,7 +205,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     metrics_polling_interval = 300
   }
 
-  # ── 60 s services (LP = Limited Preview) ─────────────────────────────────────
+  # ── 60 s services (LP: 1-minute polling in Limited Preview) ──────────────────
   alloy_db {
     metrics_polling_interval = 60
   }

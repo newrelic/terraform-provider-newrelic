@@ -133,7 +133,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
   linked_account_id = tonumber(each.value.id)
 
   # All services use metrics_polling_interval (default 300 s / 5 min).
-  # The following services are in Limited Preview (LP) and also support 60 s / 1 min polling:
+  # 1-minute polling is in Limited Preview (LP) for the following services:
   #   alloy_db, big_query, data_flow, data_proc, load_balancing,
   #   managed_kafka, pub_sub, spanner
   # To enable 1-minute polling for those services, set:
