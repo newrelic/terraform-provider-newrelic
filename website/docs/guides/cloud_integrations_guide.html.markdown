@@ -254,7 +254,7 @@ The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrati
 | `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only, metrics only)* | `Istio` *(metrics only)* |
 | `API Gateway` *(DM only)* |                           |                          |
 
--> **NOTE:** Services marked *(supports 1m polling)* are Limited Preview (LP) services that accept a `metrics_polling_interval` as low as **60 seconds**. This includes: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(DM only)* are only available in the Dimensional Metrics integration. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
+-> **NOTE:** Services marked *(supports 1m polling)* are currently in **Limited Preview (LP)** and support a `metrics_polling_interval` as low as **60 seconds** (in addition to the standard 300-second interval). This includes: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(DM only)* are only available in the Dimensional Metrics integration. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
 
 #### Prerequisites
 
@@ -415,9 +415,9 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
   account_id        = newrelic_cloud_gcp_dm_link_account.main.account_id
   linked_account_id = newrelic_cloud_gcp_dm_link_account.main.id
 
-  # All GCP services (300 s minimum for most; 60 s minimum for Limited Preview (LP) services — see note below)
-  # LP (Limited Preview) services (support metrics_polling_interval = 60): alloy_db, big_query,
-  # data_flow, data_proc, load_balancing, managed_kafka, pub_sub, spanner
+  # All GCP services default to 300 s polling. Services in Limited Preview (LP) also support 60 s.
+  # LP services (alloy_db, big_query, data_flow, data_proc, load_balancing, managed_kafka, pub_sub, spanner)
+  # can use metrics_polling_interval = 60 for lower latency.
   ai_platform       { metrics_polling_interval = var.metrics_polling_interval }
   alloy_db          { metrics_polling_interval = var.metrics_polling_interval }
   api_gateway       { metrics_polling_interval = var.metrics_polling_interval }  # DM only

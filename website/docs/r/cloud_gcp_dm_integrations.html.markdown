@@ -56,7 +56,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
   firebase_app_hosting { metrics_polling_interval = 300 }
   firebase_vertex_ai   { metrics_polling_interval = 300 }
 
-  # Limited Preview (LP) services — support a 60 s minimum polling interval
+  # Limited Preview (LP) services — also support a 60 s minimum polling interval
   alloy_db       { metrics_polling_interval = 60 }
   big_query      { metrics_polling_interval = 60 }
   data_flow      { metrics_polling_interval = 60 }
@@ -105,9 +105,9 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 * `firebase_app_hosting` - (Optional) Firebase App Hosting integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 * `firebase_vertex_ai` - (Optional) Firebase Vertex AI integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 
-### Limited Preview (LP) services (60 s minimum `metrics_polling_interval`)
+### Limited Preview (LP) services
 
-The following services are in Limited Preview and support a lower polling floor of **60 seconds**. Set `metrics_polling_interval = 60` to reduce metric latency for these services.
+The following services are currently in **Limited Preview**. In addition to the standard 300-second interval, LP services also support a polling floor as low as **60 seconds**. Set `metrics_polling_interval = 60` to reduce metric latency for these services.
 
 * `alloy_db` - (Optional) AlloyDB integration. See [Integration blocks](#integration-blocks) below.
 * `big_query` - (Optional) BigQuery integration. See [Integration blocks](#integration-blocks) below.
@@ -122,7 +122,7 @@ The following services are in Limited Preview and support a lower polling floor 
 
 All integration blocks support the following argument:
 
-* `metrics_polling_interval` - (Optional) How often New Relic polls the service for metrics, **in seconds**. Minimum values: **60 s** for Limited Preview (LP) services (`alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, `spanner`); **300 s** for all other services.
+* `metrics_polling_interval` - (Optional) How often New Relic polls the service for metrics, **in seconds**. Minimum values: **60 s** for LP services (`alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, `spanner`); **300 s** for all other services. LP services also accept the standard **300 s** interval.
 
 ## Attributes Reference
 
