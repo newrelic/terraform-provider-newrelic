@@ -65,7 +65,7 @@ resource "google_service_account" "newrelic" {
 # gcp_projects without per-project IAM changes when new projects are added.
 resource "google_folder_iam_member" "newrelic_monitoring_viewer" {
   folder = "folders/${var.gcp_folder_id}"
-  role   = "roles/monitoring.viewer"
+  role   = "roles/viewer"
   member = google_service_account.newrelic.member
 }
 

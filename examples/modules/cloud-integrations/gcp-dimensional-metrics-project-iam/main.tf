@@ -66,7 +66,7 @@ resource "google_service_account" "newrelic" {
 resource "google_project_iam_member" "newrelic_monitoring_viewer" {
   for_each = var.gcp_projects
   project  = each.value
-  role     = "roles/monitoring.viewer"
+  role     = "roles/viewer"
   member   = google_service_account.newrelic.member
 }
 

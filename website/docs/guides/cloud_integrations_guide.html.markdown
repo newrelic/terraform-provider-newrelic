@@ -235,7 +235,7 @@ GCP Dimensional Metrics (`gcp_dm`) is the next-generation GCP integration in New
 
 * **Keyless authentication** — credentials are issued on-demand via WIF; no JSON key file is created or managed.
 * **Expanded service coverage** — includes all services from the classic integration plus GCP Dimensional Metrics-only services such as Firebase Authentication, Firebase Vertex AI, Managed Apache Kafka, Memorystore, and Firebase App Hosting.
-* **Four GCP roles required** on the service account: `roles/monitoring.viewer` (metrics), `roles/serviceusage.serviceUsageConsumer` (API quota), `roles/cloudasset.viewer` (resource discovery via Cloud Asset APIs), and `roles/resourcemanager.folderViewer` (folder-level resource discovery — must be granted at the **folder** level, not project level).
+* **Four GCP roles required** on the service account: `roles/viewer` (read access), `roles/serviceusage.serviceUsageConsumer` (API quota), `roles/cloudasset.viewer` (resource discovery via Cloud Asset APIs), and `roles/resourcemanager.folderViewer` (folder-level resource discovery — must be granted at the **folder** level, not project level).
 
 The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrations` resource:
 
@@ -262,7 +262,7 @@ Before linking the GCP project to New Relic, you must create the following GCP i
 
 1. A **Workload Identity Pool** configured with New Relic's OIDC issuer URI.
 2. An **OIDC provider** inside the pool with `allowed_audiences = ["newrelic-gcp-integrations"]` and an `attribute_condition` restricting tokens to your specific New Relic account ID.
-3. A **GCP service account** granted `roles/monitoring.viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **folder** level.
+3. A **GCP service account** granted `roles/viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **folder** level.
 4. A `roles/iam.workloadIdentityUser` binding on the service account scoped to the WIF pool using the `attribute.nr_account_id` attribute (not the wildcard `/*` form).
 
 The OIDC issuer URI is region-specific:
@@ -352,10 +352,10 @@ resource "google_service_account" "newrelic" {
   description  = "Impersonated by New Relic via WIF to collect GCP metrics"
 }
 
-# Metrics collection
+# Read access (metrics collection)
 resource "google_project_iam_member" "newrelic_viewer" {
   project = var.gcp_project_id
-  role    = "roles/monitoring.viewer"
+  role    = "roles/viewer"
   member  = "serviceAccount:${google_service_account.newrelic.email}"
 }
 

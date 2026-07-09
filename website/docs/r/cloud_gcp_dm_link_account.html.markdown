@@ -17,7 +17,7 @@ Before applying this resource you must create the following GCP infrastructure:
 1. A **Workload Identity Pool** with New Relic's OIDC issuer URI as the provider.
 2. An **OIDC provider** inside the pool with `allowed_audiences = ["newrelic-gcp-integrations"]` and an `attribute_condition` restricting tokens to your New Relic account ID.
 3. A **GCP service account** granted the four required roles:
-   - `roles/monitoring.viewer` — metrics collection
+   - `roles/viewer` — read access
    - `roles/serviceusage.serviceUsageConsumer` — API quota
    - `roles/cloudasset.viewer` — resource discovery
    - `roles/resourcemanager.folderViewer` — folder-level resource discovery (**must be granted at the folder level**, not the project level)
