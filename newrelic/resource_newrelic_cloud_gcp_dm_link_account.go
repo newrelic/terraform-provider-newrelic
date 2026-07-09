@@ -91,7 +91,7 @@ func resourceNewRelicCloudGcpDmLinkAccount() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 				Description: "The GCP service account email that New Relic will impersonate to collect metrics. " +
-					"The service account must have the monitoring.viewer (and optionally " +
+					"The service account must have the viewer (and optionally " +
 					"serviceusage.serviceUsageConsumer) role and must grant the WIF pool the " +
 					"roles/iam.workloadIdentityUser binding.",
 			},
