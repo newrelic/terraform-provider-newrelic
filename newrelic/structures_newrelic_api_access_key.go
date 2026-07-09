@@ -55,11 +55,6 @@ var ResourceNewRelicAPIAccessKeyAttributeLabels = struct {
 func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var errorsList []error
 
-	accountIDInConfiguration := getAPIAccessKeyAttributeValueFromConfiguration(
-		d,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.AccountID,
-	)
-
 	keyTypeInConfiguration := getAPIAccessKeyAttributeValueFromConfiguration(
 		d,
 		ResourceNewRelicAPIAccessKeyAttributeLabels.KeyType,
@@ -70,15 +65,18 @@ func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff,
 		ResourceNewRelicAPIAccessKeyAttributeLabels.IngestType,
 	)
 
-	userIDInConfiguration := getAPIAccessKeyAttributeValueFromConfiguration(
-		d,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.UserID,
-	)
-
 	// this is not needed since the attribute is required in the schema
 	// however, this is being added as a double check, if the attribute were to support some sort of defaulting in the future
-	// so the author would need to disable this check too, which would be a conscious decision
-	if accountIDInConfiguration == 0 {
+	// so the author would need to disable this check too, which would be a conscious decision.
+	//
+	// Use the raw cty value here rather than the plan-time int value: when the config
+	// wires account_id from another resource that has not been applied yet (e.g.
+	// `account_id = newrelic_account_management.this.id`), d.GetChange returns the int
+	// zero value and this check would falsely trip. The raw value is only "null" when
+	// the attribute is truly absent from the configuration; an unknown (known-after-apply)
+	// value is neither null nor zero and is skipped here so it can be validated when it
+	// materialises during apply.
+	if d.GetRawConfig().GetAttr(ResourceNewRelicAPIAccessKeyAttributeLabels.AccountID).IsNull() {
 		errorsList = append(errorsList, fmt.Errorf("the `account_id` attribute is required, please specify a non-null account ID"))
 	}
 
@@ -103,7 +101,9 @@ func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff,
 		if !d.GetRawConfig().GetAttr(ResourceNewRelicAPIAccessKeyAttributeLabels.IngestType).IsNull() {
 			errorsList = append(errorsList, fmt.Errorf("the `ingest_type` attribute cannot be set when `key_type` is set to USER, please remove the `ingest_type` attribute from the configuration, or change `key_type` to INGEST"))
 		}
-		if userIDInConfiguration == 0 {
+		// Same reasoning as for account_id above: check the raw cty null-ness so a
+		// known-after-apply user_id reference does not trip this at plan time.
+		if d.GetRawConfig().GetAttr(ResourceNewRelicAPIAccessKeyAttributeLabels.UserID).IsNull() {
 			errorsList = append(errorsList, fmt.Errorf("the `user_id` attribute is required when `key_type` is set to USER, please specify a valid user ID"))
 		}
 	}
@@ -112,7 +112,7 @@ func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff,
 		return nil
 	}
 
-	errorsString := "the following validation errors have been identified with the configuration of the synthetic monitor: \n"
+	errorsString := "the following validation errors have been identified with the configuration of the API access key resource: \n"
 
 	for index, val := range errorsList {
 		errorsString += fmt.Sprintf("(%d): %s\n", index+1, val)
