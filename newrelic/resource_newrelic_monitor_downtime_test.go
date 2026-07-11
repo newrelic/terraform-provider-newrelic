@@ -214,6 +214,36 @@ func TestAccNewRelicMonitorDowntime_Monthly_IncorrectConfig(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicMonitorDowntime_ImportNotFound verifies the read path returns
+// a normal Terraform diagnostic when NerdGraph cannot resolve the GUID,
+// instead of panicking the plugin (issue #3117). The pre-fix behavior was an
+// unguarded type assertion on the nil entity, followed by log.Fatalf on the
+// retry timeout — both of which Terraform reports as opaque "Plugin did not
+// respond" crashes.
+func TestAccNewRelicMonitorDowntime_ImportNotFound(t *testing.T) {
+	// A syntactically valid but unallocated MONITOR_DOWNTIME GUID. NerdGraph
+	// returns entity=null for this, which used to trip the unguarded type
+	// assertion in resourceNewRelicMonitorDowntimeRead.
+	const ghostGUID = "MzgwNjUyNnxTWU5USHxNT05JVE9SX0RPV05USU1FfDAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMA=="
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:        testAccCheckNewRelicMonitorDowntime_OnceConfiguration(fmt.Sprintf("%s-import-missing", resourceName), SyntheticsMonitorDowntimeModes.OneTime),
+				ResourceName:  "newrelic_monitor_downtime.foo",
+				ImportState:   true,
+				ImportStateId: ghostGUID,
+				// The retry surfaces this exact prefix; the assertion is that we
+				// get *any* diagnostic at all — the regression was the framework
+				// reporting a plugin crash with no usable error to match against.
+				ExpectError: regexp.MustCompile(`error reading monitor downtime`),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicMonitorDowntimeExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]

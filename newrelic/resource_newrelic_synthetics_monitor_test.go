@@ -71,61 +71,61 @@ func testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationError(name str
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
 		status           = "ENABLED"
-		name             = "%s"
+		name             = "%[1]s"
 		period           = "EVERY_MINUTE"
 		uri              = "https://www.one.newrelic.com"
-		type             = "%s"
+		type             = "%[2]s"
 		locations_public = ["AP_SOUTH_1"]
-	  
+
 		custom_header {
 		  name  = "Name"
 		  value = "browserMonitor"
 		}
-	  
+
 		enable_screenshot_on_failure_and_script = true
 		validation_string                       = "success"
 		verify_ssl                              = true
-		runtime_type_version                    = "100"
-		runtime_type                            = "CHROME_BROWSER"
+		runtime_type_version                    = "%[4]s"
+		runtime_type                            = "%[3]s"
 		script_language                         = "JAVASCRIPT"
 		device_orientation                      = "LANDSCAPE"
-	  
+
 		tag {
 			key    = "butterscotch"
 			values = ["cake"]
 		}
-}`, name, monitorType)
+}`, name, monitorType, SyntheticsChromeBrowserRuntimeType, SyntheticsChromeBrowserNewRuntimeTypeVersion)
 }
 
 func testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulation(name string, monitorType string) string {
 	return fmt.Sprintf(`
 	resource "newrelic_synthetics_monitor" "foo" {
 		status           = "ENABLED"
-		name             = "%s"
+		name             = "%[1]s"
 		period           = "EVERY_MINUTE"
 		uri              = "https://www.one.newrelic.com"
-		type             = "%s"
+		type             = "%[2]s"
 		locations_public = ["AP_SOUTH_1"]
-	  
+
 		custom_header {
 		  name  = "Name"
 		  value = "browserMonitor"
 		}
-	  
+
 		enable_screenshot_on_failure_and_script = true
 		validation_string                       = "success"
 		verify_ssl                              = true
-		runtime_type_version                    = "100"
-		runtime_type                            = "CHROME_BROWSER"
+		runtime_type_version                    = "%[4]s"
+		runtime_type                            = "%[3]s"
 		script_language                         = "JAVASCRIPT"
 		device_orientation                      = "LANDSCAPE"
 		device_type								= "MOBILE"
-	  
+
 		tag {
 			key    = "butterscotch"
 			values = ["cake"]
 		}
-}`, name, monitorType)
+}`, name, monitorType, SyntheticsChromeBrowserRuntimeType, SyntheticsChromeBrowserNewRuntimeTypeVersion)
 }
 
 func testAccNewRelicSyntheticsBrowserMonitorConfig_DeviceEmulationLegacyRuntimeError(name string, monitorType string) string {
@@ -320,15 +320,15 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfig(name string, monitorTyp
 		validation_string	=	"success"
 		verify_ssl	=	true
 		locations_public	=	["AP_SOUTH_1"]
-		name	=	"%s"
+		name	=	"%[1]s"
 		period	=	"EVERY_MINUTE"
-		runtime_type_version	=	"100"
-		runtime_type	=	"CHROME_BROWSER"
+		runtime_type_version	=	"%[4]s"
+		runtime_type	=	"%[3]s"
 		script_language	=	"JAVASCRIPT"
 		status	=	"ENABLED"
-		type	=	"%s"
+		type	=	"%[2]s"
 		uri	=	"https://www.one.newrelic.com"
-	}`, name, monitorType)
+	}`, name, monitorType, SyntheticsChromeBrowserRuntimeType, SyntheticsChromeBrowserNewRuntimeTypeVersion)
 }
 
 func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, monitorType string) string {
@@ -344,15 +344,15 @@ func testAccNewRelicSyntheticsSimpleBrowserMonitorConfigUpdated(name string, mon
 			validation_string	=	"success"
 			verify_ssl	=	false
 			locations_public	=	["AP_SOUTH_1","AP_EAST_1"]
-			name	=	"%s-Updated"
+			name	=	"%[1]s-Updated"
 			period	=	"EVERY_5_MINUTES"
-			runtime_type_version	=	"100"
-			runtime_type	=	"CHROME_BROWSER"
+			runtime_type_version	=	"%[4]s"
+			runtime_type	=	"%[3]s"
 			script_language	=	"JAVASCRIPT"
 			status	=	"DISABLED"
-			type	=	"%s"
+			type	=	"%[2]s"
 			uri	=	"https://www.one.newrelic.com"
-		}`, name, monitorType)
+		}`, name, monitorType, SyntheticsChromeBrowserRuntimeType, SyntheticsChromeBrowserNewRuntimeTypeVersion)
 }
 
 func testAccCheckNewRelicSyntheticsMonitorExists(n string) resource.TestCheckFunc {
@@ -435,8 +435,8 @@ func TestSyntheticsSimpleBrowserMonitor_PeriodInMinutes(t *testing.T) {
 		// Simple Browser Monitors also seem to have the API return an error when no runtime
 		// is specified; updated the test accordingly, after the Legacy Runtime EOL.
 		Runtime: &synthetics.SyntheticsRuntimeInput{
-			RuntimeType:        "CHROME_BROWSER",
-			RuntimeTypeVersion: "100",
+			RuntimeType:        SyntheticsChromeBrowserRuntimeType,
+			RuntimeTypeVersion: synthetics.SemVer(SyntheticsChromeBrowserNewRuntimeTypeVersion),
 			ScriptLanguage:     "JAVASCRIPT",
 		},
 		AdvancedOptions: synthetics.SyntheticsSimpleBrowserMonitorAdvancedOptionsInput{

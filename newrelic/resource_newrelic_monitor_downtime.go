@@ -235,22 +235,40 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 	var tags []entities.EntityTag
 	var entity *entities.GenericEntity
 
-	// retry mechanism since the entity query "immediately" does NOT return all tags, and returns only three
-	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
+	// The entity index can lag a few seconds behind a successful create, so the
+	// read retries until the tags we need to reconstruct the resource are
+	// present. We key off the `type` tag (the mode discriminator) rather than a
+	// raw tag count — a count-based check breaks silently for entities that
+	// legitimately have a different shape.
+	retryErr := resource.RetryContext(ctx, 30*time.Second, func() *resource.RetryError {
 		resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 		if err != nil {
 			return resource.RetryableError(err)
 		}
-		entity = (*resp).(*entities.GenericEntity)
-		tags = entity.GetTags()
-		if len(tags) < 4 {
-			return resource.RetryableError(fmt.Errorf("enough tags not found. retrying"))
+		// resp can be nil, or the wrapped interface can hold a nil concrete value
+		// (issue #2559) — guard both so a transient miss retries instead of
+		// panicking the plugin process.
+		if resp == nil {
+			return resource.RetryableError(fmt.Errorf("monitor downtime %s: empty response, retrying", d.Id()))
 		}
+		genericEntity, ok := (*resp).(*entities.GenericEntity)
+		if !ok || genericEntity == nil {
+			return resource.RetryableError(fmt.Errorf("monitor downtime %s not found yet, retrying", d.Id()))
+		}
+		candidateTags := genericEntity.GetTags()
+		if _, ok := findEntityTagValue(candidateTags, "type"); !ok {
+			return resource.RetryableError(fmt.Errorf("monitor downtime %s tags not yet indexed, retrying", d.Id()))
+		}
+		entity = genericEntity
+		tags = candidateTags
 		return nil
 	})
 
+	// Surface failures as normal Terraform diagnostics. log.Fatal* os.Exits the
+	// plugin and Terraform reports the crash as an opaque "Plugin did not
+	// respond" — see issues #2559 and #3117.
 	if retryErr != nil {
-		log.Fatalf("Unable to find application entity: %s", retryErr)
+		return diag.FromErr(fmt.Errorf("error reading monitor downtime %s: %w", d.Id(), retryErr))
 	}
 
 	mode := setMonitorDowntimeMode(tags)
