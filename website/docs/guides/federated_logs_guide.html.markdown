@@ -8,9 +8,9 @@ description: |-
 
 ## Getting Started with New Relic Federated Logs
 
-[New Relic Federated Logs](https://docs-preview.newrelic.com/docs/federated-logs/) lets your log data stay in your own AWS environment while you query it directly from the New Relic platform alongside the rest of your telemetry. The data plane (S3, SQS, Glue, AWS Managed Flink, and the Pipeline Control Gateway) runs in your AWS account; the control plane (the setup, partitions, and routing configuration) lives in New Relic.
+With [New Relic Federated Logs](https://docs-preview.newrelic.com/docs/federated-logs/) your log data stays securely in your own AWS environment. You can still query it directly from the New Relic platform alongside the rest of your telemetry.
 
-This guide describes how to provision the full Federated Logs setup both the AWS data plane and the New Relic control-plane entities fully automated through Terraform.
+This guide describes how to use Terraform to fully automate the provisioning of the Federated Logs setup, including both the AWS data plane and the New Relic control-plane entities.
 
 Use the links below to go to the relevant sections:
 
@@ -21,19 +21,22 @@ Use the links below to go to the relevant sections:
   - [Stage 1: Data Processing (per fleet)](#stage-1-data-processing)
   - [Stage 2: Federated Logs Setup (per setup)](#stage-2-federated-logs-setup)
 - [Activate the data path](#activate)
+- [Test the setup](#test)
 - [Adding partitions to an existing setup](#adding-partitions)
 - [Querying federated logs](#query-federated-logs)
 - [Cleaning up a setup while preserving stored logs](#cleanup)
 
 **NOTE:** Federated Logs is currently provided as a limited preview. Your organization must be enrolled in the preview before these resources will function. See [Enroll in the limited preview program](https://docs-preview.newrelic.com/docs/federated-logs/#enroll) in the product docs.
 
+**NOTE:** A few steps in the onboarding flow require the New Relic UI (for example, defining routing conditions and rolling out the gateway configuration). Wherever a UI step is required, this guide points to the matching section of the [Federated Logs product docs](https://docs-preview.newrelic.com/docs/federated-logs/) instead of repeating the wizard walkthrough here.
+
 ### Architecture overview
 
-Federated Logs has two distinct provisioning stages, and the New Relic Terraform provider exposes one control-plane resource for each artifact created along the way:
+Federated Logs has two distinct provisioning stages:
 
 1. **Data Processing** — applied **once per Pipeline Control Gateway (PCG) fleet**. This stage creates the fleet-level cross-account IAM base role, the ABAC inline policy that lets it assume per-setup writer roles, the SQS queue and AWS Managed Flink job that update Iceberg metadata, and the [`newrelic_aws_connection`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/aws_connection) entity that stores the base role ARN against the fleet.
 
-2. **Federated Logs Setup** — applied **once per log setup**. This stage creates the S3 bucket, the Glue catalog database, the `pcg-writer` IAM role (trusted by the fleet base role via ABAC tag matching), the New Relic reader IAM role for cross-account query access, the Iceberg tables, and the [`newrelic_federated_logs_setup`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_setup) entity plus any [`newrelic_federated_logs_partition`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_partition) entities you declare.
+2. **Federated Logs Setup** — applied **once per log setup**. This stage creates the S3 bucket, the Glue catalog database, the `pcg-writer` IAM role (trusted by the fleet base role via ABAC tag matching), the New Relic reader IAM role for cross-account query access, the Iceberg tables, the [`newrelic_federated_logs_setup`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_setup) entity, and any [`newrelic_federated_logs_partition`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_partition) entities you declare.
 
 The `fleet_entity_guid` produced by your PCG installation is the key that links the two stages together. A single fleet can host multiple setups; you only need to run Stage 1 once per fleet.
 
@@ -206,10 +209,33 @@ Useful outputs:
 <a id="activate"></a>
 ### Activate the data path
 
-`terraform apply` creates the setup and ties it to your fleet, but logs only start flowing after two steps:
+A successful `terraform apply` creates the setup and links it to your fleet, but no logs flow until you define routing conditions and roll the gateway configuration out. In the Federated Logs setup wizard, add the OTTL conditions that decide which logs are routed to federated storage, then trigger a fleet deployment so the gateway pods pick up the new config. See [Set up routing conditions](https://docs-preview.newrelic.com/docs/federated-logs/#set-up-routing-conditions) and [Update gateway configuration](https://docs-preview.newrelic.com/docs/federated-logs/#update-gateway-configuration).
 
-1. **Set routing conditions and deploy the gateway config** — [docs](https://docs-preview.newrelic.com/docs/federated-logs/#set-up-routing-conditions).
-2. **Verify with "Simulate test log received"** — [docs](https://docs-preview.newrelic.com/docs/federated-logs/#test-the-setup).
+<a id="test"></a>
+### Test the setup
+
+Once the gateway configuration is rolled out, validate the end-to-end data path before treating the setup as done. The recommended path is Terraform-driven: enable the module's `e2e_validation_config`, which provisions an AWS Lambda inside your VPC that POSTs a synthetic log through your PCG endpoint, polls NRDB for the log, and reports `HEALTHY` / `UNHEALTHY` back to New Relic via the `federatedLogsUpdateSetup` mutation.
+
+```hcl
+module "federated_logs" {
+  # ... your existing config ...
+
+  e2e_validation_config = {
+    enabled      = true
+    pcg_endpoint = "https://gateway.yourcompany.com"
+    test_payload = jsonencode({ message = "federated-logs e2e test", level = "info" })
+
+    vpc_config = {
+      subnet_ids         = ["subnet-0a1b2c3d4e5f60718"]
+      security_group_ids = ["sg-0a1b2c3d4e5f60710"]
+    }
+  }
+}
+```
+
+After `terraform apply`, the module's `e2e_validation_status` output reports `PASS` on a successful round-trip through the gateway to NRDB, and a failure marker otherwise. `e2e_validation_result` carries the full Lambda response — `status`, `exit_code`, `stdout`, `stderr` — for troubleshooting.
+
+If you'd rather validate from the UI, the setup wizard's **Simulate test log received** button performs the same round-trip — see [Test the setup](https://docs-preview.newrelic.com/docs/federated-logs/#test-the-setup) in the docs.
 
 <a id="adding-partitions"></a>
 ### Adding partitions to an existing setup
