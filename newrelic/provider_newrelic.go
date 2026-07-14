@@ -256,7 +256,7 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 	// (US / EU / JP / Staging), so this override is no longer needed.
 	if v := data.Get("insights_insert_url").(string); v != "" {
 		log.Printf(
-			"[WARN] `insights_insert_url` is deprecated and now ignored — the New Relic client library picks the correct Insights endpoint from the `region` provider setting. Ignored value: %s",
+			"[WARN] `insights_insert_url` is deprecated and now ignored - the New Relic client library picks the correct Insights endpoint from the `region` provider setting. Ignored value: %s",
 			v,
 		)
 	}

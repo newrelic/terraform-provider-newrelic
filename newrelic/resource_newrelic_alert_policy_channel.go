@@ -22,7 +22,7 @@ func resourceNewRelicAlertPolicyChannel() *schema.Resource {
 		// Update: Not currently supported in API
 		DeleteContext: resourceNewRelicAlertPolicyChannelDelete,
 		// JP region does not support the legacy REST v2 Alerts API this
-		// resource depends on — fail at plan time with a clear migration
+		// resource depends on - fail at plan time with a clear migration
 		// message rather than letting apply hit an opaque 404.
 		CustomizeDiff: blockJPRegionDiff("newrelic_alert_policy_channel"),
 		Importer: &schema.ResourceImporter{

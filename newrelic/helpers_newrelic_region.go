@@ -10,7 +10,7 @@ import (
 
 // errorIfJPRegion returns an error when the provider is configured for the JP
 // region. It is used by resources whose upstream API is not (and will not be)
-// available in JP — currently the legacy REST v2 Alert Channels endpoints
+// available in JP - currently the legacy REST v2 Alert Channels endpoints
 // (`newrelic_alert_channel` and `newrelic_alert_policy_channel`).
 //
 // The legacy `alerts_channels.json` REST endpoint has been deprecated globally
@@ -18,7 +18,7 @@ import (
 // and the Alerts platform team has confirmed it will not be provisioned on JP
 // (see internal Slack thread in #help-alerts, Jul 2026). Attempting to Create
 // these resources against JP produces an opaque "resource not found" error
-// from the API — this helper surfaces a clearer, actionable message at plan
+// from the API - this helper surfaces a clearer, actionable message at plan
 // time (via CustomizeDiff) instead.
 //
 // The returned error is safe to bubble up directly from CustomizeDiff.
@@ -36,7 +36,7 @@ func errorIfJPRegion(meta interface{}, resourceName string) error {
 			"Channels API has been deprecated globally "+
 			"since 2024 and is not being provisioned on the JP region. Migrate "+
 			"JP configurations to `newrelic_notification_destination` and "+
-			"`newrelic_notification_channel` — the modern NerdGraph-based "+
+			"`newrelic_notification_channel` - the modern NerdGraph-based "+
 			"replacements that are available in every region. See "+
 			"https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/intro-notifications/ "+
 			"for the migration path",
@@ -47,7 +47,7 @@ func errorIfJPRegion(meta interface{}, resourceName string) error {
 // blockJPRegionDiff returns a CustomizeDiffFunc that fails a plan when the
 // provider is configured for the JP region. Wire this into a `schema.Resource`
 // via the `CustomizeDiff` field so the error surfaces at `terraform plan`
-// time — well before any state is written or any API call is made.
+// time - well before any state is written or any API call is made.
 func blockJPRegionDiff(resourceName string) schema.CustomizeDiffFunc {
 	return func(_ context.Context, _ *schema.ResourceDiff, meta interface{}) error {
 		return errorIfJPRegion(meta, resourceName)

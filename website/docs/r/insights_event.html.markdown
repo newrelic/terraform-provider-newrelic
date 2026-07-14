@@ -10,7 +10,7 @@ description: |-
 
 Use this resource to create one or more Insights events during a terraform run.
 
--> **Region-aware — no manual endpoint override needed.** As of the release that ships this note, `newrelic_insights_event` sends events through the same region-aware client the rest of the provider uses. Setting `provider "newrelic" { region = "US" | "EU" | "JP" }` is enough — the correct Insights collector endpoint is selected automatically (`insights-collector.newrelic.com` for US, `insights-collector.eu01.nr-data.net` for EU, `insights-collector.jp.nr-data.net` for JP). The `insights_insert_url` provider argument is now **ignored** (with a warning in the logs) and will be removed in a future major release. If you previously set `insights_insert_url` as a workaround for JP or EU, you can safely remove it.
+-> **NOTE** <span style="color:red;">Starting <b>v3.95.0</b> of the New Relic Terraform Provider, the `insights_insert_url` provider argument is deprecated and will be removed in a future major release.</span><br><br>The correct Insights collector endpoint is now picked automatically from the provider's `region` argument, so no manual override is needed. If you were setting `insights_insert_url` as a workaround for the EU or JP region, you can safely remove it - values passed there are ignored with a warning in the logs.
 
 ## Example Usage
 

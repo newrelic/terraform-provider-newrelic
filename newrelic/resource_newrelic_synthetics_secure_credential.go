@@ -116,19 +116,6 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 	var reqErr error
 	var diags diag.Diagnostics
 
-	// Entity search is eventually consistent — after a `syntheticsCreateSecureCredential`
-	// mutation the entity typically takes 30–60 s to become findable via
-	// entitySearch (same lag on US, EU, and JP). If we accept the very first
-	// "count: 0" response as authoritative, we silently clear state on a
-	// resource that was just created, and the next `terraform apply` then
-	// dispatches Create against an entity that still exists server-side —
-	// surfacing the misleading `Credential already exists; use Update to
-	// change the value.` error.
-	//
-	// Instead: retry the entity search for up to the Read timeout. If we
-	// still can't find the credential after retries, treat that as a
-	// legitimate out-of-band delete (UI / NerdGraph mutation) and clear
-	// state so a subsequent apply re-creates the resource.
 	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		entityResults, reqErr = client.Entities.GetEntitySearchByQueryWithContext(ctx, entities.EntitySearchOptions{}, queryString, []entities.EntitySearchSortCriteria{})
 		if reqErr != nil {
@@ -141,10 +128,6 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 	})
 
 	if retryErr != nil {
-		// Retry budget exhausted — treat as deleted-out-of-band and clear
-		// state. Do NOT surface as an error, otherwise every `terraform plan`
-		// against a genuinely deleted credential would fail refresh instead
-		// of proposing a re-create.
 		log.Printf("[WARN] Synthetics secure credential %q not found via entitySearch after retries; clearing state so terraform can re-create if the configuration still declares it", d.Id())
 		d.SetId("")
 		return nil
