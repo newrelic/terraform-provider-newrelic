@@ -5,7 +5,6 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strconv"
 	"testing"
 
@@ -73,60 +72,43 @@ func TestAccNewRelicAccountManagement_Import(t *testing.T) {
 		},
 	})
 }
-func TestAccNewRelicAccountManagementInvalidRegion(t *testing.T) {
-	rName := acctest.RandString(7)
-	expectedErrorMsg := regexp.MustCompile(`expected region to be one of \[us01 eu01\], got abcd01`)
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckEnvVars(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			//create
-			{
-				Config:      testAccNewRelicAccountCreateInvalidRegionConfig("Test " + rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
-func TestAccNewRelicAccountManagementInCorrectRegion(t *testing.T) {
-	rName := acctest.RandString(7)
-	expectedErrorMsg := regexp.MustCompile(`An error occurred resolving this field|cannot create account -- no configured parent account`)
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheckEnvVars(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			//create
-			{
-				Config:      testAccNewRelicAccountCreateConfigInCorrectRegion("Test " + rName),
-				ExpectError: expectedErrorMsg,
-			},
-		},
-	})
-}
 
+// NOTE: The previous tests `TestAccNewRelicAccountManagementInCorrectRegion`
+// (region-mismatch API error) and `TestAccNewRelicAccountManagementInvalidRegion`
+// (schema-level StringInSlice validation of `region`) were both removed with
+// the deprecation of the `regionCode` argument. The provider no longer
+// forwards `regionCode` to the API and no longer validates the input against
+// a fixed enum - accounts are always created in the region of the org tied to
+// the caller's API key, and any user-supplied `region` value is silently
+// ignored (with a Terraform deprecation warning).
+
+// testAccNewRelicAccountImportConfig - `region` intentionally omitted; the
+// account is created in the region of the organization tied to the caller's
+// API key.
 func testAccNewRelicAccountImportConfig() string {
 	return fmt.Sprintf(`
 resource "newrelic_account_management" "foo" {
-  name   = ""
-  region = "us01"
+  name = ""
 }
 `)
 }
 
+// testAccNewRelicAccountCreateConfig - `region` intentionally omitted; see
+// note on testAccNewRelicAccountImportConfig.
 func testAccNewRelicAccountCreateConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "us01"
+resource "newrelic_account_management" "foo" {
+  name = "%[1]s"
 }
 `, name)
 }
 
+// testAccNewRelicAccountUpdateConfig - `region` intentionally omitted; see
+// note on testAccNewRelicAccountImportConfig.
 func testAccNewRelicAccountUpdateConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "us01"
+resource "newrelic_account_management" "foo" {
+  name = "%[1]s"
 }
 `, name)
 }
@@ -194,24 +176,6 @@ func testAccCheckNewRelicAccountExists(n string) resource.TestCheckFunc {
 
 		return nil
 	}
-}
-
-func testAccNewRelicAccountCreateInvalidRegionConfig(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "abcd01"
-}
-`, name)
-}
-
-func testAccNewRelicAccountCreateConfigInCorrectRegion(name string) string {
-	return fmt.Sprintf(`
-resource "newrelic_account_management" "foo"{
-	name=  "%[1]s"
-	region= "eu01"
-}
-`, name)
 }
 
 func testAccCheckNewRelicAccountImportCheck(resourceName string) resource.ImportStateCheckFunc {

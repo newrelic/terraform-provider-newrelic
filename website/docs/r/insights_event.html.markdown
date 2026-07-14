@@ -10,6 +10,8 @@ description: |-
 
 Use this resource to create one or more Insights events during a terraform run.
 
+-> **NOTE** <span style="color:red;">Starting <b>v3.95.0</b> of the New Relic Terraform Provider, the `insights_insert_url` provider argument is deprecated and will be removed in a future major release.</span><br><br>The correct Insights collector endpoint is now picked automatically from the provider's `region` argument, so no manual override is needed. If you were setting `insights_insert_url` as a workaround for the EU or JP region, you can safely remove it - values passed there are ignored with a warning in the logs.
+
 ## Example Usage
 
 ```hcl
