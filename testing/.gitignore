@@ -1,0 +1,11 @@
+# Local terraform state / logs / plans - never commit
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfstate.d/
+.terraform/
+.terraform.lock.hcl
+terraform.tfplan
+tf.log
+tf-*.log
+*.tfvars
+!example.tfvars
