@@ -26,7 +26,3 @@ data "newrelic_account" "example" {
 The following arguments are supported:
 - `account_id` - (Optional) The unique identifier of the account in New Relic. This must be an integer.
 - `name` - (Optional) The name of the account in New Relic. This must be a string.
-
-## Attribute Reference
-In addition to the above arguments, the following attribute is exported:
-- `region` - The region code of the account, as reported by New Relic. One of `us01`, `eu01`, or `jp01`. Read-only.

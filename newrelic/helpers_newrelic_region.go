@@ -32,14 +32,14 @@ func errorIfJPRegion(meta interface{}, resourceName string) error {
 	}
 
 	return fmt.Errorf(
-		"%s is not supported in the JP region: the legacy REST v2 Alert "+
-			"Channels API has been deprecated globally "+
-			"since 2024 and is not being provisioned on the JP region. Migrate "+
-			"JP configurations to `newrelic_notification_destination` and "+
-			"`newrelic_notification_channel` - the modern NerdGraph-based "+
-			"replacements that are available in every region. See "+
-			"https://docs.newrelic.com/docs/alerts-applied-intelligence/notifications/intro-notifications/ "+
-			"for the migration path",
+		"%s cannot be used in the JP region: it is backed by the legacy REST v2 "+
+			"Alert Channels API, which was globally deprecated in 2024 and is not "+
+			"provisioned on JP. Migrate to the NerdGraph-based "+
+			"`newrelic_notification_destination` and `newrelic_notification_channel` "+
+			"resources (and `newrelic_workflow` in place of `newrelic_alert_policy_channel`); "+
+			"see the getting-started guide at "+
+			"https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel "+
+			"for a walkthrough",
 		resourceName,
 	)
 }
