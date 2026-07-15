@@ -12,9 +12,14 @@ locals {
   on = toset(var.enabled_services)
 
   # Derive the OIDC issuer URI based on the New Relic region.
-  oidc_issuer_uri = (var.newrelic_region == "EU"
-    ? "https://oidc.eu.newrelic.com/r/gcp-cmp"
-    : "https://oidc.newrelic.com/r/gcp-cmp")
+  # NOTE: The "Staging" entry is for INTERNAL New Relic testing only and must NOT
+  # be committed/pushed to the customer-facing module (staging was intentionally
+  # removed in commit ddaf1a73). It must match gcpDmOIDCEndpoint() in the provider.
+  oidc_issuer_uri = {
+    "US"      = "https://oidc.newrelic.com/r/gcp-cmp"
+    "EU"      = "https://oidc.eu.newrelic.com/r/gcp-cmp"
+    "Staging" = "https://oidc-staging.newrelic.com/r/gcp-cmp"
+  }[var.newrelic_region]
 }
 
 provider "newrelic" {
@@ -215,6 +220,10 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
   }
   dynamic "istio" {
     for_each = contains(local.on, "istio") ? [1] : []
+    content { metrics_polling_interval = var.metrics_polling_interval }
+  }
+  dynamic "kubernetes" {
+    for_each = contains(local.on, "kubernetes") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
   dynamic "load_balancing" {

@@ -44,6 +44,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
   functions        { metrics_polling_interval = 300 }
   interconnect     { metrics_polling_interval = 300 }
   istio            { metrics_polling_interval = 300 }
+  kubernetes       { metrics_polling_interval = 300 }
   mem_cache        { metrics_polling_interval = 300 }
   memory_store     { metrics_polling_interval = 300 }
   redis            { metrics_polling_interval = 300 }
@@ -91,6 +92,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 * `functions` - (Optional) Cloud Functions integration. See [Integration blocks](#integration-blocks) below.
 * `interconnect` - (Optional) Cloud Interconnect integration. See [Integration blocks](#integration-blocks) below.
 * `istio` - (Optional) Istio integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
+* `kubernetes` - (Optional) Kubernetes Engine integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 * `mem_cache` - (Optional) Memcache integration. See [Integration blocks](#integration-blocks) below.
 * `memory_store` - (Optional) Memorystore integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `redis` - (Optional) Memorystore for Redis integration. See [Integration blocks](#integration-blocks) below.

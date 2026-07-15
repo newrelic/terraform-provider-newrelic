@@ -57,7 +57,8 @@ variable "compute_projects" {
   type        = map(string)
   description = <<-EOT
     Map of display-name => GCP project ID for compute projects.
-    New Relic will monitor VMs, SQL, Cloud Run, Load Balancing, Functions.
+    New Relic will monitor VMs, SQL, Cloud Run, Load Balancing, Functions,
+    and Kubernetes (metrics only — no entity support).
     Example:
       {
         "compute-prod" = "my-compute-project-456"

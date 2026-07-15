@@ -252,7 +252,7 @@ The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrati
 | `Virtual Machines`     | `VPC Access`              |                          |
 | `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only, metrics only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
 | `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only, metrics only)* | `Istio` *(DM only, metrics only)* |
-| `API Gateway` *(DM only)* |                           |                          |
+| `API Gateway` *(DM only)* | `Kubernetes Engine` *(metrics only)* |                  |
 
 -> **NOTE:** Services marked *(supports 1m polling)* support a `metrics_polling_interval` as low as **60 seconds**. 1-minute polling for these services is in **Limited Preview (LP)** and available only for: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(DM only)* are only available in the Dimensional Metrics integration. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
 
@@ -435,6 +435,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
   functions         { metrics_polling_interval = var.metrics_polling_interval }
   interconnect      { metrics_polling_interval = var.metrics_polling_interval }
   istio             { metrics_polling_interval = var.metrics_polling_interval }  # DM only, metrics only
+  kubernetes        { metrics_polling_interval = var.metrics_polling_interval }  # metrics only, no entity support
   load_balancing    { metrics_polling_interval = var.metrics_polling_interval }
   mem_cache         { metrics_polling_interval = var.metrics_polling_interval }
   pub_sub           { metrics_polling_interval = var.metrics_polling_interval }
