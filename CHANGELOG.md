@@ -1,3 +1,14 @@
+<a name="v3.95.0"></a>
+## [v3.95.0] - 2026-07-15
+### Bug Fixes
+- **monitor-downtime:** experimental guard against nil-entity panic on Read ([#3131](https://github.com/newrelic/terraform-provider-newrelic/issues/3131))
+
+### Documentation Updates
+- **oci:** add JP region to OCI cloud integrations guide (NR-540244) ([#3123](https://github.com/newrelic/terraform-provider-newrelic/issues/3123))
+
+### Features
+- jp region support and region-neutral provider hardening ([#3125](https://github.com/newrelic/terraform-provider-newrelic/issues/3125))
+
 <a name="v3.94.3"></a>
 ## [v3.94.3] - 2026-07-09
 ### Bug Fixes
@@ -2782,7 +2793,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.0...HEAD
+[v3.95.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.3...v3.95.0
 [v3.94.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.2...v3.94.3
 [v3.94.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.1...v3.94.2
 [v3.94.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.0...v3.94.1
