@@ -75,7 +75,7 @@ variable "enabled_services" {
       composer, data_flow, data_proc, data_store, firebase_app_hosting,
       firebase_auth, firebase_database, firebase_hosting, firebase_storage,
       firebase_vertex_ai, firestore, functions, interconnect, istio,
-      kubernetes, load_balancing, managed_kafka, mem_cache, memory_store,
+      load_balancing, managed_kafka, mem_cache, memory_store,
       pub_sub, redis, router, run, spanner, sql, storage,
       virtual_machines, vpc_access
 

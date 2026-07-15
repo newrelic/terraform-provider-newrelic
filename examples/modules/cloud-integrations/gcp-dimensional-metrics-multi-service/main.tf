@@ -4,7 +4,7 @@
 # and folder-level IAM) used across two distinct project groups that each have
 # different monitoring needs:
 #   - analytics_projects: BigQuery, PubSub, Spanner, Storage, DataFlow, DataProc
-#   - compute_projects:   VMs, SQL, Kubernetes, Cloud Run, Load Balancing, Functions
+#   - compute_projects:   VMs, SQL, Cloud Run, Load Balancing, Functions
 #
 # Use this when: your GCP projects serve different workloads and you want to
 # enable only the relevant GCP services in New Relic per group, while sharing
@@ -148,7 +148,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
 }
 
 # ── Group 2: Compute Projects ─────────────────────────────────────────────────
-# Enabled: VMs, SQL, Kubernetes, Cloud Run, Load Balancing, Cloud Functions
+# Enabled: VMs, SQL, Cloud Run, Load Balancing, Cloud Functions
 
 resource "newrelic_cloud_gcp_dm_link_account" "compute" {
   for_each = var.compute_projects
@@ -169,9 +169,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "compute" {
   linked_account_id = tonumber(each.value.id)
 
   functions {
-    metrics_polling_interval = var.metrics_polling_interval
-  }
-  kubernetes {
     metrics_polling_interval = var.metrics_polling_interval
   }
   load_balancing {

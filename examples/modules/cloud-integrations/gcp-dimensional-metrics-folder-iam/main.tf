@@ -217,10 +217,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "istio") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
-  dynamic "kubernetes" {
-    for_each = contains(local.on, "kubernetes") ? [1] : []
-    content { metrics_polling_interval = var.metrics_polling_interval }
-  }
   dynamic "load_balancing" {
     for_each = contains(local.on, "load_balancing") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }

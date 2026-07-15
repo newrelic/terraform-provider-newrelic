@@ -44,7 +44,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
   functions        { metrics_polling_interval = 300 }
   interconnect     { metrics_polling_interval = 300 }
   istio            { metrics_polling_interval = 300 }
-  kubernetes       { metrics_polling_interval = 300 }
   mem_cache        { metrics_polling_interval = 300 }
   memory_store     { metrics_polling_interval = 300 }
   redis            { metrics_polling_interval = 300 }
@@ -79,22 +78,21 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 ### Standard services (300 s minimum `metrics_polling_interval`)
 
 * `ai_platform` - (Optional) AI Platform integration. See [Integration blocks](#integration-blocks) below.
-* `api_gateway` - (Optional) API Gateway integration. See [Integration blocks](#integration-blocks) below.
+* `api_gateway` - (Optional) API Gateway integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `app_engine` - (Optional) App Engine integration. See [Integration blocks](#integration-blocks) below.
 * `big_table` - (Optional) Bigtable integration. See [Integration blocks](#integration-blocks) below.
 * `composer` - (Optional) Cloud Composer integration. See [Integration blocks](#integration-blocks) below.
 * `data_store` - (Optional) Datastore integration. See [Integration blocks](#integration-blocks) below.
-* `firebase_auth` - (Optional) Firebase Authentication integration. See [Integration blocks](#integration-blocks) below.
+* `firebase_auth` - (Optional) Firebase Authentication integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `firebase_database` - (Optional) Firebase Realtime Database integration. See [Integration blocks](#integration-blocks) below.
 * `firebase_hosting` - (Optional) Firebase Hosting integration. See [Integration blocks](#integration-blocks) below.
 * `firebase_storage` - (Optional) Firebase Storage integration. See [Integration blocks](#integration-blocks) below.
 * `firestore` - (Optional) Firestore integration. See [Integration blocks](#integration-blocks) below.
 * `functions` - (Optional) Cloud Functions integration. See [Integration blocks](#integration-blocks) below.
 * `interconnect` - (Optional) Cloud Interconnect integration. See [Integration blocks](#integration-blocks) below.
-* `istio` - (Optional) Istio integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
-* `kubernetes` - (Optional) Kubernetes Engine integration. See [Integration blocks](#integration-blocks) below.
+* `istio` - (Optional) Istio integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 * `mem_cache` - (Optional) Memcache integration. See [Integration blocks](#integration-blocks) below.
-* `memory_store` - (Optional) Memorystore integration. See [Integration blocks](#integration-blocks) below.
+* `memory_store` - (Optional) Memorystore integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `redis` - (Optional) Memorystore for Redis integration. See [Integration blocks](#integration-blocks) below.
 * `router` - (Optional) Cloud Router integration. See [Integration blocks](#integration-blocks) below.
 * `run` - (Optional) Cloud Run integration. See [Integration blocks](#integration-blocks) below.
@@ -102,8 +100,8 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 * `storage` - (Optional) Cloud Storage integration. See [Integration blocks](#integration-blocks) below.
 * `virtual_machines` - (Optional) Compute Engine (virtual machines) integration. See [Integration blocks](#integration-blocks) below.
 * `vpc_access` - (Optional) VPC Access integration. See [Integration blocks](#integration-blocks) below.
-* `firebase_app_hosting` - (Optional) Firebase App Hosting integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
-* `firebase_vertex_ai` - (Optional) Firebase Vertex AI integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
+* `firebase_app_hosting` - (Optional) Firebase App Hosting integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
+* `firebase_vertex_ai` - (Optional) Firebase Vertex AI integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 
 ### Services with Limited Preview (LP) 1-minute polling
 
@@ -114,7 +112,7 @@ The following services support a polling floor as low as **60 seconds**. 1-minut
 * `data_flow` - (Optional) Dataflow integration. See [Integration blocks](#integration-blocks) below.
 * `data_proc` - (Optional) Dataproc integration. See [Integration blocks](#integration-blocks) below.
 * `load_balancing` - (Optional) Cloud Load Balancing integration. See [Integration blocks](#integration-blocks) below.
-* `managed_kafka` - (Optional) Managed Apache Kafka integration. See [Integration blocks](#integration-blocks) below.
+* `managed_kafka` - (Optional) Managed Apache Kafka integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `pub_sub` - (Optional) Cloud Pub/Sub integration. See [Integration blocks](#integration-blocks) below.
 * `spanner` - (Optional) Cloud Spanner integration. See [Integration blocks](#integration-blocks) below.
 
