@@ -1,3 +1,42 @@
+<a name="v3.95.1"></a>
+## [v3.95.1] - 2026-07-15
+### Documentation Updates
+- **region:** add JP region support to docs  ([#3132](https://github.com/newrelic/terraform-provider-newrelic/issues/3132))
+
+<a name="v3.95.0"></a>
+## [v3.95.0] - 2026-07-15
+### Bug Fixes
+- **monitor-downtime:** experimental guard against nil-entity panic on Read ([#3131](https://github.com/newrelic/terraform-provider-newrelic/issues/3131))
+
+### Documentation Updates
+- **oci:** add JP region to OCI cloud integrations guide (NR-540244) ([#3123](https://github.com/newrelic/terraform-provider-newrelic/issues/3123))
+
+### Features
+- jp region support and region-neutral provider hardening ([#3125](https://github.com/newrelic/terraform-provider-newrelic/issues/3125))
+
+<a name="v3.94.3"></a>
+## [v3.94.3] - 2026-07-09
+### Bug Fixes
+- **api-access-key:** don't reject known-after-apply account_id/user_id at plan time ([#3129](https://github.com/newrelic/terraform-provider-newrelic/issues/3129))
+
+<a name="v3.94.2"></a>
+## [v3.94.2] - 2026-07-08
+### Bug Fixes
+- **security:** resolve 37 Dependabot alerts across go.mod and tools/go.mod ([#3126](https://github.com/newrelic/terraform-provider-newrelic/issues/3126))
+
+<a name="v3.94.1"></a>
+## [v3.94.1] - 2026-07-07
+### Bug Fixes
+- **api-access-key:** add data source ([#3115](https://github.com/newrelic/terraform-provider-newrelic/issues/3115))
+
+<a name="v3.94.0"></a>
+## [v3.94.0] - 2026-06-30
+### Bug Fixes
+- **workload:** add backticks automatically within workload terraform  ([#3114](https://github.com/newrelic/terraform-provider-newrelic/issues/3114))
+
+### Features
+- **workload:** add intelligent workload support with dynamic_flows and status_config_alert_policy ([#3102](https://github.com/newrelic/terraform-provider-newrelic/issues/3102))
+
 <a name="v3.93.2"></a>
 ## [v3.93.2] - 2026-06-22
 ### Bug Fixes
@@ -2089,10 +2128,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="v2.11.1"></a>
-## [v2.11.1] - 2020-10-07
 <a name="2.11.1"></a>
 ## [2.11.1] - 2020-10-07
+<a name="v2.11.1"></a>
+## [v2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -2335,13 +2374,13 @@ new synthetics resources use GraphQL API schema
 - prep for v2.x, isolate v1.x docs
 - DEPRECATION notice for 1.x
 - update index header with improved words
-- include v1 index.html in sidebar
+- update getting started guide to reference new material
 - update README with new pointers
 - tidy up after review
-- add table for current endpoint in use per resource
-- update getting started guide to reference new material
+- include v1 index.html in sidebar
 - add callout to top of each v1.x doc page
 - include documentation about upgrading the provider to 2.x
+- add table for current endpoint in use per resource
 - **alert_channel:** fix broken 'nested config' anchor link
 - **alerts:** update examples to reflect deprecation
 - **alerts:** update wording to avoid implementation details
@@ -2759,7 +2798,13 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.1...HEAD
+[v3.95.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.0...v3.95.1
+[v3.95.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.3...v3.95.0
+[v3.94.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.2...v3.94.3
+[v3.94.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.1...v3.94.2
+[v3.94.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.0...v3.94.1
+[v3.94.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.2...v3.94.0
 [v3.93.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.1...v3.93.2
 [v3.93.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.93.0...v3.93.1
 [v3.93.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.92.0...v3.93.0
@@ -3027,9 +3072,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2

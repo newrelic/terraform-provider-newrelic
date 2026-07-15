@@ -3,7 +3,6 @@ package newrelic
 import (
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -123,6 +122,7 @@ func Provider() *schema.Provider {
 			"newrelic_account":                      dataSourceNewRelicAccount(),
 			"newrelic_alert_channel":                dataSourceNewRelicAlertChannel(),
 			"newrelic_alert_policy":                 dataSourceNewRelicAlertPolicy(),
+			"newrelic_api_access_key":               dataSourceNewRelicAPIAccessKey(),
 			"newrelic_application":                  dataSourceNewRelicApplication(),
 			"newrelic_authentication_domain":        dataSourceNewRelicAuthenticationDomain(),
 			"newrelic_cloud_account":                dataSourceNewRelicCloudAccount(),
@@ -251,9 +251,20 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 
 	log.Printf("[INFO] UserAgent: %s", userAgent)
 
+	// insights_insert_url is now deprecated: the newrelic-client-go v2 Events
+	// service selects the correct Insights collector URL from the region config
+	// (US / EU / JP / Staging), so this override is no longer needed.
+	if v := data.Get("insights_insert_url").(string); v != "" {
+		log.Printf(
+			"[WARN] `insights_insert_url` is deprecated and now ignored - the New Relic client library picks the correct Insights endpoint from the `region` provider setting. Ignored value: %s",
+			v,
+		)
+	}
+
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
 		PersonalAPIKey:       personalAPIKey,
+		InsightsInsertKey:    data.Get("insights_insert_key").(string),
 		Region:               data.Get("region").(string),
 		APIURL:               data.Get("api_url").(string),
 		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
@@ -271,22 +282,12 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		return nil, fmt.Errorf("error initializing newrelic-client-go: %w", err)
 	}
 
-	insightsInsertConfig := Config{
-		InsightsAccountID: strconv.Itoa(accountID),
-		InsightsInsertKey: data.Get("insights_insert_key").(string),
-		InsightsInsertURL: data.Get("insights_insert_url").(string),
-	}
-	clientInsightsInsert, err := insightsInsertConfig.ClientInsightsInsert()
-	if err != nil {
-		return nil, fmt.Errorf("error initializing New Relic Insights insert client: %w", err)
-	}
-
 	providerConfig := ProviderConfig{
-		NewClient:            client,
-		InsightsInsertClient: clientInsightsInsert,
-		PersonalAPIKey:       personalAPIKey,
-		AccountID:            accountID,
-		userAgent:            cfg.userAgent,
+		NewClient:      client,
+		PersonalAPIKey: personalAPIKey,
+		AccountID:      accountID,
+		Region:         cfg.Region,
+		userAgent:      cfg.userAgent,
 	}
 
 	return &providerConfig, nil

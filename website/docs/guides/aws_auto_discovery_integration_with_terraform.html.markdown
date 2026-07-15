@@ -18,7 +18,7 @@ The below integration process presumes that the client has already integrated wi
 ## Variables -
 * **New Relic Region** ```new_relic_region``` - The region where your New Relic account is hosted
  *  **Type** - String
- *  **Allowed Values** - US or EU
+ *  **Allowed Values** - US, EU, or JP
 
 * **New Relic Account Id** ```new_relic_account_id``` - The account id associated with your organisation's New Relic Account.
  * **Type** - Integer

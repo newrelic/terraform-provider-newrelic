@@ -119,7 +119,9 @@ func (e *InsightsEvent) MarshalJSON() ([]byte, error) {
 }
 
 func resourceNewRelicInsightsEventCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).InsightsInsertClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient.Events
+	accountID := providerConfig.AccountID
 	var eventsPayload []*InsightsEvent
 
 	if v, ok := d.GetOkExists("event"); ok {
@@ -164,8 +166,13 @@ func resourceNewRelicInsightsEventCreate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	if err := client.PostEvent(eventsPayload); err != nil {
-		return diag.Errorf("error occurreed while posting events to Insights: %q", err)
+	// newrelic-client-go/v2 Events.CreateEventWithContext takes a single event
+	// per call and uses the region-aware Insights insert URL under the hood.
+	// Send each event individually to preserve batch semantics from the schema.
+	for _, ev := range eventsPayload {
+		if err := client.CreateEventWithContext(ctx, accountID, ev); err != nil {
+			return diag.Errorf("error occurred while posting events to Insights: %q", err)
+		}
 	}
 
 	d.SetId(fmt.Sprintf("%d", rand.Int()))
