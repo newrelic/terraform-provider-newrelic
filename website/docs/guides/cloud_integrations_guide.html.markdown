@@ -78,7 +78,7 @@ module "newrelic-aws-cloud-integrations" {
 Variables:
 
 * `newrelic_account_id`: The New Relic account you want to link to AWS. This account will receive all the data observability from your AWS environment.
-* `newrelic_account_region` (Optional): The region of your New Relic account, this can be `US` for United States or `EU` for Europe. (Default `US`)
+* `newrelic_account_region` (Optional): The region of your New Relic account, this can be `US` for United States, `EU` for Europe, or `JP` for Japan. (Default `US`)
 * `name` (Optional): A unique name used throughout the module to name the resources. (Default `production`)
 * `output_format` (Optional): The output format for telemetry data. Supported values are `opentelemetry0.7` and `opentelemetry1.0`. (Default `opentelemetry0.7`)
 * `exclude_metric_filters` (Optional): a map of namespaces and metric names to exclude from the Cloudwatch metric stream. `Conflicts with include_metric_filters`.
@@ -471,7 +471,7 @@ Key variables:
   ]
   ```
 * `ingest_api_secret_ocid` / `user_api_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
-* `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (use the EU or JP variant for EU or JP accounts).
+* `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (`US`, `EU`, or `JP`).
 * `region` – OCI region key (short code) where resources for this module are created (for example: `iad`, `phx`, `fra`). Provide ONLY the region key, not the full region identifier (so use `iad` instead of `us-ashburn-1`).
 * `image_version` / `image_bucket` – Docker image configuration for the New Relic function (optional, defaults to latest version).
 
@@ -522,7 +522,7 @@ Key variables:
 > If you want to use an existing private subnet, make sure it has required route rules and gateways with internet and all OCI services access. 
 - function application environment variables configuration:
   - `debug_enabled`: Boolean to enable or disable function debug logs.
-  - `new_relic_region`: The New Relic region (US, EU, or JP).
+  - `new_relic_region`: The New Relic region (`US`, `EU`, or `JP`).
   - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
   - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
   - `image_version`: Docker image version for the logging function (defaults to "latest").
