@@ -1,3 +1,8 @@
+<a name="v3.95.2"></a>
+## [v3.95.2] - 2026-07-17
+### Bug Fixes
+- **dashboard:** make variable nrql_query account_ids optional without drift ([#3111](https://github.com/newrelic/terraform-provider-newrelic/issues/3111))
+
 <a name="v3.95.1"></a>
 ## [v3.95.1] - 2026-07-15
 ### Documentation Updates
@@ -2798,7 +2803,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.2...HEAD
+[v3.95.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.1...v3.95.2
 [v3.95.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.0...v3.95.1
 [v3.95.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.3...v3.95.0
 [v3.94.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.2...v3.94.3
