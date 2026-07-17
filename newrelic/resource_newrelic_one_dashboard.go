@@ -150,7 +150,7 @@ func dashboardVariableSchemaElem() *schema.Resource {
 						"account_ids": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "New Relic account ID(s) to issue the query against.",
+							Description: "New Relic account ID(s) to issue the query against. Defaults to the account ID specified in the provider configuration.",
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
 							},
@@ -934,7 +934,7 @@ func resourceNewRelicOneDashboardCreate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
-		return diag.FromErr(flattenDashboardUpdateResult(result, d))
+		return diag.FromErr(flattenDashboardUpdateResult(result, d, meta.(*ProviderConfig).AccountID))
 
 	}
 
@@ -959,7 +959,7 @@ func resourceNewRelicOneDashboardRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(flattenDashboardEntity(dashboard, d))
+	return diag.FromErr(flattenDashboardEntity(dashboard, d, providerConfig.AccountID))
 }
 
 func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1030,7 +1030,7 @@ func resourceNewRelicOneDashboardUpdate(ctx context.Context, d *schema.ResourceD
 
 	// We have to use the Update Result, not a re-read of the entity as the changes take
 	// some amount of time to be re-indexed
-	return diag.FromErr(flattenDashboardUpdateResult(updated, d))
+	return diag.FromErr(flattenDashboardUpdateResult(updated, d, meta.(*ProviderConfig).AccountID))
 }
 
 func resourceNewRelicOneDashboardDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

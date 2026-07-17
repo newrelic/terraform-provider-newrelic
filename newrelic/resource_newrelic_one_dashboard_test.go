@@ -630,19 +630,120 @@ func TestAccNewRelicOneDashboard_VariablesEnum(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicOneDashboard_VariableAccountIDsValidation tests that the validation function properly catches empty account_ids
-func TestAccNewRelicOneDashboard_VariableAccountIDsValidation(t *testing.T) {
+// TestAccNewRelicOneDashboard_VariableAccountIDsDriftDetection is a comprehensive
+// drift-detection test for account_ids in a variable nrql_query block.
+//
+// It covers all meaningful state→config transitions. account_ids is defaulted to the
+// provider account on write (expandVariableNRQLQuery) and normalised back to an empty
+// list on read when the upstream value equals that default (flattenVariableNRQLQuery),
+// so an empty configuration stays empty in state — no phantom "remove the default
+// account ID" drift — while any other upstream value still surfaces as drift.
+//
+//	No-drift (plan must be empty after apply): the configured form is unchanged, or it
+//	only toggles between omitted and an empty list (both normalise to an empty list):
+//	  S1.  state=omitted        → plan omitted              (same form)
+//	  S2.  state=omitted        → plan empty-list           (equivalent empty forms)
+//	  S3.  state=empty-list     → plan omitted              (equivalent empty forms)
+//	  S4.  state=empty-list     → plan empty-list           (same form)
+//	  S6.  state=explicit[sub]  → plan explicit[sub]        (no change to explicit value)
+//
+//	Drift (plan must be non-empty): the configured value changes — including replacing
+//	an empty/omitted account_ids with an explicit list (even one equal to the provider
+//	default, since the configured form itself changed), and any explicit change:
+//	  S5a. state=omitted        → plan explicit[pDef]       (adding explicit == default)
+//	  S5b. state=explicit[pDef] → plan omitted              (removing explicit == default)
+//	  S7.  state=omitted        → plan explicit[sub]        (adding non-default value)
+//	  S8.  state=empty-list     → plan explicit[sub]        (adding non-default via empty form)
+//	  S9.  state=explicit[sub]  → plan omitted              (removing explicit; resets to default)
+//	  S10. state=explicit[sub]  → plan empty-list           (removing explicit via empty-list form)
+//	  S11. state=explicit[sub]  → plan explicit[pDef]       (changing between explicit values)
+//	  S12. state=explicit[pDef] → plan explicit[sub]        (changing between explicit values)
+//
+// The scenarios that reference only the provider-default account run with the standard
+// acceptance-test credentials and validate the originally reported bug — an
+// omitted/empty account_ids must not drift after apply. The scenarios that reference a
+// second, distinct account (S6–S12) prove real changes still surface drift; they need
+// NEW_RELIC_SUBACCOUNT_ID and are appended only when it is set. The read-side
+// normalization that underpins this is also unit-tested in
+// TestFlattenVariableNRQLQuery_AccountIDsNormalization.
+func TestAccNewRelicOneDashboard_VariableAccountIDsDriftDetection(t *testing.T) {
 	rName := fmt.Sprintf("tf-test-%s", acctest.RandString(5))
+	omitted := testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(rName)
+	empty := testAccNewRelicOneDashboardConfigVariableAccountIDs(rName)
+	explicit := testAccNewRelicOneDashboardConfigVariableAccountIDsExplicit(rName)
+	pDef := testAccNewRelicOneDashboardConfigVariableAccountIDsProviderDefault(rName)
+
+	// Single-account scenarios (S1–S5): reference only omitted, empty and the
+	// provider-default account, so they run without a sub-account.
+	steps := []resource.TestStep{
+		// ── Apply: omitted → state=[providerDefault] ─────────────────────
+		{Config: omitted},
+		// S1: omitted → omitted
+		{Config: omitted, PlanOnly: true},
+		// S2: omitted → empty-list
+		{Config: empty, PlanOnly: true},
+		// S5a: omitted → explicit[pDef]  (adding an explicit value == default is a
+		// configured-form change, so the plan is non-empty; it converges on apply)
+		{Config: pDef, PlanOnly: true, ExpectNonEmptyPlan: true},
+
+		// ── Apply: empty-list → state=[providerDefault] ──────────────────
+		{Config: empty},
+		// S3: empty-list → omitted
+		{Config: omitted, PlanOnly: true},
+		// S4: empty-list → empty-list
+		{Config: empty, PlanOnly: true},
+
+		// ── Apply: explicit[pDef] → state=[providerDefault] ──────────────
+		{Config: pDef},
+		// S6 (single-account variant): explicit[pDef] → explicit[pDef]  (an unchanged
+		// explicit value must not drift — validates the "written through unchanged"
+		// read path without needing a second account)
+		{Config: pDef, PlanOnly: true},
+		// S5b: explicit[pDef] → omitted  (removing an explicit value == default is a
+		// configured-form change, so the plan is non-empty; it converges on apply)
+		{Config: omitted, PlanOnly: true, ExpectNonEmptyPlan: true},
+	}
+
+	// Cross-account scenarios (S6–S12) exercise a genuinely different account, so
+	// they need NEW_RELIC_SUBACCOUNT_ID. Without it, testSubAccountID is 0 and the
+	// explicit-account applies would fail; skip them and log rather than fail.
+	if testSubAccountID != 0 {
+		steps = append(steps, []resource.TestStep{
+			// ── Apply: omitted → state=[providerDefault] ─────────────────
+			{Config: omitted},
+			// S7: omitted → explicit[sub]
+			{Config: explicit, PlanOnly: true, ExpectNonEmptyPlan: true},
+
+			// ── Apply: empty-list → state=[providerDefault] ──────────────
+			{Config: empty},
+			// S8: empty-list → explicit[sub]
+			{Config: explicit, PlanOnly: true, ExpectNonEmptyPlan: true},
+
+			// ── Apply: explicit[sub] → state=[subAccount] ────────────────
+			{Config: explicit},
+			// S6: explicit[sub] → explicit[sub]
+			{Config: explicit, PlanOnly: true},
+			// S11: explicit[sub] → explicit[pDef]
+			{Config: pDef, PlanOnly: true, ExpectNonEmptyPlan: true},
+			// S9: explicit[sub] → omitted
+			{Config: omitted, PlanOnly: true, ExpectNonEmptyPlan: true},
+			// S10: explicit[sub] → empty-list
+			{Config: empty, PlanOnly: true, ExpectNonEmptyPlan: true},
+
+			// ── Apply: explicit[pDef] → state=[providerDefault] ──────────
+			{Config: pDef},
+			// S12: explicit[pDef] → explicit[sub]  (provider-default-change simulation)
+			{Config: explicit, PlanOnly: true, ExpectNonEmptyPlan: true},
+		}...)
+	} else {
+		t.Log("NEW_RELIC_SUBACCOUNT_ID not set: skipping value-change scenarios that need a second account (S11, S12); running provider-default-account scenarios (S1–S4, S5a, S5b, S6) only")
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicOneDashboardDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccNewRelicOneDashboardConfigVariableAccountIDs(rName),
-				ExpectError: regexp.MustCompile("`account_ids` cannot be empty for NRQL variables"),
-			},
-		},
+		Steps:        steps,
 	})
 }
 
@@ -1907,7 +2008,8 @@ resource "newrelic_one_dashboard" "bar" {
 }`
 }
 
-// Test configuration with variable account_ids explicitly set
+// testAccNewRelicOneDashboardConfigVariableAccountIDs creates a dashboard with an NRQL variable
+// that has an explicitly empty account_ids list. The provider should default to its account ID.
 func testAccNewRelicOneDashboardConfigVariableAccountIDs(dashboardName string) string {
 	return fmt.Sprintf(`
 resource "newrelic_one_dashboard" "bar" {
@@ -1930,14 +2032,130 @@ resource "newrelic_one_dashboard" "bar" {
   }
 
   variable {
-    name               = "test_variable"
-    title              = "Test Variable"
-    type               = "nrql"
+    name                 = "test_variable"
+    title                = "Test Variable"
+    type                 = "nrql"
     replacement_strategy = "default"
 
     nrql_query {
       account_ids = []
       query       = "FROM Transaction SELECT uniques(appName)"
+    }
+  }
+}
+`, dashboardName)
+}
+
+// testAccNewRelicOneDashboardConfigVariableAccountIDsProviderDefault creates a dashboard with
+// an NRQL variable whose account_ids is explicitly set to testAccountID, which is the same
+// value as the provider's configured account_id. Used to verify that an explicit value equal
+// to the provider default is treated identically to an omitted value (no drift).
+func testAccNewRelicOneDashboardConfigVariableAccountIDsProviderDefault(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_one_dashboard" "bar" {
+  name = "%[1]s"
+
+  page {
+    name = "Test Page"
+
+    widget_line {
+      title  = "Test Widget"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      nrql_query {
+        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+      }
+    }
+  }
+
+  variable {
+    name                 = "test_variable"
+    title                = "Test Variable"
+    type                 = "nrql"
+    replacement_strategy = "default"
+
+    nrql_query {
+      account_ids = [%[2]d]
+      query       = "FROM Transaction SELECT uniques(appName)"
+    }
+  }
+}
+`, dashboardName, testAccountID)
+}
+
+// testAccNewRelicOneDashboardConfigVariableAccountIDsExplicit creates a dashboard with an NRQL
+// variable whose account_ids is set to testSubAccountID — a value distinct from the provider
+// default — so that switching back to an empty account_ids produces a detectable change.
+func testAccNewRelicOneDashboardConfigVariableAccountIDsExplicit(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_one_dashboard" "bar" {
+  name = "%[1]s"
+
+  page {
+    name = "Test Page"
+
+    widget_line {
+      title  = "Test Widget"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      nrql_query {
+        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+      }
+    }
+  }
+
+  variable {
+    name                 = "test_variable"
+    title                = "Test Variable"
+    type                 = "nrql"
+    replacement_strategy = "default"
+
+    nrql_query {
+      account_ids = [%[2]d]
+      query       = "FROM Transaction SELECT uniques(appName)"
+    }
+  }
+}
+`, dashboardName, testSubAccountID)
+}
+
+// testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted creates a dashboard with an NRQL
+// variable where account_ids is omitted entirely. The provider should default to its account ID.
+func testAccNewRelicOneDashboardConfigVariableAccountIDsOmitted(dashboardName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_one_dashboard" "bar" {
+  name = "%[1]s"
+
+  page {
+    name = "Test Page"
+
+    widget_line {
+      title  = "Test Widget"
+      row    = 1
+      column = 1
+      width  = 6
+      height = 3
+
+      nrql_query {
+        query = "FROM Transaction SELECT average(duration) FACET appName TIMESERIES"
+      }
+    }
+  }
+
+  variable {
+    name                 = "test_variable"
+    title                = "Test Variable"
+    type                 = "nrql"
+    replacement_strategy = "default"
+
+    nrql_query {
+      query = "FROM Transaction SELECT uniques(appName)"
     }
   }
 }
