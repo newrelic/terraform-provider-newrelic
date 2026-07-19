@@ -113,7 +113,7 @@ resource "time_sleep" "iam_propagation" {
 }
 
 # ── New Relic: Link one account per GCP project ───────────────────────────────
-resource "newrelic_cloud_gcp_dm_link_account" "this" {
+resource "newrelic_cloud_gcp_link_account" "this" {
   for_each = var.gcp_projects
 
   account_id            = var.newrelic_account_id
@@ -127,7 +127,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "this" {
 
 # ── New Relic: Enable Integrations ────────────────────────────────────────────
 resource "newrelic_cloud_gcp_dm_integrations" "this" {
-  for_each = newrelic_cloud_gcp_dm_link_account.this
+  for_each = newrelic_cloud_gcp_link_account.this
 
   account_id        = var.newrelic_account_id
   linked_account_id = tonumber(each.value.id)
@@ -291,7 +291,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
 # ── Outputs ───────────────────────────────────────────────────────────────────
 output "linked_account_ids" {
   description = "Map of display-name => New Relic linked account ID for each linked GCP project."
-  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.this : k => v.id }
+  value       = { for k, v in newrelic_cloud_gcp_link_account.this : k => v.id }
 }
 
 output "wif_pool_name" {

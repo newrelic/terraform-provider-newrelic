@@ -391,7 +391,7 @@ resource "google_service_account_iam_member" "newrelic_wif" {
 
 # ── New Relic: Step 1 — link GCP project ──────────────────────────────────────
 
-resource "newrelic_cloud_gcp_dm_link_account" "main" {
+resource "newrelic_cloud_gcp_link_account" "main" {
   account_id = var.newrelic_account_id
   name       = var.linked_account_name
   project_id = var.gcp_project_id
@@ -412,8 +412,8 @@ resource "newrelic_cloud_gcp_dm_link_account" "main" {
 # ── New Relic: Step 2 — configure which services to poll ──────────────────────
 
 resource "newrelic_cloud_gcp_dm_integrations" "main" {
-  account_id        = newrelic_cloud_gcp_dm_link_account.main.account_id
-  linked_account_id = newrelic_cloud_gcp_dm_link_account.main.id
+  account_id        = newrelic_cloud_gcp_link_account.main.account_id
+  linked_account_id = newrelic_cloud_gcp_link_account.main.id
 
   # All GCP services default to 300 s polling. 1-minute polling is in Limited Preview (LP)
   # and available only for: alloy_db, big_query, data_flow, data_proc, load_balancing,
@@ -460,7 +460,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
 
 output "linked_account_id" {
   description = "New Relic linked account ID for the GCP DM integration."
-  value       = newrelic_cloud_gcp_dm_link_account.main.id
+  value       = newrelic_cloud_gcp_link_account.main.id
 }
 ```
 
@@ -477,7 +477,7 @@ Variables:
 * `newrelic_sa_name` (Optional): Name for the GCP service account New Relic impersonates. Defaults to `newrelic-integration`.
 * `metrics_polling_interval` (Optional): How often (in seconds) New Relic polls each service for metrics. Defaults to `300`.
 
--> **NOTE:** `audience` and `service_account_email` in `newrelic_cloud_gcp_dm_link_account` are write-only, ForceNew fields. They are used to construct the WIF credential JSON internally and are never returned by the API. If you need to import an existing linked account, use `terraform import newrelic_cloud_gcp_dm_link_account.<name> <linked_account_id>` and then run `terraform apply` to reconcile those fields (Terraform will destroy and recreate the resource).
+-> **NOTE:** `audience` and `service_account_email` in `newrelic_cloud_gcp_link_account` are write-only, ForceNew fields. They are used to construct the WIF credential JSON internally and are never returned by the API. If you need to import an existing linked account, use `terraform import newrelic_cloud_gcp_link_account.<name> <linked_account_id>` and then run `terraform apply` to reconcile those fields (Terraform will destroy and recreate the resource).
 
 <a id="oci"></a>
 ### Oracle Cloud Infrastructure

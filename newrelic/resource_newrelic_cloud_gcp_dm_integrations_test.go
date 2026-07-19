@@ -94,7 +94,7 @@ func testAccCheckNewRelicCloudGcpDmIntegrationsExists(n string) resource.TestChe
 func testAccCheckNewRelicCloudGcpDmIntegrationsDestroyed(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 	for _, r := range s.RootModule().Resources {
-		if r.Type != "newrelic_cloud_gcp_dm_integrations" && r.Type != "newrelic_cloud_gcp_dm_link_account" {
+		if r.Type != "newrelic_cloud_gcp_dm_integrations" && r.Type != "newrelic_cloud_gcp_link_account" {
 			continue
 		}
 		linkedAccountID, err := strconv.Atoi(r.Primary.ID)
@@ -118,7 +118,7 @@ provider "newrelic" {
   alias      = "cloud-integration-provider"
 }
 
-resource "newrelic_cloud_gcp_dm_link_account" "test" {
+resource "newrelic_cloud_gcp_link_account" "test" {
   provider              = newrelic.cloud-integration-provider
   account_id            = %d
   name                  = "tf-test-gcp-dm-integrations"
@@ -130,7 +130,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "test" {
 resource "newrelic_cloud_gcp_dm_integrations" "test" {
   provider          = newrelic.cloud-integration-provider
   account_id        = %d
-  linked_account_id = newrelic_cloud_gcp_dm_link_account.test.id
+  linked_account_id = newrelic_cloud_gcp_link_account.test.id
 
   big_query {
     metrics_polling_interval = 400
@@ -154,7 +154,7 @@ provider "newrelic" {
   alias      = "cloud-integration-provider"
 }
 
-resource "newrelic_cloud_gcp_dm_link_account" "test" {
+resource "newrelic_cloud_gcp_link_account" "test" {
   provider              = newrelic.cloud-integration-provider
   account_id            = %d
   name                  = "tf-test-gcp-dm-integrations"
@@ -166,7 +166,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "test" {
 resource "newrelic_cloud_gcp_dm_integrations" "test" {
   provider          = newrelic.cloud-integration-provider
   account_id        = %d
-  linked_account_id = newrelic_cloud_gcp_dm_link_account.test.id
+  linked_account_id = newrelic_cloud_gcp_link_account.test.id
 
   big_query {
     metrics_polling_interval = 400

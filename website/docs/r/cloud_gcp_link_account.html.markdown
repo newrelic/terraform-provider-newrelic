@@ -34,6 +34,20 @@ resource "newrelic_cloud_gcp_link_account" "foo" {
 }
 ```
 
+### GCP Dimensional Metrics (keyless / WIF) linking
+
+To link a GCP project for **GCP Dimensional Metrics** using keyless authentication via Workload Identity Federation (WIF) instead of a service-account key, set both `audience` and `service_account_email`. When these are supplied, the resource authenticates via WIF and links the project under the Dimensional Metrics (`gcp_v2`) provider. Use this linked account with the [`newrelic_cloud_gcp_dm_integrations`](cloud_gcp_dm_integrations.html) resource.
+
+```hcl
+resource "newrelic_cloud_gcp_link_account" "dm" {
+  account_id            = "account id of newrelic account"
+  name                  = "account name"
+  project_id            = "id of the Project"
+  audience              = "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/newrelic-wif-pool/providers/newrelic-oidc-provider"
+  service_account_email = "newrelic-integration@my-project.iam.gserviceaccount.com"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -41,6 +55,10 @@ The following arguments are supported:
 - `account_id` - (Optional) - Account ID of the New Relic account.
 - `project_id` - (Required) - Project ID of the GCP account.
 - `name` - (Required) - The name of the GCP account in New Relic.
+- `audience` - (Optional) - The Workload Identity Federation pool provider audience URI, used for **GCP Dimensional Metrics** (keyless) linking. Format: `//iam.googleapis.com/projects/{PROJECT_NUMBER}/locations/global/workloadIdentityPools/{POOL_ID}/providers/{PROVIDER_ID}`. Must be set together with `service_account_email`; when both are set the account is linked via WIF instead of a service-account key.
+- `service_account_email` - (Optional) - The GCP service account email New Relic impersonates to collect metrics when linking via WIF. The service account must grant the WIF pool the `roles/iam.workloadIdentityUser` binding. Must be set together with `audience`.
+
+-> **NOTE:** `audience` and `service_account_email` are write-only, `ForceNew` fields used to construct the WIF credential internally; they are never returned by the API and are retained from state. When importing a WIF-linked account, add these two attributes to `ImportStateVerifyIgnore` (or run `terraform apply` afterwards to reconcile them).
 
 -> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_gcp_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
 

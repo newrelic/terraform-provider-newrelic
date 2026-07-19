@@ -105,7 +105,7 @@ resource "time_sleep" "iam_propagation" {
 # ── Group 1: Analytics Projects ───────────────────────────────────────────────
 # Enabled: BigQuery, PubSub, Spanner, Storage, DataFlow, DataProc
 
-resource "newrelic_cloud_gcp_dm_link_account" "analytics" {
+resource "newrelic_cloud_gcp_link_account" "analytics" {
   for_each = var.analytics_projects
 
   account_id            = tonumber(var.newrelic_account_id)
@@ -118,7 +118,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "analytics" {
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
-  for_each = newrelic_cloud_gcp_dm_link_account.analytics
+  for_each = newrelic_cloud_gcp_link_account.analytics
 
   account_id        = tonumber(var.newrelic_account_id)
   linked_account_id = tonumber(each.value.id)
@@ -150,7 +150,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
 # ── Group 2: Compute Projects ─────────────────────────────────────────────────
 # Enabled: VMs, SQL, Cloud Run, Load Balancing, Cloud Functions, Kubernetes (metrics only, no entity support)
 
-resource "newrelic_cloud_gcp_dm_link_account" "compute" {
+resource "newrelic_cloud_gcp_link_account" "compute" {
   for_each = var.compute_projects
 
   account_id            = tonumber(var.newrelic_account_id)
@@ -163,7 +163,7 @@ resource "newrelic_cloud_gcp_dm_link_account" "compute" {
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "compute" {
-  for_each = newrelic_cloud_gcp_dm_link_account.compute
+  for_each = newrelic_cloud_gcp_link_account.compute
 
   account_id        = tonumber(var.newrelic_account_id)
   linked_account_id = tonumber(each.value.id)
@@ -191,12 +191,12 @@ resource "newrelic_cloud_gcp_dm_integrations" "compute" {
 # ── Outputs ───────────────────────────────────────────────────────────────────
 output "analytics_linked_account_ids" {
   description = "Map of display-name => New Relic linked account ID for analytics projects."
-  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.analytics : k => v.id }
+  value       = { for k, v in newrelic_cloud_gcp_link_account.analytics : k => v.id }
 }
 
 output "compute_linked_account_ids" {
   description = "Map of display-name => New Relic linked account ID for compute projects."
-  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.compute : k => v.id }
+  value       = { for k, v in newrelic_cloud_gcp_link_account.compute : k => v.id }
 }
 
 output "wif_pool_name" {
