@@ -21,6 +21,7 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: resourceNewRelicCloudGcpLinkAccountCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,
@@ -40,11 +41,21 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			// The two fields below opt the resource into GCP Dimensional Metrics
-			// (v2) keyless linking via Workload Identity Federation (WIF). When both
-			// are set, the resource authenticates via WIF and links under the gcp_v2
-			// provider; when both are absent, it links using the legacy service-account
-			// key flow (no auth reference). They must be supplied together.
+			// use_workload_identity_federation explicitly selects GCP Dimensional Metrics (v2)
+			// keyless linking via Workload Identity Federation (WIF). When true, the
+			// resource authenticates via WIF and links under the gcp_v2 provider, and
+			// audience + service_account_email are required. When false (the default),
+			// the account is linked using the legacy service-account-key flow.
+			"use_workload_identity_federation": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+				Description: "Set to true to link this GCP account for New Relic GCP Dimensional Metrics (v2) " +
+					"using keyless Workload Identity Federation (WIF). When true, audience and " +
+					"service_account_email are required. When false (the default), the account is linked " +
+					"using the legacy service-account-key flow.",
+			},
 			"audience": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -53,8 +64,7 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				Description: "The Workload Identity Federation pool provider audience URI, used for GCP " +
 					"Dimensional Metrics (keyless) linking. Format: //iam.googleapis.com/projects/" +
 					"{PROJECT_NUMBER}/locations/global/workloadIdentityPools/{POOL_ID}/providers/{PROVIDER_ID}. " +
-					"When set together with service_account_email, the account is linked via WIF instead " +
-					"of a service-account key.",
+					"Required when use_workload_identity_federation = true.",
 			},
 			"service_account_email": {
 				Type:         schema.TypeString,
@@ -63,8 +73,8 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 				RequiredWith: []string{"audience"},
 				Description: "The GCP service account email New Relic impersonates to collect metrics when " +
 					"linking via Workload Identity Federation (GCP Dimensional Metrics). The service account " +
-					"must grant the WIF pool the roles/iam.workloadIdentityUser binding. Required together " +
-					"with audience.",
+					"must grant the WIF pool the roles/iam.workloadIdentityUser binding. Required when " +
+					"use_workload_identity_federation = true.",
 			},
 		},
 	}
@@ -75,8 +85,8 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
-	// GCP Dimensional Metrics (WIF/keyless) mode is selected when both audience and
-	// service_account_email are provided; otherwise fall back to the legacy flow.
+	// GCP Dimensional Metrics (WIF/keyless) mode is selected by use_workload_identity_federation;
+	// otherwise fall back to the legacy service-account-key flow.
 	if isGcpWIFMode(d) {
 		return resourceNewRelicCloudGcpLinkAccountCreateWIF(ctx, d, providerConfig, accountID)
 	}
@@ -114,11 +124,28 @@ func resourceNewRelicCloudGcpLinkAccountCreate(ctx context.Context, d *schema.Re
 }
 
 // isGcpWIFMode reports whether the resource is configured for GCP Dimensional
-// Metrics (keyless) linking via Workload Identity Federation. Both audience and
-// service_account_email are required together (enforced by RequiredWith), so
-// checking audience is sufficient.
+// Metrics (v2) keyless linking via Workload Identity Federation, as selected by
+// the explicit use_workload_identity_federation attribute.
 func isGcpWIFMode(d *schema.ResourceData) bool {
-	return d.Get("audience").(string) != ""
+	return d.Get("use_workload_identity_federation").(bool)
+}
+
+// resourceNewRelicCloudGcpLinkAccountCustomizeDiff enforces the relationship between
+// the explicit use_workload_identity_federation flag and the WIF credential fields: when the
+// flag is set, audience and service_account_email are required; when it is not set,
+// those fields must be absent.
+func resourceNewRelicCloudGcpLinkAccountCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	isDM := d.Get("use_workload_identity_federation").(bool)
+	audience := d.Get("audience").(string)
+	saEmail := d.Get("service_account_email").(string)
+
+	if isDM && (audience == "" || saEmail == "") {
+		return fmt.Errorf("audience and service_account_email are required when use_workload_identity_federation = true")
+	}
+	if !isDM && (audience != "" || saEmail != "") {
+		return fmt.Errorf("audience and service_account_email can only be set when use_workload_identity_federation = true")
+	}
+	return nil
 }
 
 // resourceNewRelicCloudGcpLinkAccountCreateWIF performs the two-step GCP Dimensional

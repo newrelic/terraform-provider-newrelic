@@ -124,12 +124,13 @@ provider "newrelic" {
 }
 
 resource "newrelic_cloud_gcp_link_account" "wif" {
-  provider              = newrelic.cloud-integration-provider
-  account_id            = %d
-  name                  = %q
-  project_id            = %q
-  audience              = %q
-  service_account_email = %q
+  provider                         = newrelic.cloud-integration-provider
+  account_id                       = %d
+  name                             = %q
+  project_id                       = %q
+  use_workload_identity_federation = true
+  audience                         = %q
+  service_account_email            = %q
 }
 `, testSubAccountID, testSubAccountID, name, projectID, audience, serviceAccountEmail)
 }

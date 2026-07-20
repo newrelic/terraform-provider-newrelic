@@ -108,11 +108,12 @@ resource "time_sleep" "iam_propagation" {
 resource "newrelic_cloud_gcp_link_account" "analytics" {
   for_each = var.analytics_projects
 
-  account_id            = tonumber(var.newrelic_account_id)
-  name                  = each.key
-  project_id            = each.value
-  service_account_email = google_service_account.newrelic.email
-  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  account_id                       = tonumber(var.newrelic_account_id)
+  name                             = each.key
+  project_id                       = each.value
+  use_workload_identity_federation = true
+  service_account_email            = google_service_account.newrelic.email
+  audience                         = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [time_sleep.iam_propagation]
 }
@@ -149,11 +150,12 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
 resource "newrelic_cloud_gcp_link_account" "compute" {
   for_each = var.compute_projects
 
-  account_id            = tonumber(var.newrelic_account_id)
-  name                  = each.key
-  project_id            = each.value
-  service_account_email = google_service_account.newrelic.email
-  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  account_id                       = tonumber(var.newrelic_account_id)
+  name                             = each.key
+  project_id                       = each.value
+  use_workload_identity_federation = true
+  service_account_email            = google_service_account.newrelic.email
+  audience                         = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [time_sleep.iam_propagation]
 }

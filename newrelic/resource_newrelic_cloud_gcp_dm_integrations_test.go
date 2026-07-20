@@ -117,12 +117,13 @@ provider "newrelic" {
 }
 
 resource "newrelic_cloud_gcp_link_account" "test" {
-  provider              = newrelic.cloud-integration-provider
-  account_id            = %d
-  name                  = "tf-test-gcp-dm-integrations"
-  project_id            = %q
-  audience              = %q
-  service_account_email = %q
+  provider               = newrelic.cloud-integration-provider
+  account_id             = %d
+  name                   = "tf-test-gcp-dm-integrations"
+  project_id             = %q
+  use_workload_identity_federation = true
+  audience               = %q
+  service_account_email  = %q
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "test" {
@@ -151,12 +152,13 @@ provider "newrelic" {
 }
 
 resource "newrelic_cloud_gcp_link_account" "test" {
-  provider              = newrelic.cloud-integration-provider
-  account_id            = %d
-  name                  = "tf-test-gcp-dm-integrations"
-  project_id            = %q
-  audience              = %q
-  service_account_email = %q
+  provider               = newrelic.cloud-integration-provider
+  account_id             = %d
+  name                   = "tf-test-gcp-dm-integrations"
+  project_id             = %q
+  use_workload_identity_federation = true
+  audience               = %q
+  service_account_email  = %q
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "test" {

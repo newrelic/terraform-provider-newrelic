@@ -396,9 +396,11 @@ resource "newrelic_cloud_gcp_link_account" "main" {
   name       = var.linked_account_name
   project_id = var.gcp_project_id
 
-  # The provider builds the WIF credential JSON internally from these two fields.
-  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
-  service_account_email = google_service_account.newrelic.email
+  # Opt into keyless GCP Dimensional Metrics linking; the provider builds the WIF
+  # credential JSON internally from audience + service_account_email.
+  use_workload_identity_federation = true
+  audience                         = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  service_account_email            = google_service_account.newrelic.email
 
   depends_on = [
     google_project_iam_member.newrelic_viewer,
