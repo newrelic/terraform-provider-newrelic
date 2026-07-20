@@ -159,7 +159,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "big_query") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "big_table" {
@@ -246,7 +245,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "pub_sub") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "redis" {
@@ -265,7 +263,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "spanner") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "sql" {
@@ -276,7 +273,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "storage") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "virtual_machines" {

@@ -54,20 +54,14 @@ variable "newrelic_sa_name" {
 }
 
 variable "metrics_polling_interval" {
-  type    = number
-  default = 300
+  type        = number
+  default     = 300
   description = <<-EOT
     Polling interval in seconds applied to all enabled services. Default: 300 (5 minutes).
     Limited Preview (LP) note: 1-minute polling is in LP and available only for the following services:
       alloy_db, big_query, data_flow, data_proc, load_balancing, managed_kafka, pub_sub, spanner
     Set this variable to 60 to enable 1-minute polling across all services.
   EOT
-}
-
-variable "enable_fetch_tags" {
-  type        = bool
-  default     = false
-  description = "Whether to fetch GCP resource tags/labels for supported services (big_query, pub_sub, spanner, storage)."
 }
 
 variable "enabled_services" {

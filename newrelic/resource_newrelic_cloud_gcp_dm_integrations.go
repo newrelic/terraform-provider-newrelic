@@ -70,19 +70,17 @@ func gcpDmFilterDisableErrors(errors []cloud.CloudIntegrationMutationError) erro
 // parallel switch/if-else blocks.
 
 // gcpDmServiceValues carries the per-service values read from the resource schema.
+// GCP Dimensional Metrics is metrics-only, so metrics_polling_interval is the only
+// per-service knob — the backend rejects inventory-era params such as fetch_tags.
 type gcpDmServiceValues struct {
 	LinkedAccountID        int
 	MetricsPollingInterval int
-	FetchTags              bool
-	FetchTableMetrics      bool
 }
 
 // gcpDmService describes one GCP service block.
 type gcpDmService struct {
-	key               string
-	description       string
-	fetchTags         bool // exposes a fetch_tags attribute
-	fetchTableMetrics bool // exposes a fetch_table_metrics attribute
+	key         string
+	description string
 	// configure sets this service's typed input slice on the configure payload.
 	configure func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues)
 	// disable sets this service's disable slice on the disable payload.
@@ -126,9 +124,9 @@ func gcpDmServices() []gcpDmService {
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{dis}
 			}},
-		{key: "big_query", description: "GCP BigQuery.", fetchTags: true, fetchTableMetrics: true,
+		{key: "big_query", description: "GCP BigQuery.",
 			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
-				g.GcpBigquery = []cloud.CloudGcpBigqueryIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval, FetchTags: v.FetchTags, FetchTableMetrics: v.FetchTableMetrics}}
+				g.GcpBigquery = []cloud.CloudGcpBigqueryIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
 			},
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpBigquery = []cloud.CloudDisableAccountIntegrationInput{dis}
@@ -231,9 +229,9 @@ func gcpDmServices() []gcpDmService {
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpMemcache = []cloud.CloudDisableAccountIntegrationInput{dis}
 			}},
-		{key: "pub_sub", description: "GCP Cloud Pub/Sub.", fetchTags: true,
+		{key: "pub_sub", description: "GCP Cloud Pub/Sub.",
 			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
-				g.GcpPubsub = []cloud.CloudGcpPubsubIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval, FetchTags: v.FetchTags}}
+				g.GcpPubsub = []cloud.CloudGcpPubsubIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
 			},
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpPubsub = []cloud.CloudDisableAccountIntegrationInput{dis}
@@ -259,9 +257,9 @@ func gcpDmServices() []gcpDmService {
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpRun = []cloud.CloudDisableAccountIntegrationInput{dis}
 			}},
-		{key: "spanner", description: "GCP Cloud Spanner.", fetchTags: true,
+		{key: "spanner", description: "GCP Cloud Spanner.",
 			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
-				g.GcpSpanner = []cloud.CloudGcpSpannerIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval, FetchTags: v.FetchTags}}
+				g.GcpSpanner = []cloud.CloudGcpSpannerIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
 			},
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpSpanner = []cloud.CloudDisableAccountIntegrationInput{dis}
@@ -273,9 +271,9 @@ func gcpDmServices() []gcpDmService {
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpSql = []cloud.CloudDisableAccountIntegrationInput{dis}
 			}},
-		{key: "storage", description: "GCP Cloud Storage.", fetchTags: true,
+		{key: "storage", description: "GCP Cloud Storage.",
 			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
-				g.GcpStorage = []cloud.CloudGcpStorageIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval, FetchTags: v.FetchTags}}
+				g.GcpStorage = []cloud.CloudGcpStorageIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
 			},
 			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
 				g.GcpStorage = []cloud.CloudDisableAccountIntegrationInput{dis}
@@ -380,26 +378,7 @@ func generateGcpDmIntegrationSchema() map[string]*schema.Schema {
 	}
 
 	for _, svc := range gcpDmServices() {
-		elem := base
-		if svc.fetchTags || svc.fetchTableMetrics {
-			extra := map[string]*schema.Schema{}
-			if svc.fetchTags {
-				extra["fetch_tags"] = &schema.Schema{
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Description: "Fetch resource tags for this integration.",
-				}
-			}
-			if svc.fetchTableMetrics {
-				extra["fetch_table_metrics"] = &schema.Schema{
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Description: "Fetch metrics for each table in BigQuery.",
-				}
-			}
-			elem = cloudGcpDmMergeSchema(base, extra)
-		}
-		s[svc.key] = serviceBlock(svc.description, elem)
+		s[svc.key] = serviceBlock(svc.description, base)
 	}
 
 	return s
@@ -425,18 +404,6 @@ func cloudGcpDmIntegrationSchemaBase() map[string]*schema.Schema {
 			Description: "The data polling interval in seconds.",
 		},
 	}
-}
-
-// cloudGcpDmMergeSchema merges two schema maps into a new map (non-destructive).
-func cloudGcpDmMergeSchema(base, extra map[string]*schema.Schema) map[string]*schema.Schema {
-	result := make(map[string]*schema.Schema, len(base)+len(extra))
-	for k, v := range base {
-		result[k] = v
-	}
-	for k, v := range extra {
-		result[k] = v
-	}
-	return result
 }
 
 // ─── CRUD functions ───────────────────────────────────────────────────────────
@@ -593,29 +560,15 @@ func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID i
 		return 0
 	}
 
-	getBool := func(key string) bool {
-		if v := d.Get(key); v != nil {
-			return v.(bool)
-		}
-		return false
-	}
-
 	for _, svc := range gcpDmServices() {
 		if !present(svc.key) {
 			svc.disable(&gcpDisable, dis)
 			continue
 		}
-		values := gcpDmServiceValues{
+		svc.configure(&gcpInput, gcpDmServiceValues{
 			LinkedAccountID:        linkedAccountID,
 			MetricsPollingInterval: getInt(svc.key + ".0.metrics_polling_interval"),
-		}
-		if svc.fetchTags {
-			values.FetchTags = getBool(svc.key + ".0.fetch_tags")
-		}
-		if svc.fetchTableMetrics {
-			values.FetchTableMetrics = getBool(svc.key + ".0.fetch_table_metrics")
-		}
-		svc.configure(&gcpInput, values)
+		})
 	}
 
 	return gcpInput, gcpDisable

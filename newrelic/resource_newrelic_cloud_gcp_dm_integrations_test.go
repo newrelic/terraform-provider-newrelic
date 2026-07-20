@@ -38,8 +38,6 @@ func TestAccNewRelicCloudGcpDmIntegrations_Basic(t *testing.T) {
 					testAccCheckNewRelicCloudGcpDmIntegrationsExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "linked_account_id"),
 					resource.TestCheckResourceAttr(resourceName, "big_query.0.metrics_polling_interval", "400"),
-					resource.TestCheckResourceAttr(resourceName, "big_query.0.fetch_tags", "true"),
-					resource.TestCheckResourceAttr(resourceName, "big_query.0.fetch_table_metrics", "true"),
 					resource.TestCheckResourceAttr(resourceName, "api_gateway.0.metrics_polling_interval", "400"),
 				),
 			},
@@ -110,7 +108,7 @@ func testAccCheckNewRelicCloudGcpDmIntegrationsDestroyed(s *terraform.State) err
 }
 
 // testAccNewRelicCloudGcpDmIntegrationsConfig creates a link account plus integrations
-// with big_query (fetch_tags + fetch_table_metrics) and api_gateway enabled.
+// with big_query and api_gateway enabled.
 func testAccNewRelicCloudGcpDmIntegrationsConfig(projectID, audience, serviceAccountEmail string) string {
 	return fmt.Sprintf(`
 provider "newrelic" {
@@ -134,8 +132,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "test" {
 
   big_query {
     metrics_polling_interval = 400
-    fetch_tags               = true
-    fetch_table_metrics      = true
   }
 
   api_gateway {
@@ -170,8 +166,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "test" {
 
   big_query {
     metrics_polling_interval = 400
-    fetch_tags               = true
-    fetch_table_metrics      = true
   }
 
   firebase_auth {

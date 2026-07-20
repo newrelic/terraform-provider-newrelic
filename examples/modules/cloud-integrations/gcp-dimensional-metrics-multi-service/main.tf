@@ -14,7 +14,7 @@
 locals {
   oidc_issuer_uri = (var.newrelic_region == "EU"
     ? "https://oidc.eu.newrelic.com/r/gcp-cmp"
-    : "https://oidc.newrelic.com/r/gcp-cmp")
+  : "https://oidc.newrelic.com/r/gcp-cmp")
 }
 
 # ── Providers ─────────────────────────────────────────────────────────────────
@@ -125,7 +125,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
 
   big_query {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
   data_flow {
     metrics_polling_interval = var.metrics_polling_interval
@@ -135,15 +134,12 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
   }
   pub_sub {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
   spanner {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
   storage {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
 }
 
