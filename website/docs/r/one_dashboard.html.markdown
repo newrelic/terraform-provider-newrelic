@@ -582,11 +582,14 @@ Nested `nrql_query` blocks in **variable** allow you to make NRQL queries to pop
 
 The following arguments are supported:
 
-  * `account_ids` - (Required) List of account IDs such as `[12345, 67890]`.
+  * `account_ids` - (Optional) List of account IDs to run the variable's NRQL query against, such as `[12345, 67890]`. If omitted, defaults to the account ID the provider is configured with.
   * `query` - (Required) Valid NRQL query string. See [Writing NRQL Queries](https://docs.newrelic.com/docs/insights/nrql-new-relic-query-language/using-nrql/introduction-nrql) for help.
+
+-> **NOTE:** While `account_ids` is optional and will default to the provider's configured account ID when left out, it is recommended to specify it explicitly wherever you can. This makes it clear which account the variable queries, helps Terraform detect genuine drift if the value is changed outside of Terraform (for example, via the UI), and avoids any ambiguity when the same configuration is applied across multiple accounts or environments. If you are importing an existing dashboard, check the account IDs the variable is querying against and specify them explicitly in your configuration after the import. This is particularly worth doing if they differ from the account your provider is configured with, as you may see unexpected drift on the first plan otherwise.
 
 Example usage:
 ```hcl
+# Variable querying multiple accounts explicitly
 variable {
     default_values     = ["value"]
     is_multi_selection = true
@@ -596,7 +599,6 @@ variable {
     }
     name = "variable"
     nrql_query {
-      # Multi-account query - specify multiple account IDs as list of integers
       account_ids = [12345, 67890]
       query       = "FROM Transaction SELECT average(duration) FACET appName"
     }
@@ -605,6 +607,7 @@ variable {
     type                 = "nrql"
 }
 
+# Variable querying a single account explicitly
 variable {
     default_values     = ["value"]
     is_multi_selection = true
@@ -614,9 +617,25 @@ variable {
     }
     name = "variable"
     nrql_query {
-      # Single account - use list format
       account_ids = [12345]
       query       = "FROM Transaction SELECT average(duration) FACET appName"
+    }
+    replacement_strategy = "default"
+    title                = "title"
+    type                 = "nrql"
+}
+
+# Variable with account_ids omitted - defaults to the provider's configured account ID
+variable {
+    default_values     = ["value"]
+    is_multi_selection = true
+    item {
+      title = "item"
+      value = "ITEM"
+    }
+    name = "variable"
+    nrql_query {
+      query = "FROM Transaction SELECT average(duration) FACET appName"
     }
     replacement_strategy = "default"
     title                = "title"
@@ -726,8 +745,8 @@ widget_area {
 
 | Block Type | Attribute Name | Format | Example |
 |------------|----------------|--------|---------|
-| **Widget** `nrql_query` | `account_id` | String/Number or JSON-encoded array | `12345` or `jsonencode([12345, 67890])` |
-| **Variable** `nrql_query` | `account_ids` | List of integers | `[12345, 67890]` |
+| **Widget** `nrql_query` | `account_id` | Optional. String/Number or JSON-encoded array | `12345` or `jsonencode([12345, 67890])` |
+| **Variable** `nrql_query` | `account_ids` | Optional. List of integers, defaults to provider account ID | `[12345, 67890]` |
 
 **Historical Context:** This difference exists because:
 - **Variables** were designed with multi-account support from the beginning (v3.9.0+).

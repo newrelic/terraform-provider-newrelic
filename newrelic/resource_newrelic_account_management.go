@@ -3,13 +3,13 @@ package newrelic
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/accountmanagement"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/customeradministration"
 )
@@ -39,10 +39,11 @@ func resourceNewRelicAccountManagement() *schema.Resource {
 				Required:    true,
 			},
 			NewRelicAccountManagementSchemaRegion: {
-				Type:         schema.TypeString,
-				Description:  "A description of what this parsing rule represents.",
-				ValidateFunc: validation.StringInSlice([]string{"us01", "eu01"}, false),
-				Required:     true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "DEPRECATED. The `region` argument is no longer meaningful and has no effect on where the account is created.",
+				Deprecated:  "`region` is deprecated. New Relic organizations are single-region - the account is created in the region of the organization tied to your API key. Leave this argument unset.",
 			},
 			NewRelicAccountManagementSchemaStatus: {
 				Type:        schema.TypeString,
@@ -61,9 +62,11 @@ func resourceNewRelicAccountCreate(ctx context.Context, d *schema.ResourceData, 
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
+	if v := d.Get(NewRelicAccountManagementSchemaRegion).(string); v != "" {
+		log.Printf("[WARN] `region` argument on `newrelic_account_management` is deprecated and ignored (single-region orgs). Ignored value: %q", v)
+	}
 	createAccountInput := accountmanagement.AccountManagementCreateInput{
-		Name:       d.Get(NewRelicAccountManagementSchemaName).(string),
-		RegionCode: d.Get(NewRelicAccountManagementSchemaRegion).(string),
+		Name: d.Get(NewRelicAccountManagementSchemaName).(string),
 	}
 	created, err := client.AccountManagement.AccountManagementCreateAccount(createAccountInput)
 

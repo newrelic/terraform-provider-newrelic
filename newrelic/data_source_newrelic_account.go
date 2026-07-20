@@ -25,7 +25,7 @@ func dataSourceNewRelicAccount() *schema.Resource {
 			NewRelicAccountManagementSchemaRegion: {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The region code of the account (e.g., us01, eu01).",
+				Description: "The region code of the account, as reported by New Relic.",
 			},
 			"account_id": {
 				Type:          schema.TypeInt,

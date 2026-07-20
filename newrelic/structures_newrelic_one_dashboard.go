@@ -37,7 +37,8 @@ func expandDashboardInput(d *schema.ResourceData, meta interface{}, dashboardNam
 		return nil, err
 	}
 
-	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}))
+	providerAccountID := meta.(map[string]interface{})["account_id"].(int)
+	dash.Variables, err = expandDashboardVariablesInput(d.Get("variable").([]interface{}), providerAccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func validateDashboardWidgetNRQLQueryAccountIDs(accountIDValue interface{}, key 
 	return
 }
 
-func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.DashboardVariableInput, error) {
+func expandDashboardVariablesInput(variables []interface{}, providerAccountID int) ([]dashboards.DashboardVariableInput, error) {
 	if len(variables) < 1 {
 		return []dashboards.DashboardVariableInput{}, nil
 	}
@@ -139,7 +140,7 @@ func expandDashboardVariablesInput(variables []interface{}) ([]dashboards.Dashbo
 		}
 
 		if q, ok := v["nrql_query"]; ok && len(q.([]interface{})) > 0 {
-			variable.NRQLQuery = expandVariableNRQLQuery(q.([]interface{}))
+			variable.NRQLQuery = expandVariableNRQLQuery(q.([]interface{}), providerAccountID)
 		}
 
 		if r, ok := v["replacement_strategy"]; ok {
@@ -190,14 +191,19 @@ func expandVariableItems(in []interface{}) []dashboards.DashboardVariableEnumIte
 	return out
 }
 
-func expandVariableNRQLQuery(in []interface{}) *dashboards.DashboardVariableNRQLQueryInput {
+func expandVariableNRQLQuery(in []interface{}, providerAccountID int) *dashboards.DashboardVariableNRQLQueryInput {
 	var out dashboards.DashboardVariableNRQLQueryInput
 
 	for _, v := range in {
 		cfg := v.(map[string]interface{})
+		accountIDs := expandVariableAccountIDs(cfg["account_ids"].([]interface{}))
+		if len(accountIDs) == 0 {
+			accountIDs = []int{providerAccountID}
+		}
 		out = dashboards.DashboardVariableNRQLQueryInput{
-			AccountIDs: expandVariableAccountIDs(cfg["account_ids"].([]interface{})),
-			Query:      nrdb.NRQL(cfg["query"].(string))}
+			AccountIDs: accountIDs,
+			Query:      nrdb.NRQL(cfg["query"].(string)),
+		}
 	}
 
 	return &out
@@ -1181,7 +1187,7 @@ func expandVariableOptions(in []interface{}) *dashboards.DashboardVariableOption
 // Unpack the *dashboards.Dashboard variable and set resource data.
 //
 // Used by the newrelic_one_dashboard Read function (resourceNewRelicOneDashboardRead)
-func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.ResourceData) error {
+func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.ResourceData, providerAccountID int) error {
 	_ = d.Set("account_id", dashboard.AccountID)
 	_ = d.Set("guid", dashboard.GUID)
 	_ = d.Set("name", dashboard.Name)
@@ -1200,7 +1206,7 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 	}
 
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
-		variables := flattenDashboardVariable(&dashboard.Variables, d)
+		variables := flattenDashboardVariable(&dashboard.Variables, d, providerAccountID)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
@@ -1211,7 +1217,7 @@ func flattenDashboardEntity(dashboard *entities.DashboardEntity, d *schema.Resou
 // Unpack the *dashboards.Dashboard variable and set resource data.
 //
 // Used by the newrelic_one_dashboard Read function (resourceNewRelicOneDashboardRead)
-func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *schema.ResourceData) error {
+func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *schema.ResourceData, providerAccountID int) error {
 	if result == nil {
 		return fmt.Errorf("can not flatten nil DashboardUpdateResult")
 	}
@@ -1235,7 +1241,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 		}
 	}
 	if dashboard.Variables != nil && len(dashboard.Variables) > 0 {
-		variables := flattenDashboardVariable(&dashboard.Variables, d)
+		variables := flattenDashboardVariable(&dashboard.Variables, d, providerAccountID)
 		if err := d.Set("variable", variables); err != nil {
 			return err
 		}
@@ -1243,7 +1249,7 @@ func flattenDashboardUpdateResult(result *dashboards.DashboardUpdateResult, d *s
 	return nil
 }
 
-func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.ResourceData) []interface{} {
+func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.ResourceData, providerAccountID int) []interface{} {
 	out := make([]interface{}, len(*in))
 
 	for i, v := range *in {
@@ -1256,7 +1262,11 @@ func flattenDashboardVariable(in *[]entities.DashboardVariable, d *schema.Resour
 		m["item"] = flattenVariableItems(v.Items)
 		m["name"] = v.Name
 		if v.NRQLQuery != nil {
-			m["nrql_query"] = flattenVariableNRQLQuery(v.NRQLQuery)
+			// The configured account_ids for this variable (empty when the user
+			// omitted them). Used to decide whether an upstream value equal to the
+			// provider default should be normalised back to an empty list.
+			configAccountIDs, _ := d.Get(fmt.Sprintf("variable.%d.nrql_query.0.account_ids", i)).([]interface{})
+			m["nrql_query"] = flattenVariableNRQLQuery(v.NRQLQuery, configAccountIDs, providerAccountID)
 		}
 		m["replacement_strategy"] = strings.ToLower(string(v.ReplacementStrategy))
 		m["title"] = v.Title
@@ -1296,17 +1306,30 @@ func flattenVariableItems(in []entities.DashboardVariableEnumItem) []interface{}
 	return out
 }
 
-func flattenVariableNRQLQuery(in *entities.DashboardVariableNRQLQuery) []interface{} {
-	out := make([]interface{}, 1)
-
+// flattenVariableNRQLQuery writes an NRQL variable query back to state.
+//
+// account_ids is optional: when a user omits it (or sets an empty list),
+// expandVariableNRQLQuery defaults the query to the provider's account ID before
+// sending it upstream. On read the API therefore returns [providerAccountID] even
+// though the configuration is empty. To avoid perpetual drift ("plan wants to remove
+// the default account ID"), we normalise that specific case back to an empty list so
+// state matches the empty configuration.
+//
+// If the upstream value is anything else — a different account, multiple accounts, or
+// a value changed directly in the UI — it is written through unchanged so that a real
+// change still surfaces as drift. Likewise, when the user configured account_ids
+// explicitly (configAccountIDs non-empty) the upstream value is always written as-is.
+func flattenVariableNRQLQuery(in *entities.DashboardVariableNRQLQuery, configAccountIDs []interface{}, providerAccountID int) []interface{} {
 	n := make(map[string]interface{})
 
-	n["account_ids"] = in.AccountIDs
+	if len(configAccountIDs) == 0 && len(in.AccountIDs) == 1 && in.AccountIDs[0] == providerAccountID {
+		n["account_ids"] = []int{}
+	} else {
+		n["account_ids"] = in.AccountIDs
+	}
 	n["query"] = in.Query
 
-	out[0] = n
-
-	return out
+	return []interface{}{n}
 }
 
 func flattenVariableOptions(in *entities.DashboardVariableOptions, d *schema.ResourceData, index int) []interface{} {
@@ -1933,11 +1956,6 @@ func validateDashboardArguments(ctx context.Context, d *schema.ResourceDiff, met
 		errorsList = append(errorsList, err.Error())
 	}
 
-	err = validateDashboardVariableNRQLAccountIDs(d, meta)
-	if err != nil {
-		errorsList = append(errorsList, err.Error())
-	}
-
 	//adding a function to validate that the " to and "from" fields in "threshold" for table & line widget are a floating point number.
 	validateThresholdFields(d, &errorsList, "widget_table")
 	validateThresholdFields(d, &errorsList, "widget_line")
@@ -1992,54 +2010,6 @@ func validateDashboardVariableOptions(d *schema.ResourceDiff) error {
 					}
 				}
 
-			}
-		}
-	}
-
-	return nil
-}
-
-func validateDashboardVariableNRQLAccountIDs(d *schema.ResourceDiff, meta interface{}) error {
-
-	_, variablesListObtained := d.GetChange("variable")
-	vars := variablesListObtained.([]interface{})
-
-	// Get default account ID from provider metadata
-	var defaultAccountID int
-	if providerMeta, ok := meta.(*ProviderConfig); ok {
-		defaultAccountID = providerMeta.AccountID
-	}
-
-	for i, v := range vars {
-		variableMap := v.(map[string]interface{})
-
-		nrqlQuery, nrqlQueryOk := variableMap["nrql_query"]
-		if !nrqlQueryOk {
-			continue
-		}
-
-		nrqlQueryInterface := nrqlQuery.([]interface{})
-		if len(nrqlQueryInterface) == 0 {
-			continue
-		}
-
-		for _, query := range nrqlQueryInterface {
-			if query == nil {
-				continue
-			}
-
-			queryMap := query.(map[string]interface{})
-			accountIDs, accountIDsOk := queryMap["account_ids"]
-
-			// Check if account_ids is missing or empty
-			if !accountIDsOk {
-				return fmt.Errorf("variable[%d]: `account_ids` is required for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
-					i, defaultAccountID, defaultAccountID)
-			}
-
-			if accountIDsSlice, ok := accountIDs.([]interface{}); ok && len(accountIDsSlice) == 0 {
-				return fmt.Errorf("variable[%d]: `account_ids` cannot be empty for NRQL variables. The default provider account ID is %d - consider setting `account_ids = [%d]`",
-					i, defaultAccountID, defaultAccountID)
 			}
 		}
 	}

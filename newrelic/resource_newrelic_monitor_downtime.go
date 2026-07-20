@@ -241,16 +241,25 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 		if err != nil {
 			return resource.RetryableError(err)
 		}
-		entity = (*resp).(*entities.GenericEntity)
+		if resp == nil || *resp == nil {
+			return resource.RetryableError(fmt.Errorf("monitor downtime %q not yet indexed (or deleted out-of-band)", d.Id()))
+		}
+		ge, ok := (*resp).(*entities.GenericEntity)
+		if !ok {
+			return resource.RetryableError(fmt.Errorf("monitor downtime %q returned unexpected entity type %T", d.Id(), *resp))
+		}
+		entity = ge
 		tags = entity.GetTags()
 		if len(tags) < 4 {
-			return resource.RetryableError(fmt.Errorf("enough tags not found. retrying"))
+			return resource.RetryableError(fmt.Errorf("monitor downtime %q returned only %d tags, expected >=4", d.Id(), len(tags)))
 		}
 		return nil
 	})
 
 	if retryErr != nil {
-		log.Fatalf("Unable to find application entity: %s", retryErr)
+		log.Printf("[WARN] Monitor downtime %q not readable after retries; clearing state: %s", d.Id(), retryErr)
+		d.SetId("")
+		return nil
 	}
 
 	mode := setMonitorDowntimeMode(tags)

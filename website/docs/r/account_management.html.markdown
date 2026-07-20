@@ -10,15 +10,12 @@ description: |-
 
 Use this resource to create and manage New Relic sub accounts.
 
--> **WARNING:** The `newrelic_account_management` resource will only create/update but won't delete a sub account. Please visit our documentation on  [`Account Management`](https://docs.newrelic.com/docs/apis/nerdgraph/examples/manage-accounts-nerdgraph/#delete) for more information .
-
 ## Example Usage
 
 ##### Create Account
 ```hcl
 resource "newrelic_account_management" "foo"{
-	name=  "Test Account Name"
-	region= "us01"
+	name = "Test Account Name"
 }
 ```
 
@@ -27,7 +24,8 @@ resource "newrelic_account_management" "foo"{
 The following arguments are supported:
 
   * `name` - (Required) The name of the Account.
-  * `region` - (Required) The region code of the account.  One of: `us01`, `eu01`.
+
+-> **NOTE** <span style="color:red;">Starting <b>v3.95.0</b> of the New Relic Terraform Provider, the `region` argument on `newrelic_account_management` is deprecated and will be removed in a future major release.</span><br><br>Every New Relic organization is now tied to a specific region, and any sub-account you create is automatically placed in the region of the organization that owns your API key. The `regionCode` field on the underlying `accountManagementCreateAccount` mutation has been deprecated upstream, and this provider no longer forwards it to the API.<br><br>Setting `region` in your configuration is still accepted for backward compatibility, but it has <b>no effect</b> on where the account is created. Please <span style="color:tomato;">stop setting it in new configurations</span>, and remove it from existing ones when it's convenient.
 
 
 ## Attributes Reference

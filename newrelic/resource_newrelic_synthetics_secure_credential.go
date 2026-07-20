@@ -121,26 +121,20 @@ func resourceNewRelicSyntheticsSecureCredentialRead(ctx context.Context, d *sche
 		if reqErr != nil {
 			return resource.NonRetryableError(reqErr)
 		}
-
-		// commenting this checks as this check disables us to detect the changes made via UI
-		//if entityResults.Count != 1 {
-		//	return resource.RetryableError(fmt.Errorf("failed to read secure credential"))
-		//}
-
+		if entityResults.Count != 1 {
+			return resource.RetryableError(fmt.Errorf("secure credential %q not yet visible via entitySearch (indexing lag or out-of-band delete)", d.Id()))
+		}
 		return nil
 	})
 
 	if retryErr != nil {
-		return diag.FromErr(retryErr)
+		log.Printf("[WARN] Synthetics secure credential %q not found via entitySearch after retries; clearing state so terraform can re-create if the configuration still declares it", d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	if len(diags) > 0 {
 		return diags
-	}
-
-	if entityResults.Count != 1 {
-		d.SetId("")
-		return nil
 	}
 
 	for _, e := range entityResults.Results.Entities {
