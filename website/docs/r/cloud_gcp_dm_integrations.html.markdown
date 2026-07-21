@@ -12,22 +12,23 @@ Use this resource to configure which GCP services New Relic polls as part of the
 
 ## Prerequisite
 
-This resource requires a linked GCP account created with [`newrelic_cloud_gcp_dm_link_account`](cloud_gcp_dm_link_account.html). See the [full GCP Dimensional Metrics guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#gcp-dimensional-metrics) for complete setup instructions including the required GCP Workload Identity Federation infrastructure.
+This resource requires a linked GCP account created with [`newrelic_cloud_gcp_link_account`](cloud_gcp_link_account.html) using its keyless (WIF) mode — set `use_workload_identity_federation = true` along with `audience` and `service_account_email` on that resource. See the [full GCP Dimensional Metrics guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#gcp-dimensional-metrics) for complete setup instructions including the required GCP Workload Identity Federation infrastructure.
 
 ## Example Usage
 
 ```hcl
-resource "newrelic_cloud_gcp_dm_link_account" "example" {
-  account_id            = var.newrelic_account_id
-  name                  = "my-gcp-project"
-  project_id            = "my-gcp-project-id"
-  audience              = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID"
-  service_account_email = "newrelic-integration@my-gcp-project-id.iam.gserviceaccount.com"
+resource "newrelic_cloud_gcp_link_account" "example" {
+  account_id                       = var.newrelic_account_id
+  name                             = "my-gcp-project"
+  project_id                       = "my-gcp-project-id"
+  use_workload_identity_federation = true
+  audience                         = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID"
+  service_account_email            = "newrelic-integration@my-gcp-project-id.iam.gserviceaccount.com"
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "example" {
   account_id        = var.newrelic_account_id
-  linked_account_id = newrelic_cloud_gcp_dm_link_account.example.id
+  linked_account_id = newrelic_cloud_gcp_link_account.example.id
 
   # Standard services — 300 s minimum polling interval
   ai_platform      { metrics_polling_interval = 300 }
@@ -74,7 +75,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 -> **WARNING:** Updating `linked_account_id` on an existing resource will **force a replacement** of the resource (destroy + create). Review `terraform plan` carefully before applying.
 
 * `account_id` - (Optional) The New Relic account ID to operate on. Defaults to the `account_id` set on the provider.
-* `linked_account_id` - (Required) The ID of the linked GCP account created by `newrelic_cloud_gcp_dm_link_account`.
+* `linked_account_id` - (Required) The ID of the linked GCP account created by `newrelic_cloud_gcp_link_account` (in keyless/WIF mode).
 
 ### Standard services (300 s minimum `metrics_polling_interval`)
 

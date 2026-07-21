@@ -161,7 +161,6 @@ func Provider() *schema.Provider {
 			"newrelic_cloud_gcp_integrations":                   resourceNewrelicCloudGcpIntegrations(),
 			"newrelic_cloud_gcp_link_account":                   resourceNewRelicCloudGcpLinkAccount(),
 			"newrelic_cloud_gcp_dm_integrations":                resourceNewrelicCloudGcpDmIntegrations(),
-			"newrelic_cloud_gcp_dm_link_account":                resourceNewRelicCloudGcpDmLinkAccount(),
 			"newrelic_cloud_oci_link_account":                   resourceNewRelicCloudOciAccountLinkAccount(),
 			"newrelic_alert_compound_condition":                 resourceNewRelicAlertCompoundCondition(),
 			"newrelic_data_partition_rule":                      resourceNewRelicDataPartition(),

@@ -65,6 +65,76 @@ func TestAccNewRelicCloudGcpLinkAccount(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicCloudGcpLinkAccount_WIF exercises the GCP Dimensional Metrics
+// (keyless) linking mode of newrelic_cloud_gcp_link_account, where audience and
+// service_account_email are supplied and the account is linked via Workload
+// Identity Federation instead of a service-account key.
+func TestAccNewRelicCloudGcpLinkAccount_WIF(t *testing.T) {
+	testProjectID := os.Getenv("INTEGRATION_TESTING_GCP_PROJECT_ID")
+	testAudience := os.Getenv("INTEGRATION_TESTING_GCP_WIF_AUDIENCE")
+	testSAEmail := os.Getenv("INTEGRATION_TESTING_GCP_WIF_SA_EMAIL")
+
+	if testProjectID == "" || testAudience == "" || testSAEmail == "" {
+		t.Skip("skipping: INTEGRATION_TESTING_GCP_PROJECT_ID, INTEGRATION_TESTING_GCP_WIF_AUDIENCE and INTEGRATION_TESTING_GCP_WIF_SA_EMAIL must be set")
+	}
+	if subAccountIDExists := os.Getenv("NEW_RELIC_SUBACCOUNT_ID"); subAccountIDExists == "" {
+		t.Skip("skipping: NEW_RELIC_SUBACCOUNT_ID must be set")
+	}
+
+	resourceName := "newrelic_cloud_gcp_link_account.wif"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccCloudLinkedAccountsCleanup(t, "gcp") },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNewRelicCloudGcpLinkAccountDestroy,
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: testAccNewRelicCloudGcpLinkAccountWIFConfig(testProjectID, testAudience, testSAEmail, "tf-test-gcp-dm"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccNewRelicCloudGcpLinkAccountExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-dm"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", testProjectID),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+				),
+			},
+			// Rename (only name is mutable; all other fields are ForceNew)
+			{
+				Config: testAccNewRelicCloudGcpLinkAccountWIFConfig(testProjectID, testAudience, testSAEmail, "tf-test-gcp-dm-renamed"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", "tf-test-gcp-dm-renamed"),
+				),
+			},
+			// Import
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"audience", "service_account_email"}, // write-only; not returned by API
+			},
+		},
+	})
+}
+
+func testAccNewRelicCloudGcpLinkAccountWIFConfig(projectID, audience, serviceAccountEmail, name string) string {
+	return fmt.Sprintf(`
+provider "newrelic" {
+  account_id = "%d"
+  alias      = "cloud-integration-provider"
+}
+
+resource "newrelic_cloud_gcp_link_account" "wif" {
+  provider                         = newrelic.cloud-integration-provider
+  account_id                       = %d
+  name                             = %q
+  project_id                       = %q
+  use_workload_identity_federation = true
+  audience                         = %q
+  service_account_email            = %q
+}
+`, testSubAccountID, testSubAccountID, name, projectID, audience, serviceAccountEmail)
+}
+
 func testAccNewRelicCloudGcpLinkAccountExists(n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 

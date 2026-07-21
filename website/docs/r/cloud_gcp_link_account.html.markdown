@@ -34,6 +34,21 @@ resource "newrelic_cloud_gcp_link_account" "foo" {
 }
 ```
 
+### GCP Dimensional Metrics (keyless / WIF) linking
+
+To link a GCP project for **GCP Dimensional Metrics** using keyless authentication via Workload Identity Federation (WIF) instead of a service-account key, set `use_workload_identity_federation = true` and provide `audience` and `service_account_email`. When enabled, the resource authenticates via WIF and links the project under the Dimensional Metrics (`gcp_v2`) provider. Use this linked account with the [`newrelic_cloud_gcp_dm_integrations`](cloud_gcp_dm_integrations.html) resource.
+
+```hcl
+resource "newrelic_cloud_gcp_link_account" "dm" {
+  account_id                       = "account id of newrelic account"
+  name                             = "account name"
+  project_id                       = "id of the Project"
+  use_workload_identity_federation = true
+  audience                         = "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/newrelic-wif-pool/providers/newrelic-oidc-provider"
+  service_account_email            = "newrelic-integration@my-project.iam.gserviceaccount.com"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -41,6 +56,11 @@ The following arguments are supported:
 - `account_id` - (Optional) - Account ID of the New Relic account.
 - `project_id` - (Required) - Project ID of the GCP account.
 - `name` - (Required) - The name of the GCP account in New Relic.
+- `use_workload_identity_federation` - (Optional) - Set to `true` to link the GCP account for **GCP Dimensional Metrics** using keyless Workload Identity Federation (WIF) instead of a service-account key. When `true`, `audience` and `service_account_email` are required. Defaults to `false` (legacy service-account-key linking).
+- `audience` - (Optional) - The Workload Identity Federation pool provider audience URI. Format: `//iam.googleapis.com/projects/{PROJECT_NUMBER}/locations/global/workloadIdentityPools/{POOL_ID}/providers/{PROVIDER_ID}`. Required when `use_workload_identity_federation = true`.
+- `service_account_email` - (Optional) - The GCP service account email New Relic impersonates to collect metrics when linking via WIF. The service account must grant the WIF pool the `roles/iam.workloadIdentityUser` binding. Required when `use_workload_identity_federation = true`.
+
+-> **NOTE:** `audience` and `service_account_email` are write-only, `ForceNew` fields used to construct the WIF credential internally; they are never returned by the API and are retained from state. When importing a WIF-linked account, also set `use_workload_identity_federation = true` in your configuration (it is not returned by the API and defaults to `false`), and add `audience` and `service_account_email` to `ImportStateVerifyIgnore` (or run `terraform apply` afterwards to reconcile them).
 
 -> **WARNING:** Starting with [v3.27.2](https://registry.terraform.io/providers/newrelic/newrelic/3.27.2) of the New Relic Terraform Provider, updating any of the aforementioned attributes (except `name`) of a `newrelic_cloud_gcp_link_account` resource that has been applied would **force a replacement** of the resource (destruction of the resource, followed by the creation of a new resource). Please carefully review the output of `terraform plan`, which would clearly indicate a replacement of this resource, before performing a `terraform apply`.
 

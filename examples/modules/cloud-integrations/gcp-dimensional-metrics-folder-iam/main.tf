@@ -114,21 +114,22 @@ resource "time_sleep" "iam_propagation" {
 }
 
 # ── New Relic: Link one account per GCP project ───────────────────────────────
-resource "newrelic_cloud_gcp_dm_link_account" "this" {
+resource "newrelic_cloud_gcp_link_account" "this" {
   for_each = var.gcp_projects
 
-  account_id            = var.newrelic_account_id
-  name                  = each.key
-  project_id            = each.value
-  service_account_email = google_service_account.newrelic.email
-  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  account_id                       = var.newrelic_account_id
+  name                             = each.key
+  project_id                       = each.value
+  use_workload_identity_federation = true
+  service_account_email            = google_service_account.newrelic.email
+  audience                         = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [time_sleep.iam_propagation]
 }
 
 # ── New Relic: Enable Integrations ────────────────────────────────────────────
 resource "newrelic_cloud_gcp_dm_integrations" "this" {
-  for_each = newrelic_cloud_gcp_dm_link_account.this
+  for_each = newrelic_cloud_gcp_link_account.this
 
   account_id        = var.newrelic_account_id
   linked_account_id = tonumber(each.value.id)
@@ -159,7 +160,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "big_query") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "big_table" {
@@ -246,7 +246,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "pub_sub") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "redis" {
@@ -265,7 +264,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "spanner") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "sql" {
@@ -276,7 +274,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "storage") ? [1] : []
     content {
       metrics_polling_interval = var.metrics_polling_interval
-      fetch_tags               = var.enable_fetch_tags
     }
   }
   dynamic "virtual_machines" {
@@ -292,7 +289,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
 # ── Outputs ───────────────────────────────────────────────────────────────────
 output "linked_account_ids" {
   description = "Map of display-name => New Relic linked account ID for each linked GCP project."
-  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.this : k => v.id }
+  value       = { for k, v in newrelic_cloud_gcp_link_account.this : k => v.id }
 }
 
 output "wif_pool_name" {

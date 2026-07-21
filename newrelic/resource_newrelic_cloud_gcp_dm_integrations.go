@@ -62,6 +62,288 @@ func gcpDmFilterDisableErrors(errors []cloud.CloudIntegrationMutationError) erro
 	return nil
 }
 
+// ─── Service table ──────────────────────────────────────────────────────────
+//
+// Every GCP Dimensional Metrics service is described by a single table entry. The
+// schema, the configure input, and the disable input are all derived from this
+// table, so adding a service is a one-line change rather than edits to three
+// parallel switch/if-else blocks.
+
+// gcpDmServiceValues carries the per-service values read from the resource schema.
+// GCP Dimensional Metrics is metrics-only, so metrics_polling_interval is the only
+// per-service knob — the backend rejects inventory-era params such as fetch_tags.
+type gcpDmServiceValues struct {
+	LinkedAccountID        int
+	MetricsPollingInterval int
+}
+
+// gcpDmService describes one GCP service block.
+type gcpDmService struct {
+	key         string
+	description string
+	// configure sets this service's typed input slice on the configure payload.
+	configure func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues)
+	// disable sets this service's disable slice on the disable payload.
+	disable func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput)
+}
+
+// genericConfigure builds a configure closure for a DM-only service backed by the
+// consolidated CloudGcpGenericIntegrationInput type (only linked account + polling).
+func genericConfigure(assign func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput)) func(*cloud.CloudGcpIntegrationsInput, gcpDmServiceValues) {
+	return func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+		assign(g, []cloud.CloudGcpGenericIntegrationInput{{
+			LinkedAccountId:        v.LinkedAccountID,
+			MetricsPollingInterval: v.MetricsPollingInterval,
+		}})
+	}
+}
+
+// gcpDmServices returns the full catalog of supported GCP Dimensional Metrics services:
+// the 27 services shared with the legacy resource plus the 7 DM-only services.
+func gcpDmServices() []gcpDmService {
+	return []gcpDmService{
+		// ── Shared 27 services (per-service typed inputs) ────────────────────
+		{key: "ai_platform", description: "GCP Vertex AI / AI Platform.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpAiplatform = []cloud.CloudGcpAiplatformIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpAiplatform = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "alloy_db", description: "GCP AlloyDB.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpAlloydb = []cloud.CloudGcpAlloydbIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpAlloydb = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "app_engine", description: "GCP App Engine.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpAppengine = []cloud.CloudGcpAppengineIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "big_query", description: "GCP BigQuery.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpBigquery = []cloud.CloudGcpBigqueryIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpBigquery = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "big_table", description: "GCP Bigtable.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpBigtable = []cloud.CloudGcpBigtableIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpBigtable = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "composer", description: "GCP Cloud Composer.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpComposer = []cloud.CloudGcpComposerIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpComposer = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "data_flow", description: "GCP Cloud Dataflow.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpDataflow = []cloud.CloudGcpDataflowIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpDataflow = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "data_proc", description: "GCP Cloud Dataproc.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpDataproc = []cloud.CloudGcpDataprocIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpDataproc = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "data_store", description: "GCP Cloud Datastore.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpDatastore = []cloud.CloudGcpDatastoreIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpDatastore = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firebase_database", description: "GCP Firebase Realtime Database.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpFirebasedatabase = []cloud.CloudGcpFirebasedatabaseIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirebasedatabase = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firebase_hosting", description: "GCP Firebase Hosting.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpFirebasehosting = []cloud.CloudGcpFirebasehostingIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirebasehosting = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firebase_storage", description: "GCP Firebase Storage.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpFirebasestorage = []cloud.CloudGcpFirebasestorageIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirebasestorage = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firestore", description: "GCP Firestore.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpFirestore = []cloud.CloudGcpFirestoreIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirestore = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "functions", description: "GCP Cloud Functions.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpFunctions = []cloud.CloudGcpFunctionsIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFunctions = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "interconnect", description: "GCP Cloud Interconnect.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpInterconnect = []cloud.CloudGcpInterconnectIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpInterconnect = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "kubernetes", description: "GCP Google Kubernetes Engine (GKE).",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpKubernetes = []cloud.CloudGcpKubernetesIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpKubernetes = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "load_balancing", description: "GCP Cloud Load Balancing.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpLoadbalancing = []cloud.CloudGcpLoadbalancingIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpLoadbalancing = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "mem_cache", description: "GCP Memcache.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpMemcache = []cloud.CloudGcpMemcacheIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpMemcache = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "pub_sub", description: "GCP Cloud Pub/Sub.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpPubsub = []cloud.CloudGcpPubsubIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpPubsub = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "redis", description: "GCP Memorystore for Redis (legacy).",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpRedis = []cloud.CloudGcpRedisIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpRedis = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "router", description: "GCP Cloud Router.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpRouter = []cloud.CloudGcpRouterIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpRouter = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "run", description: "GCP Cloud Run.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpRun = []cloud.CloudGcpRunIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpRun = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "spanner", description: "GCP Cloud Spanner.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpSpanner = []cloud.CloudGcpSpannerIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpSpanner = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "sql", description: "GCP Cloud SQL.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpSql = []cloud.CloudGcpSqlIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpSql = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "storage", description: "GCP Cloud Storage.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpStorage = []cloud.CloudGcpStorageIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpStorage = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "virtual_machines", description: "GCP Compute Engine VMs.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpVms = []cloud.CloudGcpVmsIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpVms = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "vpc_access", description: "GCP Serverless VPC Access.",
+			configure: func(g *cloud.CloudGcpIntegrationsInput, v gcpDmServiceValues) {
+				g.GcpVpcaccess = []cloud.CloudGcpVpcaccessIntegrationInput{{LinkedAccountId: v.LinkedAccountID, MetricsPollingInterval: v.MetricsPollingInterval}}
+			},
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpVpcaccess = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+
+		// ── DM-only 7 services (consolidated CloudGcpGenericIntegrationInput) ──
+		{key: "api_gateway", description: "GCP API Gateway (Dimensional Metrics only).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) {
+				g.GcpApiGateway = in
+			}),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpApiGateway = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firebase_auth", description: "Firebase Authentication (Dimensional Metrics only).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) {
+				g.GcpFirebaseAuth = in
+			}),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirebaseAuth = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firebase_vertex_ai", description: "Firebase Vertex AI (Dimensional Metrics only; no entity synthesis).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) {
+				g.GcpFirebaseVertexAi = in
+			}),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirebaseVertexAi = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "istio", description: "GCP Istio Service Mesh (Dimensional Metrics only; no entity synthesis).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) { g.GcpIstio = in }),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpIstio = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "managed_kafka", description: "GCP Managed Service for Apache Kafka (Dimensional Metrics only).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) {
+				g.GcpManagedKafka = in
+			}),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpManagedKafka = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "memory_store", description: "GCP Memorystore for Redis/Memcached (Dimensional Metrics only).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) {
+				g.GcpMemoryStore = in
+			}),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpMemoryStore = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+		{key: "firebase_app_hosting", description: "Firebase App Hosting (Dimensional Metrics only; no entity synthesis).",
+			configure: genericConfigure(func(g *cloud.CloudGcpIntegrationsInput, in []cloud.CloudGcpGenericIntegrationInput) {
+				g.GcpFirebaseAppHosting = in
+			}),
+			disable: func(g *cloud.CloudGcpDisableIntegrationsInput, dis cloud.CloudDisableAccountIntegrationInput) {
+				g.GcpFirebaseAppHosting = []cloud.CloudDisableAccountIntegrationInput{dis}
+			}},
+	}
+}
+
 // ─── Resource definition ──────────────────────────────────────────────────────
 
 func resourceNewrelicCloudGcpDmIntegrations() *schema.Resource {
@@ -78,28 +360,9 @@ func resourceNewrelicCloudGcpDmIntegrations() *schema.Resource {
 }
 
 func generateGcpDmIntegrationSchema() map[string]*schema.Schema {
-	baseSchema := cloudGcpDmIntegrationSchemaBase()
-	bigQuerySchema := cloudGcpDmMergeSchema(baseSchema, map[string]*schema.Schema{
-		"fetch_tags": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Description: "Fetch resource tags for this integration.",
-		},
-		"fetch_table_metrics": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Description: "Fetch metrics for each table in BigQuery.",
-		},
-	})
-	fetchTagsSchema := cloudGcpDmMergeSchema(baseSchema, map[string]*schema.Schema{
-		"fetch_tags": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Description: "Fetch resource tags for this integration.",
-		},
-	})
+	base := cloudGcpDmIntegrationSchemaBase()
 
-	return map[string]*schema.Schema{
+	s := map[string]*schema.Schema{
 		"account_id": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -110,45 +373,15 @@ func generateGcpDmIntegrationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Required:    true,
 			ForceNew:    true,
-			Description: "The ID of the GCP Dimensional Metrics linked account (from newrelic_cloud_gcp_dm_link_account).",
+			Description: "The ID of the GCP Dimensional Metrics linked account (from newrelic_cloud_gcp_link_account with audience + service_account_email set).",
 		},
-		// ── Existing 27 services ──
-		"ai_platform":       serviceBlock("GCP Vertex AI / AI Platform.", baseSchema),
-		"alloy_db":          serviceBlock("GCP AlloyDB.", baseSchema),
-		"app_engine":        serviceBlock("GCP App Engine.", baseSchema),
-		"big_query":         serviceBlock("GCP BigQuery.", bigQuerySchema),
-		"big_table":         serviceBlock("GCP Bigtable.", baseSchema),
-		"composer":          serviceBlock("GCP Cloud Composer.", baseSchema),
-		"data_flow":         serviceBlock("GCP Cloud Dataflow.", baseSchema),
-		"data_proc":         serviceBlock("GCP Cloud Dataproc.", baseSchema),
-		"data_store":        serviceBlock("GCP Cloud Datastore.", baseSchema),
-		"firebase_database": serviceBlock("GCP Firebase Realtime Database.", baseSchema),
-		"firebase_hosting":  serviceBlock("GCP Firebase Hosting.", baseSchema),
-		"firebase_storage":  serviceBlock("GCP Firebase Storage.", baseSchema),
-		"firestore":         serviceBlock("GCP Firestore.", baseSchema),
-		"functions":         serviceBlock("GCP Cloud Functions.", baseSchema),
-		"interconnect":      serviceBlock("GCP Cloud Interconnect.", baseSchema),
-		"kubernetes":        serviceBlock("GCP Google Kubernetes Engine (GKE).", baseSchema),
-		"load_balancing":    serviceBlock("GCP Cloud Load Balancing.", baseSchema),
-		"mem_cache":         serviceBlock("GCP Memcache.", baseSchema),
-		"pub_sub":           serviceBlock("GCP Cloud Pub/Sub.", fetchTagsSchema),
-		"redis":             serviceBlock("GCP Memorystore for Redis (legacy).", baseSchema),
-		"router":            serviceBlock("GCP Cloud Router.", baseSchema),
-		"run":               serviceBlock("GCP Cloud Run.", baseSchema),
-		"spanner":           serviceBlock("GCP Cloud Spanner.", fetchTagsSchema),
-		"sql":               serviceBlock("GCP Cloud SQL.", baseSchema),
-		"storage":           serviceBlock("GCP Cloud Storage.", fetchTagsSchema),
-		"virtual_machines":  serviceBlock("GCP Compute Engine VMs.", baseSchema),
-		"vpc_access":        serviceBlock("GCP Serverless VPC Access.", baseSchema),
-		// ── New GCP Dimensional Metrics services ──
-		"api_gateway":          serviceBlock("GCP API Gateway (Dimensional Metrics only).", baseSchema),
-		"firebase_auth":        serviceBlock("Firebase Authentication (Dimensional Metrics only).", baseSchema),
-		"firebase_vertex_ai":   serviceBlock("Firebase Vertex AI (Dimensional Metrics only; no entity synthesis).", baseSchema),
-		"istio":                serviceBlock("GCP Istio Service Mesh (Dimensional Metrics only; no entity synthesis).", baseSchema),
-		"managed_kafka":        serviceBlock("GCP Managed Service for Apache Kafka (Dimensional Metrics only).", baseSchema),
-		"memory_store":         serviceBlock("GCP Memorystore for Redis/Memcached (Dimensional Metrics only).", baseSchema),
-		"firebase_app_hosting": serviceBlock("Firebase App Hosting (Dimensional Metrics only; no entity synthesis).", baseSchema),
 	}
+
+	for _, svc := range gcpDmServices() {
+		s[svc.key] = serviceBlock(svc.description, base)
+	}
+
+	return s
 }
 
 // serviceBlock returns a TypeList schema.Schema with MaxItems:1 for a single integration block.
@@ -171,18 +404,6 @@ func cloudGcpDmIntegrationSchemaBase() map[string]*schema.Schema {
 			Description: "The data polling interval in seconds.",
 		},
 	}
-}
-
-// cloudGcpDmMergeSchema merges two schema maps into a new map (non-destructive).
-func cloudGcpDmMergeSchema(base, extra map[string]*schema.Schema) map[string]*schema.Schema {
-	result := make(map[string]*schema.Schema, len(base)+len(extra))
-	for k, v := range base {
-		result[k] = v
-	}
-	for k, v := range extra {
-		result[k] = v
-	}
-	return result
 }
 
 // ─── CRUD functions ───────────────────────────────────────────────────────────
@@ -315,10 +536,9 @@ func resourceNewrelicCloudGcpDmIntegrationsDelete(ctx context.Context, d *schema
 
 // ─── Expand function ──────────────────────────────────────────────────────────
 
-// expandCloudGcpDmIntegrationsInput builds configure and disable inputs for all 34 GCP services.
-// Present blocks go to configure; absent blocks go to disable.
-// TODO: Reduce the cyclomatic complexity of this func
-// nolint:gocyclo
+// expandCloudGcpDmIntegrationsInput builds configure and disable inputs for all GCP
+// services from the service table. Present blocks go to configure; absent blocks go
+// to disable.
 func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID int) (cloud.CloudGcpIntegrationsInput, cloud.CloudGcpDisableIntegrationsInput) {
 	gcpInput := cloud.CloudGcpIntegrationsInput{}
 	gcpDisable := cloud.CloudGcpDisableIntegrationsInput{}
@@ -340,328 +560,16 @@ func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID i
 		return 0
 	}
 
-	getBool := func(key string) bool {
-		if v := d.Get(key); v != nil {
-			return v.(bool)
+	for _, svc := range gcpDmServices() {
+		if !present(svc.key) {
+			svc.disable(&gcpDisable, dis)
+			continue
 		}
-		return false
-	}
-
-	// ── Existing 27 services ─────────────────────────────────────────────────
-
-	if present("ai_platform") {
-		gcpInput.GcpAiplatform = []cloud.CloudGcpAiplatformIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("ai_platform.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpAiplatform = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("alloy_db") {
-		gcpInput.GcpAlloydb = []cloud.CloudGcpAlloydbIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("alloy_db.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpAlloydb = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("app_engine") {
-		gcpInput.GcpAppengine = []cloud.CloudGcpAppengineIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("app_engine.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpAppengine = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("big_query") {
-		gcpInput.GcpBigquery = []cloud.CloudGcpBigqueryIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("big_query.0.metrics_polling_interval"),
-			FetchTags:              getBool("big_query.0.fetch_tags"),
-			FetchTableMetrics:      getBool("big_query.0.fetch_table_metrics"),
-		}}
-	} else {
-		gcpDisable.GcpBigquery = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("big_table") {
-		gcpInput.GcpBigtable = []cloud.CloudGcpBigtableIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("big_table.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpBigtable = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("composer") {
-		gcpInput.GcpComposer = []cloud.CloudGcpComposerIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("composer.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpComposer = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("data_flow") {
-		gcpInput.GcpDataflow = []cloud.CloudGcpDataflowIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("data_flow.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpDataflow = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("data_proc") {
-		gcpInput.GcpDataproc = []cloud.CloudGcpDataprocIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("data_proc.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpDataproc = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("data_store") {
-		gcpInput.GcpDatastore = []cloud.CloudGcpDatastoreIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("data_store.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpDatastore = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firebase_database") {
-		gcpInput.GcpFirebasedatabase = []cloud.CloudGcpFirebasedatabaseIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firebase_database.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirebasedatabase = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firebase_hosting") {
-		gcpInput.GcpFirebasehosting = []cloud.CloudGcpFirebasehostingIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firebase_hosting.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirebasehosting = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firebase_storage") {
-		gcpInput.GcpFirebasestorage = []cloud.CloudGcpFirebasestorageIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firebase_storage.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirebasestorage = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firestore") {
-		gcpInput.GcpFirestore = []cloud.CloudGcpFirestoreIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firestore.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirestore = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("functions") {
-		gcpInput.GcpFunctions = []cloud.CloudGcpFunctionsIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("functions.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFunctions = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("interconnect") {
-		gcpInput.GcpInterconnect = []cloud.CloudGcpInterconnectIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("interconnect.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpInterconnect = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("kubernetes") {
-		gcpInput.GcpKubernetes = []cloud.CloudGcpKubernetesIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("kubernetes.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpKubernetes = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("load_balancing") {
-		gcpInput.GcpLoadbalancing = []cloud.CloudGcpLoadbalancingIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("load_balancing.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpLoadbalancing = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("mem_cache") {
-		gcpInput.GcpMemcache = []cloud.CloudGcpMemcacheIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("mem_cache.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpMemcache = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("pub_sub") {
-		gcpInput.GcpPubsub = []cloud.CloudGcpPubsubIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("pub_sub.0.metrics_polling_interval"),
-			FetchTags:              getBool("pub_sub.0.fetch_tags"),
-		}}
-	} else {
-		gcpDisable.GcpPubsub = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("redis") {
-		gcpInput.GcpRedis = []cloud.CloudGcpRedisIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("redis.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpRedis = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("router") {
-		gcpInput.GcpRouter = []cloud.CloudGcpRouterIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("router.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpRouter = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("run") {
-		gcpInput.GcpRun = []cloud.CloudGcpRunIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("run.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpRun = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("spanner") {
-		gcpInput.GcpSpanner = []cloud.CloudGcpSpannerIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("spanner.0.metrics_polling_interval"),
-			FetchTags:              getBool("spanner.0.fetch_tags"),
-		}}
-	} else {
-		gcpDisable.GcpSpanner = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("sql") {
-		gcpInput.GcpSql = []cloud.CloudGcpSqlIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("sql.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpSql = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("storage") {
-		gcpInput.GcpStorage = []cloud.CloudGcpStorageIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("storage.0.metrics_polling_interval"),
-			FetchTags:              getBool("storage.0.fetch_tags"),
-		}}
-	} else {
-		gcpDisable.GcpStorage = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("virtual_machines") {
-		gcpInput.GcpVms = []cloud.CloudGcpVmsIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("virtual_machines.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpVms = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("vpc_access") {
-		gcpInput.GcpVpcaccess = []cloud.CloudGcpVpcaccessIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("vpc_access.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpVpcaccess = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	// ── New GCP Dimensional Metrics services ─────────────────────────────────────────────────
-
-	if present("api_gateway") {
-		gcpInput.GcpApiGateway = []cloud.CloudGcpApiGatewayIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("api_gateway.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpApiGateway = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firebase_auth") {
-		gcpInput.GcpFirebaseAuth = []cloud.CloudGcpFirebaseAuthIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firebase_auth.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirebaseAuth = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firebase_vertex_ai") {
-		gcpInput.GcpFirebaseVertexAi = []cloud.CloudGcpFirebaseVertexAiIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firebase_vertex_ai.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirebaseVertexAi = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("istio") {
-		gcpInput.GcpIstio = []cloud.CloudGcpIstioIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("istio.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpIstio = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("managed_kafka") {
-		gcpInput.GcpManagedKafka = []cloud.CloudGcpManagedKafkaIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("managed_kafka.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpManagedKafka = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("memory_store") {
-		gcpInput.GcpMemoryStore = []cloud.CloudGcpMemoryStoreIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("memory_store.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpMemoryStore = []cloud.CloudDisableAccountIntegrationInput{dis}
-	}
-
-	if present("firebase_app_hosting") {
-		gcpInput.GcpFirebaseAppHosting = []cloud.CloudGcpFirebaseAppHostingIntegrationInput{{
-			LinkedAccountId:        linkedAccountID,
-			MetricsPollingInterval: getInt("firebase_app_hosting.0.metrics_polling_interval"),
-		}}
-	} else {
-		gcpDisable.GcpFirebaseAppHosting = []cloud.CloudDisableAccountIntegrationInput{dis}
+		svc.configure(&gcpInput, gcpDmServiceValues{
+			LinkedAccountID:        linkedAccountID,
+			MetricsPollingInterval: getInt(svc.key + ".0.metrics_polling_interval"),
+		})
 	}
 
 	return gcpInput, gcpDisable
 }
-

@@ -14,7 +14,7 @@
 locals {
   oidc_issuer_uri = (var.newrelic_region == "EU"
     ? "https://oidc.eu.newrelic.com/r/gcp-cmp"
-    : "https://oidc.newrelic.com/r/gcp-cmp")
+  : "https://oidc.newrelic.com/r/gcp-cmp")
 }
 
 # ── Providers ─────────────────────────────────────────────────────────────────
@@ -105,27 +105,27 @@ resource "time_sleep" "iam_propagation" {
 # ── Group 1: Analytics Projects ───────────────────────────────────────────────
 # Enabled: BigQuery, PubSub, Spanner, Storage, DataFlow, DataProc
 
-resource "newrelic_cloud_gcp_dm_link_account" "analytics" {
+resource "newrelic_cloud_gcp_link_account" "analytics" {
   for_each = var.analytics_projects
 
-  account_id            = tonumber(var.newrelic_account_id)
-  name                  = each.key
-  project_id            = each.value
-  service_account_email = google_service_account.newrelic.email
-  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  account_id                       = tonumber(var.newrelic_account_id)
+  name                             = each.key
+  project_id                       = each.value
+  use_workload_identity_federation = true
+  service_account_email            = google_service_account.newrelic.email
+  audience                         = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [time_sleep.iam_propagation]
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
-  for_each = newrelic_cloud_gcp_dm_link_account.analytics
+  for_each = newrelic_cloud_gcp_link_account.analytics
 
   account_id        = tonumber(var.newrelic_account_id)
   linked_account_id = tonumber(each.value.id)
 
   big_query {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
   data_flow {
     metrics_polling_interval = var.metrics_polling_interval
@@ -135,35 +135,33 @@ resource "newrelic_cloud_gcp_dm_integrations" "analytics" {
   }
   pub_sub {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
   spanner {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
   storage {
     metrics_polling_interval = var.metrics_polling_interval
-    fetch_tags               = var.enable_fetch_tags
   }
 }
 
 # ── Group 2: Compute Projects ─────────────────────────────────────────────────
 # Enabled: VMs, SQL, Cloud Run, Load Balancing, Cloud Functions, Kubernetes (metrics only, no entity support)
 
-resource "newrelic_cloud_gcp_dm_link_account" "compute" {
+resource "newrelic_cloud_gcp_link_account" "compute" {
   for_each = var.compute_projects
 
-  account_id            = tonumber(var.newrelic_account_id)
-  name                  = each.key
-  project_id            = each.value
-  service_account_email = google_service_account.newrelic.email
-  audience              = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
+  account_id                       = tonumber(var.newrelic_account_id)
+  name                             = each.key
+  project_id                       = each.value
+  use_workload_identity_federation = true
+  service_account_email            = google_service_account.newrelic.email
+  audience                         = "//iam.googleapis.com/${google_iam_workload_identity_pool_provider.newrelic.name}"
 
   depends_on = [time_sleep.iam_propagation]
 }
 
 resource "newrelic_cloud_gcp_dm_integrations" "compute" {
-  for_each = newrelic_cloud_gcp_dm_link_account.compute
+  for_each = newrelic_cloud_gcp_link_account.compute
 
   account_id        = tonumber(var.newrelic_account_id)
   linked_account_id = tonumber(each.value.id)
@@ -191,12 +189,12 @@ resource "newrelic_cloud_gcp_dm_integrations" "compute" {
 # ── Outputs ───────────────────────────────────────────────────────────────────
 output "analytics_linked_account_ids" {
   description = "Map of display-name => New Relic linked account ID for analytics projects."
-  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.analytics : k => v.id }
+  value       = { for k, v in newrelic_cloud_gcp_link_account.analytics : k => v.id }
 }
 
 output "compute_linked_account_ids" {
   description = "Map of display-name => New Relic linked account ID for compute projects."
-  value       = { for k, v in newrelic_cloud_gcp_dm_link_account.compute : k => v.id }
+  value       = { for k, v in newrelic_cloud_gcp_link_account.compute : k => v.id }
 }
 
 output "wif_pool_name" {

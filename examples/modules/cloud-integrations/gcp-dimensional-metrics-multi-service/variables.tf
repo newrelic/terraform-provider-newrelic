@@ -66,15 +66,9 @@ variable "compute_projects" {
   EOT
 }
 
-variable "enable_fetch_tags" {
-  type        = bool
-  default     = false
-  description = "When true, New Relic fetches resource tags for services that support it (BigQuery, PubSub, Spanner, Storage)."
-}
-
 variable "metrics_polling_interval" {
-  type    = number
-  default = 300
+  type        = number
+  default     = 300
   description = <<-EOT
     Polling interval in seconds applied to all enabled services. Default: 300 (5 minutes).
     Limited Preview (LP) note: 1-minute polling is in LP and available only for the following services:
