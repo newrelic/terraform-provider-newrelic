@@ -295,8 +295,8 @@ type gcpWIFLinkedAccountResp struct {
 				LinkedAccount *struct {
 					ID          int    `json:"id"`
 					Name        string `json:"name"`
-					NrAccountId int    `json:"nrAccountId"`
-					ExternalId  string `json:"externalId"`
+					NrAccountID int    `json:"nrAccountId"`
+					ExternalID  string `json:"externalId"`
 				} `json:"linkedAccount"`
 			} `json:"cloud"`
 		} `json:"account"`
@@ -340,9 +340,9 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 			return nil
 		}
 
-		_ = d.Set("account_id", la.NrAccountId)
+		_ = d.Set("account_id", la.NrAccountID)
 		_ = d.Set("name", la.Name)
-		_ = d.Set("project_id", la.ExternalId)
+		_ = d.Set("project_id", la.ExternalID)
 
 		return nil
 	}

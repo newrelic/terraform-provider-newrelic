@@ -36,7 +36,7 @@ type gcpDmCheckLinkedAccountResp struct {
 			Cloud struct {
 				LinkedAccount *struct {
 					ID          int `json:"id"`
-					NrAccountId int `json:"nrAccountId"`
+					NrAccountID int `json:"nrAccountId"`
 				} `json:"linkedAccount"`
 			} `json:"cloud"`
 		} `json:"account"`
@@ -467,7 +467,7 @@ func resourceNewrelicCloudGcpDmIntegrationsRead(ctx context.Context, d *schema.R
 		return nil
 	}
 
-	_ = d.Set("account_id", checkResp.Actor.Account.Cloud.LinkedAccount.NrAccountId)
+	_ = d.Set("account_id", checkResp.Actor.Account.Cloud.LinkedAccount.NrAccountID)
 	_ = d.Set("linked_account_id", linkedAccountID)
 
 	return nil
@@ -490,8 +490,8 @@ func resourceNewrelicCloudGcpDmIntegrationsUpdate(ctx context.Context, d *schema
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudDisableIntegration failed: %w", err))
 	}
-	if err := gcpDmFilterDisableErrors(disablePayload.Errors); err != nil {
-		return diag.FromErr(err)
+	if filterErr := gcpDmFilterDisableErrors(disablePayload.Errors); filterErr != nil {
+		return diag.FromErr(filterErr)
 	}
 
 	// Enable/update present integrations
@@ -526,8 +526,8 @@ func resourceNewrelicCloudGcpDmIntegrationsDelete(ctx context.Context, d *schema
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("cloudDisableIntegration failed: %w", err))
 	}
-	if err := gcpDmFilterDisableErrors(disablePayload.Errors); err != nil {
-		return diag.FromErr(err)
+	if filterErr := gcpDmFilterDisableErrors(disablePayload.Errors); filterErr != nil {
+		return diag.FromErr(filterErr)
 	}
 
 	d.SetId("")
