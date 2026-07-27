@@ -226,7 +226,6 @@ Variables:
 * service_account_id: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
 * project_id: The ID of the project you want to receive data from in GCP.
 
-<a id="gcp-dimensional-metrics"></a>
 ### GCP Dimensional Metrics
 
 GCP Dimensional Metrics (`gcp_dm`) is the next-generation GCP integration in New Relic. It uses [Workload Identity Federation (WIF)](https://cloud.google.com/iam/docs/workload-identity-federation) instead of a service account key file, so no long-lived credentials are stored or rotated. New Relic authenticates by presenting a short-lived OIDC token that GCP validates directly against New Relic's OIDC endpoint.
