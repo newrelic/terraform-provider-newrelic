@@ -1,7 +1,7 @@
 ---
 layout: "newrelic"
 page_title: "New Relic: newrelic_cloud_gcp_link_account"
-sidebar_current: "docs-new relic-resource-cloud-gcp-link-account"
+sidebar_current: "docs-new-relic-resource-cloud-gcp-link-account"
 description: |-
 Link a GCP account to New Relic.
 ---

@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -140,10 +139,10 @@ func resourceNewRelicCloudGcpLinkAccountCustomizeDiff(_ context.Context, d *sche
 	saEmail := d.Get("service_account_email").(string)
 
 	if isDM && (audience == "" || saEmail == "") {
-		return fmt.Errorf("audience and service_account_email are required when use_workload_identity_federation = true")
+		return fmt.Errorf("`audience` and `service_account_email` are required when `use_workload_identity_federation = true`")
 	}
 	if !isDM && (audience != "" || saEmail != "") {
-		return fmt.Errorf("audience and service_account_email can only be set when use_workload_identity_federation = true")
+		return fmt.Errorf("`audience` and `service_account_email` can only be set when `use_workload_identity_federation = true`")
 	}
 	return nil
 }
@@ -224,154 +223,34 @@ func expandGcpCloudLinkAccountInput(d *schema.ResourceData) cloud.CloudLinkCloud
 
 }
 
-// gcpWIFOIDCEndpoint returns the New Relic OIDC token endpoint for the given provider region.
-// This URL is set as credential_source.url in the WIF credential JSON and tells GCP STS
-// where to fetch the subject token from.
-func gcpWIFOIDCEndpoint(region string) string {
-	switch strings.ToLower(strings.TrimSpace(region)) {
-	case "eu":
-		return "https://oidc.eu.newrelic.com/r/gcp-cmp"
-	case "staging":
-		return "https://oidc-staging.newrelic.com/r/gcp-cmp"
-	default: // US and JP use the US endpoint
-		return "https://oidc.newrelic.com/r/gcp-cmp"
-	}
-}
-
-// gcpBuildWIFCredential constructs the GCP Workload Identity Federation credential
-// JSON string that cloudAuthenticateIntegration expects as its payload.
-// All fixed fields (universe_domain, type, subject_token_type, token_url, format)
-// are set to their required values; the caller supplies only the environment-specific inputs.
-func gcpBuildWIFCredential(audience, serviceAccountEmail, region string) (string, error) {
-	cred := map[string]interface{}{
-		"universe_domain":    "googleapis.com",
-		"type":               "external_account",
-		"audience":           audience,
-		"subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
-		"token_url":          "https://sts.googleapis.com/v1/token",
-		"credential_source": map[string]interface{}{
-			"url":     gcpWIFOIDCEndpoint(region),
-			"headers": map[string]interface{}{},
-			"format": map[string]interface{}{
-				"type":                     "json",
-				"subject_token_field_name": "access_token",
-			},
-		},
-		"service_account_impersonation_url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/" +
-			serviceAccountEmail + ":generateAccessToken",
-	}
-	b, err := json.Marshal(cred)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-// gcpWIFGetLinkedAccountQuery fetches only the basic fields of a linked account
-// (id, name, nrAccountId, externalId) without requesting integrations.
-// This avoids the "Abstract type 'Integration' must resolve to an Object type"
-// error that occurs when GetLinkedAccountWithContext encounters GCP Dimensional
-// Metrics-specific integration types that its inline fragments don't cover.
-const gcpWIFGetLinkedAccountQuery = `query($accountId: Int!, $linkedAccountId: Int!) {
-	actor {
-		account(id: $accountId) {
-			cloud {
-				linkedAccount(id: $linkedAccountId) {
-					id
-					name
-					nrAccountId
-					externalId
-				}
-			}
-		}
-	}
-}`
-
-// gcpWIFLinkedAccountResp is the response type for gcpWIFGetLinkedAccountQuery.
-type gcpWIFLinkedAccountResp struct {
-	Actor struct {
-		Account struct {
-			Cloud struct {
-				LinkedAccount *struct {
-					ID          int    `json:"id"`
-					Name        string `json:"name"`
-					NrAccountId int    `json:"nrAccountId"`
-					ExternalId  string `json:"externalId"`
-				} `json:"linkedAccount"`
-			} `json:"cloud"`
-		} `json:"account"`
-	} `json:"actor"`
-}
-
 func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 	accountID := selectAccountID(providerConfig, d)
 
 	linkedAccountID, convErr := strconv.Atoi(d.Id())
-
 	if convErr != nil {
 		return diag.FromErr(convErr)
 	}
 
-	// readWIFMinimal reads a linked account with a minimal query that omits the
-	// integrations field. GetLinkedAccountWithContext requests integrations, which
-	// throws "Abstract type 'Integration' must resolve to an Object type" on GCP
-	// Dimensional Metrics (gcp_v2) accounts. audience and service_account_email are
-	// write-only (ForceNew) and never returned by the API, so they are retained from
-	// state written during Create.
-	readWIFMinimal := func() diag.Diagnostics {
-		var resp gcpWIFLinkedAccountResp
-		vars := map[string]interface{}{
-			"accountId":       accountID,
-			"linkedAccountId": linkedAccountID,
-		}
-		if err := client.NerdGraph.QueryWithResponseAndContext(ctx, gcpWIFGetLinkedAccountQuery, vars, &resp); err != nil {
-			if strings.Contains(err.Error(), "not found") {
-				d.SetId("")
-				return nil
-			}
-			return diag.FromErr(err)
-		}
-
-		la := resp.Actor.Account.Cloud.LinkedAccount
-		if la == nil {
-			d.SetId("")
-			return nil
-		}
-
-		_ = d.Set("account_id", la.NrAccountId)
-		_ = d.Set("name", la.Name)
-		_ = d.Set("project_id", la.ExternalId)
-
-		return nil
-	}
-
-	// WIF (GCP Dimensional Metrics) mode always uses the minimal query.
-	if isGcpWIFMode(d) {
-		return readWIFMinimal()
-	}
-
-	// Legacy (service-account-key) mode keeps the original read path unchanged.
+	// Both WIF (gcp_v2) and legacy accounts are read through the Go Client. For
+	// WIF-linked accounts, audience and service_account_email are write-only
+	// (ForceNew) and never returned by the API, so they are retained from state.
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
-
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			d.SetId("")
 			return nil
 		}
-		// A WIF-linked account imported without audience in state (mode is unknown at
-		// import time) lands here; retry with the minimal query rather than failing.
-		if strings.Contains(err.Error(), "must resolve to an Object type") {
-			return readWIFMinimal()
-		}
 		return diag.FromErr(err)
+	}
+	if linkedAccount == nil {
+		d.SetId("")
+		return nil
 	}
 
 	readGcpLinkedAccount(d, linkedAccount)
-
 	return nil
-
 }
 
 // readGcpLinkedAccount function to store name and ExternalId.

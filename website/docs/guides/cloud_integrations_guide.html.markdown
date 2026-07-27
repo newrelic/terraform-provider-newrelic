@@ -481,6 +481,16 @@ Variables:
 
 -> **NOTE:** `audience` and `service_account_email` in `newrelic_cloud_gcp_link_account` are write-only, ForceNew fields. They are used to construct the WIF credential JSON internally and are never returned by the API. If you need to import an existing linked account, use `terraform import newrelic_cloud_gcp_link_account.<name> <linked_account_id>` and then run `terraform apply` to reconcile those fields (Terraform will destroy and recreate the resource).
 
+#### Example modules
+
+The provider's GitHub repository also ships ready-to-use modules for GCP Dimensional Metrics that create the full Workload Identity Federation setup (pool, OIDC provider, service account, and IAM bindings) and link the project(s) — so you don't have to hand-write the configuration above. Pick the one that matches your GCP IAM access:
+
+* **[`gcp-dimensional-metrics-folder-iam`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-folder-iam)** — multi-project setup that grants the required roles once at the **folder** level, so a single service account covers every project under that folder. Use this when you have folder-level IAM access.
+* **[`gcp-dimensional-metrics-project-iam`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-project-iam)** — the same setup, but binds the roles directly on each **project** (no folder access required).
+* **[`gcp-dimensional-metrics-multi-service`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-multi-service)** — shared WIF infrastructure across two project groups that each enable a different set of GCP services.
+
+Each is used like the other cloud-integration modules — set its `source` to `github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/<module-name>` and supply the variables documented in that module's `variables.tf`.
+
 <a id="oci"></a>
 ### Oracle Cloud Infrastructure
 
