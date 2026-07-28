@@ -184,11 +184,11 @@ func resourceNewRelicCloudGcpLinkAccountCreateWIF(ctx context.Context, d *schema
 	}
 
 	if len(linkPayload.Errors) > 0 {
-		msgs := make([]string, 0, len(linkPayload.Errors))
+		errMessages := make([]string, 0, len(linkPayload.Errors))
 		for _, e := range linkPayload.Errors {
-			msgs = append(msgs, e.Type+" "+e.Message)
+			errMessages = append(errMessages, e.Type+" "+e.Message)
 		}
-		return diag.FromErr(fmt.Errorf("cloudLinkAccount errors: %s", strings.Join(msgs, "; ")))
+		return diag.FromErr(fmt.Errorf("cloudLinkAccount errors:\n %s", strings.Join(errMessages, "\n ")))
 	}
 
 	if len(linkPayload.LinkedAccounts) == 0 {

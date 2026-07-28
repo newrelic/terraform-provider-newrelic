@@ -21,6 +21,19 @@ data "newrelic_cloud_account" "account" {
 }
 ```
 
+### GCP Dimensional Metrics account lookup
+
+To look up a GCP account linked for **GCP Dimensional Metrics** (keyless / Workload Identity Federation), set `cloud_provider = "gcp"` and `is_dimensional_metrics = true`. These accounts are stored internally under the `gcp_v2` provider slug, and this flag tells the data source to look them up there instead of under the legacy `gcp` provider.
+
+```hcl
+data "newrelic_cloud_account" "gcp_dm_account" {
+  account_id             = 12345
+  cloud_provider         = "gcp"
+  name                   = "my gcp dimensional metrics account"
+  is_dimensional_metrics = true
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -28,3 +41,4 @@ The following arguments are supported:
 * `account_id` - (Optional) The account ID in New Relic.
 * `cloud_provider` - (Required) The cloud provider of the account (aws, gcp, azure, etc)
 * `name` - (Required) The cloud account name in New Relic.
+* `is_dimensional_metrics` - (Optional) Set to `true` to look up a GCP **Dimensional Metrics** (keyless / Workload Identity Federation) linked account, which is stored internally under the `gcp_v2` provider slug. Can only be used when `cloud_provider` is `"gcp"`. Defaults to `false`.

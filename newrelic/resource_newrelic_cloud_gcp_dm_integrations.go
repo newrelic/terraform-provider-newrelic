@@ -60,10 +60,6 @@ func resourceNewrelicCloudGcpDmIntegrationsRead(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	// Read through the Go Client (no raw NerdGraph in the provider). On a gcp_v2
-	// account every integration comes back as a CloudGcpGenericIntegration; the
-	// flatten maps each one to its schema block by service slug so external changes
-	// (integrations added/removed outside Terraform) are detected as drift.
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
@@ -143,9 +139,9 @@ func resourceNewrelicCloudGcpDmIntegrationsDelete(ctx context.Context, d *schema
 
 // gcpDmMutationErrors aggregates cloud mutation errors into a single error.
 func gcpDmMutationErrors(mutation string, errors []cloud.CloudIntegrationMutationError) error {
-	msgs := make([]string, 0, len(errors))
+	errMessages := make([]string, 0, len(errors))
 	for _, e := range errors {
-		msgs = append(msgs, e.Type+": "+e.Message)
+		errMessages = append(errMessages, e.Type+": "+e.Message)
 	}
-	return fmt.Errorf("%s errors: %s", mutation, strings.Join(msgs, "; "))
+	return fmt.Errorf("%s errors:\n %s", mutation, strings.Join(errMessages, "\n "))
 }
