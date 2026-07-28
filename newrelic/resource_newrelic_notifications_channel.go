@@ -223,9 +223,20 @@ func listValidNotificationsChannelTypes() []string {
 // Validation function to validate allowed product types
 func listValidNotificationsProductTypes() []string {
 	return []string{
+		string(notifications.AiNotificationsProductTypes.ALERTS),
+		string(notifications.AiNotificationsProductTypes.APM),
+		string(notifications.AiNotificationsProductTypes.CHANGE_TRACKING),
+		string(notifications.AiNotificationsProductTypes.COMMERCE),
+		string(notifications.AiNotificationsProductTypes.CSSP),
 		string(notifications.AiNotificationsProductTypes.DISCUSSIONS),
 		string(notifications.AiNotificationsProductTypes.ERROR_TRACKING),
 		string(notifications.AiNotificationsProductTypes.IINT),
+		string(notifications.AiNotificationsProductTypes.LOGGING_UI),
+		string(notifications.AiNotificationsProductTypes.NTFC),
+		string(notifications.AiNotificationsProductTypes.PD),
+		string(notifications.AiNotificationsProductTypes.SECURITY),
+		string(notifications.AiNotificationsProductTypes.SHARING),
+		string(notifications.AiNotificationsProductTypes.WORKFLOW_AUTOMATION),
 	}
 }
 
