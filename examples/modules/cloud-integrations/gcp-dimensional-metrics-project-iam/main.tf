@@ -12,9 +12,11 @@ locals {
   on = toset(var.enabled_services)
 
   # Derive the OIDC issuer URI based on the New Relic region.
-  oidc_issuer_uri = (var.newrelic_region == "EU"
-    ? "https://oidc.eu.newrelic.com/r/gcp-cmp"
-  : "https://oidc.newrelic.com/r/gcp-cmp")
+  oidc_issuer_uri = {
+    "US" = "https://oidc.newrelic.com/r/gcp-cmp"
+    "EU" = "https://oidc.eu.newrelic.com/r/gcp-cmp"
+    "JP" = "https://oidc.jp.newrelic.com/r/gcp-cmp"
+  }[var.newrelic_region]
 }
 
 provider "newrelic" {

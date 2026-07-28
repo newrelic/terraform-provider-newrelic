@@ -12,7 +12,7 @@ variable "newrelic_api_key" {
 variable "newrelic_region" {
   type        = string
   default     = "US"
-  description = "New Relic data-center region: US or EU."
+  description = "New Relic data-center region: US, EU, or JP."
 }
 
 variable "gcp_sa_project_id" {

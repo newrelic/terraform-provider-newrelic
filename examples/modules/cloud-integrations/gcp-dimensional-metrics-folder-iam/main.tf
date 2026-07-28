@@ -12,13 +12,10 @@ locals {
   on = toset(var.enabled_services)
 
   # Derive the OIDC issuer URI based on the New Relic region.
-  # NOTE: The "Staging" entry is for INTERNAL New Relic testing only and must NOT
-  # be committed/pushed to the customer-facing module (staging was intentionally
-  # removed in commit ddaf1a73). It must match gcpDmOIDCEndpoint() in the provider.
   oidc_issuer_uri = {
-    "US"      = "https://oidc.newrelic.com/r/gcp-cmp"
-    "EU"      = "https://oidc.eu.newrelic.com/r/gcp-cmp"
-    "Staging" = "https://oidc-staging.newrelic.com/r/gcp-cmp"
+    "US" = "https://oidc.newrelic.com/r/gcp-cmp"
+    "EU" = "https://oidc.eu.newrelic.com/r/gcp-cmp"
+    "JP" = "https://oidc.jp.newrelic.com/r/gcp-cmp"
   }[var.newrelic_region]
 }
 
