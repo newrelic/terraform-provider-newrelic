@@ -12,9 +12,11 @@ func gcpWIFOIDCEndpoint(region string) string {
 	switch region {
 	case "EU":
 		return "https://oidc.eu.newrelic.com/r/gcp-cmp"
+	case "JP":
+		return "https://oidc.jp.newrelic.com/r/gcp-cmp"
 	case "Staging":
 		return "https://oidc-staging.newrelic.com/r/gcp-cmp"
-	default: // US and JP use the US endpoint
+	default: // US
 		return "https://oidc.newrelic.com/r/gcp-cmp"
 	}
 }
