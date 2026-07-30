@@ -228,11 +228,10 @@ Variables:
 <a id="oci"></a>
 ### Oracle Cloud Infrastructure
 
-The New Relic OCI integration collects metrics, logs, and metadata from supported OCI services and sends them to your New Relic account. This integration uses a combination of:
+The New Relic OCI integration collects metrics, logs, metadata, and cost data from OCI and sends them to your New Relic account. This integration supports three data types:
 
-* Service Connector Hub pipelines (for metrics / logs export)
-* Functions for data transformation and payload enrichment
-* API polling to supplement metadata and tags
+* **Metrics / Logs** – Uses Service Connector Hub pipelines, Functions for data transformation, and API polling for metadata.
+* **Cost** – Uses the Scheduler Primitive to pull Oracle's shared cost-report bucket. No Service Connector Hub or Functions are required; only a cross-tenancy IAM policy is needed.
 
 #### Supported OCI service categories
 
@@ -402,7 +401,7 @@ module "oci_policy_setup" {
 
 Key variables:
 
-* `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
+* `instrumentation_type` – Comma‑separated list controlling which policy sets are deployed. Valid values: `METRICS`, `LOGS`, `COST`, or combinations such as `METRICS,LOGS` or `METRICS,LOGS,COST`. Use `COST` alone for cost data ingestion (no Service Connector Hub or Functions required).
 * `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
 * `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US`, `EU`, or `JP`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
@@ -553,6 +552,8 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 ]
 ```
 
-> When implementing the New Relic OCI integration with Workload Identity Federation, the modules must be applied in this order: `wif-setup` (to create OAuth credentials) → `policy-setup` (to configure IAM policies and vault secrets) → `metrics-integration` or `logging-integration` (to set up data collection). The `wif-setup` module outputs (`client_id`, `client_secret`, `oci_domain_url`) must be provided as inputs to the `policy-setup` module. These modules can be run together in a single Terraform configuration if the dependency graph can be successfully resolved by referencing outputs from earlier modules. Failure to apply modules in the correct order will result in authorization errors when creating Service Connector Hub resources or invoking functions.
+> When implementing the New Relic OCI integration with Workload Identity Federation, the modules must be applied in this order: `wif-setup` (to create OAuth credentials) → `policy-setup` (to configure IAM policies and, for metrics/logs, vault secrets) → `metrics-integration` or `logging-integration` (to set up data collection). The `wif-setup` module outputs (`client_id`, `client_secret`, `oci_domain_url`) must be provided as inputs to the `policy-setup` module. These modules can be run together in a single Terraform configuration if the dependency graph can be successfully resolved by referencing outputs from earlier modules. Failure to apply modules in the correct order will result in authorization errors when creating Service Connector Hub resources or invoking functions.
+>
+> For **COST-only** integrations, only `wif-setup` → `policy-setup` (with `instrumentation_type = "COST"`) are required. The `metrics-integration` and `logging-integration` modules are not needed — cost data is collected automatically via the New Relic Scheduler Primitive after the account is linked.
 
 [*Browse the OCI module source code on GitHub*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci)

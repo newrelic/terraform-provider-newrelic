@@ -38,7 +38,7 @@ resource "oci_kms_key" "newrelic_key" {
 }
 
 resource "oci_vault_secret" "ingest_api_key" {
-  count = local.is_ingest_vault_key_present ? 0 : 1
+  count = local.newrelic_monitoring_active && !local.is_ingest_vault_key_present ? 1 : 0
   compartment_id = oci_identity_compartment.newrelic_compartment.id
   vault_id       = oci_kms_vault.newrelic_vault[count.index].id
   key_id         = oci_kms_key.newrelic_key[count.index].id
@@ -56,7 +56,7 @@ resource "oci_vault_secret" "ingest_api_key" {
 }
 
 resource "oci_vault_secret" "user_api_key" {
-  count = local.is_user_vault_key_present ? 0 : 1
+  count = local.newrelic_monitoring_active && !local.is_user_vault_key_present ? 1 : 0
   compartment_id = oci_identity_compartment.newrelic_compartment.id
   vault_id       = oci_kms_vault.newrelic_vault[count.index].id
   key_id         = oci_kms_key.newrelic_key[count.index].id
@@ -73,8 +73,10 @@ resource "oci_vault_secret" "user_api_key" {
   }
 }
 
-#Resource for the dynamic group
+# Dynamic group for Service Connector Hub — only needed for METRICS/LOGS integrations.
+# COST-only integrations use Scheduler Primitive and do not require a connector or function.
 resource "oci_identity_dynamic_group" "nr_service_connector_group" {
+  count          = local.newrelic_monitoring_active ? 1 : 0
   compartment_id = var.tenancy_ocid
   description    = "[DO NOT REMOVE] Dynamic group for service connector"
   matching_rule  = "ANY {resource.type = 'serviceconnector', resource.type = 'fnfunc'}"
@@ -111,8 +113,9 @@ resource "oci_identity_policy" "nr_logs_policy" {
   freeform_tags = local.freeform_tags
 }
 
-#Resource for the metrics/Logging (Common) policies
+#Resource for the metrics/Logging (Common) policies — only needed when monitoring is active
 resource "oci_identity_policy" "nr_common_policy" {
+  count          = local.is_home_region && local.newrelic_monitoring_active ? 1 : 0
   depends_on     = [oci_identity_dynamic_group.nr_service_connector_group]
   compartment_id = var.tenancy_ocid
   description    = "[DO NOT REMOVE] Policy to have any connector hub read from monitoring source and write to a target function"
@@ -126,14 +129,33 @@ resource "oci_identity_policy" "nr_common_policy" {
   freeform_tags = local.freeform_tags
 }
 
+# Cross-tenancy endorsement so WIF-authenticated principals can read Oracle's shared
+# cost-report bucket. Only deployed when COST is in instrumentation_type.
+resource "oci_identity_policy" "nr_cost_policy" {
+  count          = local.is_home_region && local.newrelic_cost_access_policy ? 1 : 0
+  compartment_id = var.tenancy_ocid
+  description    = "[DO NOT REMOVE] Policy to endorse New Relic principals to read OCI cost reports from the shared Oracle reporting tenancy"
+  name           = local.newrelic_cost_policy
+  statements = [
+    "DEFINE tenancy usage-report as ocid1.tenancy.oc1..aaaaaaaaned4fkpkisbwjlr56u7cj63lf3wffbilvqknstgtvzub7vhqkggq",
+    "endorse any-user to read objects in tenancy usage-report",
+  ]
+  defined_tags  = {}
+  freeform_tags = local.freeform_tags
+}
+
 resource "newrelic_cloud_oci_link_account" "linkAccount" {
-  account_id           = var.newrelic_account_id
-  name                 = local.linked_account_name
-  compartment_ocid     = oci_identity_compartment.newrelic_compartment.id
-  oci_home_region      = local.home_region
-  tenant_id            = var.tenancy_ocid
-  ingest_vault_ocid    = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
-  user_vault_ocid      = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
+  account_id  = var.newrelic_account_id
+  name        = local.linked_account_name
+  tenant_id   = var.tenancy_ocid
+  oci_home_region = local.home_region
+
+  # Vault and compartment fields are only required for monitoring (METRICS/LOGS).
+  # Cost-only accounts skip vault creation and leave these fields empty.
+  compartment_ocid  = local.newrelic_monitoring_active ? oci_identity_compartment.newrelic_compartment.id : null
+  ingest_vault_ocid = local.newrelic_monitoring_active ? (local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : try(oci_vault_secret.ingest_api_key[0].id, null)) : null
+  user_vault_ocid   = local.newrelic_monitoring_active ? (local.is_user_vault_key_present ? var.user_key_secret_ocid : try(oci_vault_secret.user_api_key[0].id, null)) : null
+
   oci_client_id        = var.client_id
   oci_client_secret    = var.client_secret
   oci_domain_url       = var.oci_domain_url
@@ -149,11 +171,11 @@ output "compartment_ocid" {
 }
 
 output "ingest_vault_ocid" {
-  value = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
+  value = local.newrelic_monitoring_active ? (local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : try(oci_vault_secret.ingest_api_key[0].id, null)) : null
 }
 
 output "user_vault_ocid" {
-  value = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
+  value = local.newrelic_monitoring_active ? (local.is_user_vault_key_present ? var.user_key_secret_ocid : try(oci_vault_secret.user_api_key[0].id, null)) : null
 }
 
 output "provider_account_id" {
