@@ -238,6 +238,8 @@ The following arguments are supported:
   - `FACETS_IGNORED` - (Default) Facets are not taken into consideration when determining when the compound alert condition activates
   - `FACETS_MATCH` - The compound alert condition will activate only when shared facets have matching values
 - `runbook_url` - (Optional) Runbook URL to display in notifications.
+- `description` - (Optional) **BETA PREVIEW: the `description` field is in limited release and only enabled for preview on a per-account basis.** The custom violation description.
+- `title_template` - (Optional) **BETA PREVIEW: the `title_template` field is in limited release and only enabled for preview on a per-account basis.** This field allows you to create a custom title to be used when incidents are opened by the condition. Setting this field will override the default title. Must be [Handlebars format](https://handlebarsjs.com/guide/).
 - `threshold_duration` - (Optional) The duration, in seconds, that the trigger expression must be true before the compound alert condition will activate. Between 30-86400 seconds.
 
 ### Component Conditions

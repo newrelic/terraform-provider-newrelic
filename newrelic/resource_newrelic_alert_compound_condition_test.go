@@ -396,3 +396,97 @@ resource "newrelic_alert_compound_condition" "foo" {
 }
 `, name, testAccountID)
 }
+
+func TestAccNewRelicAlertCompoundCondition_TitleTemplateAndDescription(t *testing.T) {
+	t.Skip("Skipping due to title_template and description being behind the DCON/compound_title_template_and_description_apis feature flag until generally available.")
+
+	resourceName := "newrelic_alert_compound_condition.foo"
+	rName := acctest.RandString(5)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicAlertCompoundConditionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNewRelicAlertCompoundConditionConfigWithTitleTemplateAndDescription(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicAlertCompoundConditionExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "description", "Test description for compound condition"),
+					resource.TestCheckResourceAttr(resourceName, "title_template", fmt.Sprintf("{{compoundCondition.name}} triggered - %s", rName)),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccNewRelicAlertCompoundConditionConfigWithTitleTemplateAndDescription(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_alert_policy" "foo" {
+	name = "tf-test-%[1]s"
+}
+
+resource "newrelic_nrql_alert_condition" "condition_a" {
+	policy_id = newrelic_alert_policy.foo.id
+	name      = "tf-test-condition-a-%[1]s"
+	enabled   = true
+
+	nrql {
+		query = "SELECT count(*) FROM Transaction WHERE appName = 'Dummy App'"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 5.0
+		threshold_duration    = 300
+		threshold_occurrences = "all"
+	}
+
+	violation_time_limit_seconds = 3600
+}
+
+resource "newrelic_nrql_alert_condition" "condition_b" {
+	policy_id = newrelic_alert_policy.foo.id
+	name      = "tf-test-condition-b-%[1]s"
+	enabled   = true
+
+	nrql {
+		query = "SELECT average(duration) FROM Transaction WHERE appName = 'Dummy App'"
+	}
+
+	critical {
+		operator              = "above"
+		threshold             = 1.0
+		threshold_duration    = 300
+		threshold_occurrences = "all"
+	}
+
+	violation_time_limit_seconds = 3600
+}
+
+resource "newrelic_alert_compound_condition" "foo" {
+	account_id         = %[2]d
+	policy_id          = newrelic_alert_policy.foo.id
+	name               = "tf-test-%[1]s"
+	enabled            = true
+	trigger_expression = "A AND B"
+	description        = "Test description for compound condition"
+	title_template     = "{{compoundCondition.name}} triggered - %[1]s"
+
+	component_conditions {
+		id    = split(":", newrelic_nrql_alert_condition.condition_a.id)[1]
+		alias = "A"
+	}
+
+	component_conditions {
+		id    = split(":", newrelic_nrql_alert_condition.condition_b.id)[1]
+		alias = "B"
+	}
+}
+`, name, testAccountID)
+}
