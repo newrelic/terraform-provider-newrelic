@@ -135,13 +135,21 @@ func isGcpWIFMode(d *schema.ResourceData) bool {
 // those fields must be absent.
 func resourceNewRelicCloudGcpLinkAccountCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	isDM := d.Get("use_workload_identity_federation").(bool)
-	audience := d.Get("audience").(string)
-	saEmail := d.Get("service_account_email").(string)
 
-	if isDM && (audience == "" || saEmail == "") {
+	// audience and service_account_email are commonly derived from google_* resources
+	// created in the same apply, so their resolved values are unknown at plan time
+	// (d.Get would return ""). Validate presence from the raw config instead, which
+	// reports an attribute as set even when its value is not yet known.
+	audienceSet, saSet := false, false
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() {
+		audienceSet = !rawConfig.GetAttr("audience").IsNull()
+		saSet = !rawConfig.GetAttr("service_account_email").IsNull()
+	}
+
+	if isDM && (!audienceSet || !saSet) {
 		return fmt.Errorf("`audience` and `service_account_email` are required when `use_workload_identity_federation = true`")
 	}
-	if !isDM && (audience != "" || saEmail != "") {
+	if !isDM && (audienceSet || saSet) {
 		return fmt.Errorf("`audience` and `service_account_email` can only be set when `use_workload_identity_federation = true`")
 	}
 	return nil

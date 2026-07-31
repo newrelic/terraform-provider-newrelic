@@ -94,7 +94,7 @@ resource "google_service_account_iam_member" "newrelic_wif" {
 }
 
 resource "time_sleep" "iam_propagation" {
-  create_duration = "90s"
+  create_duration = "120s"
   depends_on = [
     google_service_account_iam_member.newrelic_wif,
     google_folder_iam_member.newrelic_monitoring_viewer,
