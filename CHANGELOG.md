@@ -1,3 +1,8 @@
+<a name="v3.96.0"></a>
+## [v3.96.0] - 2026-08-04
+### Features
+- **cloud:** add GCP Dimensional Metrics integration resources with WIF support ([#3103](https://github.com/newrelic/terraform-provider-newrelic/issues/3103))
+
 <a name="v3.95.2"></a>
 ## [v3.95.2] - 2026-07-17
 ### Bug Fixes
@@ -2803,7 +2808,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.0...HEAD
+[v3.96.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.2...v3.96.0
 [v3.95.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.1...v3.95.2
 [v3.95.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.0...v3.95.1
 [v3.95.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.94.3...v3.95.0
