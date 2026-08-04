@@ -14,7 +14,7 @@ import (
 // The schema, the configure input, the disable input, AND the read/flatten are
 // all derived from this one table, so adding a service is a one-line change.
 //
-// On a GCP Dimensional Metrics (gcp_v2) linked account, the backend returns every
+// On a GCP Dimensional Metrics linked account, the backend returns every
 // integration as a CloudGcpGenericIntegration identified by its service `slug`
 // (e.g. "gcp_bigquery"); the `slug` field below is how the read maps a returned
 // integration back to its Terraform block.
@@ -30,7 +30,7 @@ type gcpDmServiceValues struct {
 // gcpDmService describes one GCP service block.
 type gcpDmService struct {
 	key         string // Terraform schema block key, e.g. "big_query"
-	slug        string // backend CloudService.Slug on gcp_v2 accounts, e.g. "gcp_bigquery"
+	slug        string // backend CloudService.Slug on Dimensional Metrics accounts, e.g. "gcp_bigquery"
 	description string
 	// configure sets this service's typed input slice on the configure payload.
 	configure func(in *cloud.CloudGcpIntegrationsInput, values gcpDmServiceValues)
@@ -421,7 +421,7 @@ func expandCloudGcpDmIntegrationsInput(d *schema.ResourceData, linkedAccountID i
 }
 
 // flattenGcpDmIntegrations writes the backend state back into the resource so drift
-// is detected. On a gcp_v2 linked account every integration is returned as a
+// is detected. On a Dimensional Metrics linked account every integration is returned as a
 // *cloud.CloudGcpGenericIntegration identified by its service slug; each is mapped
 // back to its Terraform block. Blocks with no matching integration are cleared so an
 // integration removed outside Terraform surfaces as drift.

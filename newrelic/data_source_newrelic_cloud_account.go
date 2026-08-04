@@ -36,7 +36,7 @@ func dataSourceNewRelicCloudAccount() *schema.Resource {
 				Optional: true,
 				Default:  false,
 				Description: "Set to true when looking up a GCP Dimensional Metrics linked account " +
-					"(cloud_provider must be \"gcp\"). Internally uses the gcp_v2 provider slug.",
+					"(cloud_provider must be \"gcp\").",
 			},
 		},
 	}
@@ -53,14 +53,10 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	accountID := selectAccountID(cfg, d)
 	isDM := d.Get("is_dimensional_metrics").(bool)
 
-	// is_dimensional_metrics only applies to GCP; it selects the "gcp_v2" provider
-	// slug under which GCP Dimensional Metrics linked accounts are stored. Data
-	// sources do not run CustomizeDiff, so this relationship is validated here.
-	if isDM {
-		if !strings.EqualFold(provider, "gcp") {
-			return diag.Errorf("`is_dimensional_metrics` can only be set when `cloud_provider` is \"gcp\"")
-		}
-		provider = "gcp_v2"
+	// is_dimensional_metrics only applies to GCP. Data sources do not run
+	// CustomizeDiff, so this relationship is validated here.
+	if isDM && !strings.EqualFold(provider, "gcp") {
+		return diag.Errorf("`is_dimensional_metrics` can only be set when `cloud_provider` is \"gcp\"")
 	}
 
 	accounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, provider)
@@ -68,9 +64,12 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	// GCP linked accounts are returned together regardless of whether they use
+	// Dimensional Metrics; HasDimensionalMetrics disambiguates them so a lookup
+	// for one kind never matches an account of the other kind.
 	var account *cloud.CloudLinkedAccount
 	for _, a := range *accounts {
-		if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
+		if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) && a.HasDimensionalMetrics == isDM {
 			account = &a
 			break
 		}
