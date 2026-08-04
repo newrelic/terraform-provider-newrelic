@@ -31,13 +31,19 @@ func dataSourceNewRelicCloudAccount() *schema.Resource {
 				Required:    true,
 				Description: "The name of the cloud account.",
 			},
+			"is_dimensional_metrics": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Description: "Set to true when looking up a GCP Dimensional Metrics linked account " +
+					"(cloud_provider must be \"gcp\"). Internally uses the gcp_v2 provider slug.",
+			},
 		},
 	}
 }
 
 func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cfg := meta.(*ProviderConfig)
-
 	client := cfg.NewClient
 
 	log.Printf("[INFO] Reading New Relic Cloud Accounts")
@@ -45,15 +51,24 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	name := d.Get("name").(string)
 	provider := d.Get("cloud_provider").(string)
 	accountID := selectAccountID(cfg, d)
+	isDM := d.Get("is_dimensional_metrics").(bool)
+
+	// is_dimensional_metrics only applies to GCP; it selects the "gcp_v2" provider
+	// slug under which GCP Dimensional Metrics linked accounts are stored. Data
+	// sources do not run CustomizeDiff, so this relationship is validated here.
+	if isDM {
+		if !strings.EqualFold(provider, "gcp") {
+			return diag.Errorf("`is_dimensional_metrics` can only be set when `cloud_provider` is \"gcp\"")
+		}
+		provider = "gcp_v2"
+	}
 
 	accounts, err := client.Cloud.GetLinkedAccountsWithContext(ctx, provider)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var account *cloud.CloudLinkedAccount
-
 	for _, a := range *accounts {
 		if a.NrAccountId == accountID && strings.EqualFold(a.Name, name) {
 			account = &a
@@ -62,24 +77,23 @@ func dataSourceNewRelicCloudAccountRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if account == nil {
-		return diag.FromErr(fmt.Errorf("the name '%s' does not match any account for provider '%s", name, provider))
+		if isDM {
+			return diag.Errorf("no GCP Dimensional Metrics linked account named %q found for New Relic account %d", name, accountID)
+		}
+		return diag.FromErr(fmt.Errorf("the name '%s' does not match any account for provider '%s'", name, provider))
 	}
 
 	d.SetId(strconv.Itoa(account.ID))
 
-	return diag.FromErr(flattenCloudAccount(account, d, accountID))
+	return diag.FromErr(flattenCloudAccount(account, d))
 }
 
-func flattenCloudAccount(account *cloud.CloudLinkedAccount, d *schema.ResourceData, accountID int) error {
-	var err error
-
-	err = d.Set("name", account.Name)
-	if err != nil {
+func flattenCloudAccount(account *cloud.CloudLinkedAccount, d *schema.ResourceData) error {
+	if err := d.Set("name", account.Name); err != nil {
 		return err
 	}
 
-	err = d.Set("account_id", accountID)
-	if err != nil {
+	if err := d.Set("account_id", account.NrAccountId); err != nil {
 		return err
 	}
 

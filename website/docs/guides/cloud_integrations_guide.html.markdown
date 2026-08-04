@@ -16,6 +16,7 @@ We have different instructions for each cloud provider, use the links below to g
 - [AWS EU Sovereign](#aws-eu-sovereign)
 - [Azure](#azure)
 - [Google Cloud Platform](#gcp)
+- [GCP Dimensional Metrics](#gcp-dimensional-metrics)
 - [Oracle Cloud Infrastructure](#oci)
 
 If you encounter issues or bugs, please [report those on Github repository](https://github.com/newrelic/terraform-provider-newrelic/issues/new/choose).
@@ -224,6 +225,77 @@ Variables:
 * name: A unique name used throughout the module to name the resources.
 * service_account_id: The ID of the New Relic GCP [Service Account](https://cloud.google.com/iam/docs/service-accounts) with [Viewer and Service Usage Consumer roles](https://cloud.google.com/iam/docs/understanding-roles). You can find this ID in the New Relic UI by going to `Infrastructure > GCP > Add a GCP project`. For more information [check out the New Relic docs](https://docs.newrelic.com/docs/infrastructure/google-cloud-platform-integrations/get-started/connect-google-cloud-platform-services-new-relic/).
 * project_id: The ID of the project you want to receive data from in GCP.
+
+### GCP Dimensional Metrics
+
+GCP Dimensional Metrics (`gcp_dm`) is the next-generation GCP integration in New Relic. It uses [Workload Identity Federation (WIF)](https://cloud.google.com/iam/docs/workload-identity-federation) instead of a service account key file, so no long-lived credentials are stored or rotated. New Relic authenticates by presenting a short-lived OIDC token that GCP validates directly against New Relic's OIDC endpoint.
+
+**Key differences from the classic GCP integration:**
+
+* **Keyless authentication** — credentials are issued on-demand via WIF; no JSON key file is created or managed.
+* **Expanded service coverage** — includes all services from the classic integration plus GCP Dimensional Metrics-only services such as Firebase Authentication, Firebase Vertex AI, Managed Apache Kafka, Memorystore, and Firebase App Hosting.
+* **Four GCP roles required** on the service account: `roles/viewer` (read access), `roles/serviceusage.serviceUsageConsumer` (API quota), `roles/cloudasset.viewer` (resource discovery via Cloud Asset APIs), and `roles/resourcemanager.folderViewer` (folder-level resource discovery — must be granted at the **folder** level, not project level).
+
+The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrations` resource:
+
+|                        |                           |                          |
+|------------------------|---------------------------|--------------------------|
+| `AI Platform`          | `AlloyDB` (supports 1m polling) | `App Engine`        |
+| `BigQuery` (supports 1m polling) | `Bigtable`       | `Cloud Composer`         |
+| `Dataflow` (supports 1m polling) | `Dataproc` (supports 1m polling) | `Datastore` |
+| `Firebase Database`    | `Firebase Hosting`        | `Firebase Storage`       |
+| `Firestore`            | `Cloud Functions`         | `Cloud Interconnect`     |
+| `Cloud Load Balancing` (supports 1m polling) | `Memcache`   | `Cloud Pub/Sub` (supports 1m polling) |
+| `Memorystore (Redis)`  | `Cloud Router`            | `Cloud Run`              |
+| `Cloud Spanner` (supports 1m polling) | `Cloud SQL`      | `Cloud Storage`          |
+| `Virtual Machines`     | `VPC Access`              |                          |
+| `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only, metrics only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
+| `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only, metrics only)* | `Istio` *(DM only, metrics only)* |
+| `API Gateway` *(DM only)* | `Kubernetes Engine` *(metrics only)* |                  |
+
+-> **NOTE:** Services marked *(supports 1m polling)* support a `metrics_polling_interval` as low as **60 seconds**. 1-minute polling for these services is in **Limited Preview (LP)** and available only for: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(DM only)* are only available in the Dimensional Metrics integration. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
+
+#### Prerequisites
+
+Before linking the GCP project to New Relic, you must create the following GCP infrastructure:
+
+1. A **Workload Identity Pool** configured with New Relic's OIDC issuer URI.
+2. An **OIDC provider** inside the pool with `allowed_audiences = ["newrelic-gcp-integrations"]` and an `attribute_condition` restricting tokens to your specific New Relic account ID.
+3. A **GCP service account** granted `roles/viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **folder** level.
+4. A `roles/iam.workloadIdentityUser` binding on the service account scoped to the WIF pool using the `attribute.nr_account_id` attribute (not the wildcard `/*` form).
+
+The OIDC issuer URI is region-specific:
+
+| New Relic region | Issuer URI |
+|---|---|
+| US | `https://oidc.newrelic.com/r/gcp-cmp` |
+| EU | `https://oidc.eu.newrelic.com/r/gcp-cmp` |
+| JP | `https://oidc.jp.newrelic.com/r/gcp-cmp` |
+
+#### Setup steps
+
+Setting up GCP Dimensional Metrics involves three groups of resources. A complete, ready-to-run configuration that wires all of them together for a single project is available as the [`gcp-dimensional-metrics-quickstart`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-quickstart) example — copy it, set the variables, and run `terraform init && terraform apply`. The steps below explain what that configuration creates:
+
+1. **Workload Identity Federation (GCP)** — using the `google` provider, create the keyless-auth infrastructure:
+   * `google_iam_workload_identity_pool` — the WIF pool.
+   * `google_iam_workload_identity_pool_provider` — an OIDC provider in the pool, with `issuer_uri` set to New Relic's region-specific endpoint (see the table above), `allowed_audiences = ["newrelic-gcp-integrations"]`, and an `attribute_condition` restricting tokens to your New Relic account ID.
+   * `google_service_account` — the account New Relic impersonates.
+   * IAM role bindings granting `roles/viewer`, `roles/serviceusage.serviceUsageConsumer`, and `roles/cloudasset.viewer` at the **project** level, and `roles/resourcemanager.folderViewer` at the **folder** level.
+   * `google_service_account_iam_member` — a `roles/iam.workloadIdentityUser` binding authorizing the pool (scoped via `attribute.nr_account_id`) to impersonate the service account.
+2. **Link the project (New Relic)** — create a [`newrelic_cloud_gcp_link_account`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_link_account) in keyless mode: set `use_workload_identity_federation = true` and provide `audience` (the WIF provider's full resource name) and `service_account_email`.
+3. **Enable services (New Relic)** — create a [`newrelic_cloud_gcp_dm_integrations`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_gcp_dm_integrations) referencing the linked account, with one block per GCP service you want to poll (see the supported-services table above).
+
+-> **NOTE:** `audience` and `service_account_email` on `newrelic_cloud_gcp_link_account` are write-only, `ForceNew` fields. They are used to construct the WIF credential JSON internally and are never returned by the API. To import an existing linked account, run `terraform import newrelic_cloud_gcp_link_account.<name> <linked_account_id>` and then `terraform apply` to reconcile those fields (Terraform will destroy and recreate the resource).
+
+#### Example modules
+
+For multi-project setups, the provider's GitHub repository also ships ready-to-use modules for GCP Dimensional Metrics that create the full Workload Identity Federation setup (pool, OIDC provider, service account, and IAM bindings) and link the project(s). Pick the one that matches your GCP IAM access:
+
+* **[`gcp-dimensional-metrics-folder-iam`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-folder-iam)** — multi-project setup that grants the required roles once at the **folder** level, so a single service account covers every project under that folder. Use this when you have folder-level IAM access.
+* **[`gcp-dimensional-metrics-project-iam`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-project-iam)** — the same setup, but binds the roles directly on each **project** (no folder access required).
+* **[`gcp-dimensional-metrics-multi-service`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/gcp-dimensional-metrics-multi-service)** — shared WIF infrastructure across two project groups that each enable a different set of GCP services.
+
+Each is used like the other cloud-integration modules — set its `source` to `github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/<module-name>` and supply the variables documented in that module's `variables.tf`.
 
 <a id="oci"></a>
 ### Oracle Cloud Infrastructure

@@ -241,6 +241,12 @@ resource_newrelic_cloud_azure_link_account.go:
 resource_newrelic_cloud_azure_link_account_test.go:
   test: true
   product_mapping: CLOUD
+resource_newrelic_cloud_gcp_dm_integrations.go:
+  test: false
+  product_mapping: CLOUD
+resource_newrelic_cloud_gcp_dm_integrations_test.go:
+  test: true
+  product_mapping: CLOUD
 resource_newrelic_cloud_gcp_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -548,6 +554,12 @@ structures_newrelic_cloud_aws_govcloud_link_account.go:
   test: false
   product_mapping: CLOUD
 structures_newrelic_cloud_aws_integrations.go:
+  test: false
+  product_mapping: CLOUD
+structures_newrelic_cloud_gcp_dm_integrations.go:
+  test: false
+  product_mapping: CLOUD
+structures_newrelic_cloud_gcp_link_account.go:
   test: false
   product_mapping: CLOUD
 structures_newrelic_federated_logs.go:
