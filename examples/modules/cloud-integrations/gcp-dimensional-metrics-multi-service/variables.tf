@@ -58,7 +58,8 @@ variable "compute_projects" {
   description = <<-EOT
     Map of display-name => GCP project ID for compute projects.
     New Relic will monitor VMs, SQL, Cloud Run, Load Balancing, Functions,
-    and Kubernetes (metrics only — no entity support).
+    and Kubernetes (metrics only — no entity support; also supports 1-minute
+    polling in Limited Preview).
     Example:
       {
         "compute-prod" = "my-compute-project-456"
@@ -72,7 +73,7 @@ variable "metrics_polling_interval" {
   description = <<-EOT
     Polling interval in seconds applied to all enabled services. Default: 300 (5 minutes).
     Limited Preview (LP) note: 1-minute polling is in LP and available only for the following services:
-      big_query, data_flow, data_proc, load_balancing, pub_sub, spanner
+      big_query, data_flow, data_proc, kubernetes, load_balancing, pub_sub, spanner
     Set this variable to 60 to enable 1-minute polling.
   EOT
 }

@@ -126,7 +126,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
   linked_account_id = newrelic_cloud_gcp_link_account.main.id
 
   # All GCP services default to 300 s polling. 1-minute polling is in Limited Preview (LP)
-  # and available only for: alloy_db, big_query, data_flow, data_proc, load_balancing,
+  # and available only for: alloy_db, big_query, data_flow, data_proc, kubernetes, load_balancing,
   # managed_kafka, pub_sub, spanner — set metrics_polling_interval = 60 to enable.
   ai_platform { metrics_polling_interval = var.metrics_polling_interval }
   alloy_db { metrics_polling_interval = var.metrics_polling_interval }
@@ -145,7 +145,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
   functions { metrics_polling_interval = var.metrics_polling_interval }
   interconnect { metrics_polling_interval = var.metrics_polling_interval }
   istio { metrics_polling_interval = var.metrics_polling_interval }      # DM only, metrics only
-  kubernetes { metrics_polling_interval = var.metrics_polling_interval } # metrics only, no entity support
+  kubernetes { metrics_polling_interval = var.metrics_polling_interval } # metrics only, no entity support; supports 1m polling (LP)
   load_balancing { metrics_polling_interval = var.metrics_polling_interval }
   mem_cache { metrics_polling_interval = var.metrics_polling_interval }
   pub_sub { metrics_polling_interval = var.metrics_polling_interval }
