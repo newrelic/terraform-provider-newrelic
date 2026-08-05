@@ -40,6 +40,9 @@ data_source_newrelic_cloud_account.go:
 data_source_newrelic_cloud_account_test.go:
   test: true
   product_mapping: CLOUD
+data_source_newrelic_cloud_account_unit_test.go:
+  test: true
+  product_mapping: CLOUD
 data_source_newrelic_entity.go:
   test: false
   product_mapping: ENTITY
