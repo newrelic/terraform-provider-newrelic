@@ -1,3 +1,8 @@
+<a name="v3.96.1"></a>
+## [v3.96.1] - 2026-08-06
+### Bug Fixes
+- **cloud:** remove gcp_v2 provider slug dependency and add GKE 1-min polling ([#3141](https://github.com/newrelic/terraform-provider-newrelic/issues/3141))
+
 <a name="v3.96.0"></a>
 ## [v3.96.0] - 2026-08-04
 ### Features
@@ -2808,7 +2813,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.1...HEAD
+[v3.96.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.0...v3.96.1
 [v3.96.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.2...v3.96.0
 [v3.95.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.1...v3.95.2
 [v3.95.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.0...v3.95.1
