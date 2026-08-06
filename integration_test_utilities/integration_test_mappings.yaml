@@ -508,6 +508,9 @@ resource_newrelic_workload.go:
 resource_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
+resource_newrelic_pathpoint_flow.go:
+  test: false
+  product_mapping: PATHPOINTS
 structures_newrelic_alert_channel.go:
   test: false
   product_mapping: ALERTS_DEPRECATED
@@ -658,3 +661,6 @@ structures_newrelic_workload.go:
 structures_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
+structures_newrelic_pathpoint.go:
+  test: false
+  product_mapping: PATHPOINTS
