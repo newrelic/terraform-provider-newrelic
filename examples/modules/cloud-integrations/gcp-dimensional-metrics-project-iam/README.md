@@ -76,5 +76,5 @@ module "newrelic_gcp_dm" {
 
 ## Notes
 
-- **1-minute polling (Limited Preview):** `metrics_polling_interval` defaults to `300` s. A 60-second floor is in Limited Preview for `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`; set `metrics_polling_interval = 60` to enable it. All other services require `300`.
+- **1-minute polling (Limited Preview):** `metrics_polling_interval` defaults to `300` s. A 60-second floor is in Limited Preview for `alloy_db`, `big_query`, `data_flow`, `data_proc`, `kubernetes`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`; set `metrics_polling_interval = 60` to enable it. All other services require `300`.
 - **Write-only credential fields:** `audience` and `service_account_email` on `newrelic_cloud_gcp_link_account` are `ForceNew` and never returned by the API; changing them replaces the linked account.

@@ -61,5 +61,5 @@ terraform apply
 
 ## Notes
 
-- **1-minute polling (Limited Preview):** `metrics_polling_interval` defaults to `300` s. A 60-second floor is in Limited Preview for `alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`; set `metrics_polling_interval = 60` to enable it. All other services require `300`.
+- **1-minute polling (Limited Preview):** `metrics_polling_interval` defaults to `300` s. A 60-second floor is in Limited Preview for `alloy_db`, `big_query`, `data_flow`, `data_proc`, `kubernetes`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`; set `metrics_polling_interval = 60` to enable it. All other services require `300`.
 - **Write-only credential fields:** `audience` and `service_account_email` on `newrelic_cloud_gcp_link_account` are write-only, `ForceNew` fields — they're used to construct the WIF credential internally and are never returned by the API. To import an existing linked account, run `terraform import newrelic_cloud_gcp_link_account.main <linked_account_id>` and then `terraform apply` to reconcile those fields (the resource is replaced).

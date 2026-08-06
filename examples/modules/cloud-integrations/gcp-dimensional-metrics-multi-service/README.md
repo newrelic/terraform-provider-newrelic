@@ -61,7 +61,7 @@ module "newrelic_gcp_dm" {
 | `gcp_sa_project_id` | string | — | GCP project where the service account and WIF pool are created. |
 | `gcp_folder_id` | string | — | Numeric GCP folder ID (no `folders/` prefix). Folder-level IAM covers all projects in both groups. |
 | `analytics_projects` | map(string) | — | `display-name => project ID` for analytics projects (monitored for BigQuery, PubSub, Spanner, Storage, Dataflow, Dataproc). |
-| `compute_projects` | map(string) | — | `display-name => project ID` for compute projects (monitored for VMs, SQL, Cloud Run, Load Balancing, Functions, Kubernetes — Kubernetes is metrics only). |
+| `compute_projects` | map(string) | — | `display-name => project ID` for compute projects (monitored for VMs, SQL, Cloud Run, Load Balancing, Functions, Kubernetes — Kubernetes is metrics only, no entity support; also supports 1-minute polling in Limited Preview). |
 | `wif_pool_id` | string | — | ID for the Workload Identity Federation pool. |
 | `wif_provider_id` | string | — | ID for the OIDC provider inside the pool. |
 | `newrelic_sa_name` | string | — | Name for the impersonated GCP service account. |
@@ -79,6 +79,6 @@ module "newrelic_gcp_dm" {
 
 ## Notes
 
-- **1-minute polling (Limited Preview):** `metrics_polling_interval` defaults to `300` s. A 60-second floor is in Limited Preview for `big_query`, `data_flow`, `data_proc`, `load_balancing`, `pub_sub`, and `spanner`; set `metrics_polling_interval = 60` to enable it. All other services require `300`.
+- **1-minute polling (Limited Preview):** `metrics_polling_interval` defaults to `300` s. A 60-second floor is in Limited Preview for `big_query`, `data_flow`, `data_proc`, `kubernetes`, `load_balancing`, `pub_sub`, and `spanner`; set `metrics_polling_interval = 60` to enable it. All other services require `300`.
 - **Write-only credential fields:** `audience` and `service_account_email` on `newrelic_cloud_gcp_link_account` are `ForceNew` and never returned by the API; changing them replaces the linked account.
 - To change which services each group monitors, edit the `dm_integrations` blocks in `main.tf` for the analytics and compute resources.

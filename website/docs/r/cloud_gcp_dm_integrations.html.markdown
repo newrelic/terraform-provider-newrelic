@@ -45,7 +45,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
   functions        { metrics_polling_interval = 300 }
   interconnect     { metrics_polling_interval = 300 }
   istio            { metrics_polling_interval = 300 }
-  kubernetes       { metrics_polling_interval = 300 }
   mem_cache        { metrics_polling_interval = 300 }
   memory_store     { metrics_polling_interval = 300 }
   redis            { metrics_polling_interval = 300 }
@@ -62,6 +61,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
   big_query      { metrics_polling_interval = 60 }
   data_flow      { metrics_polling_interval = 60 }
   data_proc      { metrics_polling_interval = 60 }
+  kubernetes     { metrics_polling_interval = 60 }
   load_balancing { metrics_polling_interval = 60 }
   managed_kafka  { metrics_polling_interval = 60 }
   pub_sub        { metrics_polling_interval = 60 }
@@ -93,7 +93,6 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 * `functions` - (Optional) Cloud Functions integration. See [Integration blocks](#integration-blocks) below.
 * `interconnect` - (Optional) Cloud Interconnect integration. See [Integration blocks](#integration-blocks) below.
 * `istio` - (Optional) Istio integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
-* `kubernetes` - (Optional) Kubernetes Engine integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 * `mem_cache` - (Optional) Memcache integration. See [Integration blocks](#integration-blocks) below.
 * `memory_store` - (Optional) Memorystore integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `redis` - (Optional) Memorystore for Redis integration. See [Integration blocks](#integration-blocks) below.
@@ -114,6 +113,7 @@ The following services support a polling floor as low as **60 seconds**. 1-minut
 * `big_query` - (Optional) BigQuery integration. See [Integration blocks](#integration-blocks) below.
 * `data_flow` - (Optional) Dataflow integration. See [Integration blocks](#integration-blocks) below.
 * `data_proc` - (Optional) Dataproc integration. See [Integration blocks](#integration-blocks) below.
+* `kubernetes` - (Optional) Kubernetes Engine integration (metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 * `load_balancing` - (Optional) Cloud Load Balancing integration. See [Integration blocks](#integration-blocks) below.
 * `managed_kafka` - (Optional) Managed Apache Kafka integration (DM only). See [Integration blocks](#integration-blocks) below.
 * `pub_sub` - (Optional) Cloud Pub/Sub integration. See [Integration blocks](#integration-blocks) below.
@@ -123,7 +123,7 @@ The following services support a polling floor as low as **60 seconds**. 1-minut
 
 All integration blocks support the following argument:
 
-* `metrics_polling_interval` - (Optional) How often New Relic polls the service for metrics, **in seconds**. Minimum values: **60 s** for services where 1-minute polling is in Limited Preview (`alloy_db`, `big_query`, `data_flow`, `data_proc`, `load_balancing`, `managed_kafka`, `pub_sub`, `spanner`); **300 s** for all other services. All services accept the standard **300 s** interval.
+* `metrics_polling_interval` - (Optional) How often New Relic polls the service for metrics, **in seconds**. Minimum values: **60 s** for services where 1-minute polling is in Limited Preview (`alloy_db`, `big_query`, `data_flow`, `data_proc`, `kubernetes`, `load_balancing`, `managed_kafka`, `pub_sub`, `spanner`); **300 s** for all other services. All services accept the standard **300 s** interval.
 
 ## Attributes Reference
 

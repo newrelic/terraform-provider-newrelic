@@ -36,7 +36,7 @@ resource "newrelic_cloud_gcp_link_account" "foo" {
 
 ### GCP Dimensional Metrics (keyless / WIF) linking
 
-To link a GCP project for **GCP Dimensional Metrics** using keyless authentication via Workload Identity Federation (WIF) instead of a service-account key, set `use_workload_identity_federation = true` and provide `audience` and `service_account_email`. When enabled, the resource authenticates via WIF and links the project under the Dimensional Metrics (`gcp_v2`) provider. Use this linked account with the [`newrelic_cloud_gcp_dm_integrations`](cloud_gcp_dm_integrations.html) resource.
+To link a GCP project for **GCP Dimensional Metrics** using keyless authentication via Workload Identity Federation (WIF) instead of a service-account key, set `use_workload_identity_federation = true` and provide `audience` and `service_account_email`. When enabled, the resource authenticates via WIF and links the project as a Dimensional Metrics account. Use this linked account with the [`newrelic_cloud_gcp_dm_integrations`](cloud_gcp_dm_integrations.html) resource.
 
 ```hcl
 resource "newrelic_cloud_gcp_link_account" "dm" {

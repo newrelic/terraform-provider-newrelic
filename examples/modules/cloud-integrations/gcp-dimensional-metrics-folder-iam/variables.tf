@@ -59,7 +59,7 @@ variable "metrics_polling_interval" {
   description = <<-EOT
     Polling interval in seconds applied to all enabled services. Default: 300 (5 minutes).
     Limited Preview (LP) note: 1-minute polling is in LP and available only for the following services:
-      alloy_db, big_query, data_flow, data_proc, load_balancing, managed_kafka, pub_sub, spanner
+      alloy_db, big_query, data_flow, data_proc, kubernetes, load_balancing, managed_kafka, pub_sub, spanner
     Set this variable to 60 to enable 1-minute polling across all services.
   EOT
 }
@@ -78,7 +78,7 @@ variable "enabled_services" {
       virtual_machines, vpc_access
 
     Services where 1-minute polling is in LP (set metrics_polling_interval = 60):
-      alloy_db, big_query, data_flow, data_proc, load_balancing,
+      alloy_db, big_query, data_flow, data_proc, kubernetes, load_balancing,
       managed_kafka, pub_sub, spanner
   EOT
 }

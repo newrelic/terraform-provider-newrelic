@@ -42,7 +42,7 @@ func resourceNewRelicCloudGcpLinkAccount() *schema.Resource {
 			},
 			// use_workload_identity_federation explicitly selects GCP Dimensional Metrics (v2)
 			// keyless linking via Workload Identity Federation (WIF). When true, the
-			// resource authenticates via WIF and links under the gcp_v2 provider, and
+			// resource authenticates via WIF and links the account for Dimensional Metrics, and
 			// audience + service_account_email are required. When false (the default),
 			// the account is linked using the legacy service-account-key flow.
 			"use_workload_identity_federation": {
@@ -241,7 +241,7 @@ func resourceNewRelicCloudGcpLinkAccountRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(convErr)
 	}
 
-	// Both WIF (gcp_v2) and legacy accounts are read through the Go Client. For
+	// Both WIF (Dimensional Metrics) and legacy accounts are read through the Go Client. For
 	// WIF-linked accounts, audience and service_account_email are write-only
 	// (ForceNew) and never returned by the API, so they are retained from state.
 	linkedAccount, err := client.Cloud.GetLinkedAccountWithContext(ctx, accountID, linkedAccountID)

@@ -55,7 +55,7 @@ variable "metrics_polling_interval" {
   description = <<-EOT
     How often (in seconds) New Relic polls each service for metrics. Default: 300 (5 minutes).
     1-minute polling is in Limited Preview (LP) and available only for:
-      alloy_db, big_query, data_flow, data_proc, load_balancing, managed_kafka, pub_sub, spanner
+      alloy_db, big_query, data_flow, data_proc, kubernetes, load_balancing, managed_kafka, pub_sub, spanner
     Set to 60 to enable 1-minute polling for those services.
   EOT
 }
