@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.30.0
-	github.com/newrelic/newrelic-client-go/v2 v2.92.0
+	github.com/newrelic/newrelic-client-go/v2 v2.93.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	gopkg.in/yaml.v3 v3.0.1
@@ -69,8 +69,3 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
-
-// TEMPORARY: points at unmerged https://github.com/newrelic/newrelic-client-go/pull/1441
-// (adds CloudLinkedAccount.HasDimensionalMetrics). Remove this replace and bump the
-// require above to the official release once #1441 merges and is tagged.
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/sarvetiNr/newrelic-client-go/v2 v2.0.0-20260804112544-60d23544cccd
