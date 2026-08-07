@@ -389,7 +389,7 @@ func resourceNewRelicPathpointFlow() *schema.Resource {
 			},
 			"stages": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				MaxItems:    50,
 				Description: "Ordered list of stages that make up this flow.",
 				Elem:        stageSchema,
