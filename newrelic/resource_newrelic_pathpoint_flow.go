@@ -7,10 +7,12 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/nrtime"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/pathpoint"
 )
 
@@ -484,7 +486,7 @@ func resourceNewRelicPathpointFlowUpdate(ctx context.Context, d *schema.Resource
 
 	versionStr := d.Get("version").(string)
 	versionInt, _ := strconv.ParseInt(versionStr, 10, 64)
-	version := pathpoint.PathPointVersionMS(versionInt)
+	version := nrtime.EpochMilliseconds(time.UnixMilli(versionInt))
 
 	updateInput := expandPathpointFlowUpdateInput(d, version)
 
@@ -519,7 +521,7 @@ func resourceNewRelicPathpointFlowDelete(ctx context.Context, d *schema.Resource
 func flattenPathpointFlowResult(d *schema.ResourceData, result *pathpoint.PathPointFlowResult) diag.Diagnostics {
 	_ = d.Set("guid", string(result.GUID))
 	_ = d.Set("name", result.Name)
-	_ = d.Set("version", strconv.FormatInt(int64(result.Version), 10))
+	_ = d.Set("version", strconv.FormatInt(time.Time(result.Version).UnixMilli(), 10))
 
 	if result.HealthRollup != "" {
 		_ = d.Set("health_rollup", string(result.HealthRollup))

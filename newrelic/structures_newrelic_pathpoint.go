@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/nrtime"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/pathpoint"
 )
 
@@ -34,7 +35,7 @@ func expandPathpointFlowInput(d *schema.ResourceData) pathpoint.PathPointFlowInp
 	return input
 }
 
-func expandPathpointFlowUpdateInput(d *schema.ResourceData, version pathpoint.PathPointVersionMS) pathpoint.PathPointFlowUpdateInput {
+func expandPathpointFlowUpdateInput(d *schema.ResourceData, version nrtime.EpochMilliseconds) pathpoint.PathPointFlowUpdateInput {
 	input := pathpoint.PathPointFlowUpdateInput{
 		Name:    d.Get("name").(string),
 		Version: version,
