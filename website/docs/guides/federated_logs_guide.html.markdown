@@ -24,8 +24,9 @@ Use the links below to go to the relevant sections:
 - [Test the setup](#test)
 - [Adding partitions to an existing setup](#adding-partitions)
 - [Querying federated logs](#query-federated-logs)
-- [Cleaning up a setup while preserving stored logs](#cleanup)
-- [Deleting a federated log partition](#delete-partition)
+- [Deleting a setup or partition](#cleanup)
+  - [Deleting a setup](#delete-setup)
+  - [Deleting a partition](#delete-partition)
 
 **NOTE:** Federated Logs is currently provided as a limited preview. Your organization must be enrolled in the preview before these resources will function. See [Enroll in the limited preview program](https://docs-preview.newrelic.com/docs/federated-logs/#enroll) in the product docs.
 
@@ -56,7 +57,7 @@ Before you onboard Federated Logs through Terraform, confirm the following:
 * Your New Relic organization is **enrolled in the Federated Logs limited preview**.
 * A **Pipeline Control Gateway fleet** is already deployed in your Kubernetes environment, with its DNS endpoint reachable from your log sources, and you know its **`fleet_entity_guid`**. If you don't yet have a fleet, follow [Getting Started with New Relic Fleet Control](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/fleet_getting_started) and the [Pipeline Control Gateway documentation](https://docs.newrelic.com/docs/new-relic-control/pipeline-control/overview/).
 * Your **log sources are pointed at the gateway endpoint** rather than sending logs directly to New Relic. The per-source configuration (APM agents, infrastructure agent, Fluent Bit, Fluentd) is covered in [Configure your log source](https://docs-preview.newrelic.com/docs/federated-logs/#configure-source) in the product docs.
-* Federated Logs currently supports **AWS only**, and the Query engine is deployed in **`us-west-2`**. Provision your AWS resources in that region for the preview.
+* Federated Logs currently supports **AWS only**. The Query engine is deployed in **`us-west-2`** and **`ap-south-1`**. Provision your AWS resources in one of these supported regions.
 * You have an **AWS account** with permissions to create S3 buckets, SQS queues, Glue catalogs, AWS Managed Flink applications, and IAM roles.
 * You have **Terraform >= 1.6.0**, the **New Relic provider >= 3.91.0**, and the **AWS provider >= 6.36.0** configured.
 * Export your New Relic credentials as environment variables before running Terraform. They are read directly from the environment:
@@ -172,10 +173,10 @@ module "federated_logs" {
   # Additional partitions. Each entry can override retention, table_parameters,
   # optimizer_configuration, routing_expression, and/or description.
   partition_tables = {
-    "application_log" = {
+    "Log_application" = {
       retention_in_days = 5
     }
-    "security_log" = {
+    "Log_security" = {
       retention_in_days = 10
       optimizer_configuration = {
         compaction = {
@@ -271,48 +272,49 @@ As with the initial setup, a new partition only starts receiving logs once you d
 <a id="query-federated-logs"></a>
 ### Querying federated logs
 
-After `terraform apply` completes and the gateway deployment has rolled out, your logs are queryable from the New Relic Logs UI (select **Federated logs** in the **Partitions** dropdown) and from NRQL. Always include `log.partition` in NRQL queries so they route to your S3 bucket rather than New Relic's standard log storage:
+After `terraform apply` completes and the gateway deployment has rolled out, your logs are queryable from the New Relic Logs UI (select **Federated logs** in the **Partitions** dropdown) and from NRQL. Query federated partitions by using the partition name directly as the `FROM` source:
 
 ```sql
-SELECT * FROM Log WHERE log.partition = 'log_federated' SINCE 1 hour ago
+SELECT * FROM Log_federated SINCE 1 hour ago
 ```
 
 See [Query federated logs](https://docs-preview.newrelic.com/docs/federated-logs/#query) in the product docs for more examples.
 
 <a id="cleanup"></a>
-### Cleaning up a setup while preserving stored logs
+### Deleting a setup or partition
 
-The storage resources in the `federated_logs` module — the S3 bucket, the Glue catalog database, the partition folder objects, and the Iceberg tables are declared with `lifecycle { prevent_destroy = true }`, so `terraform destroy` will refuse to remove them and abort the plan. This is intentional: it keeps your historical log data from being deleted by accident.
+The S3 bucket, Glue catalog database, partition folder objects, and Iceberg tables are all declared with `lifecycle { prevent_destroy = true }`, so `terraform destroy` will refuse to remove them and abort the plan. This is intentional: it keeps your historical log data from being accidentally deleted. In both scenarios below, the storage resources stay intact in AWS while everything else is deprovisioned cleanly.
 
-To tear down a setup while leaving the stored logs intact, use Terraform's [`removed`](https://developer.hashicorp.com/terraform/language/resources/syntax#the-removed-block) block to drop the protected storage resources from state without destroying them, so Terraform can deprovision everything else around them:
+<a id="delete-setup"></a>
+#### Deleting a setup
 
-1. **Comment out the existing `module "federated_logs"` block.** While the module declaration is still in your configuration, Terraform considers all of its resources to be under active management, and `removed` blocks pointing at the same addresses are rejected as conflicting. Commenting (or deleting) the module block first makes those addresses removable.
-2. **Add `removed` blocks for the protected storage resources** so Terraform drops them from state without destroying them, while it deprovisions everything else around them:
-```hcl
-removed {
-  from = module.federated_logs.module.setup
-  lifecycle { destroy = false }
-}
+1. **Comment out the existing `module "federated_logs"` block.** While the module declaration is present, Terraform considers all of its resources to be under active management and will reject `removed` blocks pointing at the same addresses. Commenting or deleting the module block first makes those addresses removable.
 
-removed {
-  from = module.federated_logs.module.partition.aws_s3_object.folder
-  lifecycle { destroy = false }
-}
+2. **Add `removed` blocks** for the protected storage resources so Terraform drops them from state without destroying them in AWS:
 
-removed {
-  from = module.federated_logs.module.partition.aws_glue_catalog_table.iceberg_table
-  lifecycle { destroy = false }
-}
-```
+   ```hcl
+   removed {
+     from = module.federated_logs.module.setup
+     lifecycle { destroy = false }
+   }
 
-Then run `terraform plan` and `terraform apply`. The `removed` blocks drop the protected resources from Terraform state without deleting them in AWS, allowing the rest of the module including the New Relic entities to be deprovisioned cleanly. Afterwards, the New Relic setup and its partitions remain visible in the UI but are no longer editable or queryable; the S3 bucket and Glue tables stay intact so your historical log data is preserved.
+   removed {
+     from = module.federated_logs.module.partition.aws_s3_object.folder
+     lifecycle { destroy = false }
+   }
+
+   removed {
+     from = module.federated_logs.module.partition.aws_glue_catalog_table.iceberg_table
+     lifecycle { destroy = false }
+   }
+   ```
+
+3. Run `terraform plan` and `terraform apply`. The New Relic setup and its partitions remain visible in the UI but are no longer editable or queryable; the S3 bucket and Glue tables stay intact.
 
 <a id="delete-partition"></a>
-### Deleting a federated log partition
+#### Deleting a partition
 
-You can delete a Federated Logs partition without impacting the log data stored in your S3 bucket. The steps below use Terraform to remove the AWS resources provisioned for that partition, except the partition's S3 folder and its Glue table - those stay behind so the historical data remains readable.
-
-**Naming convention.** The S3 folder and Glue table for a partition are named as a combination of a fixed `newrelic_fed_logs` prefix, the setup name (with hyphens converted to underscores), and the partition name. For example, if the setup name is `demo-setup` and the partition name is `log_compliance`, the resulting resource name will be:
+**Naming convention.** The S3 folder and Glue table for a partition follow the pattern `newrelic_fed_logs_<setup_name>_<partition_name>`, where any hyphens in the setup name are converted to underscores. For example, setup `demo-setup` + partition `log_compliance` produces:
 
 ```
 newrelic_fed_logs_demo_setup_log_compliance
@@ -320,9 +322,9 @@ newrelic_fed_logs_demo_setup_log_compliance
 
 Use this exact name in the `from` addresses of the `moved` blocks below.
 
-1. **Remove the partition entry from your `partition_tables` map** in the `federated_logs` module block — this is the partition you want to delete.
+1. **Remove the partition entry from your `partition_tables` map** in the `federated_logs` module block.
 
-2. **Add `moved` and `removed` blocks** so Terraform detaches the protected storage resources for that partition from state without destroying them:
+2. **Add `moved` and `removed` blocks** to detach the protected storage resources from state without destroying them in AWS:
 
    ```hcl
    moved {
@@ -346,13 +348,6 @@ Use this exact name in the `from` addresses of the `moved` blocks below.
    }
    ```
 
-   The `moved` blocks rename the two protected map instances into standalone Terraform addresses; the matching `removed` blocks then drop those standalone addresses from state without destroying them in AWS. The rest of the partition's resources (retention Glue job, `newrelic_federated_logs_partition` entity, etc.) are removed normally as a consequence of removing the entry from `partition_tables`.
+   The `moved` blocks rename the `for_each`-keyed protected resources to standalone addresses; the `removed` blocks then drop those addresses from state without deleting them in AWS. The remaining partition resources (retention Glue job, `newrelic_federated_logs_partition` entity) are removed normally.
 
-3. **Apply the change:**
-
-   ```sh
-   terraform plan
-   terraform apply
-   ```
-
-Afterwards, the partition gets removed, but its S3 folder and Glue table are preserved so the historical log data remains intact.
+3. Run `terraform plan` and `terraform apply`. The partition is removed from the New Relic UI, but its S3 folder and Glue table are preserved.
