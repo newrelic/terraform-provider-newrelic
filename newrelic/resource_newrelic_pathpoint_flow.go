@@ -106,6 +106,11 @@ func resourceNewRelicPathpointFlow() *schema.Resource {
 
 	kpiSchema := &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique identifier of the KPI.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -414,7 +419,7 @@ func resourceNewRelicPathpointFlowCreate(ctx context.Context, d *schema.Resource
 
 	accountID := selectAccountID(providerConfig, d)
 
-	flowInput := expandPathpointFlowInput(d)
+	flowInput := expandPathpointFlowInput(d, accountID)
 	scopeInput := pathpoint.PathPointScopeInput{
 		ID:   accountID,
 		Type: pathpoint.PathPointScopeTypeTypes.ACCOUNT,
@@ -488,7 +493,8 @@ func resourceNewRelicPathpointFlowUpdate(ctx context.Context, d *schema.Resource
 	versionInt, _ := strconv.ParseInt(versionStr, 10, 64)
 	version := nrtime.EpochMilliseconds(time.UnixMilli(versionInt))
 
-	updateInput := expandPathpointFlowUpdateInput(d, version)
+	accountID := selectAccountID(providerConfig, d)
+	updateInput := expandPathpointFlowUpdateInput(d, version, accountID)
 
 	result, err := client.PathPoint.PathPointUpdate(guid, updateInput)
 	if err != nil {
