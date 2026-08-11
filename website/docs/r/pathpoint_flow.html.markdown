@@ -8,13 +8,15 @@ description: |-
 
 # Resource: newrelic\_pathpoint\_flow
 
-Use this resource to create, update, and delete a New Relic Pathpoint flow.
+-> **LIMITED PREVIEW:** This resource is in limited preview and is only available for accounts that have been granted access. Features and behavior may change before general availability.
+
+Use this resource to create, read, update, and delete a New Relic Pathpoint flow.
 
 Pathpoint is an enterprise platform tracker that models the health of the specific stages and steps that make up your business processes (e.g. checkout, payment, fulfilment). It provides a real-time view of the entire value chain and gives you immediate visibility into issues, allowing you to understand how they impact the overall customer journey.
 
 A New Relic User API key is required to provision this resource. Set the `api_key` attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment variable with your User API key.
 
--> **NOTE:** The `version` attribute is managed automatically by this resource and must not be set manually. It is updated in state after every create/update operation and is sent back to the API on every subsequent update for optimistic concurrency control. If the Pathpoint flow is modified outside of Terraform (e.g. from the New Relic UI), the `version` in state will become stale and subsequent `terraform apply` runs will fail with a version conflict. In that case, use `terraform import` to re-sync state.
+-> **NOTE:** The `version` attribute is managed automatically by this resource and must not be set manually. It is refreshed from the API on every `terraform plan` and `terraform apply`. Any changes made outside of Terraform (e.g. from the New Relic UI) will be detected but **overridden** on the next apply. Review the plan output carefully before applying to avoid unintentionally overwriting manual changes.
 
 ## Example Usage
 
@@ -137,6 +139,114 @@ resource "newrelic_pathpoint_flow" "checkout" {
           guid = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
           name = "PaymentGateway"
           type = "ENTITY"
+        }
+      }
+    }
+  }
+}
+```
+
+### Flow with KPI Period-over-Period Comparison
+
+```hcl
+resource "newrelic_pathpoint_flow" "latency_monitor" {
+  account_id    = 12345678
+  name          = "Latency Monitor"
+  category      = "Performance"
+  health_rollup = "AUTOMATIC_ROLL_UP"
+
+  kpis {
+    name        = "Average Response Time"
+    description = "Average response time compared to the previous day"
+    category    = "Latency"
+
+    query {
+      from = "Transaction"
+
+      select {
+        aggregation_type = "AVERAGE"
+        attribute        = "duration"
+        alias            = "avg_duration"
+      }
+
+      time_window {
+        relative_range {
+          since          = "TWENTY_FOUR_HOURS"
+          compare_against = "SEVEN_DAYS"
+        }
+      }
+
+      where = "transactionType='Web'"
+    }
+  }
+
+  stages {
+    name          = "API Layer"
+    health_rollup = "AUTOMATIC_ROLL_UP"
+
+    levels {
+      steps {
+        name = "User Service"
+        entity_search_query {
+          query = "domain='APM' AND name='UserService'"
+        }
+      }
+    }
+  }
+}
+```
+
+### Flow with Excluded Stages, Alert Signals, and Scoped Accounts
+
+```hcl
+resource "newrelic_pathpoint_flow" "multi_account" {
+  account_id    = 12345678
+  name          = "Multi-Account Order Pipeline"
+  health_rollup = "AUTOMATIC_ROLL_UP"
+
+  stages {
+    name          = "Order Processing"
+    health_rollup = "WORST_STATUS_WINS"
+    link          = "https://wiki.example.com/order-processing"
+
+    levels {
+      steps {
+        name            = "Order API"
+        scoped_accounts = [12345678, 87654321]
+
+        entity_search_query {
+          query = "domain='APM' AND name='OrderAPI'"
+        }
+
+        signals {
+          guid = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
+          name = "Order API Alert"
+          type = "ALERT"
+        }
+      }
+    }
+
+    levels {
+      steps {
+        name = "Fraud Detection"
+        entity_search_query {
+          query = "domain='APM' AND name='FraudService'"
+        }
+      }
+    }
+  }
+
+  stages {
+    name        = "Legacy Processor"
+    is_excluded = true
+
+    levels {
+      steps {
+        name = "Legacy API"
+
+        entity_search_query {
+          query       = "domain='APM' AND name='LegacyAPI'"
+          is_excluded = true
         }
       }
     }
@@ -300,4 +410,4 @@ New Relic Pathpoint flows can be imported using the flow's entity GUID, e.g.
 $ terraform import newrelic_pathpoint_flow.checkout MjUyMDUyOHxOUjF8UFRIUFRTfDEyMzQ1
 ```
 
--> **NOTE:** After importing, run `terraform plan` to verify the state matches the existing configuration. Since the Pathpoint API has no read/get query, the imported state will only contain the GUID and version. Apply the resource once to fully populate all attributes in state.
+-> **NOTE:** After importing, run `terraform plan` to verify the state matches the existing configuration. The provider will read the current flow configuration from the API and populate all attributes in state.
