@@ -398,8 +398,6 @@ resource "newrelic_alert_compound_condition" "foo" {
 }
 
 func TestAccNewRelicAlertCompoundCondition_TitleTemplateAndDescription(t *testing.T) {
-	t.Skip("Skipping due to title_template and description being behind the DCON/compound_title_template_and_description_apis feature flag until generally available.")
-
 	resourceName := "newrelic_alert_compound_condition.foo"
 	rName := acctest.RandString(5)
 
