@@ -22,13 +22,18 @@ resource "newrelic_one_dashboard" "exampledash" {
     name = "New Relic Terraform Example"
 
     widget_table {
-      title  = "List of Transactions"
-      row    = 1
-      column = 4
-      width  = 6
-      height = 3
+      title       = "List of Transactions"
+      description = "Raw transaction events for the selected time window."
+      row         = 1
+      column      = 4
+      width       = 6
+      height      = 3
 
       refresh_rate = 60000 // data refreshes every 60 seconds
+
+      link {
+        url = "https://example.com/runbooks/transactions"
+      }
 
       nrql_query {
         query = "FROM Transaction SELECT *"
@@ -321,6 +326,9 @@ In addition to all arguments above, the following attributes are exported:
 All nested `widget` blocks support the following common arguments:
 
   * `title` - (Required) A title for the widget.
+  * `description` - (Optional) Additional text that provides context about the widget, displayed as a tooltip when users point to the widget.
+  * `link` - (Optional) URL that makes the widget title clickable, allowing navigation to related dashboards, documentation, or external resources. Supports the following nested attribute(s) -
+    * `url` - (Required) The URL to open when the widget title is clicked. Must use `http://` or `https://` protocol and can't exceed 2,048 characters.
   * `row` - (Required) Row position of widget from top left, starting at `1`.
   * `column` - (Required) Column position of widget from top left, starting at `1`.
   * `width` - (Optional) Width of the widget.  Valid values are `1` to `12` inclusive.  Defaults to `4`.

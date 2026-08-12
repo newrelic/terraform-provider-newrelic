@@ -69,3 +69,5 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
+
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/driimus/newrelic-client-go/v2 v2.93.2-0.20260816223630-d3d5b946d8ae
