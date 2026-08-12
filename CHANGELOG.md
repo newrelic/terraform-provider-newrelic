@@ -1,3 +1,8 @@
+<a name="v3.96.2"></a>
+## [v3.96.2] - 2026-08-11
+### Bug Fixes
+- add description and title_template to compound condition resource ([#3138](https://github.com/newrelic/terraform-provider-newrelic/issues/3138))
+
 <a name="v3.96.1"></a>
 ## [v3.96.1] - 2026-08-06
 ### Bug Fixes
@@ -2813,7 +2818,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.2...HEAD
+[v3.96.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.1...v3.96.2
 [v3.96.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.0...v3.96.1
 [v3.96.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.2...v3.96.0
 [v3.95.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.1...v3.95.2
