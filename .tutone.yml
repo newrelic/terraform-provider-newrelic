@@ -1,0 +1,50 @@
+---
+log_level: info
+cache:
+  schema_file: schema.json
+endpoint: https://api.newrelic.com/graphql
+auth:
+  header: Api-Key
+  api_key_env_var: NEW_RELIC_API_KEY
+generators:
+  - name: terraform
+packages:
+
+  - name: notifications
+    path: newrelic
+    import_path: github.com/newrelic/newrelic-client-go/v2/pkg/notifications
+    generators:
+      - terraform
+    mutations:
+      - name: aiNotificationsCreateDestination
+        max_query_field_depth: 3
+        argument_type_overrides:
+          accountId: "Int!"
+          destination: "AiNotificationsDestinationInput!"
+        exclude_fields:
+          - errors
+      - name: aiNotificationsUpdateDestination
+        max_query_field_depth: 3
+        argument_type_overrides:
+          accountId: "Int!"
+          destinationId: "ID!"
+          destination: "AiNotificationsDestinationUpdate!"
+        exclude_fields:
+          - errors
+      - name: aiNotificationsDeleteDestination
+        max_query_field_depth: 1
+        argument_type_overrides:
+          accountId: "Int!"
+          destinationId: "ID!"
+    terraform:
+      # read_type: list_filter — read by filtering a list (e.g. GetDestinationsWithContextAccount filtered by ID)
+      # client_service: Notifications — explicit service field name when it differs from the package name
+      resource_name: notification_destination
+      client_service: Notifications
+      read_method: GetDestinationsWithContextAccount
+      read_type: list_filter
+      read_filter_type: AiNotificationsDestinationFilter
+      read_filter_id_field: ID
+      read_result_path: Entities
+      requires_account_id: true
+      id_type: string

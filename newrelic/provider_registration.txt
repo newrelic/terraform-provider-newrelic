@@ -1,0 +1,1 @@
+"newrelic_notification_destination": resourceNewRelicNotificationDestination(),
