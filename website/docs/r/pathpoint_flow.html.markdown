@@ -12,15 +12,15 @@ description: |-
 
 Use this resource to create, read, update, and delete a New Relic Pathpoint flow.
 
-Pathpoint is an enterprise platform tracker that models the health of the specific stages and steps that make up your business processes (e.g. checkout, payment, fulfilment). It provides a real-time view of the entire value chain and gives you immediate visibility into issues, allowing you to understand how they impact the overall customer journey.
+Pathpoint is New Relic's business journey observability product. It helps map your technical system health to the business flows that matter most — so when something goes wrong, you can immediately see where in the customer journey the problem is occurring.
+
+Each Flow in Pathpoint represents a business journey — like checkout, authentication, or onboarding — broken into a set of stages. Pathpoint shows you the health of each stage, helping you move faster from alert to impact to resolution.
 
 A New Relic User API key is required to provision this resource. Set the `api_key` attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment variable with your User API key.
 
 -> **NOTE:** The `version` attribute is managed automatically by this resource and must not be set manually. It is refreshed from the API on every `terraform plan` and `terraform apply`. Any changes made outside of Terraform (e.g. from the New Relic UI) will be detected but **overridden** on the next apply. Review the plan output carefully before applying to avoid unintentionally overwriting manual changes.
 
 ## Example Usage
-
--> **NOTE:** When `refresh_interval` is omitted, the API defaults to `THIRTY_MINUTES`. When `health_rollup` is omitted on a flow or stage, the API defaults to `AUTOMATIC_ROLL_UP`.
 
 ### Basic Flow
 
