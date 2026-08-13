@@ -39,6 +39,16 @@ func expandAlertCompoundConditionCreateInput(d *schema.ResourceData) (*alerts.Co
 		input.ThresholdDuration = &val
 	}
 
+	if v, ok := d.GetOk("description"); ok {
+		val := v.(string)
+		input.Description = &val
+	}
+
+	if v, ok := d.GetOk("title_template"); ok {
+		val := v.(string)
+		input.TitleTemplate = &val
+	}
+
 	return &input, nil
 }
 
@@ -77,6 +87,16 @@ func expandAlertCompoundConditionUpdateInput(d *schema.ResourceData) (*alerts.Co
 	if v, ok := d.GetOk("threshold_duration"); ok {
 		val := v.(int)
 		input.ThresholdDuration = &val
+	}
+
+	if v, ok := d.GetOk("description"); ok {
+		val := v.(string)
+		input.Description = &val
+	}
+
+	if v, ok := d.GetOk("title_template"); ok {
+		val := v.(string)
+		input.TitleTemplate = &val
 	}
 
 	return &input, nil
@@ -124,6 +144,8 @@ func flattenAlertCompoundCondition(accountID int, condition *alerts.CompoundCond
 	_ = d.Set("runbook_url", condition.RunbookURL)
 	_ = d.Set("threshold_duration", condition.ThresholdDuration)
 	_ = d.Set("entity_guid", condition.EntityGuid)
+	_ = d.Set("description", condition.Description)
+	_ = d.Set("title_template", condition.TitleTemplate)
 
 	// Flatten component conditions - ONLY id and alias (per user requirement)
 	componentConditions := flattenComponentConditions(condition.ComponentConditions)

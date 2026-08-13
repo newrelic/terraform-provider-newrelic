@@ -49,6 +49,40 @@ func TestExpandAlertCompoundConditionCreateInput(t *testing.T) {
 				},
 			},
 		},
+		"with description and title_template": {
+			Data: map[string]interface{}{
+				"name":               "test-compound-condition",
+				"enabled":            true,
+				"trigger_expression": "A AND B",
+				"description":        "Test description",
+				"title_template":     "{{compoundCondition.name}} triggered",
+				"component_conditions": []interface{}{
+					map[string]interface{}{
+						"id":    "123",
+						"alias": "A",
+					},
+					map[string]interface{}{
+						"id":    "456",
+						"alias": "B",
+					},
+				},
+			},
+			Expected: func() *alerts.CompoundConditionCreateInput {
+				description := "Test description"
+				titleTemplate := "{{compoundCondition.name}} triggered"
+				return &alerts.CompoundConditionCreateInput{
+					Name:              "test-compound-condition",
+					Enabled:           true,
+					TriggerExpression: "A AND B",
+					Description:       &description,
+					TitleTemplate:     &titleTemplate,
+					ComponentConditions: []alerts.ComponentConditionInput{
+						{ID: "123", Alias: "A"},
+						{ID: "456", Alias: "B"},
+					},
+				}
+			}(),
+		},
 		"with optional fields": {
 			Data: map[string]interface{}{
 				"name":                    "test-compound-condition",
@@ -129,6 +163,14 @@ func TestExpandAlertCompoundConditionCreateInput(t *testing.T) {
 					require.NotNil(t, expanded.ThresholdDuration)
 					assert.Equal(t, *tc.Expected.ThresholdDuration, *expanded.ThresholdDuration)
 				}
+				if tc.Expected.Description != nil {
+					require.NotNil(t, expanded.Description)
+					assert.Equal(t, *tc.Expected.Description, *expanded.Description)
+				}
+				if tc.Expected.TitleTemplate != nil {
+					require.NotNil(t, expanded.TitleTemplate)
+					assert.Equal(t, *tc.Expected.TitleTemplate, *expanded.TitleTemplate)
+				}
 			}
 		})
 	}
@@ -148,6 +190,8 @@ func TestFlattenAlertCompoundCondition(t *testing.T) {
 		ThresholdDuration:     120,
 		FacetMatchingBehavior: "FACETS_IGNORED",
 		EntityGuid:            "MTAxMzMyMDB8QUxFUlR8Q09ORGU5OfDEwMzQ1NTc",
+		Description:           "Test description",
+		TitleTemplate:         "{{compoundCondition.name}} triggered",
 		ComponentConditions: []alerts.ComponentCondition{
 			{
 				ID:    "123",
@@ -177,4 +221,6 @@ func TestFlattenAlertCompoundCondition(t *testing.T) {
 	assert.Equal(t, "FACETS_IGNORED", d.Get("facet_matching_behavior"))
 	assert.Equal(t, testAccountID, d.Get("account_id"))
 	assert.Equal(t, "MTAxMzMyMDB8QUxFUlR8Q09ORGU5OfDEwMzQ1NTc", d.Get("entity_guid"))
+	assert.Equal(t, "Test description", d.Get("description"))
+	assert.Equal(t, "{{compoundCondition.name}} triggered", d.Get("title_template"))
 }

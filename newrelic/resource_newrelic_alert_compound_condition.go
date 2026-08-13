@@ -86,6 +86,16 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 				Optional:    true,
 				Description: "Runbook URL to display in notifications.",
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "BETA PREVIEW: the `description` field is in limited release and only enabled for preview on a per-account basis. The custom violation description.",
+			},
+			"title_template": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "BETA PREVIEW: the `title_template` field is in limited release and only enabled for preview on a per-account basis. This field allows you to create a custom title to be used when incidents are opened by the condition. Setting this field will override the default title. Must be Handlebars format.",
+			},
 			"threshold_duration": {
 				Type:        schema.TypeInt,
 				Optional:    true,
