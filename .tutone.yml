@@ -1,0 +1,45 @@
+---
+log_level: info
+cache:
+  schema_file: schema.json
+endpoint: https://api.newrelic.com/graphql
+auth:
+  header: Api-Key
+  api_key_env_var: NEW_RELIC_API_KEY
+generators:
+  - name: terraform
+packages:
+
+  - name: maintenancewindow
+    path: newrelic
+    import_path: github.com/newrelic/newrelic-client-go/v2/pkg/maintenancewindow
+    generators:
+      - terraform
+    mutations:
+      - name: maintenanceWindowCreate
+        max_query_field_depth: 3
+        argument_type_overrides:
+          accountId: "Int!"
+          maintenanceWindow: "MaintenanceWindowConfigCreateInput!"
+      - name: maintenanceWindowUpdate
+        max_query_field_depth: 3
+        argument_type_overrides:
+          id: "ID!"
+          maintenanceWindow: "MaintenanceWindowConfigUpdateInput!"
+        exclude_fields:
+          - errors
+      - name: maintenanceWindowDelete
+        max_query_field_depth: 1
+        exclude_fields:
+          - errors
+    terraform:
+      # read_type: direct — single object read by ID (e.g. GetMaintenanceWindowWithContext(id))
+      # requires_account_id: true — resource is scoped to an account
+      # id_type: int — the resource ID is an integer in NerdGraph
+      # computed_fields — fields the API sets automatically; should not be in user config
+      resource_name: maintenance_window
+      read_method: GetMaintenanceWindowWithContext
+      read_type: direct
+      requires_account_id: true
+      id_type: int
+      computed_fields: [account_id]

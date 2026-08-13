@@ -1,0 +1,1 @@
+"newrelic_maintenance_window": resourceNewRelicMaintenanceWindow(),
