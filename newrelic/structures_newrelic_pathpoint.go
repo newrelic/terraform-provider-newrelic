@@ -92,21 +92,39 @@ func expandPathpointKpiInputs(raw []interface{}, accountID int) []pathpoint.Path
 }
 
 func expandPathpointKpiUpdateInputsResolved(newRaw, oldRaw []interface{}, accountID int) []pathpoint.PathPointKpiUpdateInput {
-	oldIDByName := make(map[string]string, len(oldRaw))
+	type oldInfo struct {
+		id string
+	}
+	nameToOld := make(map[string]*oldInfo, len(oldRaw))
+	oldOrdered := make([]*oldInfo, 0, len(oldRaw))
+	claimedByName := make(map[string]bool, len(oldRaw))
 	for _, r := range oldRaw {
 		m := r.(map[string]interface{})
-		oldIDByName[m["name"].(string)] = m["id"].(string)
+		info := &oldInfo{id: m["id"].(string)}
+		nameToOld[m["name"].(string)] = info
+		oldOrdered = append(oldOrdered, info)
 	}
+	claimedByPos := make([]bool, len(oldOrdered))
 
 	inputs := make([]pathpoint.PathPointKpiUpdateInput, 0, len(newRaw))
-	for _, r := range newRaw {
+	for i, r := range newRaw {
 		m := r.(map[string]interface{})
-		kpi := pathpoint.PathPointKpiUpdateInput{
-			Name: m["name"].(string),
+		name := m["name"].(string)
+		kpi := pathpoint.PathPointKpiUpdateInput{Name: name}
+
+		// Match by name first, then fall back to position.
+		if info, ok := nameToOld[name]; ok && !claimedByName[name] {
+			if info.id != "" {
+				kpi.ID = info.id
+			}
+			claimedByName[name] = true
+		} else if i < len(oldOrdered) && !claimedByPos[i] {
+			if oldOrdered[i].id != "" {
+				kpi.ID = oldOrdered[i].id
+			}
+			claimedByPos[i] = true
 		}
-		if id := oldIDByName[kpi.Name]; id != "" {
-			kpi.ID = id
-		}
+
 		if v, ok := m["description"].(string); ok && v != "" {
 			kpi.Description = v
 		}
@@ -172,7 +190,7 @@ func expandPathpointKpiTimeWindowInput(m map[string]interface{}) pathpoint.PathP
 			if v, ok := rrm["compare_against"].(string); ok && v != "" {
 				rel.CompareAgainst = pathpoint.PathPointKpiTimeDuration(v)
 			}
-			tw.RelativeRange = rel
+			tw.RelativeRange = *rel
 		}
 	}
 	return tw
@@ -214,27 +232,44 @@ func expandPathpointStageUpdateInputsResolved(newRaw, oldRaw []interface{}, acco
 		levels    []interface{}
 		stageKpis []interface{}
 	}
-	oldByName := make(map[string]oldInfo, len(oldRaw))
+	nameToOld := make(map[string]*oldInfo, len(oldRaw))
+	oldOrdered := make([]*oldInfo, 0, len(oldRaw))
+	claimedByName := make(map[string]bool, len(oldRaw))
 	for _, r := range oldRaw {
 		m := r.(map[string]interface{})
 		levels, _ := m["levels"].([]interface{})
 		stageKpis, _ := m["stage_kpis"].([]interface{})
-		oldByName[m["name"].(string)] = oldInfo{
-			id:        m["id"].(string),
-			levels:    levels,
-			stageKpis: stageKpis,
-		}
+		info := &oldInfo{id: m["id"].(string), levels: levels, stageKpis: stageKpis}
+		nameToOld[m["name"].(string)] = info
+		oldOrdered = append(oldOrdered, info)
 	}
+	claimedByPos := make([]bool, len(oldOrdered))
 
 	stages := make([]pathpoint.PathPointStageUpdateInput, 0, len(newRaw))
-	for _, r := range newRaw {
+	for i, r := range newRaw {
 		m := r.(map[string]interface{})
-		stage := pathpoint.PathPointStageUpdateInput{Name: m["name"].(string)}
+		name := m["name"].(string)
+		stage := pathpoint.PathPointStageUpdateInput{Name: name}
 
-		old := oldByName[stage.Name]
-		if old.id != "" {
-			stage.ID = old.id
+		// Match by name first, then fall back to position.
+		var matched *oldInfo
+		if info, ok := nameToOld[name]; ok && !claimedByName[name] {
+			matched = info
+			claimedByName[name] = true
+		} else if i < len(oldOrdered) && !claimedByPos[i] {
+			matched = oldOrdered[i]
+			claimedByPos[i] = true
 		}
+
+		var oldLevels, oldStageKpis []interface{}
+		if matched != nil {
+			if matched.id != "" {
+				stage.ID = matched.id
+			}
+			oldLevels = matched.levels
+			oldStageKpis = matched.stageKpis
+		}
+
 		if v, ok := m["health_rollup"].(string); ok && v != "" {
 			stage.HealthRollup = pathpoint.PathPointStageHealthRollup(v)
 		}
@@ -248,10 +283,10 @@ func expandPathpointStageUpdateInputsResolved(newRaw, oldRaw []interface{}, acco
 			stage.Related = expandPathpointRelatedInput(rel[0].(map[string]interface{}))
 		}
 		if kpis, ok := m["stage_kpis"].([]interface{}); ok {
-			stage.StageKpis = expandPathpointKpiUpdateInputsResolved(kpis, old.stageKpis, accountID)
+			stage.StageKpis = expandPathpointKpiUpdateInputsResolved(kpis, oldStageKpis, accountID)
 		}
 		if levels, ok := m["levels"].([]interface{}); ok {
-			stage.Levels = expandPathpointLevelUpdateInputsResolved(levels, old.levels)
+			stage.Levels = expandPathpointLevelUpdateInputsResolved(levels, oldLevels)
 		}
 		stages = append(stages, stage)
 	}
@@ -261,61 +296,56 @@ func expandPathpointStageUpdateInputsResolved(newRaw, oldRaw []interface{}, acco
 
 func expandPathpointLevelUpdateInputsResolved(newRaw, oldRaw []interface{}) []pathpoint.PathPointLevelUpdateInput {
 	type oldInfo struct {
-		id    string
-		steps []interface{}
-	}
-
-	// Build old level list with pre-computed step-name sets for overlap scoring.
-	type scoredOld struct {
-		info      oldInfo
+		id        string
+		steps     []interface{}
 		stepNames map[string]bool
-		claimed   bool
 	}
-	oldLevels := make([]scoredOld, 0, len(oldRaw))
+	oldLevels := make([]oldInfo, 0, len(oldRaw))
 	for _, r := range oldRaw {
 		m := r.(map[string]interface{})
 		steps, _ := m["steps"].([]interface{})
-		nameSet := make(map[string]bool, len(steps))
+		names := make(map[string]bool, len(steps))
 		for _, s := range steps {
-			nameSet[s.(map[string]interface{})["name"].(string)] = true
+			names[s.(map[string]interface{})["name"].(string)] = true
 		}
-		oldLevels = append(oldLevels, scoredOld{
-			info:      oldInfo{id: m["id"].(string), steps: steps},
-			stepNames: nameSet,
-		})
+		oldLevels = append(oldLevels, oldInfo{id: m["id"].(string), steps: steps, stepNames: names})
 	}
+	claimed := make([]bool, len(oldLevels))
 
 	levels := make([]pathpoint.PathPointLevelUpdateInput, 0, len(newRaw))
-	for _, r := range newRaw {
+	for i, r := range newRaw {
 		m := r.(map[string]interface{})
 		level := pathpoint.PathPointLevelUpdateInput{}
-
 		newSteps, _ := m["steps"].([]interface{})
-		bestIdx, bestScore := -1, 0
-		for i := range oldLevels {
-			if oldLevels[i].claimed {
+
+		// Match by step-name overlap first; fall back to position if no overlap found.
+		bestIdx, bestOverlap := -1, 0
+		for j := range oldLevels {
+			if claimed[j] {
 				continue
 			}
-			score := 0
+			overlap := 0
 			for _, s := range newSteps {
-				name := s.(map[string]interface{})["name"].(string)
-				if oldLevels[i].stepNames[name] {
-					score++
+				if oldLevels[j].stepNames[s.(map[string]interface{})["name"].(string)] {
+					overlap++
 				}
 			}
-			if score > bestScore {
-				bestScore = score
-				bestIdx = i
+			if overlap > bestOverlap {
+				bestOverlap = overlap
+				bestIdx = j
 			}
+		}
+		if bestIdx < 0 && i < len(oldLevels) && !claimed[i] {
+			bestIdx = i
 		}
 
 		var oldSteps []interface{}
-		if bestScore > 0 && bestIdx >= 0 {
-			oldLevels[bestIdx].claimed = true
-			if oldLevels[bestIdx].info.id != "" {
-				level.ID = oldLevels[bestIdx].info.id
+		if bestIdx >= 0 {
+			claimed[bestIdx] = true
+			if oldLevels[bestIdx].id != "" {
+				level.ID = oldLevels[bestIdx].id
 			}
-			oldSteps = oldLevels[bestIdx].info.steps
+			oldSteps = oldLevels[bestIdx].steps
 		}
 
 		level.Steps = expandPathpointStepUpdateInputsResolved(newSteps, oldSteps)
@@ -326,19 +356,38 @@ func expandPathpointLevelUpdateInputsResolved(newRaw, oldRaw []interface{}) []pa
 
 
 func expandPathpointStepUpdateInputsResolved(newRaw, oldRaw []interface{}) []pathpoint.PathPointStepUpdateInput {
-	oldIDByName := make(map[string]string, len(oldRaw))
-	for _, r := range oldRaw {
-		m := r.(map[string]interface{})
-		oldIDByName[m["name"].(string)] = m["id"].(string)
+	type oldInfo struct {
+		id  string
+		pos int
 	}
+	nameToOld := make(map[string]*oldInfo, len(oldRaw))
+	oldOrdered := make([]*oldInfo, 0, len(oldRaw))
+	claimedByName := make(map[string]bool, len(oldRaw))
+	for i, r := range oldRaw {
+		m := r.(map[string]interface{})
+		info := &oldInfo{id: m["id"].(string), pos: i}
+		nameToOld[m["name"].(string)] = info
+		oldOrdered = append(oldOrdered, info)
+	}
+	claimedByPos := make([]bool, len(oldOrdered))
 
 	steps := make([]pathpoint.PathPointStepUpdateInput, 0, len(newRaw))
-	for _, r := range newRaw {
+	for i, r := range newRaw {
 		m := r.(map[string]interface{})
-		step := pathpoint.PathPointStepUpdateInput{Name: m["name"].(string)}
+		name := m["name"].(string)
+		step := pathpoint.PathPointStepUpdateInput{Name: name}
 
-		if id := oldIDByName[step.Name]; id != "" {
-			step.ID = id
+		// Match by name first, then fall back to position.
+		if info, ok := nameToOld[name]; ok && !claimedByName[name] {
+			if info.id != "" {
+				step.ID = info.id
+			}
+			claimedByName[name] = true
+		} else if i < len(oldOrdered) && !claimedByPos[i] {
+			if oldOrdered[i].id != "" {
+				step.ID = oldOrdered[i].id
+			}
+			claimedByPos[i] = true
 		}
 		if v, ok := m["is_excluded"].(bool); ok {
 			step.IsExcluded = v
@@ -520,12 +569,13 @@ func flattenPathpointStages(stages []pathpoint.PathPointStage) []map[string]inte
 	result := make([]map[string]interface{}, 0, len(stages))
 	for _, s := range stages {
 		m := map[string]interface{}{
-			"id":           s.ID,
-			"name":         s.Name,
+			"id":            s.ID,
+			"name":          s.Name,
 			"health_rollup": string(s.HealthRollup),
-			"link":         s.Link,
-			"stage_kpis":   flattenPathpointKpis(s.StageKpis),
-			"levels":       flattenPathpointLevels(s.Levels.Items),
+			"is_excluded":   s.IsExcluded,
+			"link":          s.Link,
+			"stage_kpis":    flattenPathpointKpis(s.StageKpis),
+			"levels":        flattenPathpointLevels(s.Levels.Items),
 		}
 		if s.Related.Source || s.Related.Target {
 			m["related"] = []map[string]interface{}{
@@ -555,12 +605,17 @@ func flattenPathpointLevels(levels []pathpoint.PathPointLevel) []map[string]inte
 func flattenPathpointSteps(steps []pathpoint.PathPointStep) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(steps))
 	for _, s := range steps {
+		scopedAccounts := make([]interface{}, 0, len(s.ScopedAccounts))
+		for _, id := range s.ScopedAccounts {
+			scopedAccounts = append(scopedAccounts, id)
+		}
 		m := map[string]interface{}{
-			"id":          s.ID,
-			"name":        s.Name,
-			"is_excluded": s.IsExcluded,
-			"link":        s.Link,
-			"signals":     flattenPathpointSignals(s.Signals),
+			"id":              s.ID,
+			"name":            s.Name,
+			"is_excluded":     s.IsExcluded,
+			"link":            s.Link,
+			"scoped_accounts": scopedAccounts,
+			"signals":         flattenPathpointSignals(s.Signals),
 		}
 		if s.EntitySearchQuery.Query != "" {
 			m["entity_search_query"] = []map[string]interface{}{
