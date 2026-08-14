@@ -520,13 +520,14 @@ Key variables:
 
 * `newrelic_account_id` / `provider_account_id` – New Relic account identifiers for linking the OCI integration.
 * `create_vcn` / `function_subnet_id` – Networking control. Set `create_vcn=false` and provide an existing `function_subnet_id` to reuse existing infrastructure.
-* `connector_hubs_data` – A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. 
-  
-  Each object supports:
-  * `compartments` (array of objects with `compartment_id` and `namespaces` (array of strings))
-  * `description` (string)
-  * `name` (string)
-  The example above shows a single‑element JSON array wrapped in quotes to satisfy Terraform's string input expectation. Example object structure:
+* `connector_hubs_data` – A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. OCI caps each hub at **5 compartments** and **50 namespaces total**. For tenancies with multiple compartments or dense namespace selections, use the [hub-calculator script](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci/hub-calculator) to compute this value automatically.
+
+  Each object has the following fields. When using the hub-calculator script, `name` and `description` are generated automatically — you only need to supply `compartments`.
+  * `compartments` (array of objects with `compartment_id` and `namespaces` (array of strings)) – the compartments and their metric namespaces to forward via this hub
+  * `name` (string) – unique hub identifier used as the OCI Service Connector `display_name` key; must be unique across all hubs in the array. Convention: `newrelic-metrics-connector-hub-{region}` with an integer suffix (`-1`, `-2`, …) for additional hubs in the same region
+  * `description` (string) – human-readable label stored on the OCI resource; must be `"[DO NOT DELETE] New Relic Metrics Connector Hub"` so the New Relic backend can identify hubs it manages
+
+The example above shows a single‑element JSON array wrapped in quotes to satisfy Terraform's string input expectation. Example object structure:
 
   ```json
   [
