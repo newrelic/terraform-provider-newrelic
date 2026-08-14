@@ -549,4 +549,3 @@ func flattenPathpointFlowResult(d *schema.ResourceData, result *pathpoint.PathPo
 
 	return nil
 }
-

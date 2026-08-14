@@ -293,7 +293,6 @@ func expandPathpointStageUpdateInputsResolved(newRaw, oldRaw []interface{}, acco
 	return stages
 }
 
-
 func expandPathpointLevelUpdateInputsResolved(newRaw, oldRaw []interface{}) []pathpoint.PathPointLevelUpdateInput {
 	type oldInfo struct {
 		id        string
@@ -353,7 +352,6 @@ func expandPathpointLevelUpdateInputsResolved(newRaw, oldRaw []interface{}) []pa
 	}
 	return levels
 }
-
 
 func expandPathpointStepUpdateInputsResolved(newRaw, oldRaw []interface{}) []pathpoint.PathPointStepUpdateInput {
 	type oldInfo struct {
