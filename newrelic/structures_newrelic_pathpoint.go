@@ -466,8 +466,8 @@ func expandPathpointStepInputs(raw []interface{}) []pathpoint.PathPointStepInput
 	return steps
 }
 
-func expandPathpointSignalQueryInput(m map[string]interface{}) pathpoint.PathPointSignalQueryInput {
-	q := pathpoint.PathPointSignalQueryInput{
+func expandPathpointSignalQueryInput(m map[string]interface{}) *pathpoint.PathPointSignalQueryInput {
+	q := &pathpoint.PathPointSignalQueryInput{
 		Query: m["query"].(string),
 	}
 	if v, ok := m["is_excluded"].(bool); ok {
