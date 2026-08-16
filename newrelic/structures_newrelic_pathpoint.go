@@ -155,7 +155,10 @@ func expandPathpointKpiNRQLInput(m map[string]interface{}) pathpoint.PathPointKp
 		q.Select = expandPathpointKpiNRQLSelectInput(sel[0].(map[string]interface{}))
 	}
 	if tw, ok := m["time_window"].([]interface{}); ok && len(tw) > 0 {
-		q.TimeWindow = expandPathpointKpiTimeWindowInput(tw[0].(map[string]interface{}))
+		twVal := expandPathpointKpiTimeWindowInput(tw[0].(map[string]interface{}))
+		if twVal != nil {
+			q.TimeWindow = twVal
+		}
 	}
 	return q
 }
@@ -176,10 +179,12 @@ func expandPathpointKpiNRQLSelectInput(m map[string]interface{}) pathpoint.PathP
 	return s
 }
 
-func expandPathpointKpiTimeWindowInput(m map[string]interface{}) pathpoint.PathPointKpiTimeWindowInput {
-	tw := pathpoint.PathPointKpiTimeWindowInput{}
+func expandPathpointKpiTimeWindowInput(m map[string]interface{}) *pathpoint.PathPointKpiTimeWindowInput {
+	tw := &pathpoint.PathPointKpiTimeWindowInput{}
+	hasContent := false
 	if v, ok := m["custom_range"].(string); ok && v != "" {
 		tw.CustomRange = pathpoint.NRQL(v)
+		hasContent = true
 	}
 	if rr, ok := m["relative_range"].([]interface{}); ok && len(rr) > 0 {
 		rrm := rr[0].(map[string]interface{})
@@ -190,8 +195,12 @@ func expandPathpointKpiTimeWindowInput(m map[string]interface{}) pathpoint.PathP
 			if v, ok := rrm["compare_against"].(string); ok && v != "" {
 				rel.CompareAgainst = pathpoint.PathPointKpiTimeDuration(v)
 			}
-			tw.RelativeRange = *rel
+			tw.RelativeRange = rel
+			hasContent = true
 		}
+	}
+	if !hasContent {
+		return nil
 	}
 	return tw
 }
@@ -515,12 +524,13 @@ func flattenPathpointKpis(kpis []pathpoint.PathPointKpi) []map[string]interface{
 	result := make([]map[string]interface{}, 0, len(kpis))
 	for _, k := range kpis {
 		m := map[string]interface{}{
-			"id":          k.ID,
-			"name":        k.Name,
-			"description": k.Description,
-			"category":    k.Category,
-			"account_id":  k.AccountID,
-			"query":       flattenPathpointKpiNRQL(k.Query),
+			"id":           k.ID,
+			"name":         k.Name,
+			"description":  k.Description,
+			"category":     k.Category,
+			"account_id":   k.AccountID,
+			"query":        flattenPathpointKpiNRQL(k.Query),
+			"metric_query": string(k.MetricQuery),
 		}
 		result = append(result, m)
 	}

@@ -18,7 +18,7 @@ Each Flow in Pathpoint represents a business journey — like checkout, authenti
 
 A New Relic User API key is required to provision this resource. Set the `api_key` attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment variable with your User API key.
 
--> **NOTE:** The `version` attribute is managed automatically by this resource and must not be set manually. It is refreshed from the API on every `terraform plan` and `terraform apply`. Any changes made outside of Terraform (e.g. from the New Relic UI) will be detected but **overridden** on the next apply. Review the plan output carefully before applying to avoid unintentionally overwriting manual changes.
+-> **NOTE:** Any manual changes made outside Terraform (e.g., via the New Relic UI) will be automatically overridden on the next terraform apply. Review your plan output carefully. if you want to keep external changes, export the updated resource.
 
 ## Example Usage
 

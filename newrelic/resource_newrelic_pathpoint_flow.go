@@ -139,6 +139,11 @@ func resourceNewRelicPathpointFlow() *schema.Resource {
 				Description: "NRQL query definition for this KPI.",
 				Elem:        kpiQuerySchema,
 			},
+			"metric_query": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "NRQL query using Metric, derived after processing event-to-metric rules. Read-only.",
+			},
 		},
 	}
 
@@ -528,6 +533,8 @@ func flattenPathpointFlowResult(d *schema.ResourceData, result *pathpoint.PathPo
 	_ = d.Set("guid", string(result.GUID))
 	_ = d.Set("name", result.Name)
 	_ = d.Set("version", strconv.FormatInt(time.Time(result.Version).UnixMilli(), 10))
+	_ = d.Set("description", result.Description)
+	_ = d.Set("category", result.Category)
 
 	if result.HealthRollup != "" {
 		_ = d.Set("health_rollup", string(result.HealthRollup))
