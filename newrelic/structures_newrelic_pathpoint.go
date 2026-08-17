@@ -539,7 +539,7 @@ func flattenPathpointKpis(kpis []pathpoint.PathPointKpi) []map[string]interface{
 
 func flattenPathpointKpiNRQL(q pathpoint.PathPointKpiNRQL) []map[string]interface{} {
 	m := map[string]interface{}{
-		"from":  string(q.From),
+		"from":  q.From,
 		"where": q.Where,
 		"select": []map[string]interface{}{
 			{
