@@ -43,7 +43,7 @@ variable "function_subnet_id" {
 
 variable "connector_hubs_data" {
   type        = string
-  description = "List of maps containing connector hub configuration data."
+  description = "JSON-encoded string describing the connector hub layout. OCI caps each hub at 5 compartments and 50 namespaces total. For tenancies with multiple compartments or dense namespace selections, use the hub-calculator script (examples/modules/cloud-integrations/oci/hub-calculator) to compute this value automatically."
 }
 
 variable "ingest_api_secret_ocid" {
