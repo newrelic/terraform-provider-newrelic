@@ -18,6 +18,7 @@ A complete New Relic + OCI integration via Terraform composes four modules plus 
 | 3 | [`newrelic_cloud_oci_link_account`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_link_account) | Registers the OCI tenancy with New Relic | Yes |
 | 4a | [`metrics-integration`](../metrics-integration) | Service Connector Hub + Function for metrics shipping | Optional (need metrics) |
 | 4b | [`logs-integration`](../logs-integration) | Service Connector Hub + Function for logs shipping | Optional (need logs) |
+| — | [`hub-calculator`](../hub-calculator) | Script that computes `connector_hubs_data` for step 4a across multiple compartments | Recommended for step 4a |
 
 This module **must run first** — its OAuth credentials and IAM domain URL feed into both `policy-setup` and the `newrelic_cloud_oci_link_account` resource. See the [Cloud integrations guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#oci) for the full end-to-end example wiring all four modules together.
 

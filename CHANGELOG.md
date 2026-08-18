@@ -1,5 +1,13 @@
+<a name="v3.96.3"></a>
+## [v3.96.3] - 2026-08-17
+### Bug Fixes
+- **oci:** script to generate the connector_hubs_data when more compartments ([#3154](https://github.com/newrelic/terraform-provider-newrelic/issues/3154))
+
+### Documentation Updates
+- **notifications:** improve WORKFLOW_AUTOMATION destination example ([#3156](https://github.com/newrelic/terraform-provider-newrelic/issues/3156))
+
 <a name="v3.96.2"></a>
-## [v3.96.2] - 2026-08-11
+## [v3.96.2] - 2026-08-12
 ### Bug Fixes
 - add description and title_template to compound condition resource ([#3138](https://github.com/newrelic/terraform-provider-newrelic/issues/3138))
 
@@ -2818,7 +2826,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.3...HEAD
+[v3.96.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.2...v3.96.3
 [v3.96.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.1...v3.96.2
 [v3.96.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.0...v3.96.1
 [v3.96.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.95.2...v3.96.0
