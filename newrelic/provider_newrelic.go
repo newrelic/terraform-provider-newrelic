@@ -138,6 +138,8 @@ func Provider() *schema.Provider {
 			"newrelic_user":                         dataSourceNewRelicUser(),
 			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
 			"newrelic_fleet_members":                dataSourceNewRelicFleetMembers(),
+			// Add to ResourcesMap in provider_newrelic.go:
+"newrelic_pathpoint_flow": resourceNewRelicPathpointFlow(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -178,6 +180,7 @@ func Provider() *schema.Provider {
 			"newrelic_cardinality_management":                   resourceNewRelicCardinalityManagement(),
 			"newrelic_metric_pruning_rule":                      resourceNewRelicMetricPruningRule(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
+			"newrelic_pathpoint_flow": resourceNewRelicPathpointFlow(),
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
 			"newrelic_obfuscation_rule":                         resourceNewRelicObfuscationRule(),
