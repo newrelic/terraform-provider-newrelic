@@ -433,7 +433,7 @@ func TestExpandPathpointStepUpdateInputsResolved_MatchByName(t *testing.T) {
 	}
 	newRaw := []interface{}{
 		map[string]interface{}{
-			"name": "Step A",
+			"name":        "Step A",
 			"is_excluded": false, "link": "", "scoped_accounts": []interface{}{},
 			"entity_search_query": []interface{}{}, "config": []interface{}{}, "signals": []interface{}{},
 		},
@@ -453,7 +453,7 @@ func TestExpandPathpointStepUpdateInputsResolved_PositionalFallback(t *testing.T
 	}
 	newRaw := []interface{}{
 		map[string]interface{}{
-			"name": "Renamed Step",
+			"name":        "Renamed Step",
 			"is_excluded": false, "link": "", "scoped_accounts": []interface{}{},
 			"entity_search_query": []interface{}{}, "config": []interface{}{}, "signals": []interface{}{},
 		},
@@ -475,7 +475,7 @@ func TestExpandPathpointLevelInputs_WithSteps(t *testing.T) {
 		map[string]interface{}{
 			"steps": []interface{}{
 				map[string]interface{}{
-					"name": "Step One",
+					"name":        "Step One",
 					"is_excluded": false, "link": "", "scoped_accounts": []interface{}{},
 					"entity_search_query": []interface{}{}, "config": []interface{}{}, "signals": []interface{}{},
 				},
@@ -507,7 +507,7 @@ func TestExpandPathpointLevelUpdateInputsResolved_MatchByStepNames(t *testing.T)
 		map[string]interface{}{
 			"steps": []interface{}{
 				map[string]interface{}{
-					"name": "Step A",
+					"name":        "Step A",
 					"is_excluded": false, "link": "", "scoped_accounts": []interface{}{},
 					"entity_search_query": []interface{}{}, "config": []interface{}{}, "signals": []interface{}{},
 				},
@@ -526,13 +526,13 @@ func TestExpandPathpointLevelUpdateInputsResolved_MatchByStepNames(t *testing.T)
 func TestExpandPathpointStageInputs_Basic(t *testing.T) {
 	raw := []interface{}{
 		map[string]interface{}{
-			"name":         "Stage One",
+			"name":          "Stage One",
 			"health_rollup": "",
-			"is_excluded":  false,
-			"link":         "",
-			"related":      []interface{}{},
-			"stage_kpis":   []interface{}{},
-			"levels":       []interface{}{},
+			"is_excluded":   false,
+			"link":          "",
+			"related":       []interface{}{},
+			"stage_kpis":    []interface{}{},
+			"levels":        []interface{}{},
 		},
 	}
 	got := expandPathpointStageInputs(raw, 1111)
@@ -544,10 +544,10 @@ func TestExpandPathpointStageInputs_Basic(t *testing.T) {
 func TestExpandPathpointStageInputs_WithRelatedAndLink(t *testing.T) {
 	raw := []interface{}{
 		map[string]interface{}{
-			"name":         "Source Stage",
+			"name":          "Source Stage",
 			"health_rollup": "AUTOMATIC_ROLL_UP",
-			"is_excluded":  false,
-			"link":         "https://wiki.example.com",
+			"is_excluded":   false,
+			"link":          "https://wiki.example.com",
 			"related": []interface{}{
 				map[string]interface{}{
 					"source": true,
@@ -578,7 +578,7 @@ func TestExpandPathpointStageUpdateInputsResolved_MatchByName(t *testing.T) {
 	}
 	newRaw := []interface{}{
 		map[string]interface{}{
-			"name": "Checkout",
+			"name":          "Checkout",
 			"health_rollup": "", "is_excluded": false, "link": "",
 			"related": []interface{}{}, "stage_kpis": []interface{}{}, "levels": []interface{}{},
 		},
