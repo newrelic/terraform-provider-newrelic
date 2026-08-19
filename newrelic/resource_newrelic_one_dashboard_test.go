@@ -306,6 +306,12 @@ func TestAccNewRelicOneDashboard_ChangeCheck(t *testing.T) {
 				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFull(rName, strconv.Itoa(testAccountID)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+					testAccCheckNewRelicOneDashboard_WidgetDescriptionAndLink(
+						"newrelic_one_dashboard.bar",
+						"table widget",
+						"Raw transaction events for the selected time window.",
+						"https://example.com/runbooks/transactions",
+					),
 				),
 			},
 			// Make lots of changes
@@ -313,6 +319,12 @@ func TestAccNewRelicOneDashboard_ChangeCheck(t *testing.T) {
 				Config: testAccCheckNewRelicOneDashboardConfig_OnePageFullChanged(rName, strconv.Itoa(testAccountID)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicOneDashboardExists("newrelic_one_dashboard.bar", 0),
+					testAccCheckNewRelicOneDashboard_WidgetDescriptionAndLink(
+						"newrelic_one_dashboard.bar",
+						"table widget with new name",
+						"Raw transaction events for the selected time window, updated.",
+						"https://example.com/runbooks/transactions-updated",
+					),
 				),
 			},
 		},
@@ -516,6 +528,62 @@ func testAccCheckNewRelicOneDashboard_BillboardCriticalWarning(resourceName stri
 
 			if !foundWidget {
 				return resource.NonRetryableError(fmt.Errorf("Unable to find widget: %s", widgetTitle))
+			}
+
+			return nil
+		})
+
+		if retryErr != nil {
+			return retryErr
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckNewRelicOneDashboard_WidgetDescriptionAndLink fetches the dashboard resource and checks that
+// the widget matching widgetTitle has the expected description and link URL.
+func testAccCheckNewRelicOneDashboard_WidgetDescriptionAndLink(resourceName string, widgetTitle string, expectedDescription string, expectedLinkURL string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no dashboard ID is set")
+		}
+
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+
+		retryErr := resource.RetryContext(context.Background(), 5*time.Second, func() *resource.RetryError {
+			found, err := client.Dashboards.GetDashboardEntity(common.EntityGUID(rs.Primary.ID))
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+
+			if string(found.GUID) != rs.Primary.ID {
+				return resource.RetryableError(fmt.Errorf("dashboard not found: %v - %v", rs.Primary.ID, found))
+			}
+
+			foundWidget := false
+			for _, page := range found.Pages {
+				for _, widget := range page.Widgets {
+					if widget.Title != widgetTitle {
+						continue
+					}
+					foundWidget = true
+
+					if widget.Description != expectedDescription {
+						return resource.NonRetryableError(fmt.Errorf("expected description %q, got %q for widget: %s", expectedDescription, widget.Description, widgetTitle))
+					}
+					if widget.Link.URL != expectedLinkURL {
+						return resource.NonRetryableError(fmt.Errorf("expected link URL %q, got %q for widget: %s", expectedLinkURL, widget.Link.URL, widgetTitle))
+					}
+				}
+			}
+
+			if !foundWidget {
+				return resource.NonRetryableError(fmt.Errorf("unable to find widget: %s", widgetTitle))
 			}
 
 			return nil
@@ -1051,7 +1119,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
     }
 
 	widget_table {
-      title = "table widget"
+      title       = "table widget"
+      description = "Raw transaction events for the selected time window."
       row = 13
       column = 1
       nrql_query {
@@ -1063,6 +1132,9 @@ func testAccCheckNewRelicOneDashboardConfig_PageFull(pageName string, accountID 
 		column_name = "C1"
 		severity 	= "unavailable"
 	  }
+      link {
+        url = "https://example.com/runbooks/transactions"
+      }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
       refresh_rate = 30000
       initial_sorting {
@@ -1356,7 +1428,8 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
     }
 
     widget_table {
-      title = "table widget with new name"
+      title       = "table widget with new name"
+      description = "Raw transaction events for the selected time window, updated."
       row = 13
       column = 1
       nrql_query {
@@ -1367,7 +1440,10 @@ func testAccCheckNewRelicOneDashboardConfig_PageFullChanged(pageName string, acc
 		to 			= 200.4
 		column_name = "C1"
 		severity 	= "unavailable"
-	  }		
+	  }
+      link {
+        url = "https://example.com/runbooks/transactions-updated"
+      }
       linked_entity_guids = ["MjUyMDUyOHxWSVp8REFTSEJPQVJEfDE2NDYzMDQ"]
     }
 

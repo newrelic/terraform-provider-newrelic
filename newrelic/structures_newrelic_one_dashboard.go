@@ -771,6 +771,12 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	if i, ok := w["title"]; ok {
 		widget.Title = i.(string)
 	}
+	if i, ok := w["description"]; ok {
+		widget.Description = i.(string)
+	}
+	if i, ok := w["link"]; ok {
+		widget.Link = expandDashboardWidgetLink(i.([]interface{}))
+	}
 
 	if i, ok := w["linked_entity_guids"]; ok {
 		widget.LinkedEntityGUIDs = expandLinkedEntityGUIDs(i.([]interface{}))
@@ -1420,6 +1426,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	out["width"] = in.Layout.Width
 	if in.Title != "" {
 		out["title"] = in.Title
+	}
+	if in.Description != "" {
+		out["description"] = in.Description
+	}
+	if in.Link.URL != "" {
+		out["link"] = flattenDashboardWidgetLink(in.Link)
 	}
 
 	// NOTE: The widget types that currently support linked entities
@@ -2254,4 +2266,30 @@ func flattenDashboardWidgetBillboardSettings(billboardSettings *dashboards.Dashb
 
 	billboardSettingsFetchedInterface = append(billboardSettingsFetchedInterface, billboardSettingsFetched)
 	return billboardSettingsFetchedInterface
+}
+
+func expandDashboardWidgetLink(linkData []interface{}) dashboards.DashboardWidgetLinkInput {
+	var link dashboards.DashboardWidgetLinkInput
+
+	if len(linkData) == 0 || linkData[0] == nil {
+		return link
+	}
+
+	linkMap := linkData[0].(map[string]interface{})
+
+	if url, ok := linkMap["url"]; ok {
+		link.URL = url.(string)
+	}
+
+	return link
+}
+
+func flattenDashboardWidgetLink(in entities.DashboardWidgetLink) []interface{} {
+	var linkFetched = make(map[string]interface{})
+
+	if in.URL != "" {
+		linkFetched["url"] = in.URL
+	}
+
+	return []interface{}{linkFetched}
 }

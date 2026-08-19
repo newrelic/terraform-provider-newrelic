@@ -305,6 +305,26 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Required:    true,
 			Description: "A title for the widget.",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Additional text that provides context about the widget, displayed as a tooltip when users point to the widget.",
+		},
+		"link": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Makes the widget title clickable, allowing navigation to related dashboards, documentation, or external resources.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The URL to open when the widget title is clicked. Must use http:// or https:// protocol.",
+					},
+				},
+			},
+		},
 		"column": {
 			Type:     schema.TypeInt,
 			Required: true,
