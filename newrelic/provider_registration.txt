@@ -1,0 +1,3 @@
+// Add to ResourcesMap in provider_newrelic.go:
+"newrelic_pathpoint_flow": resourceNewRelicPathpointFlow(),
+
