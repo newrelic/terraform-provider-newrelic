@@ -658,3 +658,9 @@ structures_newrelic_workload.go:
 structures_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
+resource_newrelic_pathpoint_flow.go:
+  test: false
+  product_mapping: NAMESPACE
+structures_newrelic_pathpoint_flow.go:
+  test: false
+  product_mapping: NAMESPACE
