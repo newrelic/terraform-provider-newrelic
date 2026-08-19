@@ -1,0 +1,60 @@
+---
+log_level: info
+cache:
+  schema_file: schema.json
+endpoint: https://api.newrelic.com/graphql
+auth:
+  header: Api-Key
+  api_key_env_var: NEW_RELIC_API_KEY
+generators:
+  - name: terraform
+packages:
+
+  - name: pathpoint
+    path: newrelic
+    import_path: github.com/newrelic/newrelic-client-go/v2/pkg/pathpoint
+    generators:
+      - terraform
+    mutations:
+      - name: pathPointCreate
+        max_query_field_depth: 8
+      - name: pathPointUpdate
+        max_query_field_depth: 8
+      - name: pathPointDelete
+        max_query_field_depth: 2
+    terraform:
+      resource_name: pathpoint_flow
+      create_method: PathPointCreateWithContext
+      update_method: PathPointUpdateWithContext
+      delete_method: PathPointDeleteWithContext
+      read_method: GetFlowWithContext
+      id_type: string
+      id_fields: [id]
+      requires_account_id: true
+      computed_fields: [account_id]
+      create_inputs:
+        - arg: pathpoint
+          type: PathPointFlowInput
+          source: nested_block
+        - arg: scope
+          type: PathPointScopeInput
+          source: nested_block
+      pointer_fields:
+        - kpi_time_window
+        - signal_query
+        - relative_range
+      custom_scalar_mappings:
+        EpochMilliseconds:
+          tf_type: schema.TypeInt
+          go_type: nrtime.EpochMilliseconds
+          expand: "nrtime.EpochMilliseconds($VALUE)"
+          flatten: "int64($FIELD)"
+      crud_args:
+        create: [account_id, pathpoint, scope]
+        read: [account_id, id]
+        update: [id, input]
+        delete: [id]
+      build_tags: [integration, unit, PATHPOINT]
+      client_packages:
+        - github.com/newrelic/newrelic-client-go/v2/pkg/pathpoint
+        - github.com/newrelic/newrelic-client-go/v2/pkg/nrtime
