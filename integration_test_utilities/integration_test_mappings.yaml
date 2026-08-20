@@ -58,6 +58,9 @@ data_source_newrelic_fleet_configuration.go:
 data_source_newrelic_fleet_configuration_test.go:
   test: true
   product_mapping: FLEET
+data_source_newrelic_fleet_configuration_unit_test.go:
+  test: true
+  product_mapping: FLEET
 data_source_newrelic_fleet_members.go:
   test: false
   product_mapping: FLEET

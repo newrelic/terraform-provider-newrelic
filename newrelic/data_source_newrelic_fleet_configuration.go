@@ -105,7 +105,7 @@ func dataSourceNewRelicFleetConfigurationRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(setErr)
 	}
 
-	return nil
+	return diags
 }
 
 func dsFleetReadByConfigID(d *schema.ResourceData, client *nr.NewRelic, orgID string) (string, *fleetcontrol.GetConfigurationResponse, diag.Diagnostics) {
