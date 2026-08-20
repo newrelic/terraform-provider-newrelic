@@ -167,8 +167,8 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/newrelic/go-agent/v3 v3.30.0 h1:ZXHCT/Cot4iIPwcegCZURuRQOsfmGA6wilW+S3bfBjY=
 github.com/newrelic/go-agent/v3 v3.30.0/go.mod h1:9utrgxlSryNqRrTvII2XBL+0lpofXbqXApvVWPpbzUg=
-github.com/newrelic/newrelic-client-go/v2 v2.93.1 h1:CaIc3K9wFg57dwKCpAo1PaydnXePB069wGTbS5z7Hec=
-github.com/newrelic/newrelic-client-go/v2 v2.93.1/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
+github.com/newrelic/newrelic-client-go/v2 v2.93.1-0.20260810175905-93cb87f7dc94 h1:LQlQrXBREfuwIN/dfFsBeLmfJhQg2wYL5+mrBLUEGUo=
+github.com/newrelic/newrelic-client-go/v2 v2.93.1-0.20260810175905-93cb87f7dc94/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
