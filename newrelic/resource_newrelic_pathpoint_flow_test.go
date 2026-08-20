@@ -247,8 +247,7 @@ resource "newrelic_pathpoint_flow" "foo" {
   name       = %[2]q
 
   kpis {
-    name       = "Request Rate"
-    account_id = %[1]d
+    name = "Request Rate"
 
     query {
       from = "Transaction"

@@ -99,11 +99,13 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"alias": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Optional alias for the aggregated value.",
 			},
 			"attribute": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Attribute name to aggregate. Required for all functions except COUNT.",
 			},
 			"threshold": {
@@ -251,6 +253,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "How step health is rolled up: BEST_STATUS_WINS or WORST_STATUS_WINS.",
 				ValidateFunc: validation.StringInSlice(pathpointStepHealthRollupValues(), false),
 			},
@@ -294,6 +297,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"scoped_accounts": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				MinItems:    1,
 				Description: "Account IDs whose data is scoped to this step.",
 				Elem:        &schema.Schema{Type: schema.TypeInt},
@@ -322,6 +326,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"config": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    1,
 				Description: "Health evaluation configuration for this step.",
 				Elem:        stepConfigSchema,
@@ -386,6 +391,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 				ValidateFunc: validation.StringInSlice(pathpointStageHealthRollupValues(), false),
 			},
@@ -450,12 +456,14 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 		"health_rollup": {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 			ValidateFunc: validation.StringInSlice(pathpointFlowHealthRollupValues(), false),
 		},
 		"refresh_interval": {
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			Description:  "How often health statuses refresh: ONE_MINUTE, FIVE_MINUTES, TEN_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES.",
 			ValidateFunc: validation.StringInSlice(pathpointRefreshIntervalValues(), false),
 		},
@@ -1056,9 +1064,11 @@ func flattenPathpointKpis(kpis []pathpoint.PathPointKpi) []map[string]interface{
 			"name":         k.Name,
 			"description":  k.Description,
 			"category":     k.Category,
-			"account_id":   k.AccountID,
 			"query":        flattenPathpointKpiNRQL(k.Query),
 			"metric_query": string(k.MetricQuery),
+		}
+		if k.AccountID != 0 {
+			m["account_id"] = k.AccountID
 		}
 		result = append(result, m)
 	}
