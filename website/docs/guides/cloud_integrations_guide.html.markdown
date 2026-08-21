@@ -639,45 +639,53 @@ Two audit scoping modes are supported:
 
 `compartment_id` selects the root of the audit scope; the `log_group_id` literal decides whether recursion is enabled.
 
-Guidelines:
-* Keep the audit connector as a separate object in the `connector_hub_details` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
-* `display_name` must follow the convention `newrelic-logs-<region>-audit` (e.g. `newrelic-logs-us-ashburn-1-audit`).
-* On first creation, OCI may deliver up to 24 hours of historical audit events before switching to steady-state streaming — this is standard OCI Connector Hub behaviour.
+- Keep the audit connector as a separate object in the `connector_hub_details` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
+- `display_name` must follow the convention `newrelic-logs-<region>-audit` (e.g. `newrelic-logs-us-ashburn-1-audit`).
+- On first creation, OCI may deliver up to 24 hours of historical audit events before switching to steady-state streaming — this is standard OCI Connector Hub behaviour.
 
-##### Example: tenancy-wide audit logs (root compartment, recursive)
+#### Example: tenancy-wide audit logs (root compartment, recursive)
 
 ```json
 [
   {
     "display_name": "newrelic-logs-us-ashburn-1-audit",
     "log_sources": [
-      { "compartment_id": "ocid1.tenancy.oc1..***", "log_group_id": "_Audit_Include_Subcompartment" }
+      {
+        "compartment_id": "ocid1.tenancy.oc1..***",
+        "log_group_id": "_Audit_Include_Subcompartment"
+      }
     ]
   }
 ]
 ```
 
-##### Example: compartment subtree (non-root compartment, recursive)
+#### Example: compartment subtree (non-root compartment, recursive)
 
 ```json
 [
   {
     "display_name": "newrelic-logs-us-ashburn-1-audit",
     "log_sources": [
-      { "compartment_id": "ocid1.compartment.oc1..***", "log_group_id": "_Audit_Include_Subcompartment" }
+      {
+        "compartment_id": "ocid1.compartment.oc1..***",
+        "log_group_id": "_Audit_Include_Subcompartment"
+      }
     ]
   }
 ]
 ```
 
-##### Example: selected compartment only (no recursion)
+#### Example: selected compartment only (no recursion)
 
 ```json
 [
   {
     "display_name": "newrelic-logs-us-ashburn-1-audit",
     "log_sources": [
-      { "compartment_id": "ocid1.compartment.oc1..***", "log_group_id": "_Audit" }
+      {
+        "compartment_id": "ocid1.compartment.oc1..***",
+        "log_group_id": "_Audit"
+      }
     ]
   }
 ]
