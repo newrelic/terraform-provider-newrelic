@@ -626,6 +626,63 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 ]
 ```
 
+#### OCI Audit Logs (Optional)
+
+OCI audit logs are emitted from a reserved log group named `_Audit` that OCI's `ListLogGroups` API intentionally never returns, so it does not appear in any log group listing. To ingest audit logs into New Relic, add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the two OCI-reserved literals below. No log group OCID is needed — OCI resolves the literal to the correct log group internally.
+
+Two audit scoping modes are supported:
+
+| Mode | `log_group_id` value | Coverage |
+|---|---|---|
+| Selected compartment only | `_Audit` | Audit logs from the chosen compartment only. Subcompartments are NOT included. |
+| Selected compartment + all subcompartments (recursive) | `_Audit_Include_Subcompartment` | Audit logs from the chosen compartment and every subcompartment beneath it. Tenancy-wide when the chosen compartment is the tenancy root. |
+
+`compartment_id` selects the root of the audit scope; the `log_group_id` literal decides whether recursion is enabled.
+
+Guidelines:
+* Keep the audit connector as a separate object in the `connector_hub_details` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
+* `display_name` must follow the convention `newrelic-logs-<region>-audit` (e.g. `newrelic-logs-us-ashburn-1-audit`).
+* On first creation, OCI may deliver up to 24 hours of historical audit events before switching to steady-state streaming — this is standard OCI Connector Hub behaviour.
+
+##### Example: tenancy-wide audit logs (root compartment, recursive)
+
+```json
+[
+  {
+    "display_name": "newrelic-logs-us-ashburn-1-audit",
+    "log_sources": [
+      { "compartment_id": "ocid1.tenancy.oc1..***", "log_group_id": "_Audit_Include_Subcompartment" }
+    ]
+  }
+]
+```
+
+##### Example: compartment subtree (non-root compartment, recursive)
+
+```json
+[
+  {
+    "display_name": "newrelic-logs-us-ashburn-1-audit",
+    "log_sources": [
+      { "compartment_id": "ocid1.compartment.oc1..***", "log_group_id": "_Audit_Include_Subcompartment" }
+    ]
+  }
+]
+```
+
+##### Example: selected compartment only (no recursion)
+
+```json
+[
+  {
+    "display_name": "newrelic-logs-us-ashburn-1-audit",
+    "log_sources": [
+      { "compartment_id": "ocid1.compartment.oc1..***", "log_group_id": "_Audit" }
+    ]
+  }
+]
+```
+
 > When implementing the New Relic OCI integration with Workload Identity Federation, the modules must be applied in this order: `wif-setup` (to create OAuth credentials) → `policy-setup` (to configure IAM policies and vault secrets) → `metrics-integration` or `logging-integration` (to set up data collection). The `wif-setup` module outputs (`client_id`, `client_secret`, `oci_domain_url`) must be provided as inputs to the `policy-setup` module. These modules can be run together in a single Terraform configuration if the dependency graph can be successfully resolved by referencing outputs from earlier modules. Failure to apply modules in the correct order will result in authorization errors when creating Service Connector Hub resources or invoking functions.
 
 [*Browse the OCI module source code on GitHub*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci)
