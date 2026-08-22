@@ -14,11 +14,11 @@ import (
 // resourceNewRelicTeamCustomizeDiff runs plan-time validations for
 // newrelic_team:
 //
-//  1. Every user_id in the managers block must also appear in the members
-//     block. NGEP enforces this at mutation time, but surfacing it at plan
-//     time gives a much clearer error than a cryptic API 400.
+//  1. managers ⊆ members — every user_id in the managers block must also
+//     appear in the members block. NGEP enforces this at mutation time, but
+//     surfacing it at plan time gives a clearer error than an API 400.
 //
-//  2. aliases must not contain the empty string.
+//  2. aliases must not contain empty or whitespace-only strings.
 func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	var errs []string
 
@@ -26,11 +26,13 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 	managersSet, managersOk := d.GetOk("managers")
 	membersSet, membersOk := d.GetOk("members")
 
-	if managersOk && membersOk {
-		memberIDs := make(map[int]bool)
+	memberIDs := make(map[int]bool)
+	if membersOk {
 		for _, raw := range membersSet.(*schema.Set).List() {
 			memberIDs[raw.(map[string]interface{})["user_id"].(int)] = true
 		}
+	}
+	if managersOk {
 		for _, raw := range managersSet.(*schema.Set).List() {
 			uid := raw.(map[string]interface{})["user_id"].(int)
 			if !memberIDs[uid] {
@@ -41,16 +43,7 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 		}
 	}
 
-	if managersOk && !membersOk {
-		for _, raw := range managersSet.(*schema.Set).List() {
-			uid := raw.(map[string]interface{})["user_id"].(int)
-			errs = append(errs, fmt.Sprintf(
-				"manager user_id %d requires a matching members block entry — "+
-					"every manager must first be a member of the team", uid))
-		}
-	}
-
-	// ── aliases must not be empty strings ──────────────────────────────────
+	// ── aliases must not be empty ───────────────────────────────────────────
 	if aliases, ok := d.GetOk("aliases"); ok {
 		for _, a := range aliases.([]interface{}) {
 			if strings.TrimSpace(a.(string)) == "" {
@@ -68,33 +61,7 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 
 // ── Expand helpers (Terraform state → API input) ──────────────────────────────
 
-// expandTeamTags converts a list of "key:value1,value2" strings into
-// EntityManagementTagInput values.
-func expandTeamTags(raw []interface{}) []scorecards.EntityManagementTagInput {
-	if len(raw) == 0 {
-		return nil
-	}
-	out := make([]scorecards.EntityManagementTagInput, 0, len(raw))
-	for _, r := range raw {
-		s, ok := r.(string)
-		if !ok {
-			continue
-		}
-		parts := strings.SplitN(s, ":", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		key := strings.TrimSpace(parts[0])
-		vals := strings.Split(strings.TrimSpace(parts[1]), ",")
-		for i := range vals {
-			vals[i] = strings.TrimSpace(vals[i])
-		}
-		out = append(out, scorecards.EntityManagementTagInput{Key: key, Values: vals})
-	}
-	return out
-}
-
-// expandTeamResources converts the Terraform resources list to CreateInput.
+// expandTeamResources converts the resources Terraform list to CreateInput.
 func expandTeamResources(raw []interface{}) []scorecards.EntityManagementTeamResourceCreateInput {
 	if len(raw) == 0 {
 		return nil
@@ -117,7 +84,7 @@ func expandTeamResources(raw []interface{}) []scorecards.EntityManagementTeamRes
 	return out
 }
 
-// expandTeamResourcesUpdate converts the Terraform resources list to UpdateInput.
+// expandTeamResourcesUpdate converts the resources Terraform list to UpdateInput.
 func expandTeamResourcesUpdate(raw []interface{}) []scorecards.EntityManagementTeamResourceUpdateInput {
 	if len(raw) == 0 {
 		return nil
@@ -140,8 +107,10 @@ func expandTeamResourcesUpdate(raw []interface{}) []scorecards.EntityManagementT
 	return out
 }
 
-// expandMemberUserIDsFromSet converts a TypeSet of {user_id} maps to []int.
-func expandMemberUserIDsFromSet(s *schema.Set) []int {
+// expandUserIDsFromSet extracts integer user IDs from a TypeSet whose elements
+// are maps with a single "user_id" int key. Used for both the members and
+// managers blocks which have the same shape.
+func expandUserIDsFromSet(s *schema.Set) []int {
 	out := make([]int, 0, s.Len())
 	for _, raw := range s.List() {
 		out = append(out, raw.(map[string]interface{})["user_id"].(int))
@@ -149,16 +118,8 @@ func expandMemberUserIDsFromSet(s *schema.Set) []int {
 	return out
 }
 
-// expandManagerUserIDsFromSet converts a TypeSet of {user_id} maps to []int.
-func expandManagerUserIDsFromSet(s *schema.Set) []int {
-	out := make([]int, 0, s.Len())
-	for _, raw := range s.List() {
-		out = append(out, raw.(map[string]interface{})["user_id"].(int))
-	}
-	return out
-}
-
-// expandEntityGUIDsFromSet converts a TypeSet of {guid} maps to []string.
+// expandEntityGUIDsFromSet extracts string GUIDs from a TypeSet whose elements
+// are maps with a single "guid" string key.
 func expandEntityGUIDsFromSet(s *schema.Set) []string {
 	out := make([]string, 0, s.Len())
 	for _, raw := range s.List() {
@@ -169,22 +130,7 @@ func expandEntityGUIDsFromSet(s *schema.Set) []string {
 
 // ── Flatten helpers (API response → Terraform state) ─────────────────────────
 
-// flattenTeamTags converts EntityManagementTag values back to
-// "key:value1,value2" strings. System-managed tags (keys starting with "nr.")
-// such as "nr.hierarchy.level" are filtered out — they are auto-injected by
-// NGEP when a team is assigned a parent and must not appear in state.
-func flattenTeamTags(tags []scorecards.EntityManagementTag) []string {
-	out := make([]string, 0, len(tags))
-	for _, t := range tags {
-		if strings.HasPrefix(t.Key, "nr.") {
-			continue
-		}
-		out = append(out, t.Key+":"+strings.Join(t.Values, ","))
-	}
-	return out
-}
-
-// flattenTeamResources converts API resource values back to Terraform maps.
+// flattenTeamResources converts API TeamResource values back to Terraform maps.
 func flattenTeamResources(res []scorecards.EntityManagementTeamResource) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(res))
 	for _, r := range res {
@@ -197,7 +143,8 @@ func flattenTeamResources(res []scorecards.EntityManagementTeamResource) []map[s
 	return out
 }
 
-// flattenMemberUserIDs converts []int → list-of-maps for the members TypeSet.
+// flattenMemberUserIDs converts a []int of user IDs into the list-of-maps
+// shape that the members TypeSet expects.
 func flattenMemberUserIDs(userIDs []int) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(userIDs))
 	for _, id := range userIDs {
@@ -206,7 +153,8 @@ func flattenMemberUserIDs(userIDs []int) []map[string]interface{} {
 	return out
 }
 
-// flattenEntityGUIDs converts []string → list-of-maps for the entities TypeSet.
+// flattenEntityGUIDs converts a []string of entity GUIDs into the list-of-maps
+// shape that the entities TypeSet expects.
 func flattenEntityGUIDs(guids []string) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(guids))
 	for _, g := range guids {
@@ -215,17 +163,21 @@ func flattenEntityGUIDs(guids []string) []map[string]interface{} {
 	return out
 }
 
-// flattenManagerUserIDs decodes the NGEP-encoded manager GUIDs back to
-// integer userIds using the GUID→userId map built from the team's membership
-// collection. Returns nil when the map is empty (e.g. on import before the
-// collection has been read).
-func flattenManagerUserIDs(managerGUIDs []string, guidToUserID map[string]int) []map[string]interface{} {
-	if len(managerGUIDs) == 0 || len(guidToUserID) == 0 {
+// decodeManagerGUIDsToUserIDs converts the NGEP-encoded manager GUID list from
+// the TeamEntity back to integer userIDs using the GUID→userID map produced by
+// readTeamMembershipMap. This avoids a second API call on every Read and enables
+// idempotent manager state storage.
+//
+// Returns nil when either argument is empty, which causes Terraform to keep
+// whatever was last written to state for the managers block (safe for import
+// and for the case where managers haven't been set yet).
+func decodeManagerGUIDsToUserIDs(managerGUIDs []string, memberGUIDToUserID map[string]int) []map[string]interface{} {
+	if len(managerGUIDs) == 0 || len(memberGUIDToUserID) == 0 {
 		return nil
 	}
 	out := make([]map[string]interface{}, 0, len(managerGUIDs))
 	for _, guid := range managerGUIDs {
-		if uid, ok := guidToUserID[guid]; ok {
+		if uid, ok := memberGUIDToUserID[guid]; ok {
 			out = append(out, map[string]interface{}{"user_id": uid})
 		}
 	}

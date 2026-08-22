@@ -225,7 +225,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	if hasTags || hasResources {
 		upd := scorecards.EntityManagementTeamEntityUpdateInput{}
 		if hasTags {
-			upd.Tags = expandTeamTags(d.Get("tags").([]interface{}))
+			upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
 		}
 		if hasResources {
 			upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
@@ -239,23 +239,23 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	// Members and managers cannot be set at create time (NGEP requires the
 	// membership collection to exist first, which only happens after create).
 	// We apply them here so a single terraform apply fully configures the team.
-	if wantedMembers := expandMemberUserIDsFromSet(d.Get("members").(*schema.Set)); len(wantedMembers) > 0 {
-		if err := syncMembers(ctx, client, membershipColID, nil, wantedMembers); err != nil {
+	if wantedMembers := expandUserIDsFromSet(d.Get("members").(*schema.Set)); len(wantedMembers) > 0 {
+		if err := syncTeamMembership(ctx, client, membershipColID, nil, wantedMembers); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	// ── Post-create update: managers ──────────────────────────────────────
 	// Managers are set after members — NGEP validates managers ⊆ members.
-	if wantedManagers := expandManagerUserIDsFromSet(d.Get("managers").(*schema.Set)); len(wantedManagers) > 0 {
-		if err := syncManagers(ctx, client, teamID, wantedManagers); err != nil {
+	if wantedManagers := expandUserIDsFromSet(d.Get("managers").(*schema.Set)); len(wantedManagers) > 0 {
+		if err := syncTeamManagers(ctx, client, teamID, wantedManagers); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	// ── Post-create update: owned entities ───────────────────────────────
 	if wantedEntities := expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set)); len(wantedEntities) > 0 {
-		if err := syncOwnedEntities(ctx, &client.Scorecards, ownershipColID, nil, wantedEntities); err != nil {
+		if err := syncTeamOwnership(ctx, &client.Scorecards, ownershipColID, nil, wantedEntities); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -323,7 +323,7 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	_ = d.Set("membership_collection_id", team.Membership.ID)
 	_ = d.Set("ownership_collection_id", team.Ownership.ID)
 	_ = d.Set("resources", flattenTeamResources(team.Resources))
-	_ = d.Set("tags", flattenTeamTags(team.Tags))
+	_ = d.Set("tags", flattenNGEPTags(team.Tags))
 
 	// aliases: the entity read path has an eventual-consistency lag — the API
 	// may return nil for a freshly created team even though aliases were
@@ -335,7 +335,7 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	// Read the membership collection as a GUID→userID map. This serves double
 	// duty: it populates the members list AND lets us decode manager GUIDs back
 	// to integer userIds for idempotent state storage.
-	guidToUserID, err := readCollectionMembersMap(ctx, &client.Scorecards, team.Membership.ID)
+	guidToUserID, err := readTeamMembershipMap(ctx, &client.Scorecards, team.Membership.ID)
 	if err != nil {
 		log.Printf("[WARN] Could not read membership collection for team %s: %v", d.Id(), err)
 	} else {
@@ -344,10 +344,10 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 			memberUserIDs = append(memberUserIDs, uid)
 		}
 		_ = d.Set("members", flattenMemberUserIDs(memberUserIDs))
-		_ = d.Set("managers", flattenManagerUserIDs(team.Managers, guidToUserID))
+		_ = d.Set("managers", decodeManagerGUIDsToUserIDs(team.Managers, guidToUserID))
 	}
 
-	ownerGUIDs, err := readCollectionEntityGUIDs(ctx, &client.Scorecards, team.Ownership.ID)
+	ownerGUIDs, err := readTeamOwnedEntityGUIDs(ctx, &client.Scorecards, team.Ownership.ID)
 	if err != nil {
 		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), err)
 	} else {
@@ -381,7 +381,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if d.HasChange("tags") {
-			upd.Tags = expandTeamTags(d.Get("tags").([]interface{}))
+			upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
 		}
 		if d.HasChange("resources") {
 			upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
@@ -409,17 +409,17 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	if d.HasChange("members") {
 		membershipColID := d.Get("membership_collection_id").(string)
 		oldRaw, newRaw := d.GetChange("members")
-		oldIDs := expandMemberUserIDsFromSet(oldRaw.(*schema.Set))
-		newIDs := expandMemberUserIDsFromSet(newRaw.(*schema.Set))
-		if err := syncMembers(ctx, client, membershipColID, oldIDs, newIDs); err != nil {
+		oldIDs := expandUserIDsFromSet(oldRaw.(*schema.Set))
+		newIDs := expandUserIDsFromSet(newRaw.(*schema.Set))
+		if err := syncTeamMembership(ctx, client, membershipColID, oldIDs, newIDs); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	// ── Managers (after members are up-to-date) ────────────────────────────
 	if d.HasChange("managers") || d.HasChange("members") {
-		if err := syncManagers(ctx, client, d.Id(),
-			expandManagerUserIDsFromSet(d.Get("managers").(*schema.Set))); err != nil {
+		if err := syncTeamManagers(ctx, client, d.Id(),
+			expandUserIDsFromSet(d.Get("managers").(*schema.Set))); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -430,7 +430,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 		oldRaw, newRaw := d.GetChange("entities")
 		oldGUIDs := expandEntityGUIDsFromSet(oldRaw.(*schema.Set))
 		newGUIDs := expandEntityGUIDsFromSet(newRaw.(*schema.Set))
-		if err := syncOwnedEntities(ctx, &client.Scorecards, ownershipColID, oldGUIDs, newGUIDs); err != nil {
+		if err := syncTeamOwnership(ctx, &client.Scorecards, ownershipColID, oldGUIDs, newGUIDs); err != nil {
 			return diag.FromErr(err)
 		}
 	}

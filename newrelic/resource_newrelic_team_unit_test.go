@@ -18,7 +18,7 @@ import (
 func TestExpandTeamTags(t *testing.T) {
 	t.Parallel()
 	raw := []interface{}{"env:dev,staging", "team:platform"}
-	tags := expandTeamTags(raw)
+	tags := expandNGEPTags(raw)
 	require.Len(t, tags, 2)
 	assert.Equal(t, "env", tags[0].Key)
 	assert.ElementsMatch(t, []string{"dev", "staging"}, tags[0].Values)
@@ -27,8 +27,8 @@ func TestExpandTeamTags(t *testing.T) {
 
 func TestExpandTeamTagsEmpty(t *testing.T) {
 	t.Parallel()
-	assert.Nil(t, expandTeamTags(nil))
-	assert.Nil(t, expandTeamTags([]interface{}{}))
+	assert.Nil(t, expandNGEPTags(nil))
+	assert.Nil(t, expandNGEPTags([]interface{}{}))
 }
 
 func TestFlattenTeamTags_FiltersNrSystem(t *testing.T) {
@@ -39,7 +39,7 @@ func TestFlattenTeamTags_FiltersNrSystem(t *testing.T) {
 		{Key: "nr.hierarchy.level", Values: []string{"Level 2"}},
 		{Key: "team", Values: []string{"platform"}},
 	}
-	flat := flattenTeamTags(tags)
+	flat := flattenNGEPTags(tags)
 	require.Len(t, flat, 2, "nr.* tag should be filtered out")
 	assert.Equal(t, "env:dev", flat[0])
 	assert.Equal(t, "team:platform", flat[1])
@@ -76,7 +76,7 @@ func TestExpandMemberUserIDsFromSet(t *testing.T) {
 		map[string]interface{}{"user_id": 123},
 		map[string]interface{}{"user_id": 456},
 	})
-	ids := expandMemberUserIDsFromSet(s)
+	ids := expandUserIDsFromSet(s)
 	assert.Len(t, ids, 2)
 	assert.Contains(t, ids, 123)
 	assert.Contains(t, ids, 456)
