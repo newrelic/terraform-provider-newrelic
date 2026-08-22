@@ -5,51 +5,47 @@ import (
 	"fmt"
 	"strings"
 
+	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
-// resolveUserIDsToNGEPGUIDs takes a list of integer NR user IDs and returns
-// the corresponding EntityManagementUserEntity GUIDs via the standard
-// actor.entitySearch API.
+// ── User ID ↔ NGEP GUID resolution ───────────────────────────────────────────
+
+// resolveUserIDsToNGEPGUIDs converts integer NR user IDs to their
+// EntityManagementUserEntity GUIDs via the standard actor.entitySearch API
+// using the query:
 //
-// The lookup uses the query:
+//	domain = 'NGEP' AND type = 'USER' AND tags.userId in (id1, id2, …)
 //
-//	domain = 'NGEP' AND type = 'USER' AND tags.userId in (id1, id2, ...)
-//
-// as described by the Teams platform team (see Confluence Part-II comments).
-// The tagFilter option is included so the response contains userId tags for
-// reverse-mapping.
+// This is the same lookup the Teams UI frontend performs when a user selects
+// members to add to a team (see Confluence Part-II Q&A, Pablo's comment).
 func resolveUserIDsToNGEPGUIDs(ctx context.Context, client *entities.Entities, userIDs []int) (map[int]string, error) {
 	if len(userIDs) == 0 {
 		return map[int]string{}, nil
 	}
 
-	// Build the IN clause: tags.userId in (1, 2, 3)
 	idStrs := make([]string, len(userIDs))
 	for i, id := range userIDs {
 		idStrs[i] = fmt.Sprintf("%d", id)
 	}
 	query := fmt.Sprintf("domain = 'NGEP' AND type = 'USER' AND tags.userId in (%s)", strings.Join(idStrs, ", "))
 
-	opts := entities.EntitySearchOptions{
-		TagFilter: []string{"userId"},
-	}
-	results, err := client.GetEntitySearchByQueryWithContext(ctx, opts, query, []entities.EntitySearchSortCriteria{})
+	results, err := client.GetEntitySearchByQueryWithContext(ctx,
+		entities.EntitySearchOptions{TagFilter: []string{"userId"}},
+		query,
+		[]entities.EntitySearchSortCriteria{})
 	if err != nil {
 		return nil, fmt.Errorf("looking up NGEP user entities: %w", err)
 	}
 
 	guidByUserID := make(map[int]string, len(userIDs))
-	if results == nil {
-		return guidByUserID, nil
-	}
-	for _, e := range results.Results.Entities {
-		// Each entity outline has a GUID; we extract the userId from its tags.
-		guidByUserID[entityUserIDTag(e)] = string(e.GetGUID())
+	if results != nil {
+		for _, e := range results.Results.Entities {
+			guidByUserID[entityUserIDTag(e)] = string(e.GetGUID())
+		}
 	}
 
-	// Warn about any IDs we couldn't resolve (user doesn't exist as NGEP entity).
 	var missing []string
 	for _, id := range userIDs {
 		if _, ok := guidByUserID[id]; !ok {
@@ -64,9 +60,7 @@ func resolveUserIDsToNGEPGUIDs(ctx context.Context, client *entities.Entities, u
 	return guidByUserID, nil
 }
 
-// entityUserIDTag extracts the integer userId from an entity outline's tags.
-// The standard entities.EntityOutlineInterface does not expose tags as a typed
-// field, so we check via a local interface assertion.
+// entityUserIDTag extracts the integer userId tag from an entity outline.
 func entityUserIDTag(e entities.EntityOutlineInterface) int {
 	type taggedEntity interface {
 		GetTags() []entities.EntityTag
@@ -85,103 +79,259 @@ func entityUserIDTag(e entities.EntityOutlineInterface) int {
 	return 0
 }
 
-// expandTeamTags converts a list of "key:value1,value2" strings into
-// EntityManagementTagInput values.
-func expandTeamTags(raw []interface{}) []scorecards.EntityManagementTagInput {
-	if len(raw) == 0 {
-		return nil
+// ── Collection sync operations ────────────────────────────────────────────────
+
+// syncMembers reconciles the membership collection. Newly added user IDs are
+// resolved to NGEP GUIDs before calling AddCollectionMembers; removed ones
+// are resolved and removed. Only the delta is sent.
+func syncMembers(ctx context.Context, client *nr.NewRelic, membershipColID string, oldUserIDs, newUserIDs []int) error {
+	oldSet := make(map[int]bool, len(oldUserIDs))
+	for _, id := range oldUserIDs {
+		oldSet[id] = true
 	}
-	out := make([]scorecards.EntityManagementTagInput, 0, len(raw))
-	for _, r := range raw {
-		s, ok := r.(string)
-		if !ok {
-			continue
-		}
-		parts := strings.SplitN(s, ":", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		key := strings.TrimSpace(parts[0])
-		vals := strings.Split(strings.TrimSpace(parts[1]), ",")
-		for i := range vals {
-			vals[i] = strings.TrimSpace(vals[i])
-		}
-		out = append(out, scorecards.EntityManagementTagInput{Key: key, Values: vals})
+	newSet := make(map[int]bool, len(newUserIDs))
+	for _, id := range newUserIDs {
+		newSet[id] = true
 	}
-	return out
+
+	var toAdd, toRemove []int
+	for id := range newSet {
+		if !oldSet[id] {
+			toAdd = append(toAdd, id)
+		}
+	}
+	for id := range oldSet {
+		if !newSet[id] {
+			toRemove = append(toRemove, id)
+		}
+	}
+
+	if len(toAdd) > 0 {
+		guids, err := resolveUserIDsToNGEPGUIDs(ctx, &client.Entities, toAdd)
+		if err != nil {
+			return err
+		}
+		addList := make([]string, 0, len(guids))
+		for _, g := range guids {
+			addList = append(addList, g)
+		}
+		if _, err := client.Scorecards.EntityManagementAddCollectionMembers(membershipColID, addList); err != nil {
+			return fmt.Errorf("adding members to collection %s: %w", membershipColID, err)
+		}
+	}
+
+	if len(toRemove) > 0 {
+		guids, err := resolveUserIDsToNGEPGUIDs(ctx, &client.Entities, toRemove)
+		if err != nil {
+			return err
+		}
+		removeList := make([]string, 0, len(guids))
+		for _, g := range guids {
+			removeList = append(removeList, g)
+		}
+		if _, err := client.Scorecards.EntityManagementRemoveCollectionMembers(membershipColID, removeList); err != nil {
+			return fmt.Errorf("removing members from collection %s: %w", membershipColID, err)
+		}
+	}
+	return nil
 }
 
-// flattenTeamTags converts EntityManagementTag values back to "key:value1,value2" strings.
-// System-managed tags injected by NGEP (keys starting with "nr.") are filtered
-// out — for example "nr.hierarchy.level" is added automatically when a team is
-// given a parent_id and must not appear in state.
-func flattenTeamTags(tags []scorecards.EntityManagementTag) []string {
-	out := make([]string, 0, len(tags))
-	for _, t := range tags {
-		if strings.HasPrefix(t.Key, "nr.") {
-			continue
-		}
-		out = append(out, t.Key+":"+strings.Join(t.Values, ","))
+// syncManagers resolves the declared manager user IDs to NGEP GUIDs and
+// updates the team's managers list. An empty slice explicitly clears all managers.
+func syncManagers(ctx context.Context, client *nr.NewRelic, teamID string, managerUserIDs []int) error {
+	if len(managerUserIDs) == 0 {
+		_, err := client.Scorecards.EntityManagementUpdateTeam(teamID,
+			scorecards.EntityManagementTeamEntityUpdateInput{Managers: []string{}})
+		return err
 	}
-	return out
+
+	guids, err := resolveUserIDsToNGEPGUIDs(ctx, &client.Entities, managerUserIDs)
+	if err != nil {
+		return fmt.Errorf("resolving manager user IDs to NGEP GUIDs: %w", err)
+	}
+	managerGUIDs := make([]string, 0, len(guids))
+	for _, g := range guids {
+		managerGUIDs = append(managerGUIDs, g)
+	}
+	_, err = client.Scorecards.EntityManagementUpdateTeam(teamID,
+		scorecards.EntityManagementTeamEntityUpdateInput{Managers: managerGUIDs})
+	return err
 }
 
-// expandTeamResources converts the Terraform resources list to API inputs.
-func expandTeamResources(raw []interface{}) []scorecards.EntityManagementTeamResourceCreateInput {
-	if len(raw) == 0 {
-		return nil
+// syncOwnedEntities reconciles the ownership collection by diffing old vs new
+// GUIDs and only applying the delta.
+func syncOwnedEntities(_ context.Context, client *scorecards.Scorecards, ownershipColID string, oldGUIDs, newGUIDs []string) error {
+	oldSet := make(map[string]bool, len(oldGUIDs))
+	for _, g := range oldGUIDs {
+		oldSet[g] = true
 	}
-	out := make([]scorecards.EntityManagementTeamResourceCreateInput, 0, len(raw))
-	for _, r := range raw {
-		m, ok := r.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		res := scorecards.EntityManagementTeamResourceCreateInput{
-			Type:    m["type"].(string),
-			Content: m["content"].(string),
-		}
-		if title, ok := m["title"].(string); ok {
-			res.Title = title
-		}
-		out = append(out, res)
+	newSet := make(map[string]bool, len(newGUIDs))
+	for _, g := range newGUIDs {
+		newSet[g] = true
 	}
-	return out
+
+	var toAdd, toRemove []string
+	for g := range newSet {
+		if !oldSet[g] {
+			toAdd = append(toAdd, g)
+		}
+	}
+	for g := range oldSet {
+		if !newSet[g] {
+			toRemove = append(toRemove, g)
+		}
+	}
+
+	if len(toAdd) > 0 {
+		if _, err := client.EntityManagementAddCollectionMembers(ownershipColID, toAdd); err != nil {
+			return fmt.Errorf("adding entities to ownership collection %s: %w", ownershipColID, err)
+		}
+	}
+	if len(toRemove) > 0 {
+		if _, err := client.EntityManagementRemoveCollectionMembers(ownershipColID, toRemove); err != nil {
+			return fmt.Errorf("removing entities from ownership collection %s: %w", ownershipColID, err)
+		}
+	}
+	return nil
 }
 
-// expandTeamResourcesUpdate converts the Terraform resources list to Update API inputs.
-func expandTeamResourcesUpdate(raw []interface{}) []scorecards.EntityManagementTeamResourceUpdateInput {
-	if len(raw) == 0 {
-		return nil
+// ── Collection readers ────────────────────────────────────────────────────────
+
+// readCollectionMembersMap pages through a collection and returns a map of
+// NGEP entity GUID → integer userId for every EntityManagementUserEntity.
+// This is used to decode the team.Managers GUID list back to integer userIds
+// so managers can be stored in state and compared idempotently.
+func readCollectionMembersMap(_ context.Context, client *scorecards.Scorecards, colID string) (map[string]int, error) {
+	if colID == "" {
+		return nil, nil
 	}
-	out := make([]scorecards.EntityManagementTeamResourceUpdateInput, 0, len(raw))
-	for _, r := range raw {
-		m, ok := r.(map[string]interface{})
-		if !ok {
-			continue
+	guidToUserID := make(map[string]int)
+	cursor := ""
+	for {
+		result, err := client.GetCollectionElements(cursor,
+			scorecards.EntityManagementCollectionElementsFilter{
+				CollectionID: scorecards.EntityManagementCollectionIdFilterArgument{Eq: colID},
+			}, 100)
+		if err != nil {
+			return nil, err
 		}
-		res := scorecards.EntityManagementTeamResourceUpdateInput{
-			Type:    m["type"].(string),
-			Content: m["content"].(string),
+		if result == nil {
+			break
 		}
-		if title, ok := m["title"].(string); ok {
-			res.Title = title
+		for _, item := range result.Items {
+			if u, ok := item.(*scorecards.EntityManagementUserEntity); ok {
+				guidToUserID[u.ID] = u.UserID
+			}
 		}
-		out = append(out, res)
+		if result.NextCursor == "" {
+			break
+		}
+		cursor = result.NextCursor
 	}
-	return out
+	return guidToUserID, nil
 }
 
-// flattenTeamResources converts API resources back to Terraform map list.
-func flattenTeamResources(res []scorecards.EntityManagementTeamResource) []map[string]interface{} {
-	out := make([]map[string]interface{}, 0, len(res))
-	for _, r := range res {
-		m := map[string]interface{}{
-			"type":    r.Type,
-			"content": r.Content,
-			"title":   r.Title,
-		}
-		out = append(out, m)
+// readCollectionUserIDs pages through a collection and returns the userId
+// integer for every EntityManagementUserEntity it contains.
+func readCollectionUserIDs(_ context.Context, client *scorecards.Scorecards, colID string) ([]int, error) {
+	if colID == "" {
+		return nil, nil
 	}
-	return out
+	var userIDs []int
+	cursor := ""
+	for {
+		result, err := client.GetCollectionElements(cursor,
+			scorecards.EntityManagementCollectionElementsFilter{
+				CollectionID: scorecards.EntityManagementCollectionIdFilterArgument{Eq: colID},
+			}, 100)
+		if err != nil {
+			return nil, err
+		}
+		if result == nil {
+			break
+		}
+		for _, item := range result.Items {
+			if u, ok := item.(*scorecards.EntityManagementUserEntity); ok {
+				userIDs = append(userIDs, u.UserID)
+			}
+		}
+		if result.NextCursor == "" {
+			break
+		}
+		cursor = result.NextCursor
+	}
+	return userIDs, nil
+}
+
+// readCollectionEntityGUIDs pages through a collection and returns the ID of
+// every entity it contains (any type).
+func readCollectionEntityGUIDs(_ context.Context, client *scorecards.Scorecards, colID string) ([]string, error) {
+	if colID == "" {
+		return nil, nil
+	}
+	var guids []string
+	cursor := ""
+	for {
+		result, err := client.GetCollectionElements(cursor,
+			scorecards.EntityManagementCollectionElementsFilter{
+				CollectionID: scorecards.EntityManagementCollectionIdFilterArgument{Eq: colID},
+			}, 100)
+		if err != nil {
+			return nil, err
+		}
+		if result == nil {
+			break
+		}
+		for _, item := range result.Items {
+			switch e := item.(type) {
+			case *scorecards.EntityManagementGenericEntity:
+				guids = append(guids, e.ID)
+			case *scorecards.EntityManagementUserEntity:
+				guids = append(guids, e.ID)
+			case *scorecards.EntityManagementTeamEntity:
+				guids = append(guids, e.ID)
+			case *scorecards.EntityManagementCollectionEntity:
+				guids = append(guids, e.ID)
+			case *scorecards.EntityManagementScorecardEntity:
+				guids = append(guids, e.ID)
+			}
+		}
+		if result.NextCursor == "" {
+			break
+		}
+		cursor = result.NextCursor
+	}
+	return guids, nil
+}
+
+// ── Miscellaneous helpers ─────────────────────────────────────────────────────
+
+// clearTeamParentID sends an explicit null parentId to NGEP to detach a team
+// from its parent. The generated EntityManagementTeamEntityUpdateInput uses
+// json:"parentId,omitempty" which silently omits an empty string, so we
+// bypass it with a raw NerdGraph call that sends parentId: null.
+func clearTeamParentID(ctx context.Context, client *nr.NewRelic, teamID string) error {
+	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
+  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
+    entity { id parentId }
+  }
+}`
+	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
+		"id":         teamID,
+		"teamEntity": map[string]interface{}{"parentId": nil},
+	})
+	return err
+}
+
+// isNGEPGhostNotFound detects the transient "ghost" NOT_FOUND that NGEP
+// returns for freshly-created entities before they are fully indexed.
+// A real deletion carries the entity id in the error prefix
+// (e.g. "abc123: Entity not found."); the ghost version has an empty prefix
+// (": Entity not found.").
+func isNGEPGhostNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return len(msg) > 0 && msg[0] == ':' && len(msg) > 2 && msg[1] == ' '
 }
