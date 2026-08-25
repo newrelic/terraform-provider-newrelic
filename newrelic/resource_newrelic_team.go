@@ -174,12 +174,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	// ── Build minimal create input ─────────────────────────────────────────
-	// tags and resources are deliberately excluded from the create payload.
-	// The NGEP validation service intermittently returns HTTP 500 when
-	// resources is present in entityManagementCreateTeam. Both fields are
-	// reliable when sent via the update mutation, so we always apply them in
-	// the post-create update step below.
+	// ── Build create input ────────────────────────────────────────────────
 	input := scorecards.EntityManagementTeamEntityCreateInput{
 		Name: d.Get("name").(string),
 		Scope: scorecards.EntityManagementScopedReferenceInput{
@@ -194,6 +189,12 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		for _, a := range v.([]interface{}) {
 			input.Aliases = append(input.Aliases, a.(string))
 		}
+	}
+	if v, ok := d.GetOk("tags"); ok {
+		input.Tags = expandNGEPTags(v.([]interface{}))
+	}
+	if v, ok := d.GetOk("resources"); ok {
+		input.Resources = expandTeamResources(v.([]interface{}))
 	}
 	if v, ok := d.GetOk("parent_id"); ok {
 		input.ParentId = v.(string)
@@ -216,48 +217,17 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("membership_collection_id", membershipColID)
 	_ = d.Set("ownership_collection_id", ownershipColID)
 
-	// ── Post-create update: tags + resources ───────────────────────────────
-	// Applied unconditionally so the resource is fully configured in one
-	// terraform apply without requiring a second iteration. Mirrors the
-	// filter_current_dashboard pattern in newrelic_one_dashboard.
-	hasTags := len(d.Get("tags").([]interface{})) > 0
-	hasResources := len(d.Get("resources").([]interface{})) > 0
-	if hasTags || hasResources {
-		upd := scorecards.EntityManagementTeamEntityUpdateInput{}
-		if hasTags {
-			upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
-		}
-		if hasResources {
-			upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
-		}
-		if _, err := client.Scorecards.EntityManagementUpdateTeam(teamID, upd); err != nil {
-			return diag.Errorf("post-create update (tags/resources) on team %s: %v", teamID, err)
-		}
-	}
-
-	// ── Post-create update: members ────────────────────────────────────────
-	// Members and managers cannot be set at create time (NGEP requires the
-	// membership collection to exist first, which only happens after create).
-	// We apply them here so a single terraform apply fully configures the team.
-	if wantedMembers := expandUserIDsFromSet(d.Get("members").(*schema.Set)); len(wantedMembers) > 0 {
-		if err := syncTeamMembership(ctx, client, membershipColID, nil, wantedMembers); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	// ── Post-create update: managers ──────────────────────────────────────
-	// Managers are set after members — NGEP validates managers ⊆ members.
-	if wantedManagers := expandUserIDsFromSet(d.Get("managers").(*schema.Set)); len(wantedManagers) > 0 {
-		if err := syncTeamManagers(ctx, client, teamID, wantedManagers); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	// ── Post-create update: owned entities ───────────────────────────────
-	if wantedEntities := expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set)); len(wantedEntities) > 0 {
-		if err := syncTeamOwnership(ctx, &client.Scorecards, ownershipColID, nil, wantedEntities); err != nil {
-			return diag.FromErr(err)
-		}
+	// ── Sync collections ───────────────────────────────────────────────────
+	// Membership, managers, and entities all require the team to exist first
+	// (the backing collections are auto-created by NGEP on team creation).
+	// applyTeamCollections handles all three in the correct dependency order.
+	// Old slices are nil because nothing existed before this create call.
+	if err := applyTeamCollections(ctx, client, teamID, membershipColID, ownershipColID,
+		nil, expandUserIDsFromSet(d.Get("members").(*schema.Set)),
+		expandUserIDsFromSet(d.Get("managers").(*schema.Set)),
+		nil, expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set)),
+	); err != nil {
+		return diag.FromErr(err)
 	}
 
 	// ── Indexing gate ─────────────────────────────────────────────────────
@@ -405,32 +375,23 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	// ── Members ────────────────────────────────────────────────────────────
-	if d.HasChange("members") {
-		membershipColID := d.Get("membership_collection_id").(string)
-		oldRaw, newRaw := d.GetChange("members")
-		oldIDs := expandUserIDsFromSet(oldRaw.(*schema.Set))
-		newIDs := expandUserIDsFromSet(newRaw.(*schema.Set))
-		if err := syncTeamMembership(ctx, client, membershipColID, oldIDs, newIDs); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	// ── Managers (after members are up-to-date) ────────────────────────────
-	if d.HasChange("managers") || d.HasChange("members") {
-		if err := syncTeamManagers(ctx, client, d.Id(),
-			expandUserIDsFromSet(d.Get("managers").(*schema.Set))); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	// ── Owned entities ─────────────────────────────────────────────────────
-	if d.HasChange("entities") {
-		ownershipColID := d.Get("ownership_collection_id").(string)
-		oldRaw, newRaw := d.GetChange("entities")
-		oldGUIDs := expandEntityGUIDsFromSet(oldRaw.(*schema.Set))
-		newGUIDs := expandEntityGUIDsFromSet(newRaw.(*schema.Set))
-		if err := syncTeamOwnership(ctx, &client.Scorecards, ownershipColID, oldGUIDs, newGUIDs); err != nil {
+	// ── Collections ────────────────────────────────────────────────────────
+	// Reconcile members, managers, and owned entities whenever any of them
+	// change. All three are handled by applyTeamCollections in the correct
+	// dependency order (membership must be settled before managers are set).
+	if d.HasChange("members") || d.HasChange("managers") || d.HasChange("entities") {
+		oldMembersRaw, newMembersRaw := d.GetChange("members")
+		_, newManagersRaw := d.GetChange("managers")
+		oldEntitiesRaw, newEntitiesRaw := d.GetChange("entities")
+		if err := applyTeamCollections(ctx, client, d.Id(),
+			d.Get("membership_collection_id").(string),
+			d.Get("ownership_collection_id").(string),
+			expandUserIDsFromSet(oldMembersRaw.(*schema.Set)),
+			expandUserIDsFromSet(newMembersRaw.(*schema.Set)),
+			expandUserIDsFromSet(newManagersRaw.(*schema.Set)),
+			expandEntityGUIDsFromSet(oldEntitiesRaw.(*schema.Set)),
+			expandEntityGUIDsFromSet(newEntitiesRaw.(*schema.Set)),
+		); err != nil {
 			return diag.FromErr(err)
 		}
 	}

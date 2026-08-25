@@ -204,6 +204,40 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 	return guids, nil
 }
 
+// ── Collection orchestration ──────────────────────────────────────────────────
+
+// applyTeamCollections reconciles all three of a team's collection-backed
+// attributes (members, managers, entities) in the correct dependency order.
+// It is called from both Create and Update so neither duplicates this logic.
+//
+// Pass nil/empty slices for oldMembers and oldEntities during Create — nothing
+// existed before the entity was created. During Update, pass the previous
+// state values so only the actual delta is applied.
+//
+// Managers receive the full desired list on every call (NGEP replaces the
+// whole list, so there is no meaningful old/new delta for them). They must
+// be applied after membership is reconciled because NGEP validates that every
+// manager is already a collection member.
+func applyTeamCollections(
+	ctx context.Context,
+	client *nr.NewRelic,
+	teamID, membershipColID, ownershipColID string,
+	oldMembers, newMembers []int,
+	newManagers []int,
+	oldEntities, newEntities []string,
+) error {
+	if err := syncTeamMembership(ctx, client, membershipColID, oldMembers, newMembers); err != nil {
+		return err
+	}
+	if err := syncTeamManagers(ctx, client, teamID, newManagers); err != nil {
+		return err
+	}
+	if err := syncTeamOwnership(ctx, &client.Scorecards, ownershipColID, oldEntities, newEntities); err != nil {
+		return err
+	}
+	return nil
+}
+
 // ── Miscellaneous team helpers ────────────────────────────────────────────────
 
 // clearTeamParentID sends an explicit parentId: null to NGEP to detach a team
