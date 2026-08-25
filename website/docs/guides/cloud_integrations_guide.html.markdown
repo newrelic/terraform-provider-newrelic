@@ -628,22 +628,22 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 
 #### OCI Audit Logs (Optional)
 
-OCI provides two reserved literals that can be used as `log_group_id` values to ingest audit logs without requiring a log group OCID. See the [OCI Service Connector Hub documentation](https://docs.oracle.com/en-us/iaas/Content/connector-hub/overview.htm) for details. Add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the values below.
+To ingest OCI audit logs, add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the two OCI-reserved literals below. For reference, see the [Oracle tutorial on centralizing OCI logs](https://docs.oracle.com/en/learn/centralize-oci-tenancies-logs/index.html).
 
 Two audit scoping modes are supported:
 
 | Mode | `log_group_id` value | Coverage |
 |---|---|---|
-| Selected compartment only | `_Audit` | Audit logs from the chosen compartment only. Subcompartments are NOT included. |
-| Selected compartment + all subcompartments (recursive) | `_Audit_Include_Subcompartment` | Audit logs from the chosen compartment and every subcompartment beneath it. Tenancy-wide when the chosen compartment is the tenancy root. |
+| Selected compartment only | `_Audit` | Audit logs from the chosen compartment only. Child compartments are NOT included. |
+| Selected compartment + all child compartments | `_Audit_Include_Subcompartment` | Audit logs from the chosen compartment and every child compartment beneath it. Tenancy-wide when the chosen compartment is the tenancy root. |
 
-`compartment_id` selects the root of the audit scope; the `log_group_id` literal decides whether recursion is enabled.
+`compartment_id` selects the root of the audit scope; the `log_group_id` literal decides whether child compartments are included.
 
 - Keep the audit connector as a separate object in the `connector_hub_details` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
 - `display_name` must follow the convention `newrelic-logs-<region>-audit` (e.g. `newrelic-logs-us-ashburn-1-audit`).
 - On first creation, OCI may deliver up to 24 hours of historical audit events before switching to steady-state streaming — this is standard OCI Connector Hub behaviour.
 
-#### Example: tenancy-wide audit logs (root compartment, recursive)
+#### Example: tenancy-wide audit logs (root compartment, include all child compartments)
 
 ```json
 [
@@ -659,7 +659,7 @@ Two audit scoping modes are supported:
 ]
 ```
 
-#### Example: compartment subtree (non-root compartment, recursive)
+#### Example: compartment + all child compartments (non-root compartment)
 
 ```json
 [
@@ -675,7 +675,7 @@ Two audit scoping modes are supported:
 ]
 ```
 
-#### Example: selected compartment only (no recursion)
+#### Example: selected compartment only (child compartments not included)
 
 ```json
 [
