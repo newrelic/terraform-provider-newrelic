@@ -628,7 +628,7 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 
 #### OCI Audit Logs (Optional)
 
-OCI audit logs are emitted from a reserved log group named `_Audit` that OCI's `ListLogGroups` API intentionally never returns, so it does not appear in any log group listing. To ingest audit logs into New Relic, add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the two OCI-reserved literals below. No log group OCID is needed — OCI resolves the literal to the correct log group internally.
+OCI provides two reserved literals that can be used as `log_group_id` values to ingest audit logs without requiring a log group OCID. See the [OCI Service Connector Hub documentation](https://docs.oracle.com/en-us/iaas/Content/connector-hub/overview.htm) for details. Add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the values below.
 
 Two audit scoping modes are supported:
 
