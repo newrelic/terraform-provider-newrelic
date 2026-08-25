@@ -253,7 +253,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
+				Default:      "WORST_STATUS_WINS",
 				Description:  "How step health is rolled up: BEST_STATUS_WINS or WORST_STATUS_WINS.",
 				ValidateFunc: validation.StringInSlice(pathpointStepHealthRollupValues(), false),
 			},
@@ -391,7 +391,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
+				Default:     "AUTOMATIC_ROLL_UP",
 				Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 				ValidateFunc: validation.StringInSlice(pathpointStageHealthRollupValues(), false),
 			},
@@ -456,14 +456,14 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 		"health_rollup": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Computed:     true,
+			Default:      "AUTOMATIC_ROLL_UP",
 			Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 			ValidateFunc: validation.StringInSlice(pathpointFlowHealthRollupValues(), false),
 		},
 		"refresh_interval": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Computed:     true,
+			Default:      "THIRTY_MINUTES",
 			Description:  "How often health statuses refresh: ONE_MINUTE, FIVE_MINUTES, TEN_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES.",
 			ValidateFunc: validation.StringInSlice(pathpointRefreshIntervalValues(), false),
 		},
@@ -555,11 +555,11 @@ func expandPathpointFlowInput(d *schema.ResourceData, accountID int) pathpoint.P
 	if v, ok := d.GetOk("category"); ok {
 		input.Category = v.(string)
 	}
-	if v, ok := d.GetOk("health_rollup"); ok {
-		input.HealthRollup = pathpoint.PathPointFlowHealthRollup(v.(string))
+	if v := d.Get("health_rollup").(string); v != "" {
+		input.HealthRollup = pathpoint.PathPointFlowHealthRollup(v)
 	}
-	if v, ok := d.GetOk("refresh_interval"); ok {
-		input.RefreshInterval = pathpoint.PathPointRefreshInterval(v.(string))
+	if v := d.Get("refresh_interval").(string); v != "" {
+		input.RefreshInterval = pathpoint.PathPointRefreshInterval(v)
 	}
 	if v, ok := d.GetOk("kpis"); ok {
 		input.Kpis = expandPathpointKpiInputs(v.([]interface{}), accountID)
@@ -583,11 +583,11 @@ func expandPathpointFlowUpdateInput(d *schema.ResourceData, version nrtime.Epoch
 	if v, ok := d.GetOk("category"); ok {
 		input.Category = v.(string)
 	}
-	if v, ok := d.GetOk("health_rollup"); ok {
-		input.HealthRollup = pathpoint.PathPointFlowHealthRollup(v.(string))
+	if v := d.Get("health_rollup").(string); v != "" {
+		input.HealthRollup = pathpoint.PathPointFlowHealthRollup(v)
 	}
-	if v, ok := d.GetOk("refresh_interval"); ok {
-		input.RefreshInterval = pathpoint.PathPointRefreshInterval(v.(string))
+	if v := d.Get("refresh_interval").(string); v != "" {
+		input.RefreshInterval = pathpoint.PathPointRefreshInterval(v)
 	}
 	if v, ok := d.GetOk("kpis"); ok {
 		oldRaw, _ := d.GetChange("kpis")
@@ -601,6 +601,10 @@ func expandPathpointFlowUpdateInput(d *schema.ResourceData, version nrtime.Epoch
 	return input
 }
 
+// expandPathpointKpiInputs builds KPI inputs for a CREATE call. No existing IDs are
+// available yet, so each entry is populated purely from Terraform config.
+// Contrast with expandPathpointKpiUpdateInputsResolved, which additionally carries over
+// API-assigned IDs from prior state so the API can correlate old and new entries.
 func expandPathpointKpiInputs(raw []interface{}, accountID int) []pathpoint.PathPointKpiInput {
 	inputs := make([]pathpoint.PathPointKpiInput, 0, len(raw))
 	for _, r := range raw {
@@ -627,6 +631,12 @@ func expandPathpointKpiInputs(raw []interface{}, accountID int) []pathpoint.Path
 	return inputs
 }
 
+// expandPathpointKpiUpdateInputsResolved builds KPI update inputs for an UPDATE call.
+// It resolves API-assigned IDs from oldRaw so the API can match existing entries.
+// Matching strategy: name first (stable identity across renames), then position as a
+// fallback (handles additions or deletions). The two-phase claim maps (claimedByName /
+// claimedByPos) prevent the same old entry from being assigned to multiple new entries.
+// Unlike expandPathpointKpiInputs (used on create), both old and new raw state are required.
 func expandPathpointKpiUpdateInputsResolved(newRaw, oldRaw []interface{}, accountID int) []pathpoint.PathPointKpiUpdateInput {
 	type oldInfo struct {
 		id string
@@ -741,6 +751,10 @@ func expandPathpointKpiTimeWindowInput(m map[string]interface{}) *pathpoint.Path
 	return tw
 }
 
+// expandPathpointStageInputs builds stage inputs for a CREATE call.
+// Nested stage_kpis and levels are also expanded without IDs.
+// Contrast with expandPathpointStageUpdateInputsResolved, which resolves IDs at every
+// nesting level (stage → stage KPIs → levels → steps).
 func expandPathpointStageInputs(raw []interface{}, accountID int) []pathpoint.PathPointStageInput {
 	stages := make([]pathpoint.PathPointStageInput, 0, len(raw))
 	for _, r := range raw {
@@ -771,6 +785,12 @@ func expandPathpointStageInputs(raw []interface{}, accountID int) []pathpoint.Pa
 	return stages
 }
 
+// expandPathpointStageUpdateInputsResolved builds stage update inputs for an UPDATE call.
+// It resolves API-assigned IDs for the stage itself and propagates the matching old-state
+// context (oldLevels, oldStageKpis) into the nested expanders so each level of the
+// hierarchy can independently carry over its own IDs.
+// Matching strategy: name first, then position — same as KPIs.
+// Unlike expandPathpointStageInputs (used on create), both old and new raw state are required.
 func expandPathpointStageUpdateInputsResolved(newRaw, oldRaw []interface{}, accountID int) []pathpoint.PathPointStageUpdateInput {
 	type oldInfo struct {
 		id        string
@@ -838,6 +858,12 @@ func expandPathpointStageUpdateInputsResolved(newRaw, oldRaw []interface{}, acco
 	return stages
 }
 
+// expandPathpointLevelUpdateInputsResolved builds level update inputs for an UPDATE call.
+// Levels have no display name, so name-based matching is not possible. Instead, each new
+// level is matched to the old level whose step names overlap the most (best-overlap wins).
+// Falls back to positional matching when no overlap is found (e.g. all steps were renamed).
+// Contrast with expandPathpointLevelInputs (used on create), which simply iterates by
+// position and never needs to resolve IDs.
 func expandPathpointLevelUpdateInputsResolved(newRaw, oldRaw []interface{}) []pathpoint.PathPointLevelUpdateInput {
 	type oldInfo struct {
 		id        string
@@ -898,6 +924,10 @@ func expandPathpointLevelUpdateInputsResolved(newRaw, oldRaw []interface{}) []pa
 	return levels
 }
 
+// expandPathpointStepUpdateInputsResolved builds step update inputs for an UPDATE call.
+// It resolves API-assigned step IDs from oldRaw so the API can match existing entries.
+// Matching strategy: step name first, then position — same as KPIs and stages.
+// Unlike expandPathpointStepInputs (used on create), old state is required to resolve IDs.
 func expandPathpointStepUpdateInputsResolved(newRaw, oldRaw []interface{}) []pathpoint.PathPointStepUpdateInput {
 	type oldInfo struct {
 		id  string
@@ -957,6 +987,10 @@ func expandPathpointStepUpdateInputsResolved(newRaw, oldRaw []interface{}) []pat
 	return steps
 }
 
+// expandPathpointLevelInputs builds level inputs for a CREATE call.
+// Levels have no display name; they are ordered by position and expanded without IDs.
+// Contrast with expandPathpointLevelUpdateInputsResolved, which uses step-name overlap
+// to match new levels to old ones and carry over API-assigned IDs.
 func expandPathpointLevelInputs(raw []interface{}) []pathpoint.PathPointLevelInput {
 	levels := make([]pathpoint.PathPointLevelInput, 0, len(raw))
 	for _, r := range raw {
@@ -970,6 +1004,9 @@ func expandPathpointLevelInputs(raw []interface{}) []pathpoint.PathPointLevelInp
 	return levels
 }
 
+// expandPathpointStepInputs builds step inputs for a CREATE call.
+// All fields are populated from Terraform config; no existing IDs are available.
+// Contrast with expandPathpointStepUpdateInputsResolved, which carries over API-assigned IDs.
 func expandPathpointStepInputs(raw []interface{}) []pathpoint.PathPointStepInput {
 	steps := make([]pathpoint.PathPointStepInput, 0, len(raw))
 	for _, r := range raw {
