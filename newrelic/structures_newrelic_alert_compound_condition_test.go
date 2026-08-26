@@ -5,6 +5,7 @@ package newrelic
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -223,4 +224,46 @@ func TestFlattenAlertCompoundCondition(t *testing.T) {
 	assert.Equal(t, "MTAxMzMyMDB8QUxFUlR8Q09ORGU5OfDEwMzQ1NTc", d.Get("entity_guid"))
 	assert.Equal(t, "Test description", d.Get("description"))
 	assert.Equal(t, "{{compoundCondition.name}} triggered", d.Get("title_template"))
+}
+
+func TestNormalizeComponentConditionID(t *testing.T) {
+	cases := map[string]struct {
+		Input    string
+		Expected string
+	}{
+		"composite id":           {Input: "1254186:10395010", Expected: "10395010"},
+		"plain id":               {Input: "10395010", Expected: "10395010"},
+		"whitespace padded":      {Input: " 1254186:10395010 ", Expected: "10395010"},
+		"non numeric parts":      {Input: "abc:def", Expected: "abc:def"},
+		"more than two segments": {Input: "1:2:3", Expected: "1:2:3"},
+		"empty":                  {Input: "", Expected: ""},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.Expected, normalizeComponentConditionID(tc.Input))
+		})
+	}
+}
+
+func TestExpandComponentConditionsNormalizesCompositeIDs(t *testing.T) {
+	r := resourceNewRelicAlertCompoundCondition()
+	d := r.TestResourceData()
+
+	err := d.Set("component_conditions", []interface{}{
+		map[string]interface{}{"id": "1254186:10395010", "alias": "A"},
+		map[string]interface{}{"id": "10395011", "alias": "B"},
+	})
+	require.NoError(t, err)
+
+	components, err := expandComponentConditions(d.Get("component_conditions").(*schema.Set))
+	require.NoError(t, err)
+
+	ids := map[string]string{}
+	for _, c := range components {
+		ids[c.Alias] = c.ID
+	}
+
+	assert.Equal(t, "10395010", ids["A"])
+	assert.Equal(t, "10395011", ids["B"])
 }
