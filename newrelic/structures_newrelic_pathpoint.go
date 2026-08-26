@@ -391,7 +391,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:     "AUTOMATIC_ROLL_UP",
+				Default:      "AUTOMATIC_ROLL_UP",
 				Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 				ValidateFunc: validation.StringInSlice(pathpointStageHealthRollupValues(), false),
 			},
