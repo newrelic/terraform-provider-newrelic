@@ -121,12 +121,8 @@ func flattenPathpointFlowResult(d *schema.ResourceData, result *pathpoint.PathPo
 	_ = d.Set("description", result.Description)
 	_ = d.Set("category", result.Category)
 
-	if result.HealthRollup != "" {
-		_ = d.Set("health_rollup", string(result.HealthRollup))
-	}
-	if result.RefreshInterval != "" {
-		_ = d.Set("refresh_interval", string(result.RefreshInterval))
-	}
+	_ = d.Set("health_rollup", string(result.HealthRollup))
+	_ = d.Set("refresh_interval", string(result.RefreshInterval))
 	if result.Message != "" {
 		log.Printf("[WARN] Pathpoint flow response message: %s", result.Message)
 	}

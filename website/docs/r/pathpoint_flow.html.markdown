@@ -488,12 +488,14 @@ In addition to all arguments above, the following attributes are exported:
 * `stages.#.levels.#.id` - The internal workload ID of the level. Populated after creation and used to identify levels on updates.
 * `stages.#.levels.#.steps.#.id` - The internal workload ID of the step. Populated after creation and used to identify steps on updates.
 
+-> **NOTE:** On update, the provider matches each item in the new configuration to its existing counterpart by name first, falling back to position in the list. To avoid unexpected ID associations, avoid renaming and reordering items in the same `terraform apply`.
+
 ## Import
 
 New Relic Pathpoint flows can be imported using the flow's entity GUID, e.g.
 
 ```bash
-$ terraform import newrelic_pathpoint_flow.checkout MjUyMDUyOHxOUjF8UFRIUFRTfDEyMzQ1
+$ terraform import newrelic_pathpoint_flow.checkout MjUyMDUyOHxOUjF8UFRIUFRTfDEyMzQ1VHHVHUEFCHIID
 ```
 
 -> **NOTE:** After importing, run `terraform plan` to verify the state matches the existing configuration. The provider will read the current flow configuration from the API and populate all attributes in state.
