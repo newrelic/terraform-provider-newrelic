@@ -253,7 +253,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "WORST_STATUS_WINS",
+				Default:      string(pathpoint.PathPointStepHealthRollupTypes.WORST_STATUS_WINS),
 				Description:  "How step health is rolled up: BEST_STATUS_WINS or WORST_STATUS_WINS.",
 				ValidateFunc: validation.StringInSlice(pathpointStepHealthRollupValues(), false),
 			},
@@ -391,7 +391,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 			"health_rollup": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "AUTOMATIC_ROLL_UP",
+				Default:      string(pathpoint.PathPointStageHealthRollupTypes.AUTOMATIC_ROLL_UP),
 				Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 				ValidateFunc: validation.StringInSlice(pathpointStageHealthRollupValues(), false),
 			},
@@ -456,14 +456,14 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 		"health_rollup": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Default:      "AUTOMATIC_ROLL_UP",
+			Default:      string(pathpoint.PathPointFlowHealthRollupTypes.AUTOMATIC_ROLL_UP),
 			Description:  "Health rollup strategy: ALERT_CONDITIONS or AUTOMATIC_ROLL_UP.",
 			ValidateFunc: validation.StringInSlice(pathpointFlowHealthRollupValues(), false),
 		},
 		"refresh_interval": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Default:      "THIRTY_MINUTES",
+			Default:      string(pathpoint.PathPointRefreshIntervalTypes.THIRTY_MINUTES),
 			Description:  "How often health statuses refresh: ONE_MINUTE, FIVE_MINUTES, TEN_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES.",
 			ValidateFunc: validation.StringInSlice(pathpointRefreshIntervalValues(), false),
 		},
