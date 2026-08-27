@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -104,7 +105,7 @@ func dataSourceNewRelicFleetConfigurationRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(setErr)
 	}
 
-	return nil
+	return diags
 }
 
 func dsFleetReadByConfigID(d *schema.ResourceData, client *nr.NewRelic, orgID string) (string, *fleetcontrol.GetConfigurationResponse, diag.Diagnostics) {
@@ -143,36 +144,64 @@ func dsFleetReadByVersionGUID(d *schema.ResourceData, client *nr.NewRelic, orgID
 	return versionGUID, content, nil
 }
 
+// findFleetConfigurationsByName pages through every AGENT_CONFIGURATION entity via
+// GetEntitySearch, following NextCursor until exhausted, and returns every entity
+// whose name matches. The entity management entitySearch API only supports
+// type-based filtering, so name filtering has to happen client-side.
+func findFleetConfigurationsByName(client *nr.NewRelic, name string) ([]*fleetcontrol.EntityManagementAgentConfigurationEntity, error) {
+	var matches []*fleetcontrol.EntityManagementAgentConfigurationEntity
+	var cursor *string
+	for {
+		result, err := client.FleetControl.GetEntitySearch(
+			cursor, "type = 'AGENT_CONFIGURATION'",
+		)
+		if err != nil {
+			return nil, err
+		}
+		if result == nil {
+			break
+		}
+		for _, entity := range result.Entities {
+			if cfgEntity, ok := entity.(*fleetcontrol.EntityManagementAgentConfigurationEntity); ok && cfgEntity.Name == name {
+				matches = append(matches, cfgEntity)
+			}
+		}
+		if result.NextCursor == "" {
+			break
+		}
+		cursor = &result.NextCursor
+	}
+	return matches, nil
+}
+
 func dsFleetReadByName(d *schema.ResourceData, client *nr.NewRelic, orgID string) (string, string, *fleetcontrol.GetConfigurationResponse, diag.Diagnostics) {
 	name := d.Get("name").(string)
-	// The entity management entitySearch API only supports type-based filtering;
-	// name filtering is not a valid predicate. Fetch all AGENT_CONFIGURATION
-	// entities and filter by name client-side.
-	result, searchErr := client.FleetControl.GetEntitySearch(
-		"", "type = 'AGENT_CONFIGURATION'",
-	)
+
+	matches, searchErr := findFleetConfigurationsByName(client, name)
 	if searchErr != nil {
 		return "", orgID, nil, diag.FromErr(fmt.Errorf("failed to search fleet configurations by name %q: %w", name, searchErr))
 	}
-	if result == nil || len(result.Entities) == 0 {
+
+	if len(matches) == 0 {
 		return "", orgID, nil, diag.Errorf("no fleet configuration found with name %q", name)
 	}
 
-	var configID string
-	for _, entity := range result.Entities {
-		if cfgEntity, ok := entity.(*fleetcontrol.EntityManagementAgentConfigurationEntity); ok {
-			if cfgEntity.Name != name {
-				continue
-			}
-			configID = cfgEntity.ID
-			if cfgEntity.Scope.Type == "ORGANIZATION" {
-				orgID = cfgEntity.Scope.ID
-			}
-			break
-		}
+	configID := matches[0].ID
+	if matches[0].Scope.Type == "ORGANIZATION" {
+		orgID = matches[0].Scope.ID
 	}
-	if configID == "" {
-		return "", orgID, nil, diag.Errorf("no fleet configuration found with name %q", name)
+
+	var diags diag.Diagnostics
+	if len(matches) > 1 {
+		ids := make([]string, len(matches))
+		for i, m := range matches {
+			ids[i] = m.ID
+		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("found %d fleet configurations named %q; using the first match (%s)", len(matches), name, configID),
+			Detail:   fmt.Sprintf("configuration names are not guaranteed to be unique. All matching configuration IDs: %s. Use configuration_id instead of name to select a specific configuration deterministically.", strings.Join(ids, ", ")),
+		})
 	}
 
 	if setErr := d.Set("configuration_id", configID); setErr != nil {
@@ -185,11 +214,11 @@ func dsFleetReadByName(d *schema.ResourceData, client *nr.NewRelic, orgID string
 	if err != nil {
 		return "", orgID, nil, diag.FromErr(fmt.Errorf("failed to fetch fleet configuration %q (found via name %q): %w", configID, name, err))
 	}
-	if diags := setVersionFields(d, client, configID, orgID); diags != nil {
-		return "", orgID, nil, diags
+	if versionDiags := setVersionFields(d, client, configID, orgID); versionDiags != nil {
+		return "", orgID, nil, append(diags, versionDiags...)
 	}
 
-	return configID, orgID, content, nil
+	return configID, orgID, content, diags
 }
 
 // setVersionFields fetches all versions for configID and populates
