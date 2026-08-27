@@ -1,3 +1,8 @@
+<a name="v3.96.4"></a>
+## [v3.96.4] - 2026-08-27
+### Bug Fixes
+- **fleet:** paginate configuration lookup by name and flag duplicate matches ([#3171](https://github.com/newrelic/terraform-provider-newrelic/issues/3171))
+
 <a name="v3.96.3"></a>
 ## [v3.96.3] - 2026-08-17
 ### Bug Fixes
@@ -2826,7 +2831,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.4...HEAD
+[v3.96.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.3...v3.96.4
 [v3.96.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.2...v3.96.3
 [v3.96.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.1...v3.96.2
 [v3.96.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.0...v3.96.1
