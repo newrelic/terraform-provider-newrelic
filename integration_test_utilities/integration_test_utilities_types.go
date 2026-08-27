@@ -25,6 +25,7 @@ var ProductMappingTypes = struct {
 	KeyTransactions      ProductMapping
 	LoggingIntegrations  ProductMapping
 	NGEP                 ProductMapping
+	PATHPOINT            ProductMapping
 	SYNTHETICS           ProductMapping
 	WorkflowAutomation   ProductMapping
 	WorkflowIntegrations ProductMapping
@@ -44,6 +45,7 @@ var ProductMappingTypes = struct {
 	KeyTransactions:      "KEY_TRANSACTIONS",
 	LoggingIntegrations:  "LOGGING_INTEGRATIONS",
 	NGEP:                 "NGEP",
+	PATHPOINT:            "PATHPOINT",
 	SYNTHETICS:           "SYNTHETICS",
 	WorkflowAutomation:   "WORKFLOW_AUTOMATION",
 	WorkflowIntegrations: "WORKFLOW_INTEGRATIONS",
@@ -113,6 +115,9 @@ var productMappings = map[ProductMapping][]string{
 	},
 	ProductMappingTypes.NGEP: {
 		"pipeline_cloud_rule",
+	},
+	ProductMappingTypes.PATHPOINT: {
+		"pathpoint",
 	},
 	ProductMappingTypes.SYNTHETICS: {
 		"monitor_downtime",
