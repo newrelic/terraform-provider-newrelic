@@ -25,9 +25,6 @@ func resourceNewRelicMonitorDowntime() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Read: schema.DefaultTimeout(5 * time.Minute),
-		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -239,7 +236,7 @@ func resourceNewRelicMonitorDowntimeRead(ctx context.Context, d *schema.Resource
 	var entity *entities.GenericEntity
 
 	// retry mechanism since the entity query "immediately" does NOT return all tags, and returns only three
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+	retryErr := resource.RetryContext(context.Background(), 30*time.Second, func() *resource.RetryError {
 		resp, err := client.Entities.GetEntityWithContext(ctx, common.EntityGUID(d.Id()))
 		if err != nil {
 			return resource.RetryableError(err)

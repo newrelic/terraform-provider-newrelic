@@ -33,6 +33,7 @@ func resourceNewRelicSyntheticsMultiLocationAlertCondition() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: blockGOVRegionDiff("newrelic_synthetics_multilocation_alert_condition"),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

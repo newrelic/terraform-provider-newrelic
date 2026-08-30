@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -262,11 +263,21 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		)
 	}
 
+	// Normalize "FEDRAMP" to "GOV" so the provider internally always uses a
+	// single canonical name. Both are accepted by the ValidateFunc, and the
+	// underlying client library already maps both to the same endpoint set.
+	// Normalizing here means all internal region checks (helpers, CustomizeDiff)
+	// only need to handle "GOV", not the alias.
+	regionValue := data.Get("region").(string)
+	if strings.EqualFold(regionValue, "FEDRAMP") {
+		regionValue = "GOV"
+	}
+
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
 		PersonalAPIKey:       personalAPIKey,
 		InsightsInsertKey:    data.Get("insights_insert_key").(string),
-		Region:               data.Get("region").(string),
+		Region:               regionValue,
 		APIURL:               data.Get("api_url").(string),
 		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
 		NerdGraphAPIURL:      data.Get("nerdgraph_api_url").(string),
