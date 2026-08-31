@@ -1,3 +1,8 @@
+<a name="v3.97.0"></a>
+## [v3.97.0] - 2026-08-31
+### Features
+- add GOV/FedRAMP region support, provider hardening, and Drop Rules EOL updates ([#3137](https://github.com/newrelic/terraform-provider-newrelic/issues/3137))
+
 <a name="v3.96.4"></a>
 ## [v3.96.4] - 2026-08-27
 ### Bug Fixes
@@ -2831,7 +2836,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.0...HEAD
+[v3.97.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.4...v3.97.0
 [v3.96.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.3...v3.96.4
 [v3.96.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.2...v3.96.3
 [v3.96.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.1...v3.96.2
