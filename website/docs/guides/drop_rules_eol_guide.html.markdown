@@ -1,6 +1,6 @@
 ---
 layout: "newrelic"
-page_title: "🚨 NRQL Drop Rules EOL (Upcoming): Implications and Actions Needed"
+page_title: "🚨 NRQL Drop Rules EOL: Implications and Actions Needed"
 sidebar_current: "docs-newrelic-provider-drop-rules-eol-migration-guide"
 description: |-
   Use this guide to find details on the end-of-life of NRQL Drop Rules, implications seen by customers maintaining NRQL Drop Rule resources via the New Relic Terraform Provider, and actions to be taken prior to the EOL to avoid consequences.
@@ -9,15 +9,19 @@ description: |-
 
 ### About the EOL
 
-As announced by New Relic ([see this announcement](https://docs.newrelic.com/eol/2025/05/drop-rule-filter/)), the <b style="color:red;">end-of-life (EOL)</b> for the **Drop Rules API** will take effect on <b style="color:red;">June 30, 2026</b>. Consequently, support for managing drop rules via the New Relic Terraform Provider's [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource <b style="color:maroon;">will also officially end on June 30, 2026</b>. After the EOL is effective, all API requests made by the Terraform provider using the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource <span style="color:red;">will be blocked and result in an API error</span>.
+As announced by New Relic ([see this announcement](https://docs.newrelic.com/eol/2025/05/drop-rule-filter/)), the <b style="color:red;">end-of-life (EOL)</b> for the **Drop Rules API** took effect on <b style="color:red;">August 31, 2026</b>. Consequently, support for managing drop rules via the New Relic Terraform Provider's [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource <b style="color:maroon;">ceased on August 31, 2026</b>. All API requests made by the Terraform Provider using the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource will now <span style="color:red;">be blocked and result in an API error</span>.
 
-In line with these changes, the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource <span style="color:red;">has been marked as <b>deprecated</b></span> starting with <b style="color:red;">v3.68.0</b> of the New Relic Terraform Provider. <span style="color:red;">It will be <b>removed</b> from the provider in a future release coinciding with the June 30, 2026 EOL</span>. This means the resource can no longer be used to create or manage drop rules after this date.
+In line with this announcement, the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource <span style="color:red;">was marked <b>deprecated</b></span> starting with <b style="color:red;">v3.68.0</b> of the New Relic Terraform Provider and is no longer supported. <span style="color:red;">It will be <b>removed</b> from the provider in an upcoming release</span>.
 
 ### Alternatives and Action Needed
 
 NRQL Drop Rules are being replaced by **Pipeline Cloud Rules**. See [this article](https://docs.newrelic.com/docs/new-relic-control/pipeline-control/cloud-rules-api/) for an overview.
 
-New Relic will handle the upstream migration of existing NRQL Drop Rules to Pipeline Cloud Rules. However, to continue managing these rules via Terraform after the EOL, <span style="color:tomato;">customers using the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource must transition to the new [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.</span> Please see [this page](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) for documentation on using the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.
+New Relic has completed the upstream migration of existing NRQL Drop Rules to Pipeline Cloud Rules. However, to continue managing these rules via Terraform, <span style="color:tomato;">customers using the [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource must transition to the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.</span> Please refer to [this page](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) for documentation on the [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resource.
+
+The upstream migration covers Drop Rules with the `action` types `drop_data` and `drop_attributes`. Terraform configurations using [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) for these action types must be updated to use [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule). For [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resources with `action = "drop_attributes_from_metric_aggregates"`, the recommended migration path is to the [`newrelic_metric_pruning_rule`](/providers/newrelic/newrelic/latest/docs/resources/metric_pruning_rule) resource, which provides equivalent functionality for reducing metric cardinality.
+
+The sections below detail the steps required to migrate [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resources to [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule).
 
 <hr/>
 
@@ -187,7 +191,7 @@ Briefly, this is the sequence of operations one would need to perform during thi
 
 Detailed instructions for Phase 3 are provided at the end of the logs when the `tf-importgen-ci` command is executed in Phase 2.
 
-**Congratulations!** 🎉 With all three phases executed successfully according to the recommended steps and all post-execution tasks completed (including removal of legacy Drop Rule resource configurations from your Terraform files), your NRQL Drop Rules have been fully migrated to Pipeline Cloud Rules. Your CI/CD environment should now be managing the migrated drop rules as `newrelic_pipeline_cloud_rule` resources, ensuring continued functionality beyond the June 30, 2026 EOL date.
+**Congratulations!** 🎉 With all three phases completed successfully and all post-execution tasks in order (including the removal of legacy [`newrelic_nrql_drop_rule`](/providers/newrelic/newrelic/latest/docs/resources/nrql_drop_rule) resource configurations from your Terraform files), your NRQL Drop Rules have been fully migrated to Pipeline Cloud Rules. Your CI/CD environment should now be managing the migrated rules as [`newrelic_pipeline_cloud_rule`](/providers/newrelic/newrelic/latest/docs/resources/pipeline_cloud_rule) resources.
 
 This three-phase automation process is specifically designed for CI/CD workflows where direct local access to Terraform state may be limited. It provides a structured approach to migrate from `newrelic_nrql_drop_rule` to `newrelic_pipeline_cloud_rule` resources while maintaining the integrity of your GitOps processes.
 
