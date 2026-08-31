@@ -421,6 +421,9 @@ resource_newrelic_one_dashboard_raw_test.go:
 resource_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+resource_newrelic_organization.go:
+  test: false
+  product_mapping: AUTH
 resource_newrelic_pipeline_cloud_rule.go:
   test: false
   product_mapping: NGEP
@@ -619,6 +622,9 @@ structures_newrelic_one_dashboard_raw.go:
 structures_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+structures_newrelic_organization.go:
+  test: false
+  product_mapping: AUTH
 structures_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS
