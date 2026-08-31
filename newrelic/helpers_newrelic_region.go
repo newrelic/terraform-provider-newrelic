@@ -14,7 +14,7 @@ func unsupportedRegionError(resourceName, region string) error {
 	docSlug := strings.TrimPrefix(resourceName, "newrelic_")
 	return fmt.Errorf(
 		"%s is not supported in the %s region. The API underlying this resource "+
-			"has been deprecated and is not available within this region. "+
+			"has been deprecated and/or is not available within this region. "+
 			"For information on the deprecation status and recommended migration paths, "+
 			"refer to the resource documentation: "+
 			"https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/%s",
