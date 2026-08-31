@@ -13,7 +13,7 @@ import (
 func unsupportedRegionError(resourceName, region string) error {
 	docSlug := strings.TrimPrefix(resourceName, "newrelic_")
 	return fmt.Errorf(
-		"%s is not supported in the %s region. The API underlying this resource "+
+		"%s is not supported in the %s region. This resource depends on an API that "+
 			"has been deprecated and/or is not available within this region. "+
 			"For information on the deprecation status and recommended migration paths, "+
 			"refer to the resource documentation: "+
