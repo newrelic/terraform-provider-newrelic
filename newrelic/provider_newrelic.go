@@ -131,6 +131,7 @@ func Provider() *schema.Provider {
 			"newrelic_key_transaction":              dataSourceNewRelicKeyTransaction(),
 			"newrelic_notification_destination":     dataSourceNewRelicNotificationDestination(),
 			"newrelic_obfuscation_expression":       dataSourceNewRelicObfuscationExpression(),
+			"newrelic_organization": resourceNewRelicOrganization(),
 			"newrelic_synthetics_private_location":  dataSourceNewRelicSyntheticsPrivateLocation(),
 			"newrelic_synthetics_secure_credential": dataSourceNewRelicSyntheticsSecureCredential(),
 			"newrelic_test_grok_pattern":            dataSourceNewRelicTestGrokPattern(),
