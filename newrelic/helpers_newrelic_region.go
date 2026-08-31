@@ -57,10 +57,3 @@ func blockUnsupportedRegionDiff(resourceName string) schema.CustomizeDiffFunc {
 func blockGOVRegionDiff(resourceName string) schema.CustomizeDiffFunc {
 	return blockRegionsDiff(resourceName, "GOV")
 }
-
-// blockJPRegionDiff is retained as a backward-compatible alias for
-// blockUnsupportedRegionDiff. New resources should use blockRegionsDiff directly
-// with the explicit list of regions to block.
-func blockJPRegionDiff(resourceName string) schema.CustomizeDiffFunc {
-	return blockUnsupportedRegionDiff(resourceName)
-}
