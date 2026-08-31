@@ -3,6 +3,7 @@ package newrelic
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -60,7 +61,7 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("NEW_RELIC_REGION", "US"),
 				Description:  "The data center for which your New Relic account is configured. Only one region per provider block is permitted.",
-				ValidateFunc: validation.StringInSlice([]string{"US", "EU", "JP", "Staging"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"US", "EU", "JP", "GOV", "FEDRAMP", "Staging"}, true),
 			},
 			// New Relic internal use only
 			"api_url": {
@@ -262,11 +263,21 @@ func providerConfigure(data *schema.ResourceData, terraformVersion string) (inte
 		)
 	}
 
+	// Normalize "FEDRAMP" to "GOV" so the provider internally always uses a
+	// single canonical name. Both are accepted by the ValidateFunc, and the
+	// underlying client library already maps both to the same endpoint set.
+	// Normalizing here means all internal region checks (helpers, CustomizeDiff)
+	// only need to handle "GOV", not the alias.
+	regionValue := data.Get("region").(string)
+	if strings.EqualFold(regionValue, "FEDRAMP") {
+		regionValue = "GOV"
+	}
+
 	cfg := Config{
 		AdminAPIKey:          adminAPIKey,
 		PersonalAPIKey:       personalAPIKey,
 		InsightsInsertKey:    data.Get("insights_insert_key").(string),
-		Region:               data.Get("region").(string),
+		Region:               regionValue,
 		APIURL:               data.Get("api_url").(string),
 		SyntheticsAPIURL:     data.Get("synthetics_api_url").(string),
 		NerdGraphAPIURL:      data.Get("nerdgraph_api_url").(string),
