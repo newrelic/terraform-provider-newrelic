@@ -9,7 +9,7 @@ description: |-
 
 !> **This resource is no longer supported.** <span style="color:red;"><b>The `newrelic_nrql_drop_rule` resource reached its end-of-life on August 31, 2026</b> and is no longer functional.</span> It will be removed from the New Relic Terraform Provider in an upcoming release.
 
-If you are looking for documentation on the arguments, attributes, or usage examples for this resource, please refer to an older release of the New Relic Terraform Provider (prior to v3.68.0) in the [Terraform Registry release history](https://registry.terraform.io/providers/newrelic/newrelic/).
+If you are looking for documentation on the arguments, attributes, or usage examples for this resource, please refer to an older release of the New Relic Terraform Provider (v3.97.0 or earlier) in the [Terraform Registry release history](https://registry.terraform.io/providers/newrelic/newrelic/).
 
 ---
 
