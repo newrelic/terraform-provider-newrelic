@@ -59,7 +59,7 @@ func resourceNewRelicAlertCompoundCondition() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The ID of the existing alert condition to use as a component. Composite IDs in the format `< policyID>:<conditionID>` (as exposed by `newrelic_nrql_alert_condition.<name>.id`) are accepted and reduced to the condition ID.",
+							Description: "The ID of the existing alert condition to use as a component. Composite IDs in the format `<policyID>:<conditionID>` (as exposed by `newrelic_nrql_alert_condition.<name>.id`) are accepted and reduced to the condition ID.",
 							StateFunc: func(v interface{}) string {
 								return normalizeComponentConditionID(v.(string))
 							},

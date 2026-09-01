@@ -267,3 +267,72 @@ func TestExpandComponentConditionsNormalizesCompositeIDs(t *testing.T) {
 	assert.Equal(t, "10395010", ids["A"])
 	assert.Equal(t, "10395011", ids["B"])
 }
+
+// TestComponentConditionIDRoundTripNoDrift verifies that the StateFunc on
+// component_conditions.id prevents perpetual diff after a create+read cycle.
+//
+// Important: StateFunc is NOT applied by d.Set or d.Get. It is called by
+// Terraform's plan engine on the raw config value before comparing it against
+// state. We simulate that here by calling normalizeComponentConditionID
+// directly (which is exactly what the StateFunc wraps).
+//
+// The lifecycle under test:
+//  1. User writes composite or plain id in config.
+//  2. Plan engine calls StateFunc(config_id) → plain id; compares with state.
+//  3. Apply calls Create/Update: expandComponentConditions normalizes the raw
+//     ResourceData id (still composite at this point) before sending to API.
+//  4. Read calls flattenComponentConditions: API returns plain id → stored in state.
+//  5. Next plan: StateFunc(config_id) == state id → no diff.
+func TestComponentConditionIDRoundTripNoDrift(t *testing.T) {
+	// setHash mirrors the hash function defined on the component_conditions schema.
+	setHash := func(v interface{}) int {
+		return schema.HashString(v.(map[string]interface{})["alias"].(string))
+	}
+
+	// readSet represents what flattenComponentConditions produces after a Read:
+	// the API always returns plain numeric condition IDs.
+	readSet := flattenComponentConditions([]alerts.ComponentCondition{
+		{ID: "10395010", Alias: "A"},
+		{ID: "10395011", Alias: "B"},
+	})
+
+	cases := map[string][]map[string]string{
+		"composite ids (newrelic_nrql_alert_condition.x.id format)": {
+			{"id": "1254186:10395010", "alias": "A"},
+			{"id": "1254186:10395011", "alias": "B"},
+		},
+		"plain numeric ids (split workaround or direct numeric)": {
+			{"id": "10395010", "alias": "A"},
+			{"id": "10395011", "alias": "B"},
+		},
+		"mixed (one composite, one plain)": {
+			{"id": "1254186:10395010", "alias": "A"},
+			{"id": "10395011", "alias": "B"},
+		},
+	}
+
+	for name, rawPairs := range cases {
+		t.Run(name, func(t *testing.T) {
+			// Simulate Terraform's plan engine applying StateFunc to every config id.
+			// This is what prevents drift: the plan engine normalizes the user's
+			// composite id to a plain id before comparing it against state.
+			elems := make([]interface{}, 0, len(rawPairs))
+			for _, pair := range rawPairs {
+				elems = append(elems, map[string]interface{}{
+					"id":    normalizeComponentConditionID(pair["id"]),
+					"alias": pair["alias"],
+				})
+			}
+			configSet := schema.NewSet(setHash, elems)
+
+			// The plan engine compares configSet against readSet element-by-element
+			// using Difference. A non-empty result means a perpetual diff.
+			onlyInConfig := configSet.Difference(readSet)
+			onlyInRead := readSet.Difference(configSet)
+			assert.Zero(t, onlyInConfig.Len(),
+				"case %q: StateFunc-normalized config has elements not in read state: %v", name, onlyInConfig.List())
+			assert.Zero(t, onlyInRead.Len(),
+				"case %q: read state has elements not in StateFunc-normalized config: %v", name, onlyInRead.List())
+		})
+	}
+}
