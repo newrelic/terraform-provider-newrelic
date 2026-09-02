@@ -1,3 +1,8 @@
+<a name="v3.97.1"></a>
+## [v3.97.1] - 2026-09-02
+### Bug Fixes
+- **alerts:** accept composite IDs in compound condition component_conditions ([#3174](https://github.com/newrelic/terraform-provider-newrelic/issues/3174))
+
 <a name="v3.97.0"></a>
 ## [v3.97.0] - 2026-08-31
 ### Features
@@ -2836,7 +2841,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.1...HEAD
+[v3.97.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.0...v3.97.1
 [v3.97.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.4...v3.97.0
 [v3.96.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.3...v3.96.4
 [v3.96.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.2...v3.96.3
