@@ -1,3 +1,8 @@
+<a name="v3.97.2"></a>
+## [v3.97.2] - 2026-09-03
+### Bug Fixes
+- **security:** bump grpc, go-git, sigstore-go to resolve Dependabot alerts
+
 <a name="v3.97.1"></a>
 ## [v3.97.1] - 2026-09-02
 ### Bug Fixes
@@ -2841,7 +2846,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.2...HEAD
+[v3.97.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.1...v3.97.2
 [v3.97.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.0...v3.97.1
 [v3.97.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.4...v3.97.0
 [v3.96.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.96.3...v3.96.4
