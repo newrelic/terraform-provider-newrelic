@@ -171,6 +171,8 @@ github.com/newrelic/newrelic-client-go/v2 v2.90.1-0.20260707132052-f5bd174fe8f9 
 github.com/newrelic/newrelic-client-go/v2 v2.90.1-0.20260707132052-f5bd174fe8f9/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
 github.com/newrelic/newrelic-client-go/v2 v2.93.2 h1:OPrJPULKBH38VZVIrTsrMBx5iJURgT5obpzMKNNcBw4=
 github.com/newrelic/newrelic-client-go/v2 v2.93.2/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
+github.com/newrelic/newrelic-client-go/v2 v2.93.4-0.20260903092344-4645d1de2a3e h1:X630fdrzK9fjhiHQ8xayCYCsLW2UfvB/vc/rbQ0ytOo=
+github.com/newrelic/newrelic-client-go/v2 v2.93.4-0.20260903092344-4645d1de2a3e/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
