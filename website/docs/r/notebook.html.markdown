@@ -10,17 +10,22 @@ description: |-
 
 Use this resource to create and manage [New Relic Notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/introduction-notebooks/).
 
-A notebook is a document that combines live New Relic queries, markdown text, and visualizations into a single shareable view. The `content` field holds the full notebook body as a JSON string and is sent to the Blob Storage API without any schema expansion, so the resource never needs updates when the notebook format evolves.
+A notebook is a document that combines live New Relic queries, markdown text, and visualizations into a shareable view. Notebook content is stored in the New Relic Blob Storage API; this resource sends the content body verbatim without schema expansion, so it stays compatible with future changes to the notebook format.
+
+## Content modes
+
+Exactly one of `content` or `content_json` must be specified. They are mutually exclusive.
 
 ## Example Usage
 
-### Using `jsonencode` (recommended)
+### `content` - HCL object syntax (recommended)
 
-Using `jsonencode({...})` lets you write the notebook content as an HCL object. Terraform evaluates the expression at plan time, which means `terraform plan` output shows individual attribute changes rather than a single opaque string diff.
+Use `jsonencode({...})` to write notebook content as an HCL object literal. Terraform evaluates the expression at plan time, producing individual attribute-level diffs in `terraform plan` output.
 
 ```hcl
 resource "newrelic_notebook" "example" {
-  title = "My Notebook"
+  title           = "My Notebook"
+  organization_id = var.organization_id
 
   content = jsonencode({
     version = "1"
@@ -30,24 +35,19 @@ resource "newrelic_notebook" "example" {
         content = {
           type  = "visualization"
           id    = "viz.markdown"
-          props = {
-            text = "## Hello from Terraform"
-          }
+          props = { text = "## Hello from Terraform" }
         }
       },
       {
         type = "widget"
         content = {
-          type  = "visualization"
-          id    = "viz.line"
+          type = "visualization"
+          id   = "viz.line"
           props = {
-            accountIds = [var.account_id]
-            nrqlQueries = [
-              {
-                accountIds = [var.account_id]
-                query      = "SELECT count(*) FROM Transaction TIMESERIES AUTO"
-              }
-            ]
+            nrqlQueries = [{
+              accountIds = [var.account_id]
+              query      = "SELECT count(*) FROM Transaction TIMESERIES AUTO"
+            }]
           }
         }
       }
@@ -56,26 +56,15 @@ resource "newrelic_notebook" "example" {
 }
 ```
 
-### Using a JSON file
+### `content_json` - raw JSON string
+
+Use `content_json` when pasting JSON exported from the New Relic UI (via **Copy JSON**) or loading from a file. Terraform still shows line-level diffs of the normalised content.
 
 ```hcl
 resource "newrelic_notebook" "from_file" {
-  title   = "Notebook from file"
-  content = file("${path.module}/notebook.json")
-}
-```
-
-### Specifying an organization ID explicitly
-
-```hcl
-resource "newrelic_notebook" "example" {
-  title           = "Scoped Notebook"
+  title           = "Notebook from file"
   organization_id = var.organization_id
-
-  content = jsonencode({
-    version = "1"
-    blocks  = []
-  })
+  content_json    = file("${path.module}/notebook.json")
 }
 ```
 
@@ -83,8 +72,9 @@ resource "newrelic_notebook" "example" {
 
 The following arguments are supported:
 
-* `title` - (Required) The title of the notebook.
-* `content` - (Required) The notebook content as a JSON string. The provider normalises the JSON (sorted keys, consistent indentation) before storing it in state, so cosmetic formatting differences — such as reordering keys or changing indentation — do not produce a diff in `terraform plan`. Use `jsonencode({...})` for the most granular plan output.
+* `title` - (Required) The title of the notebook. Must be unique within the organization.
+* `content` - (Optional) The notebook content as an HCL object, expressed using `jsonencode({...})`. Produces the most granular `terraform plan` diffs. Mutually exclusive with `content_json`.
+* `content_json` - (Optional) The notebook content as a raw JSON string. Use when pasting content exported from the New Relic UI or loading from a file. Mutually exclusive with `content`.
 * `organization_id` - (Optional, Computed) The New Relic organization ID. When omitted, the provider resolves it automatically from the authenticated account.
 * `account_id` - (Optional, Computed) The New Relic account ID. Defaults to the account configured in the provider.
 
@@ -102,11 +92,11 @@ Notebooks can be imported using the entity GUID:
 $ terraform import newrelic_notebook.example <guid>
 ```
 
-## Diff Behaviour and the `jsonencode` Pattern
+## Diff Behaviour
 
-The `content` field is stored in state as canonical JSON (alphabetically sorted keys, 2-space indentation). Two JSON strings that differ only in whitespace, indentation, or key ordering are treated as equal and produce no diff.
+Both `content` and `content_json` are stored in state as canonical JSON (alphabetically sorted keys, 2-space indentation). Two JSON strings that differ only in whitespace, indentation, or key ordering are treated as equal and produce no diff.
 
-When you use `jsonencode({...})`, Terraform's plan output shows changes at the individual attribute level:
+**With `content = jsonencode({...})`**, Terraform shows individual attribute-level diffs:
 
 ```
 ~ content = jsonencode(
@@ -124,4 +114,4 @@ When you use `jsonencode({...})`, Terraform's plan output shows changes at the i
   )
 ```
 
-When you supply a raw JSON string (e.g. via `file()`), Terraform shows a line-level unified diff of the normalised content. Only the lines that actually changed are highlighted.
+**With `content_json`**, Terraform shows a line-level diff of the normalised JSON. Only lines that actually changed are highlighted - unchanged blocks appear as context without `+`/`-` markers.

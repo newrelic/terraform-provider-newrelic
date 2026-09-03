@@ -370,6 +370,9 @@ resource_newrelic_monitor_downtime_test.go:
 resource_newrelic_notebook.go:
   test: false
   product_mapping: DASHBOARDS
+resource_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
 resource_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
