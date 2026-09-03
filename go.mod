@@ -8,7 +8,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/newrelic-client-go/v2 v2.93.2
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
+	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -59,7 +59,7 @@ require (
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.13.1 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/mod v0.35.0 // indirect
+	golang.org/x/mod v0.39.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
