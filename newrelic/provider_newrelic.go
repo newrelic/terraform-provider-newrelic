@@ -182,6 +182,7 @@ func Provider() *schema.Provider {
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
 			"newrelic_obfuscation_rule":                         resourceNewRelicObfuscationRule(),
+			"newrelic_notebook":                                 resourceNewRelicNotebook(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
