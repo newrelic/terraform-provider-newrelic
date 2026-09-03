@@ -138,8 +138,8 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var contentBody interface{}
-	if err := json.Unmarshal([]byte(normalized), &contentBody); err != nil {
-		return diag.Errorf("%s re-parse: %s", field, err)
+	if unmarshalErr := json.Unmarshal([]byte(normalized), &contentBody); unmarshalErr != nil {
+		return diag.Errorf("%s re-parse: %s", field, unmarshalErr)
 	}
 
 	log.Printf("[INFO] Creating New Relic notebook: %s", title)
@@ -222,8 +222,8 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var contentBody interface{}
-	if err := json.Unmarshal([]byte(normalized), &contentBody); err != nil {
-		return diag.Errorf("%s re-parse: %s", field, err)
+	if unmarshalErr := json.Unmarshal([]byte(normalized), &contentBody); unmarshalErr != nil {
+		return diag.Errorf("%s re-parse: %s", field, unmarshalErr)
 	}
 
 	titleChanged := d.HasChange("title")
