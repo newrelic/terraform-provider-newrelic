@@ -31,10 +31,15 @@ To create and retrieve these values, follow Oracle's guidance for configuring id
 WIF configuration steps:
 1. Create (or identify) an Identity Domain and register an OAuth2 confidential application (client) to represent New Relic ingestion.
 2. Generate / record the client ID (`oci_client_id`) and client secret (`oci_client_secret`). Store the secret securely (e.g., in OCI Vault; reference its OCID via `ingest_vault_ocid` / `user_vault_ocid` if desired).
-3. Use the Identity Domain base URL as `oci_domain_url` (format: `https://idcs-<hash>.identity.oraclecloud.com`).
+3. Use the Identity Domain base URL as `oci_domain_url` (format: `https://idcs-<hash>.identity.oraclecloud.com`, with no port and no trailing slash).
 4. Ensure the client has the required scopes and the tenancy policies allow the token exchange.
+5. On the identity propagation trust, set `clientClaimName` to `aud` and `clientClaimValues` to your Identity Domain base URL. New Relic sets the JWT's `aud` claim to this URL, so this makes OCI reject any token issued for a different domain. The value must match `oci_domain_url` exactly.
+
+> NOTE: `clientClaimValues` is matched as an exact string. If `oci_domain_url` and the trust's value differ in any way — a trailing slash, a `:443` port — token exchange fails with HTTP 401.
 
 > TIP: Rotating the OAuth2 client secret only requires updating `oci_client_secret`; it does not force resource replacement.
+
+> TIP: The [WIF setup module](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci/wif-setup) performs steps 1–5 for you, including the `aud` configuration.
 
 ## Example Usage
 
