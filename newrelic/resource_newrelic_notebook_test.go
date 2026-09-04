@@ -1,4 +1,4 @@
-//go:build integration || NOTEBOOKS
+//go:build integration || DASHBOARDS
 
 package newrelic
 
