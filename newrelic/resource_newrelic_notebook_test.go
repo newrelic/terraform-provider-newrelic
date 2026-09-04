@@ -193,8 +193,14 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 			// Step 6: import.
 			{
 				ResourceName:      resourceName,
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// On import the resource cannot know whether the original config
+				// used content or content_json; it always populates content_json.
+				// Ignore both so ImportStateVerify passes regardless of which mode
+				// was active before the import.
+				ImportStateVerifyIgnore: []string{"content", "content_json"},
 			},
 		},
 	})
@@ -242,9 +248,10 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 			},
 			// Step 5: import.
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"content", "content_json"},
 			},
 		},
 	})
