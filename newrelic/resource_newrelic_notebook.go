@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,6 +23,11 @@ func resourceNewRelicNotebook() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		CustomizeDiff: resourceNewRelicNotebookCustomizeDiff,
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Second),
+			Update: schema.DefaultTimeout(30 * time.Second),
+			Delete: schema.DefaultTimeout(30 * time.Second),
+		},
 		Schema: map[string]*schema.Schema{
 			"title": {
 				Type:        schema.TypeString,
@@ -29,59 +35,47 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Description: "The title of the notebook.",
 			},
 
-			// content and content_json are mutually exclusive.
-			//
-			// content       — write the notebook body as an HCL object literal
-			//                 using jsonencode({...}). Terraform evaluates
-			//                 jsonencode at plan time so the plan output shows
-			//                 object-level field diffs (e.g. "query changed from
-			//                 X to Y") rather than whole-blob text diffs.
-			//                 Recommended for notebooks authored and maintained
-			//                 entirely in Terraform.
-			//
-			// content_json  — supply raw JSON directly (e.g. file("export.json")
-			//                 or a heredoc). Intended for notebooks exported from
-			//                 the New Relic UI via the "Copy JSON" feature and
-			//                 pasted into Terraform with minimal editing. Diffs
-			//                 are shown at the JSON line level, which is still
-			//                 precise enough to identify the changed attribute.
-			//
-			// Both fields accept any valid notebook JSON; both are normalised
-			// (sorted keys, consistent indentation) on every write and read so
-			// cosmetic reformatting never surfaces as a plan change.
+			// Exactly one of content or content_json must be set; they cannot
+			// be used together. Choose content when you want to author the
+			// notebook directly in HCL and get field-level plan diffs. Choose
+			// content_json when you are working from JSON exported out of the
+			// New Relic UI or stored in a file. Both fields store the content
+			// in a normalized form (alphabetically sorted keys, consistent
+			// indentation), so purely cosmetic formatting changes never show
+			// up as a planned update.
 
 			"content": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Description: "The notebook content as an HCL object. Write using " +
-					"jsonencode({...}) for structured authoring with granular plan " +
-					"diffs. Mutually exclusive with content_json.",
+				Type:             schema.TypeString,
+				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
 				ExactlyOneOf:     []string{"content", "content_json"},
+				Description: "The notebook body, expressed as an HCL object using " +
+					"jsonencode({...}). Terraform evaluates the expression at plan " +
+					"time, so terraform plan shows changes at the individual field " +
+					"level rather than as an opaque JSON diff. Recommended when the " +
+					"notebook is authored and maintained entirely in Terraform. " +
+					"Mutually exclusive with content_json.",
 			},
 			"content_json": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Description: "The notebook content as a raw JSON string. Use when " +
-					"pasting JSON exported from the New Relic UI (e.g. via the " +
-					"\"Copy JSON\" feature) or loading from a file with " +
-					"file(\"notebook.json\"). Mutually exclusive with content.",
+				Type:             schema.TypeString,
+				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
 				ValidateFunc:     validation.StringIsJSON,
 				ExactlyOneOf:     []string{"content", "content_json"},
+				Description: "The notebook body as a raw JSON string. Intended for " +
+					"notebooks exported from the New Relic UI (for example, via the " +
+					"Copy JSON option) or loaded from a file using file(). " +
+					"Plan output shows a line-level diff of the normalized JSON, " +
+					"making it straightforward to identify what changed. " +
+					"Mutually exclusive with content.",
 			},
 
 			"organization_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The New Relic organization ID the notebook belongs to. Defaults to the organization of the authenticated account when omitted.",
-			},
-			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The New Relic account ID. Defaults to the account configured in the provider.",
+				ForceNew:    true,
+				Description: "The New Relic organization ID the notebook belongs to. Defaults to the organization of the authenticated account when omitted. Changing this value forces recreation of the notebook.",
 			},
 			"guid": {
 				Type:        schema.TypeString,
@@ -92,8 +86,8 @@ func resourceNewRelicNotebook() *schema.Resource {
 	}
 }
 
-// resourceNewRelicNotebookCustomizeDiff validates content at plan time so
-// malformed JSON is rejected before an apply ever starts.
+// resourceNewRelicNotebookCustomizeDiff runs at plan time to catch malformed
+// JSON early, so users see a clear error before an apply is attempted.
 func resourceNewRelicNotebookCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	for _, key := range []string{"content", "content_json"} {
 		raw, ok := d.GetOk(key)
@@ -107,9 +101,11 @@ func resourceNewRelicNotebookCustomizeDiff(_ context.Context, d *schema.Resource
 	return nil
 }
 
-// notebookContentField returns the name of whichever content field is populated
-// ("content" or "content_json") and the raw value. Falls back to "content_json"
-// when neither is set (e.g. immediately after an import before a plan).
+// notebookContentField returns the name of the active content field
+// ("content" or "content_json") along with its current value. When neither
+// field is set - for example, immediately after terraform import before the
+// first plan - it defaults to "content_json" so the imported state is
+// immediately usable.
 func notebookContentField(d *schema.ResourceData) (field, raw string) {
 	if v, ok := d.GetOk("content"); ok && v.(string) != "" {
 		return "content", v.(string)
@@ -149,7 +145,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	if resp.EntityGUID == "" {
-		return diag.Errorf("notebook create: no entityGuid returned")
+		return diag.Errorf("the New Relic API did not return an entity GUID for the new notebook; this is unexpected - please try again or contact support if the issue persists")
 	}
 
 	log.Printf("[INFO] New Relic notebook created, GUID: %s", resp.EntityGUID)
@@ -232,7 +228,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[INFO] Updating New Relic notebook %s (title_changed=%v, content_changed=%v)", guid, titleChanged, contentChanged)
 
 	if titleChanged {
-		// Rename is atomic with a content POST — the Blob API has no rename-only path.
+		// Rename is atomic with a content POST - the Blob API has no rename-only path.
 		_, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, contentBody)
 	} else if contentChanged {
 		_, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, contentBody)

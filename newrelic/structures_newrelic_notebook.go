@@ -8,11 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// normalizeNotebookContent canonicalises a JSON string so that identical
-// documents with different formatting or key ordering produce the same bytes.
-// Go's json.Unmarshal+json.MarshalIndent pipeline sorts map keys alphabetically
-// on re-serialisation, which is all we need for deterministic state storage and
-// precise line-level plan diffs.
+// normalizeNotebookContent converts any valid JSON string to a canonical form
+// with alphabetically sorted keys and consistent 2-space indentation. Storing
+// and comparing this canonical form means that two documents with the same
+// semantic content but different formatting are always treated as equal,
+// preventing spurious plan diffs when a user reformats their HCL or JSON file.
 func normalizeNotebookContent(raw string) (string, error) {
 	if raw == "" {
 		return "", nil
@@ -28,20 +28,17 @@ func normalizeNotebookContent(raw string) (string, error) {
 	enc.SetIndent("", "  ")
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(v); err != nil {
-		return "", fmt.Errorf("re-serialise JSON: %w", err)
+		return "", fmt.Errorf("could not re-serialize JSON: %w", err)
 	}
 
-	// Encoder appends a trailing newline; trim so state comparisons are stable.
+	// json.Encoder appends a trailing newline; remove it so comparisons are stable.
 	return string(bytes.TrimRight(buf.Bytes(), "\n")), nil
 }
 
-// suppressEquivalentNotebookContent is a DiffSuppressFunc that treats two JSON
-// strings as equal when they are semantically identical regardless of
-// whitespace, indentation, or key ordering. Applied to both the "content" and
-// "content_json" fields.
-//
-// This prevents cosmetic-only edits — e.g. reformatting a jsonencode({}) block
-// or re-indenting a JSON file — from showing up as changes in terraform plan.
+// suppressEquivalentNotebookContent tells Terraform to ignore the difference
+// between two JSON strings that are semantically identical. This allows users
+// to freely reformat their content or content_json values (for example,
+// reordering keys or changing indentation) without triggering a planned update.
 func suppressEquivalentNotebookContent(_, oldVal, newVal string, _ *schema.ResourceData) bool {
 	if oldVal == newVal {
 		return true
@@ -57,17 +54,17 @@ func suppressEquivalentNotebookContent(_, oldVal, newVal string, _ *schema.Resou
 	return normOld == normNew
 }
 
-// flattenNotebookContent writes normalised content from the API response into
-// state under the given field name ("content" or "content_json"). Calling this
-// on every Read ensures state always holds canonical JSON so Terraform's native
-// diff highlights only lines that actually changed.
+// flattenNotebookContent stores the content received from the API into the
+// correct state field ("content" or "content_json"). It normalizes the value
+// first so that subsequent plan operations only highlight lines that genuinely
+// changed, not formatting differences introduced during the round-trip.
 func flattenNotebookContent(raw json.RawMessage, d *schema.ResourceData, field string) error {
 	if len(raw) == 0 {
 		return nil
 	}
 	normalized, err := normalizeNotebookContent(string(raw))
 	if err != nil {
-		return fmt.Errorf("normalize notebook content from API: %w", err)
+		return fmt.Errorf("could not normalize notebook content returned by the API: %w", err)
 	}
 	return d.Set(field, normalized)
 }

@@ -10,21 +10,121 @@ description: |-
 
 Use this resource to create and manage [New Relic Notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/introduction-notebooks/).
 
-A notebook is a document that combines live New Relic queries, markdown text, and visualizations into a shareable view. Notebook content is stored in the New Relic Blob Storage API; this resource sends the content body verbatim without schema expansion, so it stays compatible with future changes to the notebook format.
+Notebooks let you combine live NRQL queries, visualizations, and markdown narrative into a single shareable document. This resource manages the full lifecycle of a notebook, including its title and block content.
 
-## Content modes
+## Choosing a content mode
 
-Exactly one of `content` or `content_json` must be specified. They are mutually exclusive.
+You must specify exactly one of `content` or `content_json`. They are mutually exclusive:
+
+| Mode | When to use |
+|---|---|
+| `content` | Authoring notebooks directly in Terraform. Uses `jsonencode({})` for structured HCL that produces field-level diffs in `terraform plan`. |
+| `content_json` | Working from JSON exported out of the New Relic UI or stored in a file. Produces line-level diffs of the normalized content. |
+
+---
 
 ## Example Usage
 
-### `content` - HCL object syntax (recommended)
+### Using `content` with a markdown block
 
-Use `jsonencode({...})` to write notebook content as an HCL object literal. Terraform evaluates the expression at plan time, producing individual attribute-level diffs in `terraform plan` output.
+The simplest notebook - a single text block authored in HCL.
 
 ```hcl
-resource "newrelic_notebook" "example" {
-  title           = "My Notebook"
+resource "newrelic_notebook" "incident_notes" {
+  title           = "Incident Response Notes"
+  organization_id = var.organization_id
+
+  content = jsonencode({
+    version = "1"
+    blocks = [
+      {
+        type = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = {
+            text = "## Summary\n\nAdd investigation notes here."
+          }
+        }
+      }
+    ]
+  })
+}
+```
+
+### Using `content` with multiple widget types
+
+A notebook mixing a markdown header, a billboard metric, and a time-series chart.
+
+```hcl
+resource "newrelic_notebook" "service_overview" {
+  title           = "Service Health Overview"
+  organization_id = var.organization_id
+
+  content = jsonencode({
+    version = "1"
+    blocks = [
+      {
+        type = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = {
+            text = "# Service Health\n\nLive metrics for the checkout service."
+          }
+        }
+      },
+      {
+        type = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.billboard"
+          props = {
+            title = "Error rate (last hour)"
+            nrqlQueries = [
+              {
+                accountIds = [var.account_id]
+                query      = "SELECT percentage(count(*), WHERE error IS true) FROM Transaction SINCE 1 hour ago"
+              }
+            ]
+            thresholdsWithSeriesOverrides = {
+              thresholds = [
+                { to = 1,  severity = "success" },
+                { from = 1, to = 5, severity = "warning" },
+                { from = 5, severity = "critical" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        type = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.line"
+          props = {
+            title = "Throughput over time"
+            nrqlQueries = [
+              {
+                accountIds = [var.account_id]
+                query      = "SELECT count(*) FROM Transaction TIMESERIES AUTO"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  })
+}
+```
+
+### Using `content` with a container block
+
+Group related widgets visually using a `container` with `layout = "stack"`.
+
+```hcl
+resource "newrelic_notebook" "investigation" {
+  title           = "DB Investigation"
   organization_id = var.organization_id
 
   content = jsonencode({
@@ -35,20 +135,104 @@ resource "newrelic_notebook" "example" {
         content = {
           type  = "visualization"
           id    = "viz.markdown"
-          props = { text = "## Hello from Terraform" }
+          props = { text = "## Database Performance\n\nQuery latency and throughput." }
         }
       },
       {
+        type = "container"
+        props = { layout = "stack" }
+        content = [
+          {
+            type = "widget"
+            content = {
+              type = "visualization"
+              id   = "viz.line"
+              props = {
+                nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT average(duration) FROM DatabaseSample TIMESERIES" }]
+              }
+            }
+          },
+          {
+            type = "widget"
+            content = {
+              type = "visualization"
+              id   = "viz.bar"
+              props = {
+                nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT count(*) FROM DatabaseSample FACET queryType" }]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  })
+}
+```
+
+### Using `content_json` from a file
+
+Paste JSON exported directly from the New Relic Notebooks UI into a file and reference it here.
+
+```hcl
+resource "newrelic_notebook" "from_export" {
+  title           = "Weekly Report"
+  organization_id = var.organization_id
+  content_json    = file("${path.module}/notebooks/weekly-report.json")
+}
+```
+
+### Using `content_json` with an inline JSON string
+
+For notebooks that are generated programmatically or pulled from another data source.
+
+```hcl
+locals {
+  notebook_body = jsonencode({
+    version = "1"
+    blocks = [
+      {
         type = "widget"
         content = {
-          type = "visualization"
-          id   = "viz.line"
-          props = {
-            nrqlQueries = [{
-              accountIds = [var.account_id]
-              query      = "SELECT count(*) FROM Transaction TIMESERIES AUTO"
-            }]
-          }
+          type  = "visualization"
+          id    = "viz.markdown"
+          props = { text = "# Generated notebook\n\nCreated by Terraform on ${timestamp()}." }
+        }
+      }
+    ]
+  })
+}
+
+resource "newrelic_notebook" "generated" {
+  title           = "Auto-generated Notebook"
+  organization_id = var.organization_id
+  content_json    = local.notebook_body
+}
+```
+
+### Iterating to create multiple notebooks from a list
+
+Use `for_each` to create a notebook per service.
+
+```hcl
+variable "services" {
+  type = set(string)
+  default = ["checkout", "payments", "inventory"]
+}
+
+resource "newrelic_notebook" "per_service" {
+  for_each        = var.services
+  title           = "${each.value} runbook"
+  organization_id = var.organization_id
+
+  content = jsonencode({
+    version = "1"
+    blocks = [
+      {
+        type = "widget"
+        content = {
+          type  = "visualization"
+          id    = "viz.markdown"
+          props = { text = "# ${each.value}\n\nAdd runbook steps for this service here." }
         }
       }
     ]
@@ -56,62 +240,33 @@ resource "newrelic_notebook" "example" {
 }
 ```
 
-### `content_json` - raw JSON string
-
-Use `content_json` when pasting JSON exported from the New Relic UI (via **Copy JSON**) or loading from a file. Terraform still shows line-level diffs of the normalised content.
-
-```hcl
-resource "newrelic_notebook" "from_file" {
-  title           = "Notebook from file"
-  organization_id = var.organization_id
-  content_json    = file("${path.module}/notebook.json")
-}
-```
+---
 
 ## Argument Reference
 
-The following arguments are supported:
-
 * `title` - (Required) The title of the notebook. Must be unique within the organization.
-* `content` - (Optional) The notebook content as an HCL object, expressed using `jsonencode({...})`. Produces the most granular `terraform plan` diffs. Mutually exclusive with `content_json`.
-* `content_json` - (Optional) The notebook content as a raw JSON string. Use when pasting content exported from the New Relic UI or loading from a file. Mutually exclusive with `content`.
-* `organization_id` - (Optional, Computed) The New Relic organization ID. When omitted, the provider resolves it automatically from the authenticated account.
-* `account_id` - (Optional, Computed) The New Relic account ID. Defaults to the account configured in the provider.
+* `content` - (Optional) The notebook body, expressed as an HCL object using `jsonencode({...})`. Terraform evaluates the expression at plan time, producing field-level diffs. Mutually exclusive with `content_json`.
+* `content_json` - (Optional) The notebook body as a raw JSON string. Use when working from a UI export or a file. Produces line-level diffs of normalized content. Mutually exclusive with `content`.
+* `organization_id` - (Optional, Computed) The New Relic organization ID. Resolved automatically from the provider configuration when omitted. **Changing this value forces the notebook to be deleted and re-created.**
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
-
-* `guid` - The unique entity identifier (GUID) of the notebook in New Relic.
+* `guid` - The unique entity identifier (GUID) assigned to the notebook by New Relic.
 
 ## Import
 
-Notebooks can be imported using the entity GUID:
+Import a notebook using its entity GUID:
 
 ```
 $ terraform import newrelic_notebook.example <guid>
 ```
 
-## Diff Behaviour
+After importing, set either `content` or `content_json` in your configuration to match the live notebook content. Running `terraform plan` will show any differences between the imported state and your declared configuration.
 
-Both `content` and `content_json` are stored in state as canonical JSON (alphabetically sorted keys, 2-space indentation). Two JSON strings that differ only in whitespace, indentation, or key ordering are treated as equal and produce no diff.
+## Plan Diff Behavior
 
-**With `content = jsonencode({...})`**, Terraform shows individual attribute-level diffs:
+Both content fields store a normalized form of the JSON in state (alphabetically sorted keys, 2-space indentation). This means:
 
-```
-~ content = jsonencode(
-    ~ {
-        ~ blocks = [
-            ~ {
-                ~ content = {
-                    ~ props = {
-                        ~ text = "## Hello" -> "## Hello, world"
-                      }
-                  }
-              },
-          ]
-      }
-  )
-```
-
-**With `content_json`**, Terraform shows a line-level diff of the normalised JSON. Only lines that actually changed are highlighted - unchanged blocks appear as context without `+`/`-` markers.
+- Reformatting your HCL or JSON file without changing any values produces **no diff** in `terraform plan`.
+- Changing a single widget property shows **only that property** as changed.
+- Externally modifying the notebook in the UI causes the changed fields to surface **precisely** in the next `terraform plan`.

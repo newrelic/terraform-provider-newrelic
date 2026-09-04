@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -61,7 +62,7 @@ func testAccCheckNewRelicNotebookDestroy(s *terraform.State) error {
 		orgID := rs.Primary.Attributes["organization_id"]
 
 		_, err := providerConfig.NewClient.Notebooks.GetNotebookContentWithContext(
-			nil, orgID, guid, //nolint:staticcheck // nil ctx acceptable in test destroy check
+			context.Background(), orgID, guid,
 		)
 		if err != nil && isNotebookNotFoundError(err) {
 			continue
@@ -296,7 +297,7 @@ func TestAccNewRelicNotebook_JSONReformatNoDrift(t *testing.T) {
 	setupFleetTestCredentials(t)
 
 	// The two configs below are semantically identical (same content) but
-	// differ in key ordering. Both should hash to the same normalised form.
+	// differ in key ordering. Both should hash to the same normalized form.
 	configV1 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title           = %q
@@ -305,7 +306,7 @@ resource "newrelic_notebook" "test" {
 }
 `, rName, orgID)
 
-	// Re-ordered JSON keys - normalised form is identical so no diff should appear.
+	// Re-ordered JSON keys - normalized form is identical so no diff should appear.
 	configV2 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title           = %q
