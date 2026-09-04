@@ -159,6 +159,7 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "title", rName),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 					resource.TestCheckResourceAttrSet(resourceName, "organization_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "version"),
 					resource.TestCheckResourceAttrSet(resourceName, "content"),
 				),
 			},
