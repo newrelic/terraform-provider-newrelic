@@ -20,7 +20,18 @@ func resourceNewRelicNotebook() *schema.Resource {
 		UpdateContext: resourceNewRelicNotebookUpdate,
 		DeleteContext: resourceNewRelicNotebookDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			// Import accepts either a bare GUID or a composite "GUID:mode" ID.
+			// mode must be "content" or "content_json" (default: content_json).
+			//
+			//   terraform import newrelic_notebook.example NjQy...
+			//   terraform import newrelic_notebook.example NjQy...:content_json
+			//   terraform import newrelic_notebook.example NjQy...:content
+			//
+			// Specifying :content means the imported state will have the content
+			// field populated (matching a config that uses content = jsonencode({...})).
+			// Specifying :content_json (or omitting the mode) populates content_json,
+			// matching a config that uses content_json = file("...") or a raw JSON string.
+			StateContext: resourceNewRelicNotebookImportState,
 		},
 		CustomizeDiff: resourceNewRelicNotebookCustomizeDiff,
 		Timeouts: &schema.ResourceTimeout{
@@ -272,4 +283,51 @@ func resourceNewRelicNotebookDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return nil
+}
+
+// resourceNewRelicNotebookImportState handles terraform import for notebooks.
+//
+// It accepts either a bare GUID or a composite "GUID:mode" ID where mode is
+// "content" or "content_json". The mode tells the resource which field to
+// populate when Read fetches the notebook body from the Blob Storage API:
+//
+//   - content_json (default) - populates the content_json field, matching a
+//     config that uses content_json = file("...") or an inline JSON string.
+//   - content - populates the content field, matching a config that uses
+//     content = jsonencode({...}).
+//
+// After importing, run terraform plan to confirm the imported state matches
+// your configuration. If the modes differ (e.g., you import without a mode
+// but your config uses content), the next plan will surface the difference so
+// you can align your config accordingly.
+func resourceNewRelicNotebookImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), ":", 2)
+	guid := parts[0]
+	if guid == "" {
+		return nil, fmt.Errorf("import ID must be a notebook GUID, optionally followed by :content or :content_json")
+	}
+
+	mode := "content_json"
+	if len(parts) == 2 {
+		mode = parts[1]
+		if mode != "content" && mode != "content_json" {
+			return nil, fmt.Errorf(
+				"invalid import mode %q: use %q for HCL jsonencode authoring or %q for raw JSON / file() authoring "+
+					"(e.g. terraform import newrelic_notebook.example %s:%s)",
+				mode, "content", "content_json", guid, "content_json",
+			)
+		}
+	}
+
+	d.SetId(guid)
+
+	// Set a minimal valid placeholder in the target field so notebookContentField
+	// detects the desired mode when Read runs immediately after this function.
+	// Read overwrites it with the actual normalized content from the Blob API.
+	placeholder := `{"version":"1","blocks":[]}`
+	if err := d.Set(mode, placeholder); err != nil {
+		return nil, fmt.Errorf("failed to signal import mode %q: %w", mode, err)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
