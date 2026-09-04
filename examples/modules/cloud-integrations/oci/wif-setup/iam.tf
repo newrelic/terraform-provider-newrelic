@@ -28,7 +28,7 @@ resource "oci_identity_policy" "newrelic_service_policy" {
   description    = "Policy granting New Relic read-only access to OCI resources"
 
   statements = local.is_upst ? [
-    "Allow group '${oci_identity_domains_group.newrelic_service_group[0].display_name}' to read all-resources in tenancy",
+    "Allow group id ${oci_identity_domains_group.newrelic_service_group[0].ocid} to read all-resources in tenancy",
     ] : [
     format("allow any-user to read all-resources in tenancy where all { request.principal.type = 'identityfederateddomainapp', request.principal.ext_account_id = '%s', request.principal.ext_tenancy_id = '%s' }", var.newrelic_account_id, var.tenancy_ocid),
   ]
