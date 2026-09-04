@@ -5,7 +5,6 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -14,52 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-// testAccPreCheckNotebookEnvVars skips the test when the Notebooks-specific
-// credentials are absent. Notebooks require the fleet-test account because
-// that is currently the only account with the Notebooks entitlement enabled.
-func testAccPreCheckNotebookEnvVars(t *testing.T) {
-	t.Helper()
-	if v := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY"); v == "" {
-		t.Skip("NEW_RELIC_FLEET_TEST_API_KEY must be set for Notebook acceptance tests")
-	}
-	if v := os.Getenv("NEW_RELIC_FLEET_TEST_ORGANIZATION_ID"); v == "" {
-		t.Skip("NEW_RELIC_FLEET_TEST_ORGANIZATION_ID must be set for Notebook acceptance tests")
-	}
-}
-
-// setupNotebookTestCredentials swaps the provider's default API key and account
-// ID for the fleet-test equivalents for the duration of the test. This mirrors
-// setupFleetTestCredentials from resource_newrelic_fleet_test.go, but is
-// defined here so the notebook tests compile under the DASHBOARDS build tag
-// without depending on files that are only included under integration || FLEET.
-func setupNotebookTestCredentials(t *testing.T) {
-	t.Helper()
-
-	originalAPIKey := os.Getenv("NEW_RELIC_API_KEY")
-	originalAccountID := os.Getenv("NEW_RELIC_ACCOUNT_ID")
-	t.Cleanup(func() {
-		os.Setenv("NEW_RELIC_API_KEY", originalAPIKey)       //nolint:errcheck
-		os.Setenv("NEW_RELIC_ACCOUNT_ID", originalAccountID) //nolint:errcheck
-	})
-
-	if v := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY"); v != "" {
-		os.Setenv("NEW_RELIC_API_KEY", v) //nolint:errcheck
-	}
-	if v := os.Getenv("NEW_RELIC_FLEET_TEST_ACCOUNT_ID"); v != "" {
-		os.Setenv("NEW_RELIC_ACCOUNT_ID", v) //nolint:errcheck
-	}
-}
-
-// testNotebookOrgID returns the org ID used for all notebook acceptance tests.
-func testNotebookOrgID() string {
-	if id := os.Getenv("NEW_RELIC_FLEET_TEST_ORGANIZATION_ID"); id != "" {
-		return id
-	}
-	return "b961cf81-d62b-4359-8822-7b1d6dadd374"
-}
-
-// testAccCheckNewRelicNotebookExists verifies that the notebook resource exists
-// in both Terraform state and on the remote platform.
+// testAccCheckNewRelicNotebookExists verifies the notebook is in Terraform state.
 func testAccCheckNewRelicNotebookExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -73,8 +27,8 @@ func testAccCheckNewRelicNotebookExists(n string) resource.TestCheckFunc {
 	}
 }
 
-// testAccCheckNewRelicNotebookDestroy verifies that a notebook has been deleted
-// from the platform after a `terraform destroy`.
+// testAccCheckNewRelicNotebookDestroy verifies the notebook has been removed
+// from the platform after a terraform destroy.
 func testAccCheckNewRelicNotebookDestroy(s *terraform.State) error {
 	providerConfig := testAccProvider.Meta().(*ProviderConfig)
 	for _, rs := range s.RootModule().Resources {
@@ -98,10 +52,8 @@ func testAccCheckNewRelicNotebookDestroy(s *terraform.State) error {
 	return nil
 }
 
-// isNotebookNotFoundError matches the "not found" error surfaced by GetNotebookContent
-// when the notebook has been deleted. The Blob API returns a plain-text
-// "Blob not found." body with HTTP 404; the Go client surfaces this as an
-// error containing "not found".
+// isNotebookNotFoundError matches the not-found error the client surfaces when
+// the Blob API returns HTTP 404.
 func isNotebookNotFoundError(err error) bool {
 	if err == nil {
 		return false
@@ -110,13 +62,12 @@ func isNotebookNotFoundError(err error) bool {
 	return strings.Contains(msg, "not found") || strings.Contains(msg, "404") || strings.Contains(msg, "Blob not found")
 }
 
-// ── Test helpers ──────────────────────────────────────────────────────────────
+// ── Test configs ──────────────────────────────────────────────────────────────
 
-func testAccNotebookConfigContent(name, text, orgID string) string {
+func testAccNotebookConfigContent(name, text string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title           = %[1]q
-  organization_id = %[3]q
+  title   = %[1]q
   content = jsonencode({
     version = "1"
     blocks = [
@@ -131,15 +82,14 @@ resource "newrelic_notebook" "test" {
     ]
   })
 }
-`, name, text, orgID)
+`, name, text)
 }
 
-func testAccNotebookConfigContentJSON(name, orgID string) string {
+func testAccNotebookConfigContentJSON(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title           = %[1]q
-  organization_id = %[2]q
-  content_json    = jsonencode({
+  title        = %[1]q
+  content_json = jsonencode({
     version = "1"
     blocks = [
       {
@@ -153,15 +103,14 @@ resource "newrelic_notebook" "test" {
     ]
   })
 }
-`, name, orgID)
+`, name)
 }
 
-func testAccNotebookConfigContentJSONUpdated(name, orgID string) string {
+func testAccNotebookConfigContentJSONUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title           = %[1]q
-  organization_id = %[2]q
-  content_json    = jsonencode({
+  title        = %[1]q
+  content_json = jsonencode({
     version = "1"
     blocks = [
       {
@@ -178,37 +127,33 @@ resource "newrelic_notebook" "test" {
           type = "visualization"
           id   = "viz.billboard"
           props = {
-            nrqlQueries = [{ accountIds = [4481681], query = "SELECT count(*) FROM Transaction SINCE 1 hour ago" }]
+            nrqlQueries = [{ accountIds = [0], query = "SELECT count(*) FROM Transaction SINCE 1 hour ago" }]
           }
         }
       }
     ]
   })
 }
-`, name, orgID)
+`, name)
 }
 
 // ── Acceptance tests ──────────────────────────────────────────────────────────
 
 // TestAccNewRelicNotebook_ContentMode covers the full lifecycle using the
-// content (jsonencode) field: create → no-drift plan → title update → content
-// update → import → destroy.
+// content (jsonencode) field.
 func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-notebook-content-%s", acctest.RandString(5))
 	rNameUpdated := rName + "-renamed"
-	orgID := testNotebookOrgID()
 	resourceName := "newrelic_notebook.test"
 
-	setupNotebookTestCredentials(t)
-
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckNotebookEnvVars(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: create.
 			{
-				Config: testAccNotebookConfigContent(rName, "Initial text", orgID),
+				Config: testAccNotebookConfigContent(rName, "Initial text"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "title", rName),
@@ -217,23 +162,23 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "content"),
 				),
 			},
-			// Step 2: no drift expected after a clean apply.
+			// Step 2: no drift after a clean apply.
 			{
-				Config:             testAccNotebookConfigContent(rName, "Initial text", orgID),
+				Config:             testAccNotebookConfigContent(rName, "Initial text"),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Step 3: rename - title update triggers RenameNotebook.
+			// Step 3: rename.
 			{
-				Config: testAccNotebookConfigContent(rNameUpdated, "Initial text", orgID),
+				Config: testAccNotebookConfigContent(rNameUpdated, "Initial text"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "title", rNameUpdated),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 				),
 			},
-			// Step 4: content update - Blob API receives new JSON.
+			// Step 4: content update.
 			{
-				Config: testAccNotebookConfigContent(rNameUpdated, "Updated text after content change", orgID),
+				Config: testAccNotebookConfigContent(rNameUpdated, "Updated text"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "title", rNameUpdated),
 					resource.TestCheckResourceAttrSet(resourceName, "content"),
@@ -241,11 +186,11 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 			},
 			// Step 5: no drift after content update.
 			{
-				Config:             testAccNotebookConfigContent(rNameUpdated, "Updated text after content change", orgID),
+				Config:             testAccNotebookConfigContent(rNameUpdated, "Updated text"),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Step 6: import - GUID passthrough reconstructs state from the platform.
+			// Step 6: import.
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -256,23 +201,19 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 }
 
 // TestAccNewRelicNotebook_ContentJSONMode covers the full lifecycle using the
-// content_json field: create → no-drift plan → update (add block) → no-drift
-// → destroy.
+// content_json field.
 func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-notebook-json-%s", acctest.RandString(5))
-	orgID := testNotebookOrgID()
 	resourceName := "newrelic_notebook.test"
 
-	setupNotebookTestCredentials(t)
-
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckNotebookEnvVars(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
 		Steps: []resource.TestStep{
-			// Step 1: create with content_json.
+			// Step 1: create.
 			{
-				Config: testAccNotebookConfigContentJSON(rName, orgID),
+				Config: testAccNotebookConfigContentJSON(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "title", rName),
@@ -282,20 +223,20 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 			},
 			// Step 2: no drift.
 			{
-				Config:             testAccNotebookConfigContentJSON(rName, orgID),
+				Config:             testAccNotebookConfigContentJSON(rName),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
 			// Step 3: update - add a second block.
 			{
-				Config: testAccNotebookConfigContentJSONUpdated(rName, orgID),
+				Config: testAccNotebookConfigContentJSONUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "content_json"),
 				),
 			},
 			// Step 4: no drift after update.
 			{
-				Config:             testAccNotebookConfigContentJSONUpdated(rName, orgID),
+				Config:             testAccNotebookConfigContentJSONUpdated(rName),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -310,41 +251,32 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 }
 
 // TestAccNewRelicNotebook_JSONReformatNoDrift verifies that reformatting the
-// JSON in content_json (different whitespace / key ordering) does not trigger
-// a plan change. This is the DiffSuppressFunc invariant.
+// JSON in content_json does not trigger a plan change.
 func TestAccNewRelicNotebook_JSONReformatNoDrift(t *testing.T) {
-	orgID := testNotebookOrgID()
 	rName := fmt.Sprintf("tf-acc-notebook-nodrift-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
 
-	setupNotebookTestCredentials(t)
-
-	// The two configs below are semantically identical (same content) but
-	// differ in key ordering. Both should hash to the same normalized form.
 	configV1 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title           = %q
-  organization_id = %q
-  content_json    = "{\"version\":\"1\",\"blocks\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}"
+  title        = %q
+  content_json = "{\"version\":\"1\",\"blocks\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}"
 }
-`, rName, orgID)
+`, rName)
 
-	// Re-ordered JSON keys - normalized form is identical so no diff should appear.
+	// Same content, different key ordering - must produce no plan change.
 	configV2 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title           = %q
-  organization_id = %q
-  content_json    = "{\"blocks\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"type\":\"widget\"}],\"version\":\"1\"}"
+  title        = %q
+  content_json = "{\"blocks\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"type\":\"widget\"}],\"version\":\"1\"}"
 }
-`, rName, orgID)
+`, rName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckNotebookEnvVars(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
 		Steps: []resource.TestStep{
 			{Config: configV1, Check: testAccCheckNewRelicNotebookExists(resourceName)},
-			// Switch to re-ordered keys - must produce no plan change.
 			{Config: configV2, PlanOnly: true, ExpectNonEmptyPlan: false},
 		},
 	})
