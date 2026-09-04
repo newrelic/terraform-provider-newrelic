@@ -171,13 +171,74 @@ resource "newrelic_notebook" "investigation" {
 
 ### Using `content_json` from a file
 
-Paste JSON exported directly from the New Relic Notebooks UI into a file and reference it here.
+Paste JSON exported from the New Relic Notebooks UI directly into a file and reference it. The JSON below is the exact equivalent of the multi-widget `content` example above, so you can see the 1:1 parity between the two modes.
+
+**`notebooks/service-health.json`**
+
+```json
+{
+  "version": "1",
+  "blocks": [
+    {
+      "type": "widget",
+      "content": {
+        "type": "visualization",
+        "id": "viz.markdown",
+        "props": {
+          "text": "# Service Health\n\nLive metrics for the checkout service."
+        }
+      }
+    },
+    {
+      "type": "widget",
+      "content": {
+        "type": "visualization",
+        "id": "viz.billboard",
+        "props": {
+          "title": "Error rate (last hour)",
+          "nrqlQueries": [
+            {
+              "accountIds": [1234567],
+              "query": "SELECT percentage(count(*), WHERE error IS true) FROM Transaction SINCE 1 hour ago"
+            }
+          ],
+          "thresholdsWithSeriesOverrides": {
+            "thresholds": [
+              { "to": 1, "severity": "success" },
+              { "from": 1, "to": 5, "severity": "warning" },
+              { "from": 5, "severity": "critical" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "widget",
+      "content": {
+        "type": "visualization",
+        "id": "viz.line",
+        "props": {
+          "title": "Throughput over time",
+          "nrqlQueries": [
+            {
+              "accountIds": [1234567],
+              "query": "SELECT count(*) FROM Transaction TIMESERIES AUTO"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+**`main.tf`**
 
 ```hcl
-resource "newrelic_notebook" "from_export" {
-  title           = "Weekly Report"
+resource "newrelic_notebook" "service_overview" {
+  title           = "Service Health Overview"
   organization_id = var.organization_id
-  content_json    = file("${path.module}/notebooks/weekly-report.json")
+  content_json    = file("${path.module}/notebooks/service-health.json")
 }
 ```
 
