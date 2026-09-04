@@ -190,14 +190,20 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Import is not tested here because after terraform import the Read
-			// path defaults to content_json (it cannot infer the original mode),
-			// which would produce a genuine field-name mismatch against a config
-			// that uses content. That mismatch IS correct behaviour - a user in
-			// content mode who imports would need to switch their config to
-			// content_json before the next plan settles. Import is covered by
-			// TestAccNewRelicNotebook_ContentJSONMode where there is no
-			// field-name ambiguity.
+			// Step 6: import with :content mode so the imported state has the
+			// content field populated, matching this config's usage of content.
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return rs.Primary.ID + ":content", nil
+				},
+			},
 		},
 	})
 }

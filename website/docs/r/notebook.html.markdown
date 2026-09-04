@@ -310,13 +310,18 @@ resource "newrelic_notebook" "per_service" {
 
 ## Import
 
-Import a notebook using its entity GUID:
+Notebooks can be imported by GUID. Optionally append `:content` or `:content_json` to control which field is populated in state, matching your Terraform configuration.
 
 ```
+# Default - imports into content_json (for configs using content_json = file(...) or inline JSON)
 $ terraform import newrelic_notebook.example <guid>
+$ terraform import newrelic_notebook.example <guid>:content_json
+
+# Import into content field (for configs using content = jsonencode({...}))
+$ terraform import newrelic_notebook.example <guid>:content
 ```
 
-After importing, set either `content` or `content_json` in your configuration to match the live notebook content. Running `terraform plan` will show any differences between the imported state and your declared configuration.
+After importing, run `terraform plan`. If the imported state and your config use the same mode, the plan will show no changes. If they differ, the plan surfaces the difference so you can reconcile your configuration.
 
 ## Plan Diff Behavior
 
