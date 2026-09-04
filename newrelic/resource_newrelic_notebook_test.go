@@ -27,6 +27,29 @@ func testAccPreCheckNotebookEnvVars(t *testing.T) {
 	}
 }
 
+// setupNotebookTestCredentials swaps the provider's default API key and account
+// ID for the fleet-test equivalents for the duration of the test. This mirrors
+// setupFleetTestCredentials from resource_newrelic_fleet_test.go, but is
+// defined here so the notebook tests compile under the DASHBOARDS build tag
+// without depending on files that are only included under integration || FLEET.
+func setupNotebookTestCredentials(t *testing.T) {
+	t.Helper()
+
+	originalAPIKey := os.Getenv("NEW_RELIC_API_KEY")
+	originalAccountID := os.Getenv("NEW_RELIC_ACCOUNT_ID")
+	t.Cleanup(func() {
+		os.Setenv("NEW_RELIC_API_KEY", originalAPIKey)       //nolint:errcheck
+		os.Setenv("NEW_RELIC_ACCOUNT_ID", originalAccountID) //nolint:errcheck
+	})
+
+	if v := os.Getenv("NEW_RELIC_FLEET_TEST_API_KEY"); v != "" {
+		os.Setenv("NEW_RELIC_API_KEY", v) //nolint:errcheck
+	}
+	if v := os.Getenv("NEW_RELIC_FLEET_TEST_ACCOUNT_ID"); v != "" {
+		os.Setenv("NEW_RELIC_ACCOUNT_ID", v) //nolint:errcheck
+	}
+}
+
 // testNotebookOrgID returns the org ID used for all notebook acceptance tests.
 func testNotebookOrgID() string {
 	if id := os.Getenv("NEW_RELIC_FLEET_TEST_ORGANIZATION_ID"); id != "" {
@@ -176,7 +199,7 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 	orgID := testNotebookOrgID()
 	resourceName := "newrelic_notebook.test"
 
-	setupFleetTestCredentials(t)
+	setupNotebookTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckNotebookEnvVars(t) },
@@ -240,7 +263,7 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 	orgID := testNotebookOrgID()
 	resourceName := "newrelic_notebook.test"
 
-	setupFleetTestCredentials(t)
+	setupNotebookTestCredentials(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckNotebookEnvVars(t) },
@@ -294,7 +317,7 @@ func TestAccNewRelicNotebook_JSONReformatNoDrift(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-notebook-nodrift-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
 
-	setupFleetTestCredentials(t)
+	setupNotebookTestCredentials(t)
 
 	// The two configs below are semantically identical (same content) but
 	// differ in key ordering. Both should hash to the same normalized form.
