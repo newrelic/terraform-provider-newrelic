@@ -190,17 +190,14 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Step 6: import.
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// On import the resource cannot know whether the original config
-				// used content or content_json; it always populates content_json.
-				// Ignore both so ImportStateVerify passes regardless of which mode
-				// was active before the import.
-				ImportStateVerifyIgnore: []string{"content", "content_json"},
-			},
+			// Import is not tested here because after terraform import the Read
+			// path defaults to content_json (it cannot infer the original mode),
+			// which would produce a genuine field-name mismatch against a config
+			// that uses content. That mismatch IS correct behaviour - a user in
+			// content mode who imports would need to switch their config to
+			// content_json before the next plan settles. Import is covered by
+			// TestAccNewRelicNotebook_ContentJSONMode where there is no
+			// field-name ambiguity.
 		},
 	})
 }
@@ -245,12 +242,13 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Step 5: import.
+			// Step 5: import - content_json mode is fully verifiable because
+			// the Read path also writes to content_json, so pre- and post-import
+			// state use the same field name and the same normalized value.
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"content", "content_json"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
