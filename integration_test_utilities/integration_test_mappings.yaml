@@ -367,6 +367,12 @@ resource_newrelic_monitor_downtime.go:
 resource_newrelic_monitor_downtime_test.go:
   test: true
   product_mapping: SYNTHETICS
+resource_newrelic_notebook.go:
+  test: false
+  product_mapping: DASHBOARDS
+resource_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
 resource_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
@@ -586,6 +592,9 @@ structures_newrelic_infra_alert_condition_test.go:
 structures_newrelic_monitor_downtime.go:
   test: false
   product_mapping: SYNTHETICS
+structures_newrelic_notebook.go:
+  test: false
+  product_mapping: DASHBOARDS
 structures_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
