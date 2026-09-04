@@ -193,7 +193,6 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 			// Step 6: import.
 			{
 				ResourceName:      resourceName,
-				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				// On import the resource cannot know whether the original config
