@@ -32,7 +32,6 @@ The simplest notebook - a single text block authored in HCL.
 ```hcl
 resource "newrelic_notebook" "incident_notes" {
   title           = "Incident Response Notes"
-  organization_id = var.organization_id
 
   content = jsonencode({
     version = "1"
@@ -59,7 +58,6 @@ A notebook mixing a markdown header, a billboard metric, and a time-series chart
 ```hcl
 resource "newrelic_notebook" "service_overview" {
   title           = "Service Health Overview"
-  organization_id = var.organization_id
 
   content = jsonencode({
     version = "1"
@@ -125,7 +123,6 @@ Group related widgets visually using a `container` with `layout = "stack"`.
 ```hcl
 resource "newrelic_notebook" "investigation" {
   title           = "DB Investigation"
-  organization_id = var.organization_id
 
   content = jsonencode({
     version = "1"
@@ -237,7 +234,6 @@ Paste JSON exported from the New Relic Notebooks UI directly into a file and ref
 ```hcl
 resource "newrelic_notebook" "service_overview" {
   title           = "Service Health Overview"
-  organization_id = var.organization_id
   content_json    = file("${path.module}/notebooks/service-health.json")
 }
 ```
@@ -265,7 +261,6 @@ locals {
 
 resource "newrelic_notebook" "generated" {
   title           = "Auto-generated Notebook"
-  organization_id = var.organization_id
   content_json    = local.notebook_body
 }
 ```
@@ -283,7 +278,6 @@ variable "services" {
 resource "newrelic_notebook" "per_service" {
   for_each        = var.services
   title           = "${each.value} runbook"
-  organization_id = var.organization_id
 
   content = jsonencode({
     version = "1"
@@ -308,7 +302,7 @@ resource "newrelic_notebook" "per_service" {
 * `title` - (Required) The title of the notebook. Must be unique within the organization.
 * `content` - (Optional) The notebook body, expressed as an HCL object using `jsonencode({...})`. Terraform evaluates the expression at plan time, producing field-level diffs. Mutually exclusive with `content_json`.
 * `content_json` - (Optional) The notebook body as a raw JSON string. Use when working from a UI export or a file. Produces line-level diffs of normalized content. Mutually exclusive with `content`.
-* `organization_id` - (Optional, Computed) The New Relic organization ID. Resolved automatically from the provider configuration when omitted. **Changing this value forces the notebook to be deleted and re-created.**
+* `organization_id` - (Computed) The New Relic organization ID. Resolved automatically from the provider credentials.
 
 ## Attributes Reference
 

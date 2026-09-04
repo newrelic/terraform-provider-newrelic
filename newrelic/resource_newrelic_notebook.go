@@ -70,12 +70,14 @@ func resourceNewRelicNotebook() *schema.Resource {
 					"Mutually exclusive with content.",
 			},
 
+			// organization_id is resolved automatically from the authenticated
+			// account and stored in state for subsequent API calls. It is not
+			// a user-facing argument; notebooks are organization-scoped and the
+			// organization is derived from the provider credentials.
 			"organization_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The New Relic organization ID the notebook belongs to. Defaults to the organization of the authenticated account when omitted. Changing this value forces recreation of the notebook.",
+				Description: "The New Relic organization ID the notebook belongs to. Resolved automatically from the provider credentials.",
 			},
 			"guid": {
 				Type:        schema.TypeString,
@@ -120,7 +122,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	orgID, err := getOrganizationID(ctx, providerConfig, d.Get("organization_id").(string))
+	orgID, err := getOrganizationID(ctx, providerConfig, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,9 +206,13 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	client := providerConfig.NewClient
 
 	guid := d.Id()
-	orgID, err := getOrganizationID(ctx, providerConfig, d.Get("organization_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	orgID, _ := d.Get("organization_id").(string)
+	if orgID == "" {
+		var err error
+		orgID, err = getOrganizationID(ctx, providerConfig, "")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	title := d.Get("title").(string)
@@ -247,9 +253,13 @@ func resourceNewRelicNotebookDelete(ctx context.Context, d *schema.ResourceData,
 	client := providerConfig.NewClient
 
 	guid := d.Id()
-	orgID, err := getOrganizationID(ctx, providerConfig, d.Get("organization_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	orgID, _ := d.Get("organization_id").(string)
+	if orgID == "" {
+		var err error
+		orgID, err = getOrganizationID(ctx, providerConfig, "")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	log.Printf("[INFO] Deleting New Relic notebook %s", guid)
