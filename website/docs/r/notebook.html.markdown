@@ -307,6 +307,7 @@ resource "newrelic_notebook" "per_service" {
 ## Attributes Reference
 
 * `guid` - The unique entity identifier (GUID) assigned to the notebook by New Relic.
+* `version` - The current revision counter for the notebook content. Starts at 1 and increments on every content write. Used internally to skip unnecessary Blob API reads when the content has not changed.
 
 ## Import
 

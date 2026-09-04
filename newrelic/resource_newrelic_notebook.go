@@ -95,6 +95,18 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Computed:    true,
 				Description: "The unique entity identifier of the notebook in New Relic.",
 			},
+			// version is the monotonic revision counter maintained by the Blob
+			// Storage API (increments on every content write: 1 after create,
+			// 2 after the first update, and so on). It is stored in state and
+			// used as a change detector on every Read: if the server-side
+			// version equals the stored version the content is unchanged and
+			// the Blob API GET is skipped, reducing terraform plan from two
+			// serial API calls to one in the common no-change case.
+			"version": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The current revision of the notebook content. Increments each time the content is updated.",
+			},
 		},
 	}
 }
@@ -192,6 +204,21 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		orgID, _ = d.Get("organization_id").(string)
 	}
 
+	// Version-based short-circuit: metadata.version is a monotonic counter
+	// that the Blob Storage API increments on every content write. If the
+	// server-side version equals what is already in state, the content has
+	// not changed and we can skip the second API call (Blob GET), reducing
+	// terraform plan from two serial round-trips to one in the common case.
+	storedVersion, _ := d.Get("version").(int)
+	if storedVersion > 0 && nb.Metadata.Version == storedVersion {
+		log.Printf("[DEBUG] Notebook %s content unchanged (version %d) - skipping Blob GET", guid, storedVersion)
+		_ = d.Set("title", nb.Name)
+		_ = d.Set("guid", nb.ID)
+		_ = d.Set("organization_id", orgID)
+		return nil
+	}
+
+	// Content may have changed - fetch from Blob Storage.
 	rawContent, err := client.Notebooks.GetNotebookContentWithContext(ctx, orgID, guid)
 	if err != nil {
 		return diag.FromErr(err)
@@ -200,6 +227,7 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("title", nb.Name)
 	_ = d.Set("guid", nb.ID)
 	_ = d.Set("organization_id", orgID)
+	_ = d.Set("version", nb.Metadata.Version)
 
 	// Write the fetched content back into whichever field the user declared.
 	// On a fresh import, neither field is set yet; default to content_json so
