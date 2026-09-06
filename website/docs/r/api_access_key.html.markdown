@@ -72,7 +72,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the API key.
-- `key` - The actual API key.
+- `key` - The obfuscated value of the API key (e.g., `NRAK-XXXXXXXXXX`). Due to a NerdGraph API limitation, the full unobfuscated key value is not returned. This attribute is masked and not visible in your terminal, CI, etc.
   - <span style="color:tomato;">It is important to exercise caution when exporting the value of `key`, as it is sensitive information</span>. Avoid logging or exposing it inappropriately.
 
 ## Important Considerations
