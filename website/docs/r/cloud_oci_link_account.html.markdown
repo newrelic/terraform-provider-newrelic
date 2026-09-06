@@ -9,7 +9,7 @@ description: |-
 
 Use this resource to link an Oracle Cloud Infrastructure (OCI) account to New Relic.
 
-This setup is used to create a provider account with OCI credentials, establishing a relationship between Oracle and New Relic. Additionally, as part of this integration, we store WIF (Workload Identity Federation) credentials which are further used for fetching data and validations, and vault OCIDs corresponding to the vault resource where the New Relic ingest and user keys are stored in the OCI console.
+This setup is used to create a provider account with OCI credentials, establishing a relationship between Oracle and New Relic. Additionally, as part of this integration, we store WIF (Workload Identity Federation) credentials which are further used for fetching data and validations. For METRICS or LOGS integrations, vault OCIDs are stored for the New Relic ingest and user keys held in OCI Vault. For COST-only integrations, vault and compartment fields are not required.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ WIF configuration steps:
 
 ## Example Usage
 
-Minimal example (required arguments for creation):
+Metrics/Logs example (with vault secrets and compartment):
 
 ```hcl
 resource "newrelic_cloud_oci_link_account" "example" {
@@ -54,6 +54,24 @@ resource "newrelic_cloud_oci_link_account" "example" {
   oci_client_secret = var.oci_client_secret                                        # Sensitive
   oci_domain_url    = "https://idcs-1234567890abcdef.identity.oraclecloud.com"    # Identity domain base URL
   oci_home_region   = "us-ashburn-1"
+  ingest_vault_ocid = "ocid1.vaultsecret.oc1..ccccccccexample"
+  user_vault_ocid   = "ocid1.vaultsecret.oc1..ddddddddexample"
+  instrumentation_type = "METRICS,LOGS"
+}
+```
+
+Cost-only example (no compartment or vault fields required):
+
+```hcl
+resource "newrelic_cloud_oci_link_account" "cost_example" {
+  account_id        = 1234567
+  tenant_id         = "ocid1.tenancy.oc1..aaaaaaaaexample"
+  name              = "my-oci-cost-link"
+  oci_client_id     = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+  oci_client_secret = var.oci_client_secret
+  oci_domain_url    = "https://idcs-1234567890abcdef.identity.oraclecloud.com"
+  oci_home_region   = "us-ashburn-1"
+  instrumentation_type = "COST"
 }
 ```
 
@@ -90,14 +108,14 @@ The following arguments are supported (current provider schema):
 - `account_id` - (Optional, ForceNew) New Relic account to operate on. Overrides the provider-level `account_id`. If omitted, use the provider default or `NEW_RELIC_ACCOUNT_ID`.
 - `tenant_id` - (Required, ForceNew) OCI tenancy OCID (root tenancy). Changing forces a new linked account.
 - `name` - (Required) Display name for the linked account.
-- `compartment_ocid` - (Required) OCI compartment OCID representing (or containing) the monitored resources/newrelic compartment.
+- `compartment_ocid` - (Optional) OCI compartment OCID representing (or containing) the monitored resources/newrelic compartment. Required when `instrumentation_type` includes `METRICS` or `LOGS`; omit for `COST`-only integrations.
 - `oci_client_id` - (Required) OCI Identity Domain (IDCS) OAuth2 client ID used for workload identity federation.
 - `oci_client_secret` - (Required, Sensitive) OAuth2 client secret. Not displayed in plans or state outputs.
 - `oci_domain_url` - (Required) Base URL of the OCI Identity Domain (e.g. `https://idcs-<hash>.identity.oraclecloud.com`).
 - `oci_home_region` - (Required) Home region of the tenancy (e.g. `us-ashburn-1`).
-- `ingest_vault_ocid` - (Required) Vault secret OCID containing an ingest secret.
-- `user_vault_ocid` - (Required) Vault secret OCID containing a user or auxiliary secret.
-- `instrumentation_type` - (Optional) Specifies the type of integration, such as metrics, logs, or a combination of logs and metrics (e.g., `METRICS`, `LOGS`, `METRICS,LOGS`).
+- `ingest_vault_ocid` - (Optional) Vault secret OCID containing a New Relic ingest key. Required when `instrumentation_type` includes `METRICS` or `LOGS`; omit for `COST`-only integrations.
+- `user_vault_ocid` - (Optional) Vault secret OCID containing a New Relic user key. Required when `instrumentation_type` includes `METRICS` or `LOGS`; omit for `COST`-only integrations.
+- `instrumentation_type` - (Optional) Specifies the type of integration. Valid values: `METRICS`, `LOGS`, `COST`, or comma-separated combinations (e.g. `METRICS,LOGS`, `METRICS,LOGS,COST`).
 - `trust_type` - (Optional, ForceNew) The OCI WIF trust type. Allowed values are `UPST` (default) or `RPST`. Set this to `RPST` to use Resource Principal Session Token (claim-based) authorization instead of the default User Principal Session Token (service-user-based) flow. The corresponding identity propagation trust must be configured with the matching trust type in your OCI tenancy. Cannot be changed after creation — re-create the linked account to switch trust types. See the [WIF setup module](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci/wif-setup) for details.
 - `resource_tag` - (Optional, ForceNew, RPST only) A value propagated as the `ext_resource_tag` claim on the RPST so customer IAM policies can scope authorization on a specific tag value (for example, `env=prod`). Ignored when `trust_type = "UPST"`. Cannot be changed after creation.
 - `oci_region` - (Optional, Update-only) OCI region for the linkage (ignored on create, applied on update).

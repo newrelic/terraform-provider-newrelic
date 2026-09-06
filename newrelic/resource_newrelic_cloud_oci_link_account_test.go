@@ -27,10 +27,8 @@ func TestAccNewRelicCloudOciLinkAccount_Basic(t *testing.T) {
 		t.Skipf("INTEGRATION_TESTING_OCI_TENANT_ID must be set for this acceptance test")
 	}
 
+	// Compartment is only required for METRICS/LOGS; COST-only tests may omit it.
 	testOciCompartmentOcid := os.Getenv("INTEGRATION_TESTING_OCI_COMPARTMENT_OCID")
-	if testOciCompartmentOcid == "" {
-		t.Skipf("INTEGRATION_TESTING_OCI_COMPARTMENT_OCID must be set for this acceptance test")
-	}
 
 	testOciClientId := os.Getenv("INTEGRATION_TESTING_OCI_CLIENT_ID")
 	if testOciClientId == "" {
@@ -58,7 +56,10 @@ func TestAccNewRelicCloudOciLinkAccount_Basic(t *testing.T) {
 	testOciIngestVaultOcid := os.Getenv("INTEGRATION_TESTING_OCI_INGEST_VAULT_OCID")
 	testOciUserVaultOcid := os.Getenv("INTEGRATION_TESTING_OCI_USER_VAULT_OCID")
 	testOciLoggingStackOcid := os.Getenv("INTEGRATION_TESTING_OCI_LOGGING_STACK_OCID")
-	testOciInstrumentationType := "METRICS" // Default to metrics for testing
+	testOciInstrumentationType := os.Getenv("INTEGRATION_TESTING_OCI_INSTRUMENTATION_TYPE")
+	if testOciInstrumentationType == "" {
+		testOciInstrumentationType = "METRICS" // Default to metrics for testing
+	}
 
 	// NR-562518: trust_type defaults to UPST when env var not set; tests still pass for UPST customers.
 	testOciTrustType := os.Getenv("INTEGRATION_TESTING_OCI_TRUST_TYPE")
@@ -181,25 +182,33 @@ func testAccNewRelicOciLinkAccountConfig(OciLinkAccountTestConfig map[string]str
 		tenant_id              = "%s"
 		name                   = "%s"
 		account_id             = "%s"
-		compartment_ocid       = "%s"
 		oci_client_id          = "%s"
 		oci_client_secret      = "%s"
 		oci_domain_url         = "%s"
 		oci_home_region        = "%s"
-		ingest_vault_ocid      = "%s"
-		user_vault_ocid        = "%s"
 		`,
 		OciLinkAccountTestConfig["account_id"],
 		OciLinkAccountTestConfig["tenant_id"],
 		OciLinkAccountTestConfig["name"],
 		OciLinkAccountTestConfig["account_id"],
-		OciLinkAccountTestConfig["compartment_ocid"],
 		OciLinkAccountTestConfig["oci_client_id"],
 		OciLinkAccountTestConfig["oci_client_secret"],
 		OciLinkAccountTestConfig["oci_domain_url"],
-		OciLinkAccountTestConfig["oci_home_region"],
-		OciLinkAccountTestConfig["ingest_vault_ocid"],
-		OciLinkAccountTestConfig["user_vault_ocid"])
+		OciLinkAccountTestConfig["oci_home_region"])
+
+	// compartment and vault fields are only needed for METRICS/LOGS integrations
+	if OciLinkAccountTestConfig["compartment_ocid"] != "" {
+		config += fmt.Sprintf(`
+		compartment_ocid       = "%s"`, OciLinkAccountTestConfig["compartment_ocid"])
+	}
+	if OciLinkAccountTestConfig["ingest_vault_ocid"] != "" {
+		config += fmt.Sprintf(`
+		ingest_vault_ocid      = "%s"`, OciLinkAccountTestConfig["ingest_vault_ocid"])
+	}
+	if OciLinkAccountTestConfig["user_vault_ocid"] != "" {
+		config += fmt.Sprintf(`
+		user_vault_ocid        = "%s"`, OciLinkAccountTestConfig["user_vault_ocid"])
+	}
 
 	// Add optional fields if they exist
 	if OciLinkAccountTestConfig["oci_region"] != "" && updated == true {

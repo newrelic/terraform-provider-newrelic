@@ -41,8 +41,8 @@ func resourceNewRelicCloudOciAccountLinkAccount() *schema.Resource {
 			},
 			"compartment_ocid": {
 				Type:        schema.TypeString,
-				Description: "The New Relic compartment OCID in OCI.",
-				Required:    true,
+				Description: "The New Relic compartment OCID in OCI. Required for METRICS or LOGS instrumentation; omit for COST-only.",
+				Optional:    true,
 			},
 			"oci_client_id": {
 				Type:        schema.TypeString,
@@ -102,7 +102,7 @@ func resourceNewRelicCloudOciAccountLinkAccount() *schema.Resource {
 			},
 			"instrumentation_type": {
 				Type:        schema.TypeString,
-				Description: "Specifies the type of integration, such as metrics, logs, or a combination of logs and metrics.",
+				Description: "Specifies the type of integration. Valid values: METRICS, LOGS, COST, or comma-separated combinations (e.g. METRICS,LOGS or METRICS,LOGS,COST).",
 				Optional:    true,
 			},
 			"logging_stack_ocid": {

@@ -41,7 +41,7 @@ variable "newrelic_provider_region" {
 
 variable "instrumentation_type" {
   type        = string
-  description = "Specifies which policy types to create. Valid values: 'METRICS', 'LOGS', or a comma-separated list such as 'METRICS,LOGS'."
+  description = "Specifies which policy types to create. Valid values: 'METRICS', 'LOGS', 'COST' or a comma-separated list such as 'METRICS,LOGS,COST'."
 }
 
 variable "client_id" {
