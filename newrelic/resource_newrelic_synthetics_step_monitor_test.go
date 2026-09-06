@@ -56,7 +56,6 @@ func TestAccNewRelicSyntheticsStepMonitor(t *testing.T) {
 					"location_private",
 					"tag",
 					"enable_screenshot_on_failure_and_script",
-					SyntheticsUseLegacyRuntimeAttrLabel,
 					"browsers",
 					"devices",
 				},
