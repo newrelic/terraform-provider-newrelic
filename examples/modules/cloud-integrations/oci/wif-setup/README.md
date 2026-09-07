@@ -31,6 +31,8 @@ This module **must run first** — its OAuth credentials and IAM domain URL feed
 
 Both flows are backward-compatible. Existing UPST customers can adopt RPST by setting `trust_type = "RPST"` in their tfvars; old setups continue to work unchanged.
 
+Both trust types are created with `clientClaimName = "aud"` and `clientClaimValues = [<your identity domain URL>]`, so OCI rejects any token whose audience is not your own domain. The module handles this automatically — no input required.
+
 ## Inputs
 
 | Variable | Type | Default | Required | Notes |
@@ -124,7 +126,7 @@ See `terraform.tfvars.example` for a populated example.
                   │  └──────────────────────────────┘  │
                   │                                    │
                   │  IAM Policy:                       │
-                  │   UPST: "Allow group X to..."      │
+                  │   UPST: "Allow group id <ocid>..." │
                   │   RPST: "where ext_account_id=..." │
                   │                                    │
                   │  Service User (UPST only)          │
@@ -135,6 +137,7 @@ See `terraform.tfvars.example` for a populated example.
                   │   RPST → subjectType=Resource      │
                   │           + impersonatingResource  │
                   │           + claimPropagations      │
+                  │   both → clientClaimName=aud       │
                   └────────────────────────────────────┘
 ```
 
