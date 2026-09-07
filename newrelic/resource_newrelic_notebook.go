@@ -183,6 +183,42 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("blob_id", resp.BlobID)
 	_ = d.Set(field, normalized)
 
+	// Poll NerdGraph until content.id is populated for the new notebook.
+	//
+	// The Blob Storage API and NerdGraph are asynchronously consistent: the
+	// notebook exists in the Blob API immediately but NerdGraph may take a
+	// few seconds to index the entity and populate content.id. Waiting here:
+	//   1. Ensures blob_id in state comes from a NerdGraph-confirmed value,
+	//      making the short-circuit in subsequent Reads reliable right away.
+	//   2. Prevents a terraform plan run immediately after apply (common in
+	//      CI) from triggering a spurious Blob GET because content.id was null.
+	indexingDeadline := time.Now().Add(d.Timeout(schema.TimeoutCreate))
+	for {
+		nb, nbErr := client.Notebooks.GetNotebookWithContext(ctx, resp.EntityGUID)
+		if nbErr == nil && nb != nil && nb.Content.ID != "" {
+			log.Printf("[DEBUG] Notebook %s indexed in NerdGraph (blob_id: %s)", resp.EntityGUID, nb.Content.ID)
+			_ = d.Set("blob_id", nb.Content.ID)
+			break
+		}
+		if ctx.Err() != nil || time.Now().After(indexingDeadline) {
+			// Notebook was created in Blob Storage; return a warning so the
+			// resource is not left broken. The next plan will self-correct.
+			log.Printf("[WARN] Notebook %s created but NerdGraph indexing timed out", resp.EntityGUID)
+			return append(resourceNewRelicNotebookRead(ctx, d, meta), diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Notebook created but NerdGraph indexing timed out",
+				Detail: fmt.Sprintf(
+					"Notebook %s was created successfully via the Blob Storage API but "+
+						"did not appear in NerdGraph within the create timeout (%s). "+
+						"Run terraform plan again to confirm the resource is in the expected state.",
+					resp.EntityGUID, d.Timeout(schema.TimeoutCreate),
+				),
+			})
+		}
+		log.Printf("[DEBUG] Waiting for notebook %s to be indexed in NerdGraph...", resp.EntityGUID)
+		time.Sleep(3 * time.Second)
+	}
+
 	return resourceNewRelicNotebookRead(ctx, d, meta)
 }
 
