@@ -317,11 +317,50 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("managers", decodeManagerGUIDsToUserIDs(team.Managers, guidToUserID))
 	}
 
-	ownerGUIDs, err := readTeamOwnedEntityGUIDs(ctx, &client.Scorecards, team.Ownership.ID)
-	if err != nil {
-		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), err)
+	// ── Ownership collection — non-authoritative split ───────────────────────
+	// Fetch org-level discovery settings to separate statically-managed entities
+	// from those auto-assigned via tag-based rules. Terraform only tracks the
+	// static subset in state; dynamic entities are left untouched.
+	orgSettings, orgErr := client.Scorecards.GetTeamsOrganizationSettings()
+	if orgErr != nil {
+		log.Printf("[WARN] Could not read TeamsOrganizationSettings for team %s: %v — treating all ownership entities as static", d.Id(), orgErr)
+	}
+
+	staticGUIDs, dynamicCount, ownerErr := readStaticOwnershipGUIDs(
+		ctx,
+		&client.Scorecards,
+		&client.Entities,
+		team.Ownership.ID,
+		team.Name,
+		team.Aliases,
+		orgSettings,
+	)
+	if ownerErr != nil {
+		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), ownerErr)
 	} else {
-		_ = d.Set("entities", flattenEntityGUIDs(ownerGUIDs))
+		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
+	}
+
+	// Warn when dynamic (tag-auto-assigned) entities are present in the
+	// ownership collection and the user has declared an entities block.
+	// We do NOT show a diff for dynamic entities — they are outside Terraform's
+	// management scope. The warning nudges users to consolidate ownership under
+	// Terraform if they want full declarative control.
+	if dynamicCount > 0 && len(d.Get("entities").(*schema.Set).List()) > 0 {
+		return diag.Diagnostics{
+			{
+				Severity: diag.Warning,
+				Summary:  "Team ownership contains tag-auto-assigned entities not managed by Terraform",
+				Detail: fmt.Sprintf(
+					"%d entity/entities in team %q's ownership collection were assigned automatically "+
+						"via tag-based discovery rules and are not tracked in this resource's `entities` block. "+
+						"Terraform will only manage the %d entity/entities you have explicitly declared. "+
+						"If you want full declarative control over team ownership, add all owned entities to "+
+						"the `entities` block and disable automatic tag-based assignment for this team.",
+					dynamicCount, team.Name, len(staticGUIDs),
+				),
+			},
+		}
 	}
 
 	return nil
