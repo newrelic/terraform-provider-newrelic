@@ -2,11 +2,28 @@ package newrelic
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/alerts"
 )
+
+// componentConditionCompositeIDRegex matches the composite "<policyID>:<conditionID>"
+// format that resources such as newrelic_nrql_alert_condition expose via their `id`.
+var componentConditionCompositeIDRegex = regexp.MustCompile(`^\d+:(\d+)$`)
+
+// normalizeComponentConditionID returns the plain numeric condition ID, since the
+// API rejects the composite "<policyID>:<conditionID>" form.
+func normalizeComponentConditionID(id string) string {
+	trimmed := strings.TrimSpace(id)
+	if matches := componentConditionCompositeIDRegex.FindStringSubmatch(trimmed); matches != nil {
+		return matches[1]
+	}
+
+	return trimmed
+}
 
 // expandAlertCompoundConditionCreateInput builds the create input from Terraform schema
 func expandAlertCompoundConditionCreateInput(d *schema.ResourceData) (*alerts.CompoundConditionCreateInput, error) {
@@ -110,7 +127,7 @@ func expandComponentConditions(componentSet *schema.Set) ([]alerts.ComponentCond
 	for _, c := range componentSet.List() {
 		component := c.(map[string]interface{})
 
-		id := component["id"].(string)
+		id := normalizeComponentConditionID(component["id"].(string))
 		alias := component["alias"].(string)
 
 		// Validate unique aliases

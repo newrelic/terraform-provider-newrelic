@@ -18,6 +18,7 @@ func resourceNewRelicMetricPruningRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: blockGOVRegionDiff("newrelic_metric_pruning_rule"),
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Type:        schema.TypeInt,

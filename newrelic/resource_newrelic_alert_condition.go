@@ -86,6 +86,7 @@ func resourceNewRelicAlertCondition() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: blockGOVRegionDiff("newrelic_alert_condition"),
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
