@@ -34,7 +34,6 @@ resource "newrelic_notebook" "incident_notes" {
   title           = "Incident Response Notes"
 
   content = jsonencode({
-    version = "1"
     blocks = [
       {
         type = "widget"
@@ -60,7 +59,6 @@ resource "newrelic_notebook" "service_overview" {
   title           = "Service Health Overview"
 
   content = jsonencode({
-    version = "1"
     blocks = [
       {
         type = "widget"
@@ -125,7 +123,6 @@ resource "newrelic_notebook" "investigation" {
   title           = "DB Investigation"
 
   content = jsonencode({
-    version = "1"
     blocks = [
       {
         type = "widget"
@@ -174,7 +171,6 @@ Paste JSON exported from the New Relic Notebooks UI directly into a file and ref
 
 ```json
 {
-  "version": "1",
   "blocks": [
     {
       "type": "widget",
@@ -245,7 +241,6 @@ For notebooks that are generated programmatically or pulled from another data so
 ```hcl
 locals {
   notebook_body = jsonencode({
-    version = "1"
     blocks = [
       {
         type = "widget"
@@ -280,7 +275,6 @@ resource "newrelic_notebook" "per_service" {
   title           = "${each.value} runbook"
 
   content = jsonencode({
-    version = "1"
     blocks = [
       {
         type = "widget"
@@ -297,11 +291,41 @@ resource "newrelic_notebook" "per_service" {
 
 ---
 
+## Widget types and block content schema
+
+The `content` and `content_json` fields accept any valid notebook JSON. Each entry in `blocks` is either a `widget` (a single visualization or markdown block) or a `container` (a group of widgets with a shared layout).
+
+A widget block has this shape:
+
+```json
+{
+  "type": "widget",
+  "content": {
+    "type": "visualization",
+    "id": "<viz-id>",
+    "props": { ... }
+  }
+}
+```
+
+`<viz-id>` is a visualization identifier such as `viz.markdown`, `viz.line`, `viz.area`, `viz.bar`, `viz.pie`, `viz.table`, or `viz.billboard`. The `props` schema differs per visualization type — query-based widgets accept `nrqlQueries`, while `viz.markdown` accepts `text`.
+
+The Blob API stores your JSON verbatim — no fields are added, removed, or transformed server-side. Terraform tracks the entire blob. New Relic itself does not assign special meaning to any field outside of `blocks`, so you can include arbitrary top-level metadata (such as a `"version"` string for your own change-tracking); Terraform will diff those fields exactly like any other part of the content if they change.
+
+For the full list of supported chart types, their `props` schemas, and worked examples:
+
+- [Visualizations in notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/visualizations-in-notebooks/) — chart types and best practices
+- [Create widgets with NerdGraph](https://docs.newrelic.com/docs/apis/nerdgraph/examples/create-widgets-dashboards-api/) — `props` reference for each widget type
+- [Notebook examples](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/notebooks-examples/) — worked multi-block notebook JSON
+- [Blob Storage API for notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/blob-storage-api-for-notebooks/) — the underlying REST API used by this resource
+
+---
+
 ## Argument Reference
 
 * `title` - (Required) The title of the notebook. Must be unique within the organization.
-* `content` - (Optional) The notebook body, expressed as an HCL object using `jsonencode({...})`. Terraform evaluates the expression at plan time, producing field-level diffs. Mutually exclusive with `content_json`.
-* `content_json` - (Optional) The notebook body as a raw JSON string. Use when working from a UI export or a file. Produces line-level diffs of normalized content. Mutually exclusive with `content`.
+* `content` - (Optional) The notebook body, expressed as an HCL object using `jsonencode({...})`. Terraform evaluates the expression at plan time, producing field-level diffs. Mutually exclusive with `content_json`. The only required key inside the object is `blocks`; any additional top-level fields are stored verbatim by the Blob API and tracked in Terraform state.
+* `content_json` - (Optional) The notebook body as a raw JSON string. Use when working from a UI export or a file. Produces line-level diffs of normalized content. Mutually exclusive with `content`. The only required key is `"blocks"`; any additional top-level fields are stored verbatim by the Blob API and tracked in Terraform state.
 * `organization_id` - (Computed) The New Relic organization ID. Resolved automatically from the provider credentials.
 
 ## Attributes Reference
