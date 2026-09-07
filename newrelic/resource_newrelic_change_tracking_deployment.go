@@ -1,0 +1,141 @@
+package newrelic
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/changetracking"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+)
+
+func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceNewRelicChangeTrackingDeploymentCreate,
+		ReadContext:   schema.NoopContext,
+		Delete:        schema.RemoveFromState,
+		Schema: map[string]*schema.Schema{
+			"version": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The version of the deployed software, for example, something like v1.1.",
+			},
+			"entity_guid": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The GUID of the New Relic entity that was deployed.",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
+			},
+			"deployment_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(listValidChangeTrackingDeploymentTypes(), false),
+				Description:  fmt.Sprintf("The type of deployment. One of: (%s).", listChangeTrackingDeploymentTypesString()),
+			},
+			"changelog": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A URL for the changelog or, if not linkable, a list of changes.",
+			},
+			"commit": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The commit identifier, for example, a Git commit SHA.",
+			},
+			"deep_link": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A URL to the system that generated the deployment.",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A description of the deployment.",
+			},
+			"group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "An identifier used to correlate account-wide changes across entities.",
+			},
+			"timestamp": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The start time of the deployment as the number of milliseconds since the Unix epoch. Defaults to now.",
+			},
+			"user": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The username of the deployer or bot.",
+			},
+			"account_id": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The account ID of the entity the deployment belongs to.",
+			},
+			"deployment_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The unique deployment identifier.",
+			},
+		},
+	}
+}
+
+func listValidChangeTrackingDeploymentTypes() []string {
+	return []string{
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.BASIC),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.BLUE_GREEN),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.CANARY),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.OTHER),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.ROLLING),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.SHADOW),
+	}
+}
+
+func listChangeTrackingDeploymentTypesString() string {
+	types := listValidChangeTrackingDeploymentTypes()
+	result := ""
+	for i, t := range types {
+		if i > 0 {
+			result += ", "
+		}
+		result += t
+	}
+	return result
+}
+
+var _ common.EntityGUID
+var _ diag.Diagnostics
+var _ context.Context
+
+func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	dataHandlingRules, deployment, err := expandChangeTrackingDeployment(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	result, err := client.ChangeTracking.ChangeTrackingCreateDeploymentWithContext(ctx, dataHandlingRules, deployment)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(result.DeploymentId)
+	return diag.FromErr(flattenChangeTrackingDeployment(result, d))
+}
