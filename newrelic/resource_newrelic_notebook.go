@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/notebooks"
 )
 
 func resourceNewRelicNotebook() *schema.Resource {
@@ -95,17 +96,19 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Computed:    true,
 				Description: "The unique entity identifier of the notebook in New Relic.",
 			},
-			// version is the monotonic revision counter maintained by the Blob
-			// Storage API (increments on every content write: 1 after create,
-			// 2 after the first update, and so on). It is stored in state and
-			// used as a change detector on every Read: if the server-side
-			// version equals the stored version the content is unchanged and
-			// the Blob API GET is skipped, reducing terraform plan from two
-			// serial API calls to one in the common no-change case.
-			"version": {
-				Type:        schema.TypeInt,
+			// blob_id is the identifier of the current content blob returned by
+			// the Blob Storage API after every write. Because blobs are immutable
+			// (confirmed: each write produces a new, permanently fixed blob),
+			// blob_id equality is a reliable signal that the content has not
+			// changed since the last Terraform-managed write. On every Read we
+			// compare the stored blob_id against the one returned by NerdGraph
+			// (content.id). If they match we skip the Blob Storage GET, reducing
+			// terraform plan from two serial API calls to one in the common
+			// no-change case.
+			"blob_id": {
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The current revision of the notebook content. Increments each time the content is updated.",
+				Description: "The blob identifier of the current notebook content. Updated after every write.",
 			},
 		},
 	}
@@ -177,6 +180,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	d.SetId(resp.EntityGUID)
 	_ = d.Set("guid", resp.EntityGUID)
 	_ = d.Set("organization_id", orgID)
+	_ = d.Set("blob_id", resp.BlobID)
 	_ = d.Set(field, normalized)
 
 	return resourceNewRelicNotebookRead(ctx, d, meta)
@@ -204,14 +208,18 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		orgID, _ = d.Get("organization_id").(string)
 	}
 
-	// Version-based short-circuit: metadata.version is a monotonic counter
-	// that the Blob Storage API increments on every content write. If the
-	// server-side version equals what is already in state, the content has
-	// not changed and we can skip the second API call (Blob GET), reducing
-	// terraform plan from two serial round-trips to one in the common case.
-	storedVersion, _ := d.Get("version").(int)
-	if storedVersion > 0 && nb.Metadata.Version == storedVersion {
-		log.Printf("[DEBUG] Notebook %s content unchanged (version %d) - skipping Blob GET", guid, storedVersion)
+	// Blob-ID-based short-circuit: every write produces a new, immutable blob
+	// with a unique blob_id. If the blob_id returned by NerdGraph (content.id)
+	// matches what we have in state, the blob has not changed and we can skip
+	// the Blob Storage GET. NerdGraph may return content as null due to
+	// propagation lag; in that case we fall through to the full fetch safely.
+	storedBlobID, _ := d.Get("blob_id").(string)
+	currentBlobID := ""
+	if nb.Content.ID != "" {
+		currentBlobID = nb.Content.ID
+	}
+	if storedBlobID != "" && currentBlobID != "" && currentBlobID == storedBlobID {
+		log.Printf("[DEBUG] Notebook %s content unchanged (blob_id %s) - skipping Blob GET", guid, storedBlobID)
 		_ = d.Set("title", nb.Name)
 		_ = d.Set("guid", nb.ID)
 		_ = d.Set("organization_id", orgID)
@@ -227,7 +235,11 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("title", nb.Name)
 	_ = d.Set("guid", nb.ID)
 	_ = d.Set("organization_id", orgID)
-	_ = d.Set("version", nb.Metadata.Version)
+	// Update blob_id from NerdGraph if it was returned; otherwise leave the
+	// stored value intact - it will be refreshed on the next Terraform write.
+	if currentBlobID != "" {
+		_ = d.Set("blob_id", currentBlobID)
+	}
 
 	// Write the fetched content back into whichever field the user declared.
 	// On a fresh import, neither field is set yet; default to content_json so
@@ -272,14 +284,21 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 
 	log.Printf("[INFO] Updating New Relic notebook %s (title_changed=%v, content_changed=%v)", guid, titleChanged, contentChanged)
 
+	var mutResp *notebooks.NotebookMutationResponse
 	if titleChanged {
 		// Rename is atomic with a content POST - the Blob API has no rename-only path.
-		_, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, contentBody)
+		mutResp, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, contentBody)
 	} else if contentChanged {
-		_, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, contentBody)
+		mutResp, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, contentBody)
 	}
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	// Capture the new blob_id from the mutation response immediately so state
+	// is up-to-date before the subsequent Read call runs the short-circuit.
+	if mutResp != nil && mutResp.BlobID != "" {
+		_ = d.Set("blob_id", mutResp.BlobID)
 	}
 
 	_ = d.Set(field, normalized)
