@@ -576,7 +576,10 @@ module "oci_logs_integration" {
   new_relic_region     = "US" # or "EU" or "JP"
   secret_ocid          = module.oci_policy_setup.ingest_vault_ocid
   user_api_secret_ocid = module.oci_policy_setup.user_vault_ocid
-  
+
+  # opt-in: resolve OCIDs in forwarded logs to their OCI resource display name
+  resource_name_enrichment_enabled = false # defaults to false; set to true to enable
+
   # connector hub configuration (Optional)
   # Don't add the following variables if you want to skip log export.
   connector_hub_details = "[{\"display_name\":\"newrelic-logs-connector\",\"description\":\"Service connector for logs from compartment A to New Relic\",\"log_sources\":[{\"compartment_id\":\"ocid1.tenancy.oc1..***\",\"log_group_id\":\"ocid1.loggroup.oc1.iad.***\"}]}]"
@@ -599,6 +602,7 @@ Key variables:
   - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
   - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
   - `image_version`: Docker image version for the logging function (defaults to "latest").
+  - `resource_name_enrichment_enabled`: Boolean. When `true`, resolves OCIDs found in forwarded logs to their OCI resource display name (via OCI Resource Search) and adds it to the payload sent to New Relic. Defaults to `false`.
 - connector hub configuration: A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
   * `display_name` (string) : name of the connector hub - must have prefix `newrelic-logs`
   * `description` (string) (optional): connector hub description
