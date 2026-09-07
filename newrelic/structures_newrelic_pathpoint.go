@@ -463,7 +463,7 @@ func pathpointFlowSchema() map[string]*schema.Schema {
 		"refresh_interval": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			Default:      string(pathpoint.PathPointRefreshIntervalTypes.THIRTY_MINUTES),
+			Default:      string(pathpoint.PathPointRefreshIntervalTypes.FIVE_MINUTES),
 			Description:  "How often health statuses refresh: ONE_MINUTE, FIVE_MINUTES, TEN_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES.",
 			ValidateFunc: validation.StringInSlice(pathpointRefreshIntervalValues(), false),
 		},

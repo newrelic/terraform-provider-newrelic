@@ -18,93 +18,203 @@ Each Flow in Pathpoint represents a business journey — like checkout, authenti
 
 A New Relic User API key is required to provision this resource. Set the `api_key` attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment variable with your User API key.
 
--> **NOTE:** Any manual changes made outside Terraform (e.g., via the New Relic UI) will be automatically overridden on the next terraform apply. Review your plan output carefully. if you want to keep external changes, export the updated resource.
+-> **NOTE:** Any manual changes made outside Terraform (e.g., via the New Relic UI) will be automatically overridden on the next terraform apply. Review your plan output carefully, if you want to keep external changes, [export the existing flow](#exporting-an-existing-flow)
 
 ## Example Usage
 
-### Basic Flow
+A flow is made up of `stages`, each stage made up of `levels`, each level made up of `steps`. A step's health comes from its `signals` — entities, alerts, or entities discovered dynamically via `entity_search_query`.
 
-A minimal flow demonstrating the three ways to populate a step with signals.
+### Steps
 
-`health_rollup` is omitted here — both the flow and each stage default to `AUTOMATIC_ROLL_UP`, which means health is derived by rolling up the status of child objects automatically. `refresh_interval` defaults to `THIRTY_MINUTES`.
+A step's signals can come from three sources:
 
-Steps can be populated in three ways:
 - **Dynamic query** (`entity_search_query`): the API runs the filter and auto-discovers matching entities at each refresh. The search is scoped to the accounts in `scoped_accounts`; if that is not set, it falls back to the account the flow belongs to. To target a specific account, include `accountId` directly in the filter query.
-- **Entity signal** (`type = "ENTITY"`): a specific New Relic entity pinned by its GUID. Use when you always want the same exact entity regardless of naming changes.
-- **Alert signal** (`type = "ALERT"`): an alert condition pinned by its entity GUID. Use when step health should be driven by an alert policy rather than entity telemetry.
+- **Entity signal** (`signals` with `type = "ENTITY"`): a specific New Relic entity pinned by its GUID. Use when you always want the same exact entity regardless of naming changes.
+- **Alert signal** (`signals` with `type = "ALERT"`): an alert condition pinned by its entity GUID. Use when step health should be driven by an alert policy rather than entity telemetry.
+
+-> **NOTE:** Alert signals are not yet supported in this Limited Preview — the `type = "ALERT"` signal shown below is included to illustrate the shape of the config.
+
+```hcl
+steps {
+  name = "Login Page"
+
+  # Dynamic query: API auto-discovers entities matching the filter at each refresh.
+  entity_search_query {
+    query = "accountId=1234 AND domain='BROWSER' AND name='Login'"
+  }
+
+  # Entity signal: a specific New Relic entity pinned by GUID.
+  signals {
+    guid = "GUID1"
+    name = "Cart Service"
+    type = "ENTITY"
+  }
+
+  # Alert signal: an alert condition pinned by its entity GUID.
+  signals {
+    guid = "GUID2"
+    name = "Checkout Error Rate"
+    type = "ALERT"
+  }
+}
+```
+
+### KPIs
+
+KPIs are numeric metrics derived from NRQL queries.Flow-level `kpis` are global for that pathpoint; stage-level `stage_kpis` are scoped to a single stage. Both share the same schema.
+
+```hcl
+# relative_range: simple lookback window.
+kpis {
+  name        = "Order Success Rate"
+  description = "Percentage of orders completed successfully"
+  category    = "Revenue"
+
+  query {
+    from  = "Transaction"
+    where = "name='checkout'"
+
+    select {
+      aggregation_type = "COUNT"
+      alias            = "orders"
+    }
+  }
+}
+```
+
+-> **NOTE:** Cross-account KPIs — setting `account_id` on a `kpis`/`stage_kpis` block to an account other than the flow's own — are not yet supported in this Limited Preview.
+
+### Health
+
+Health can be evaluated at the flow, stage, and step level.
+
+#### Flow-level health
+
+`health_rollup` on the flow controls how the flow's overall health is derived:
+
+- `AUTOMATIC_ROLL_UP` (the default) — health rolls up automatically from the flow's stages.
+
+- `ALERT_CONDITIONS` — health is tied directly to the flow's KPI alert conditions instead of stage rollup. Typically paired with flow-level `kpis`.
 
 ```hcl
 resource "newrelic_pathpoint_flow" "checkout" {
-  account_id       = 12345678
-  name             = "Checkout Flow"
-  description      = "End-to-end checkout pipeline"
-  refresh_interval = "FIVE_MINUTES"
-  # health_rollup defaults to AUTOMATIC_ROLL_UP
+  name          = "Checkout Flow"
+  health_rollup = "AUTOMATIC_ROLL_UP"
+  # ...
+}
+```
 
-  stages {
-    name = "Frontend"
-    # health_rollup defaults to AUTOMATIC_ROLL_UP
+#### Stage-level health
 
-    levels {
-      # Dynamic query: API auto-discovers entities matching the filter at each refresh.
-      # Account scope: uses scoped_accounts if set, otherwise defaults to the flow's account.
-      # Include accountId in the filter to target a specific account explicitly.
-      steps {
-        name = "Login Page"
-        entity_search_query {
-          query = "accountId=12345678 AND domain='BROWSER' AND name='Login'"
-        }
-      }
+`health_rollup` controls how a stage's health is derived:
 
-      # Entity signal: a specific New Relic entity pinned by GUID.
-      steps {
-        name = "Cart Service"
-        signals {
-          guid = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
-          name = "Cart Service"
-          type = "ENTITY"
-        }
-      }
+- `AUTOMATIC_ROLL_UP` (the default) — health rolls up automatically from that stage's step signals.
+- `ALERT_CONDITIONS` — health is tied directly to the stage's KPI alert conditions instead of step signals. Use this when a stage represents a business outcome (e.g. revenue, order completion) rather than a piece of infrastructure. Typically paired with `stage_kpis`.
 
-      # Alert signal: an alert condition pinned by its entity GUID.
-      steps {
-        name = "Checkout Alert"
-        signals {
-          guid = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk2"
-          name = "Checkout Error Rate"
-          type = "ALERT"
-        }
-      }
-    }
+`is_excluded` removes a stage from the flow's health calculation without deleting it.
+
+```hcl
+stages {
+  name          = "Revenue"
+  health_rollup = "AUTOMATIC_ROLL_UP"
+  is_excluded   = false
+  # ...
+}
+```
+
+#### Step-level health
+
+`is_excluded` can be set on a step, an `entity_search_query`, or an individual signal to remove that item from health calculation without deleting it.
+
+A step's `config` block controls how its own health is derived from its signals, separately from stage-level `health_rollup` above:
+
+- `health_rollup` — `WORST_STATUS_WINS` (the default) marks the step unhealthy if any signal is unhealthy; `BEST_STATUS_WINS` marks it healthy if any signal is healthy.
+- `threshold_type` / `threshold_value` — instead of an all-or-nothing rollup, require a `FIXED` count or `PERCENTAGE` of signals to be healthy before the step is considered healthy.
+
+```hcl
+steps {
+  name        = "Checkout API"
+  is_excluded = false
+
+  config {
+    health_rollup   = "WORST_STATUS_WINS"
+    threshold_type  = "PERCENTAGE"
+    threshold_value = 80
   }
 
-  stages {
-    name = "Backend"
+  entity_search_query {
+    query       = "accountId=1234 AND domain='APM' AND name LIKE 'checkout-%'"
+    is_excluded = false
+  }
 
-    levels {
-      steps {
-        name = "Order Service"
-        entity_search_query {
-          query = "domain='APM' AND name='OrderService'"
-        }
+  signals {
+    guid        = "GUID3"
+    name        = "Deprecated Checkout Alert"
+    type        = "ALERT"
+    is_excluded = true
+  }
+}
+```
+
+### Stage Relationships & Links
+
+#### Relationships (`related`)
+
+`related` is purely a UI hint — it tells the Pathpoint UI whether to render a stage as a sequential (arrow-shaped) node or a non-sequential (rectangular) node. Stages without a `related` block are treated as sequential by default, and setting `related` does not affect health rollup.
+
+The values follow the stage's position in the array:
+
+- **First stage** — `source = false, target = true`: no incoming connection, has an outgoing connection to the next stage.
+- **Middle stages** — `source = true, target = true`: connected on both sides.
+- **Last stage** — `source = true, target = false`: has an incoming connection, no outgoing connection.
+
+```hcl
+stages {
+  name = "Packaging"
+
+  related {
+    source = true
+    target = true
+  }
+  # ...
+}
+```
+
+#### Links (`link`)
+
+`link` points readers at an external resource — a runbook, dashboard, or wiki page. It can be set on a stage or a step, scoped to that stage or that individual step respectively.
+
+```hcl
+stages {
+  name = "Frontend"
+  link = "https://runbooks.example.com/checkout/frontend"
+
+  levels {
+    steps {
+      name = "Cart Service"
+      link = "https://runbooks.example.com/checkout/cart-service"
+
+      signals {
+        guid = "GUID1"
+        name = "Cart Service"
+        type = "ENTITY"
       }
     }
   }
 }
 ```
 
-### Flow with KPIs
+### Example
 
-Demonstrates flow-level and stage-level KPIs with all three `time_window` options: `relative_range` with a simple lookback, `relative_range` with `compare_against` for period-over-period comparison (equivalent to NRQL `COMPARE WITH`), and `custom_range` for a free-form NRQL time expression. Also shows a step `config` block for threshold-based health evaluation.
+All of the pieces above combined into a single flow: one flow-level `kpis` entry, a `Revenue` stage with one `stage_kpis` entry driven by `ALERT_CONDITIONS`, and a `Frontend` stage whose step uses all three signal types — an entity, an alert, and an `entity_search_query`.
 
 ```hcl
 resource "newrelic_pathpoint_flow" "checkout" {
-  account_id       = 12345678
-  name             = "Checkout Flow with KPIs"
-  health_rollup    = "AUTOMATIC_ROLL_UP"
-  refresh_interval = "ONE_MINUTE"
+  account_id       = 1234
+  name             = "Checkout Flow"
+  description      = "End-to-end checkout pipeline"
+  refresh_interval = "FIVE_MINUTES"
 
-  # relative_range: simple lookback window.
   kpis {
     name        = "Order Success Rate"
     description = "Percentage of orders completed successfully"
@@ -112,7 +222,7 @@ resource "newrelic_pathpoint_flow" "checkout" {
 
     query {
       from  = "Transaction"
-      where = "transactionType='Web' AND name='checkout'"
+      where = "name='checkout'"
 
       select {
         aggregation_type = "COUNT"
@@ -127,36 +237,16 @@ resource "newrelic_pathpoint_flow" "checkout" {
     }
   }
 
-  # relative_range with compare_against: period-over-period comparison (NRQL COMPARE WITH).
-  kpis {
-    name        = "Average Response Time"
-    description = "Average response time vs the same window 7 days ago"
-    category    = "Latency"
-
-    query {
-      from  = "Transaction"
-      where = "transactionType='Web'"
-
-      select {
-        aggregation_type = "AVERAGE"
-        attribute        = "duration"
-        alias            = "avg_duration"
-      }
-
-      time_window {
-        relative_range {
-          since           = "TWENTY_FOUR_HOURS"
-          compare_against = "SEVEN_DAYS"
-        }
-      }
-    }
-  }
-
   stages {
-    name          = "Payment"
-    health_rollup = "AUTOMATIC_ROLL_UP"
+    name          = "Revenue"
+    health_rollup = "ALERT_CONDITIONS"
+    link          = "https://runbooks.example.com/checkout/revenue"
 
-    # custom_range: free-form NRQL time expression for cases not covered by relative_range.
+    related {
+      source = false
+      target = true
+    }
+
     stage_kpis {
       name     = "Payment Errors"
       category = "Reliability"
@@ -170,68 +260,8 @@ resource "newrelic_pathpoint_flow" "checkout" {
         }
 
         time_window {
-          custom_range = "SINCE 30 minutes ago"
-        }
-      }
-    }
-
-    levels {
-      steps {
-        name = "Payment Gateway"
-
-        config {
-          health_rollup   = "WORST_STATUS_WINS"
-          threshold_type  = "FIXED"
-          threshold_value = 1
-        }
-
-        entity_search_query {
-          query = "domain='APM' AND name='PaymentGateway'"
-        }
-
-        signals {
-          guid = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1"
-          name = "PaymentGateway"
-          type = "ENTITY"
-        }
-      }
-    }
-  }
-}
-```
-
-### Flow with Excluded Stages
-
-Shows `is_excluded` at every level of the hierarchy — stage, step, entity search query, and individual signal — to remove items from health calculation without deleting them. Also demonstrates `health_rollup = "ALERT_CONDITIONS"` on a stage — when set, the stage's health is tied directly to its KPI alert conditions rather than entity telemetry, making it suitable for business-health tracking where you want the stage status to reflect whether business KPIs are breaching alert thresholds.
-
-```hcl
-resource "newrelic_pathpoint_flow" "pipeline" {
-  account_id    = 12345678
-  name          = "Order Pipeline"
-  health_rollup = "AUTOMATIC_ROLL_UP"
-
-  stages {
-    name          = "Business Health"
-    # ALERT_CONDITIONS ties this stage's health to its KPI alert conditions.
-    # Use this when the stage represents a business outcome rather than system telemetry.
-    health_rollup = "ALERT_CONDITIONS"
-
-    stage_kpis {
-      name     = "Revenue Rate"
-      category = "Business"
-
-      query {
-        from  = "Transaction"
-        where = "transactionType='Web' AND name='purchase'"
-
-        select {
-          aggregation_type = "COUNT"
-          alias            = "purchases"
-        }
-
-        time_window {
           relative_range {
-            since = "SIXTY_MINUTES"
+            since = "THIRTY_MINUTES"
           }
         }
       }
@@ -239,109 +269,18 @@ resource "newrelic_pathpoint_flow" "pipeline" {
 
     levels {
       steps {
-        name = "Purchase Service"
+        name = "Order Service"
         entity_search_query {
-          query = "domain='APM' AND name='PurchaseService'"
-        }
-      }
-
-      # Step excluded from health calculation — kept in config but not counted.
-      steps {
-        name        = "Deprecated Checkout"
-        is_excluded = true
-
-        entity_search_query {
-          query = "domain='APM' AND name='DeprecatedCheckout'"
-        }
-
-        # Individual signal excluded — present for visibility but ignored in health rollup.
-        signals {
-          guid        = "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk3"
-          name        = "Deprecated Checkout Alert"
-          type        = "ALERT"
-          is_excluded = true
+          query = "domain='APM' AND name='OrderService'"
         }
       }
     }
   }
 
   stages {
-    name        = "Legacy Processor"
-    is_excluded = true
-
-    levels {
-      steps {
-        name = "Legacy API"
-
-        # entity_search_query excluded — query is retained but its results are ignored.
-        entity_search_query {
-          query       = "domain='APM' AND name='LegacyAPI'"
-          is_excluded = true
-        }
-      }
-    }
-  }
-}
-```
-
-### Flow with Stage Relationships
-
-The `related` block is purely a UI hint — it tells the Pathpoint UI whether to render a stage as a sequential (arrow-shaped) node or a non-sequential (rectangular) node. Stages without a `related` block are treated as sequential by default.
-
-The values follow the stage's position in the array:
-- **First stage** — `source = false, target = true`: no incoming connection, has an outgoing connection to the next stage.
-- **Middle stages** — `source = true, target = true`: connected on both sides.
-- **Last stage** — `source = true, target = false`: has an incoming connection, no outgoing connection.
-
-Stages that are part of an unbroken `source/target` chain render as sequential arrow shapes in the UI. Setting `related` does not affect health rollup — it only changes the visual shape.
-
-```hcl
-resource "newrelic_pathpoint_flow" "supply_chain" {
-  account_id    = 12345678
-  name          = "Supply Chain Flow"
-  health_rollup = "AUTOMATIC_ROLL_UP"
-
-  # First stage: no incoming connection, feeds into the next stage.
-  stages {
-    name = "Warehouse"
-
-    related {
-      source = false
-      target = true
-    }
-
-    levels {
-      steps {
-        name = "Inventory Check"
-        entity_search_query {
-          query = "domain='APM' AND name='InventoryService'"
-        }
-      }
-    }
-  }
-
-  # Middle stage: connected on both sides.
-  stages {
-    name = "Packaging"
-
-    related {
-      source = true
-      target = true
-    }
-
-    levels {
-      steps {
-        name = "Packaging Service"
-        entity_search_query {
-          query = "domain='APM' AND name='PackagingService'"
-        }
-      }
-    }
-  }
-
-  # Last stage: receives from the previous stage, no outgoing connection.
-  stages {
-    name = "Shipping"
+    name = "Frontend"
+    link = "https://runbooks.example.com/checkout/frontend"
+    # health_rollup defaults to AUTOMATIC_ROLL_UP: health rolls up from the step signals below.
 
     related {
       source = true
@@ -350,9 +289,25 @@ resource "newrelic_pathpoint_flow" "supply_chain" {
 
     levels {
       steps {
-        name = "Dispatch Service"
+        name = "Login Page"
+
+        # Entity signal: a specific New Relic entity pinned by GUID.
+        signals {
+          guid = "GUID1"
+          name = "Cart Service"
+          type = "ENTITY"
+        }
+
+        # Alert signal: an alert condition pinned by its entity GUID.
+        signals {
+          guid = "GUID2"
+          name = "Checkout Error Rate"
+          type = "ALERT"
+        }
+
+        # Dynamic query: API auto-discovers entities matching the filter at each refresh.
         entity_search_query {
-          query = "domain='APM' AND name='DispatchService'"
+          query = "accountId=1234 AND domain='BROWSER' AND name='Login'"
         }
       }
     }
@@ -382,6 +337,8 @@ KPIs are numeric metrics derived from NRQL queries, displayed as scorecards abov
 * `category` - (Optional) A label used to group related KPIs (e.g. `Revenue`, `Reliability`).
 * `account_id` - (Optional) The account whose data this KPI queries. Defaults to the flow's account ID.
 * `query` - (Required) The NRQL query definition for this KPI. See [Nested `query` blocks](#nested-query-blocks) below for details.
+
+-> **NOTE:** Cross-account KPIs — setting `account_id` to an account other than the flow's own account — are not yet supported in this Limited Preview.
 
 ### Nested `query` blocks
 
@@ -458,7 +415,7 @@ A step represents a single unit of work or signal group within a level. Each ste
 
 A dynamic filter query that the API evaluates at each refresh interval to automatically find and attach matching entities to the step. The search is scoped to the accounts listed in `scoped_accounts`; if `scoped_accounts` is not set, it defaults to the account the flow belongs to. To target a specific account regardless of `scoped_accounts`, include `accountId` directly in the filter expression.
 
-* `query` - (Required) A New Relic entity filter expression, e.g. `accountId=12345678 AND domain='APM' AND name='OrderService'`.
+* `query` - (Required) A New Relic entity filter expression, e.g. `accountId=1234 AND domain='APM' AND name='OrderService'`.
 * `is_excluded` - (Optional) When `true`, results from this query are excluded from the step's health calculation. Defaults to `false`.
 
 ### Nested `config` blocks
@@ -478,6 +435,8 @@ Explicitly pins a specific New Relic entity or alert condition to the step by GU
 * `type` - (Optional) Whether the GUID refers to a monitored entity (`ENTITY`) or an alert condition (`ALERT`). Valid values: `ENTITY`, `ALERT`.
 * `is_excluded` - (Optional) When `true`, this signal is excluded from the step's health calculation. Defaults to `false`.
 
+-> **NOTE:** `type = "ALERT"` is not yet supported in this Limited Preview.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -495,7 +454,16 @@ In addition to all arguments above, the following attributes are exported:
 New Relic Pathpoint flows can be imported using the flow's entity GUID, e.g.
 
 ```bash
-$ terraform import newrelic_pathpoint_flow.checkout MjUyMDUyOHxOUjF8UFRIUFRTfDEyMzQ1VHHVHUEFCHIID
+$ terraform import newrelic_pathpoint_flow.checkout GUID1
 ```
-
 -> **NOTE:** After importing, run `terraform plan` to verify the state matches the existing configuration. The provider will read the current flow configuration from the API and populate all attributes in state.
+
+## Exporting an Existing Flow
+
+If a flow already exists in your account (created through the UI, or by another user), you can pull its Terraform configuration directly from the Pathpoint UI instead of hand-writing it:
+
+1. Open the flow in the Pathpoint UI.
+2. Click the overflow menu (**•••**) in the flow view
+3. Select **View as code** to get the full `newrelic_pathpoint_flow` resource block for that pathpoint flow.
+
+-> **TIP:** Treat the exported configuration as a starting point. Pair it with [`terraform import`](#import) using the flow's GUID so Terraform state matches the live resource before your next `apply` — otherwise Terraform will try to recreate what already exists.
