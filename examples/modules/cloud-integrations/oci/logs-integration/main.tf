@@ -2,11 +2,12 @@
 resource "oci_functions_application" "logging_function_app" {
   compartment_id = var.compartment_ocid
   config = {
-    "VAULT_REGION"      = var.region
-    "DEBUG_ENABLED"     = var.debug_enabled
-    "NEW_RELIC_REGION"  = var.new_relic_region
-    "SECRET_OCID"       = var.secret_ocid
-    "CLIENT_TTL"        = local.client_ttl
+    "VAULT_REGION"                     = var.region
+    "DEBUG_ENABLED"                    = var.debug_enabled
+    "NEW_RELIC_REGION"                 = var.new_relic_region
+    "SECRET_OCID"                      = var.secret_ocid
+    "CLIENT_TTL"                       = local.client_ttl
+    "RESOURCE_NAME_ENRICHMENT_ENABLED" = var.resource_name_enrichment_enabled ? "true" : "false"
   }
   display_name               = local.function_app_name
   freeform_tags              = local.freeform_tags

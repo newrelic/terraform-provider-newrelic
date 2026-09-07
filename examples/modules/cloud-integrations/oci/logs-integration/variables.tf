@@ -91,3 +91,9 @@ variable "provider_account_id" {
   sensitive   = true
   description = "The Provider Account ID that has been linked with New Relic"
 }
+
+variable "resource_name_enrichment_enabled" {
+  type        = bool
+  description = "Enable OCID-to-resource-name enrichment for forwarded logs."
+  default     = false
+}
