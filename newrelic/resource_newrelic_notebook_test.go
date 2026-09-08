@@ -69,15 +69,23 @@ func testAccNotebookConfigContent(name, text string) string {
 resource "newrelic_notebook" "test" {
   title   = %[1]q
   content = jsonencode({
-    version = "1"
-    blocks = [
+    type    = "declarative"
+    version = 1
+    content = [
       {
-        type = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = %[2]q }
-        }
+        type  = "container"
+        props = { layout = "stack" }
+        content = [
+          {
+            type  = "widget"
+            props = {}
+            content = {
+              type = "visualization"
+              id   = "viz.markdown"
+              props = { text = %[2]q }
+            }
+          }
+        ]
       }
     ]
   })
@@ -90,15 +98,23 @@ func testAccNotebookConfigContentJSON(name string) string {
 resource "newrelic_notebook" "test" {
   title        = %[1]q
   content_json = jsonencode({
-    version = "1"
-    blocks = [
+    type    = "declarative"
+    version = 1
+    content = [
       {
-        type = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "content_json acceptance test" }
-        }
+        type  = "container"
+        props = { layout = "stack" }
+        content = [
+          {
+            type  = "widget"
+            props = {}
+            content = {
+              type = "visualization"
+              id   = "viz.markdown"
+              props = { text = "content_json acceptance test" }
+            }
+          }
+        ]
       }
     ]
   })
@@ -111,25 +127,34 @@ func testAccNotebookConfigContentJSONUpdated(name string) string {
 resource "newrelic_notebook" "test" {
   title        = %[1]q
   content_json = jsonencode({
-    version = "1"
-    blocks = [
+    type    = "declarative"
+    version = 1
+    content = [
       {
-        type = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "content_json acceptance test - updated" }
-        }
-      },
-      {
-        type = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.billboard"
-          props = {
-            nrqlQueries = [{ accountIds = [0], query = "SELECT count(*) FROM Transaction SINCE 1 hour ago" }]
+        type  = "container"
+        props = { layout = "stack" }
+        content = [
+          {
+            type  = "widget"
+            props = {}
+            content = {
+              type = "visualization"
+              id   = "viz.markdown"
+              props = { text = "content_json acceptance test - updated" }
+            }
+          },
+          {
+            type  = "widget"
+            props = {}
+            content = {
+              type = "visualization"
+              id   = "viz.billboard"
+              props = {
+                nrqlQueries = [{ accountIds = [0], query = "SELECT count(*) FROM Transaction SINCE 1 hour ago" }]
+              }
+            }
           }
-        }
+        ]
       }
     ]
   })
@@ -236,7 +261,7 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Step 3: update - add a second block.
+			// Step 3: update - add a second widget.
 			{
 				Config: testAccNotebookConfigContentJSONUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -270,7 +295,7 @@ func TestAccNewRelicNotebook_JSONReformatNoDrift(t *testing.T) {
 	configV1 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %q
-  content_json = "{\"version\":\"1\",\"blocks\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}"
+  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}]}"
 }
 `, rName)
 
@@ -278,7 +303,7 @@ resource "newrelic_notebook" "test" {
 	configV2 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %q
-  content_json = "{\"blocks\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"type\":\"widget\"}],\"version\":\"1\"}"
+  content_json = "{\"content\":[{\"content\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"props\":{},\"type\":\"widget\"}],\"props\":{\"layout\":\"stack\"},\"type\":\"container\"}],\"type\":\"declarative\",\"version\":1}"
 }
 `, rName)
 
