@@ -1313,7 +1313,8 @@ func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID in
 		}
 
 		if enabled, ok := in["enabled"]; ok {
-			azureMonitorInput.Enabled = enabled.(bool)
+			enabledVal := enabled.(bool)
+			azureMonitorInput.Enabled = &enabledVal
 		}
 		expanded[i] = azureMonitorInput
 	}
