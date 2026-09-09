@@ -49,11 +49,10 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Required:    true,
 			},
 			"subscription_id": {
-				Type:         schema.TypeString,
-				Description:  "Subscription ID for the Azure account",
-				Required:     true,
-				Sensitive:    true,
-				ValidateFunc: validation.StringIsNotEmpty,
+				Type:        schema.TypeString,
+				Description: "Subscription ID for the Azure account",
+				Required:    true,
+				Sensitive:   true,
 			},
 			"tenant_id": {
 				Type:         schema.TypeString,
