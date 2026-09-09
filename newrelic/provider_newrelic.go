@@ -152,6 +152,7 @@ func Provider() *schema.Provider {
 			"newrelic_application_settings":                     resourceNewRelicApplicationSettings(),
 			"newrelic_browser_application":                      resourceNewRelicBrowserApplication(),
 			"newrelic_change_tracking_deployment":               resourceNewRelicChangeTrackingDeployment(),
+			"newrelic_change_tracking_event":                    resourceNewRelicChangeTrackingEvent(),
 			"newrelic_cloud_aws_eu_sovereign_link_account":      resourceNewRelicCloudAwsEuSovereignLinkAccount(),
 			"newrelic_cloud_aws_eu_sovereign_integrations":      resourceNewRelicCloudAwsEuSovereignIntegrations(),
 			"newrelic_cloud_aws_govcloud_link_account":          resourceNewRelicAwsGovCloudLinkAccount(),
