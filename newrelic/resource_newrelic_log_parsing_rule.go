@@ -69,6 +69,12 @@ func resourceNewRelicLogParsingRule() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"source": {
+				Type:        schema.TypeString,
+				Description: "The source of the parsing rule.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -85,6 +91,9 @@ func resourceNewRelicLogParsingRuleCreate(ctx context.Context, d *schema.Resourc
 		Grok:    d.Get("grok").(string),
 		Lucene:  d.Get("lucene").(string),
 		NRQL:    logconfigurations.NRQL(d.Get("nrql").(string)),
+	}
+	if e, ok := d.GetOk("source"); ok {
+		createInput.Source = logconfigurations.LogConfigurationsParsingRuleSource(e.(string))
 	}
 	var diags diag.Diagnostics
 	if e, ok := d.GetOk("attribute"); ok {
@@ -174,6 +183,10 @@ func resourceNewRelicLogParsingRuleRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	if err := d.Set("source", rule.Source); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
@@ -238,6 +251,10 @@ func expandLogParsingRuleUpdateInput(d *schema.ResourceData) logconfigurations.L
 
 	if e, ok := d.GetOk("nrql"); ok {
 		updateInp.NRQL = logconfigurations.NRQL(e.(string))
+	}
+
+	if e, ok := d.GetOk("source"); ok {
+		updateInp.Source = logconfigurations.LogConfigurationsParsingRuleSource(e.(string))
 	}
 
 	return updateInp
