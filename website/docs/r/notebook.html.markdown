@@ -101,7 +101,7 @@ resource "newrelic_notebook" "example" {
 <details>
   <summary>Incident investigation runbook - markdown, billboard, line, area, table (content mode)</summary>
 
-A realistic notebook for walking through a production incident: a header, a KPI billboard with thresholds, a timeline line chart, a database latency area chart, a drill-down table of affected endpoints, and a markdown root-cause summary.
+A realistic notebook for a production incident: a header, KPI billboard with thresholds, a timeline line chart, database latency area chart, drill-down table, and a root-cause markdown summary.
 
 ```hcl
 resource "newrelic_notebook" "incident_runbook" {
@@ -162,7 +162,7 @@ resource "newrelic_notebook" "incident_runbook" {
                     query      = "SELECT percentage(count(*), WHERE httpResponseCode >= 400) FROM Transaction WHERE appName = 'api-production' TIMESERIES 1 minute SINCE '2024-10-15 14:00:00' UNTIL '2024-10-15 16:00:00'"
                   }
                 ]
-                legendEnabled = true
+                legend = { enabled = true }
                 yAxisLeft = { zero = true }
               }
             }
@@ -196,6 +196,7 @@ resource "newrelic_notebook" "incident_runbook" {
                     query      = "SELECT count(*) AS 'Errors', average(duration)*1000 AS 'Avg ms' FROM Transaction WHERE httpResponseCode >= 400 FACET request.uri SINCE '2024-10-15 14:00:00' UNTIL '2024-10-15 16:00:00' ORDER BY count(*) DESC LIMIT 10"
                   }
                 ]
+                initialSorting = { name = "Errors", direction = "desc" }
               }
             }
           },
@@ -220,9 +221,7 @@ resource "newrelic_notebook" "incident_runbook" {
 </details>
 
 <details>
-  <summary>Weekly service health review - billboard, line, area, bar, pie (content_json mode)</summary>
-
-A weekly review notebook stored as a JSON file, combining an Apdex billboard, P95 latency comparison, request volume, error breakdown, and a markdown analysis section.
+  <summary>Weekly service health review - billboard, line, area, stacked-bar, pie (content_json mode)</summary>
 
 **`notebooks/weekly-health.json`**
 
@@ -271,7 +270,7 @@ A weekly review notebook stored as a JSON file, combining an Apdex billboard, P9
         },
         {
           "type": "widget",
-          "props": { "title": "P95 latency by service (vs. prior week)" },
+          "props": { "title": "P95 latency (vs. prior week)" },
           "content": {
             "type": "visualization",
             "id": "viz.line",
@@ -279,10 +278,10 @@ A weekly review notebook stored as a JSON file, combining an Apdex billboard, P9
               "nrqlQueries": [
                 {
                   "accountIds": [1234567],
-                  "query": "SELECT percentile(duration, 95) AS 'P95 (ms)' FROM Transaction WHERE appName IN ('web-frontend', 'api-backend') FACET appName TIMESERIES 1 day SINCE 7 days ago COMPARE WITH 1 week ago"
+                  "query": "SELECT percentile(duration, 95) FROM Transaction WHERE appName IN ('web-frontend', 'api-backend') FACET appName TIMESERIES 1 day SINCE 7 days ago COMPARE WITH 1 week ago"
                 }
               ],
-              "legendEnabled": true
+              "legend": { "enabled": true, "position": "bottom" }
             }
           }
         },
@@ -304,23 +303,24 @@ A weekly review notebook stored as a JSON file, combining an Apdex billboard, P9
         },
         {
           "type": "widget",
-          "props": { "title": "Errors by service" },
+          "props": { "title": "Response codes over time" },
           "content": {
             "type": "visualization",
-            "id": "viz.bar",
+            "id": "viz.stacked-bar",
             "props": {
               "nrqlQueries": [
                 {
                   "accountIds": [1234567],
-                  "query": "SELECT count(*) FROM Transaction WHERE error IS true AND appName IN ('web-frontend', 'api-backend') FACET appName SINCE 7 days ago"
+                  "query": "SELECT count(*) FROM Transaction WHERE appName IN ('web-frontend', 'api-backend') FACET httpResponseCode TIMESERIES 1 hour SINCE 7 days ago"
                 }
-              ]
+              ],
+              "legend": { "enabled": true }
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "Error distribution by HTTP status" },
+          "props": { "title": "Error distribution by status" },
           "content": {
             "type": "visualization",
             "id": "viz.pie",
@@ -331,18 +331,7 @@ A weekly review notebook stored as a JSON file, combining an Apdex billboard, P9
                   "query": "SELECT count(*) FROM Transaction WHERE error IS true FACET httpResponseCode SINCE 7 days ago"
                 }
               ],
-              "facetShowOtherSeries": true
-            }
-          }
-        },
-        {
-          "type": "widget",
-          "props": {},
-          "content": {
-            "type": "visualization",
-            "id": "viz.markdown",
-            "props": {
-              "text": "## Analysis\n\n### Wins\n- API P95 down 35% after DB index added Monday\n\n### Concerns\n- Frontend P95 up 15% WoW — investigate asset bundle regression"
+              "facet": { "showOtherSeries": true }
             }
           }
         }
@@ -358,298 +347,6 @@ A weekly review notebook stored as a JSON file, combining an Apdex billboard, P9
 resource "newrelic_notebook" "weekly_review" {
   title        = "Weekly Service Health Review"
   content_json = file("${path.module}/notebooks/weekly-health.json")
-}
-```
-
-</details>
-
-<details>
-  <summary>All visualization types - one notebook per viz type</summary>
-
-```hcl
-# viz.line
-resource "newrelic_notebook" "line_example" {
-  title = "Line Chart Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Transaction throughput" }
-        content = { type = "visualization", id = "viz.line"
-          props = {
-            nrqlQueries     = [{ accountIds = [var.account_id], query = "SELECT rate(count(*), 1 minute) FROM Transaction FACET appName TIMESERIES 5 minutes SINCE 3 hours ago" }]
-            legendEnabled   = true
-            yAxisLeft       = { zero = true, min = 0 }
-            nullValues      = { nullValue = "zero" }
-            facetShowOtherSeries = true
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.area
-resource "newrelic_notebook" "area_example" {
-  title = "Area Chart Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Memory usage" }
-        content = { type = "visualization", id = "viz.area"
-          props = {
-            nrqlQueries   = [{ accountIds = [var.account_id], query = "SELECT average(memoryUsedPercent) FROM SystemSample FACET hostname TIMESERIES 5 minutes SINCE 3 hours ago" }]
-            legendEnabled = true
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.bar
-resource "newrelic_notebook" "bar_example" {
-  title = "Bar Chart Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Top transaction errors" }
-        content = { type = "visualization", id = "viz.bar"
-          props = {
-            nrqlQueries          = [{ accountIds = [var.account_id], query = "SELECT count(*) FROM Transaction WHERE error IS true FACET name SINCE 1 hour ago ORDER BY count(*) DESC LIMIT 10" }]
-            facetShowOtherSeries = false
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.pie
-resource "newrelic_notebook" "pie_example" {
-  title = "Pie Chart Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Requests by HTTP status" }
-        content = { type = "visualization", id = "viz.pie"
-          props = {
-            nrqlQueries          = [{ accountIds = [var.account_id], query = "SELECT count(*) FROM Transaction FACET httpResponseCode SINCE 1 hour ago" }]
-            facetShowOtherSeries = true
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.table
-resource "newrelic_notebook" "table_example" {
-  title = "Table Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Slowest transactions" }
-        content = { type = "visualization", id = "viz.table"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT average(duration)*1000 AS 'Avg ms', max(duration)*1000 AS 'Max ms', count(*) AS 'Calls' FROM Transaction FACET name SINCE 1 hour ago ORDER BY average(duration) DESC LIMIT 20" }]
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.billboard
-resource "newrelic_notebook" "billboard_example" {
-  title = "Billboard Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Error rate" }
-        content = { type = "visualization", id = "viz.billboard"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT percentage(count(*), WHERE error IS true) AS 'Error %' FROM Transaction SINCE 1 hour ago" }]
-            thresholdsWithSeriesOverrides = {
-              thresholds = [
-                { to = 1,           severity = "success"  }
-                { from = 1, to = 5, severity = "warning"  }
-                { from = 5,         severity = "critical" }
-              ]
-            }
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.stacked-bar
-resource "newrelic_notebook" "stacked_bar_example" {
-  title = "Stacked Bar Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Response codes over time" }
-        content = { type = "visualization", id = "viz.stacked-bar"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT count(*) FROM Transaction FACET httpResponseCode TIMESERIES 5 minutes SINCE 3 hours ago" }]
-            legendEnabled = true
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.histogram
-resource "newrelic_notebook" "histogram_example" {
-  title = "Histogram Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Duration distribution" }
-        content = { type = "visualization", id = "viz.histogram"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT histogram(duration, width: 0.1, buckets: 20) FROM Transaction SINCE 1 hour ago" }]
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.heatmap
-resource "newrelic_notebook" "heatmap_example" {
-  title = "Heatmap Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Duration heatmap by app" }
-        content = { type = "visualization", id = "viz.heatmap"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT histogram(duration) FROM Transaction FACET appName SINCE 1 hour ago" }]
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.funnel
-resource "newrelic_notebook" "funnel_example" {
-  title = "Funnel Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Conversion funnel" }
-        content = { type = "visualization", id = "viz.funnel"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT funnel(session, WHERE name = 'HomeView' AS 'Home', WHERE name = 'CheckoutView' AS 'Checkout', WHERE name = 'ConfirmationView' AS 'Purchase') FROM PageView SINCE 1 day ago" }]
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.scatter
-resource "newrelic_notebook" "scatter_example" {
-  title = "Scatter Plot Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Duration vs Apdex by app" }
-        content = { type = "visualization", id = "viz.scatter"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT apdex(duration, t: 0.5), average(duration) FROM Transaction FACET appName LIMIT 10 SINCE 1 hour ago" }]
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.bullet
-resource "newrelic_notebook" "bullet_example" {
-  title = "Bullet Chart Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Requests vs target" }
-        content = { type = "visualization", id = "viz.bullet"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT rate(count(*), 1 minute) AS 'Requests/min' FROM Transaction SINCE 5 minutes ago" }]
-            limit = 1000
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.sparkline
-resource "newrelic_notebook" "sparkline_example" {
-  title = "Sparkline Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type = "widget", props = { title = "Throughput sparkline" }
-        content = { type = "visualization", id = "viz.sparkline"
-          props = {
-            nrqlQueries = [{ accountIds = [var.account_id], query = "SELECT count(*) FROM Transaction TIMESERIES AUTO SINCE 1 hour ago" }]
-          }
-        }
-      }]
-    }]
-  })
-}
-
-# viz.markdown (text block)
-resource "newrelic_notebook" "markdown_example" {
-  title = "Markdown Example"
-  content = jsonencode({
-    type = "declarative", version = 1
-    content = [{
-      type = "container", props = { layout = "stack" }
-      content = [{
-        type  = "widget"
-        props = {}
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = {
-            text = "# Runbook\n\nUse **bold**, _italic_, `code`, and [links](https://one.newrelic.com).\n\n## Checklist\n\n- [ ] Verify dashboards\n- [ ] Check alert policies"
-          }
-        }
-      }]
-    }]
-  })
 }
 ```
 
@@ -682,7 +379,7 @@ resource "newrelic_notebook" "per_service" {
             content = {
               type  = "visualization"
               id    = "viz.markdown"
-              props = { text = "# ${each.value}\n\nAdd runbook steps for this service here." }
+              props = { text = "# ${each.value}\n\nAdd runbook steps here." }
             }
           },
           {
@@ -710,8 +407,8 @@ resource "newrelic_notebook" "per_service" {
 ## Argument Reference
 
 * `title` - (Required) The title of the notebook. Must be unique within the organization.
-* `content` - (Optional) The notebook body as an HCL object using `jsonencode({...})`. Produces field-level diffs in `terraform plan`. Mutually exclusive with `content_json`. Must follow the declarative UI schema described in [Content schema](#content-schema).
-* `content_json` - (Optional) The notebook body as a raw JSON string. Use when working from a UI export or a file. Produces line-level diffs of normalized content. Mutually exclusive with `content`. Must follow the declarative UI schema.
+* `content` - (Optional) The notebook body as an HCL object using `jsonencode({...})`. Produces field-level diffs in `terraform plan`. Mutually exclusive with `content_json`.
+* `content_json` - (Optional) The notebook body as a raw JSON string. Use when working from a UI export or a file. Produces line-level diffs of normalized content. Mutually exclusive with `content`.
 * `organization_id` - (Computed) The New Relic organization ID. Resolved automatically from the provider credentials.
 
 ## Attributes Reference
@@ -723,17 +420,17 @@ resource "newrelic_notebook" "per_service" {
 
 ## Nested `container` blocks
 
-The `content` array at the top level of the declarative UI document contains one or more **container** blocks. A container groups a set of widgets with a shared layout.
+The `content` array at the top level contains one or more **container** blocks.
 
 The following arguments are supported in a container block's `props`:
 
-* `layout` - (Optional) The layout algorithm for the widgets in this container. Accepted values: `"stack"` (stacks widgets vertically, default), `"grid"` (arranges widgets in a grid). Defaults to `"stack"` when `props` is omitted entirely.
+* `layout` - (Optional) Layout algorithm for the widgets. Accepted values: `"stack"` (stacks widgets vertically, default), `"grid"`. Defaults to `"stack"` when `props` is omitted.
 
 ---
 
 ## Nested `widget` blocks
 
-Each widget block within a container's `content` array supports the following structure:
+Each widget block within a container's `content` array supports this structure:
 
 ```json
 {
@@ -749,99 +446,103 @@ Each widget block within a container's `content` array supports the following st
 
 ### Widget-level `props`
 
-These are set directly on the `widget` object's `props`, not inside the `content.props`. They are optional and shared across all widget types:
+Set directly on the `widget` object's `props`, shared across all widget types:
 
-* `title` - (Optional) A label displayed above the rendered chart. Corresponds to the **Name** field in the UI's chart customization panel.
-* `ignoreTimeRange` - (Optional) When `true`, the widget uses the time range specified in its own NRQL query instead of inheriting the notebook's global time picker. Defaults to `false`.
-
-### Supported visualization types
-
-The following visualization IDs are supported. Each maps to a chart type in the New Relic query builder and the Notebooks UI.
-
-| `id` | Description | Required NRQL shape |
-|---|---|---|
-| `viz.markdown` | Text block with Markdown support | N/A |
-| `viz.line` | Line chart | `TIMESERIES` recommended |
-| `viz.area` | Area chart | `TIMESERIES` recommended |
-| `viz.bar` | Bar chart | `FACET` recommended |
-| `viz.stacked-bar` | Stacked bar chart | `FACET` or `TIMESERIES` |
-| `viz.pie` | Pie chart | `FACET` recommended |
-| `viz.table` | Data table | `FACET` recommended |
-| `viz.billboard` | Single-value display | Single aggregation |
-| `viz.histogram` | Distribution histogram | `histogram()` function |
-| `viz.heatmap` | Heatmap | `histogram()` with `FACET` |
-| `viz.funnel` | Conversion funnel | `funnel()` function |
-| `viz.scatter` | Scatter plot | Two-value result |
-| `viz.bullet` | Bullet chart | Single aggregation |
-| `viz.sparkline` | Sparkline (mini line) | `TIMESERIES` |
+* `title` - (Optional) A label displayed above the rendered chart.
+* `ignoreTimeRange` - (Optional, **widget-level prop**) This is equivalent to `platformOptions.ignoreTimeRange` on some viz types. Prefer setting it directly via the viz prop `platformOptions.ignoreTimeRange`.
 
 ---
 
-### `viz.markdown` — Markdown text block
+## Supported visualization types
 
-Renders a text block supporting [GitHub-flavored Markdown](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/add-queries-to-notebooks/).
-
-**Props (`content.props`):**
-
-* `text` - (Required) The Markdown source string. Supports headings, bold, italic, inline code, fenced code blocks, ordered and unordered lists, task lists (`- [ ]`), tables, and links. Newlines within the string must be expressed as `\n`.
-
-**Example:**
-```json
-{
-  "type": "widget",
-  "props": {},
-  "content": {
-    "type": "visualization",
-    "id": "viz.markdown",
-    "props": {
-      "text": "## Investigation Notes\n\nAdd your analysis here.\n\n- [ ] Check alert history\n- [ ] Review recent deploys"
-    }
-  }
-}
-```
+| `id` | Display name | Description | Required NRQL shape |
+|---|---|---|---|
+| `viz.line` | Line | Time series as lines | `TIMESERIES` recommended |
+| `viz.area` | Area | Filled area under line(s) | `TIMESERIES` recommended |
+| `viz.stacked-bar` | Bar | Stacked vertical bars (TIMESERIES or FACET) | Both modes |
+| `viz.bar` | Simplified Bar | Simple horizontal bar (FACET only) | `FACET` recommended |
+| `viz.stacked-horizontal-bar` | Horizontal Stacked Bar | Horizontal bars stacked by FACET | `FACET` recommended |
+| `viz.pie` | Pie | Proportional segments | `FACET` recommended |
+| `viz.table` | Table | Data rows and columns | `FACET` recommended |
+| `viz.billboard` | Billboard | Single large metric with threshold coloring | Single aggregation |
+| `viz.gauge` | Gauge | Dial or bar showing value vs scale | Single aggregation |
+| `viz.histogram` | Histogram | Distribution buckets | `histogram()` function |
+| `viz.heatmap` | Heatmap | 2D distribution grid | `histogram()` with `FACET` |
+| `viz.scatter` | Scatter | X-Y scatter plot | Two-value `FACET` result |
+| `viz.apdex` | Apdex | Apdex score display | Apdex-compatible |
+| `viz.bullet` | Bullet | Progress bar vs target | Single aggregation |
+| `viz.funnel` | Funnel | Conversion funnel | `funnel()` function |
+| `viz.event-feed` | Event Feed | Scrolling event list | Any |
+| `viz.json` | JSON | Raw JSON output | Any |
+| `viz.sparkline` | Sparkline | Compact trend line with axes | `TIMESERIES` |
+| `viz.sparkline-lite` | Sparkline Lite | Ultra-compact sparkline, no axes | `TIMESERIES` |
+| `viz.markdown` | Markdown | Rich text block | N/A |
 
 ---
 
 ### `viz.line` — Line chart
 
-Plots one or more NRQL time series as line(s).
-
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) An array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks) below.
-* `legendEnabled` - (Optional) Show or hide the chart legend. Defaults to `true`.
-* `facetShowOtherSeries` - (Optional) Show the aggregated "Other" group when a `FACET` returns more than the maximum number of series. Defaults to `false`.
-* `yAxisLeft` - (Optional) Configuration for the left Y axis. See [Nested `yAxisLeft` / `yAxisRight` blocks](#nested-yaxisleft--yaxisright-blocks) below.
-* `yAxisRight` - (Optional) Configuration for a second (right) Y axis. See [Nested `yAxisLeft` / `yAxisRight` blocks](#nested-yaxisleft--yaxisright-blocks) below.
-* `nullValues` - (Optional) Specifies how null data points are rendered. See [Nested `nullValues` blocks](#nested-nullvalues-blocks) below.
-* `colors` - (Optional) Per-series color overrides. See [Nested `colors` blocks](#nested-colors-blocks) below.
-* `units` - (Optional) Per-series unit overrides. See [Nested `units` blocks](#nested-units-blocks) below.
-* `thresholds` - (Optional) Horizontal threshold lines drawn on the chart. See [Nested `thresholds` blocks (line/area/stacked-bar)](#nested-thresholds-blocks-linearea-and-stacked-bar) below.
-* `refreshRate` - (Optional) Data refresh interval in milliseconds. See [Valid `refreshRate` values](#valid-refreshrate-values) below.
-* `tooltip` - (Optional) Tooltip display mode. See [Nested `tooltip` blocks](#nested-tooltip-blocks) below.
-* `lineInterpolation` - (Optional) How data points are connected. Valid values: `"linear"` (default), `"smooth"`, `"stepBefore"`, `"stepAfter"`.
-* `markers` - (Optional) Vertical reference lines drawn at specific timestamps or values on the chart. See [Nested `markers` blocks](#nested-markers-blocks) below.
-* `chartTypeOverrides` - (Optional) Override the chart type for individual series within the same query result. See [Nested `chartTypeOverrides` blocks](#nested-charttypeoverrides-blocks) below.
+* `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
+* `alertQueries` - (Optional) Array of alert violation query objects. Fetches alert violation data and renders warning/critical bands as event bars beneath the line. Only available for `viz.line`. Each object requires: `accountIds` (number[]), `violationId` (number), `duration` (number, ms), `endTime` (number, epoch ms).
+* `sqlQueries` - (Optional) Array of SQL query objects via Federated Data Source (FDS). Each object requires: `query` (string), and `accountId` (number) or `accountIds` (number[]).
+* `legend.enabled` - (Optional) Show or hide the chart legend. Default: `true`.
+* `legend.position` - (Optional) Position of the legend. Valid values: `"bottom"` (default), `"left"`, `"right"`, `null`.
+* `facet.showOtherSeries` - (Optional) Show the aggregated "Other" group for `FACET` queries. Default: `false`.
+* `yAxisLeft.min` - (Optional) Minimum value for the left Y axis.
+* `yAxisLeft.max` - (Optional) Maximum value for the left Y axis.
+* `yAxisLeft.zero` - (Optional) Force zero as the axis origin. Default: `true`.
+* `yAxisLeft.scale` - (Optional) Scale type for the left Y axis. Valid values: `"linear"` (default), `"logarithmic"`.
+* `yAxisRight.min` - (Optional) Minimum value for the right Y axis.
+* `yAxisRight.max` - (Optional) Maximum value for the right Y axis.
+* `yAxisRight.zero` - (Optional) Force zero on the right Y axis. Default: `true`.
+* `yAxisRight.scale` - (Optional) Scale type. Valid values: `"linear"` (default), `"logarithmic"`.
+* `yAxisRight.series[].name` - (Optional) Series names to plot against the right Y axis instead of the left. A series can only belong to one axis.
+* `nullValues.nullValue` - (Optional) How to handle null data points globally. Valid values: `"default"`, `"zero"`, `"preserve"`, `"remove"`.
+* `nullValues.seriesOverrides[].seriesName` - (Optional) Series name to apply the override to.
+* `nullValues.seriesOverrides[].nullValue` - (Optional) Per-series null value strategy.
+* `colors.colorPalette` - (Optional) Color palette. Valid values: `"consistent"` (default), `"dynamic"`, `null`.
+* `colors.seriesOverrides[].seriesName` - (Optional) Series name to apply a custom color to.
+* `colors.seriesOverrides[].color` - (Optional) Color for the series (RGB hex, e.g. `"#FF0000"`).
+* `units.unit` - (Optional) Default data unit for all series. See [Valid `units.unit` values](#valid-unitsunit-values).
+* `units.seriesOverrides[].seriesName` - (Optional) Series name to apply a unit to.
+* `units.seriesOverrides[].unit` - (Optional) Unit for the series.
+* `thresholds.isLabelVisible` - (Optional) Show threshold labels on the chart. Default: `false`.
+* `thresholds.thresholds[].name` - (Optional) Label for this threshold.
+* `thresholds.thresholds[].from` - (Optional) Lower bound of the threshold range.
+* `thresholds.thresholds[].to` - (Optional) Upper bound of the threshold range.
+* `thresholds.thresholds[].severity` - (Optional) Color for data in this range. Valid values: `"critical"`, `"severe"`, `"warning"`, `"success"`, `"unavailable"`.
+* `chartStyles.lineInterpolation` - (Optional) How data points are connected. Valid values: `"linear"` (default), `"smooth"`, `"stepBefore"`, `"stepAfter"`.
+* `chartStyles.gradient.enabled` - (Optional) Enable gradient fill. Default: `false`.
+* `chartTypes.seriesOverrides[].seriesName` - (Optional) Series name to render as a different chart type.
+* `chartTypes.seriesOverrides[].chartType` - (Optional) Override chart type for a specific series. Valid values: `"line"`, `"area"`.
+* `tooltip.mode` - (Optional) Tooltip display behaviour. Valid values: `"single"` (default), `"all"`, `"hidden"`.
+* `platformOptions.ignoreTimeRange` - (Optional) Override the notebook time picker with the query's own time range. Default: `false`.
+* `refreshRate.frequency` - (Optional) Auto-refresh interval in milliseconds, or `"auto"`. Default: `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
 **Example:**
 ```json
 {
   "type": "widget",
-  "props": { "title": "Throughput over time" },
+  "props": { "title": "Transaction throughput" },
   "content": {
     "type": "visualization",
     "id": "viz.line",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT rate(count(*), 1 minute) FROM Transaction FACET appName TIMESERIES 5 minutes SINCE 3 hours ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT rate(count(*), 1 minute) FROM Transaction FACET appName TIMESERIES 5 minutes SINCE 3 hours ago" }
       ],
-      "legendEnabled": true,
+      "legend": { "enabled": true, "position": "bottom" },
       "yAxisLeft": { "zero": true, "min": 0 },
       "nullValues": { "nullValue": "zero" },
-      "lineInterpolation": "smooth"
+      "chartStyles": { "lineInterpolation": "smooth" },
+      "thresholds": {
+        "thresholds": [
+          { "name": "Warning", "from": 1000, "to": 2000, "severity": "warning" },
+          { "name": "Critical", "from": 2000, "severity": "critical" }
+        ]
+      }
     }
   }
 }
@@ -851,22 +552,13 @@ Plots one or more NRQL time series as line(s).
 
 ### `viz.area` — Area chart
 
-Plots time series with filled areas below the lines. Useful for showing volume.
-
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects.
-* `legendEnabled` - (Optional) Show or hide the legend. Defaults to `true`.
-* `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
-* `yAxisLeft` - (Optional) Left Y axis configuration.
-* `nullValues` - (Optional) Null value rendering.
-* `colors` - (Optional) Per-series color overrides.
-* `units` - (Optional) Per-series unit overrides.
-* `thresholds` - (Optional) Horizontal threshold lines.
-* `refreshRate` - (Optional) Refresh interval in ms.
-* `tooltip` - (Optional) Tooltip mode.
-* `lineInterpolation` - (Optional) Line interpolation. Valid values: `"linear"` (default), `"smooth"`, `"stepBefore"`, `"stepAfter"`.
-* `markers` - (Optional) Vertical reference lines at specific timestamps or values. See [Nested `markers` blocks](#nested-markers-blocks) below.
+Same as `viz.line` except:
+- `alertQueries` is not supported
+- `yAxisRight` is not supported
+- `nullValues` supports: `"default"`, `"zero"`, `"preserve"` (no `"remove"`)
+- Additional prop: `chartStyles.stacked.enabled` - (Optional) Enable stacked mode. Default: `true`.
 
 **Example:**
 ```json
@@ -878,13 +570,10 @@ Plots time series with filled areas below the lines. Useful for showing volume.
     "id": "viz.area",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT average(memoryUsedPercent) FROM SystemSample FACET hostname TIMESERIES 5 minutes SINCE 3 hours ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT average(memoryUsedPercent) FROM SystemSample FACET hostname TIMESERIES 5 minutes SINCE 3 hours ago" }
       ],
-      "legendEnabled": true,
-      "yAxisLeft": { "zero": true, "min": 0, "max": 100 }
+      "yAxisLeft": { "zero": true, "min": 0, "max": 100 },
+      "chartStyles": { "stacked": { "enabled": false } }
     }
   }
 }
@@ -892,55 +581,29 @@ Plots time series with filled areas below the lines. Useful for showing volume.
 
 ---
 
-### `viz.bar` — Bar chart
+### `viz.stacked-bar` — Bar chart (stacked/timeseries)
 
-Compares values across discrete categories.
-
-**Props (`content.props`):**
-
-* `nrqlQueries` - (Required) Array of NRQL query objects.
-* `legendEnabled` - (Optional) Show or hide the legend. Defaults to `true`.
-* `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
-* `colors` - (Optional) Per-series color overrides.
-* `refreshRate` - (Optional) Refresh interval in ms.
-* `tooltip` - (Optional) Tooltip mode.
-
-**Example:**
-```json
-{
-  "type": "widget",
-  "props": { "title": "Top error transactions" },
-  "content": {
-    "type": "visualization",
-    "id": "viz.bar",
-    "props": {
-      "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT count(*) FROM Transaction WHERE error IS true FACET name SINCE 1 hour ago ORDER BY count(*) DESC LIMIT 10"
-        }
-      ],
-      "facetShowOtherSeries": false
-    }
-  }
-}
-```
-
----
-
-### `viz.stacked-bar` — Stacked bar chart
-
-Like a bar chart but with facets stacked within each bar, showing composition.
+Vertical bar chart supporting both TIMESERIES and categorical FACET data. Stacked layout with optional thresholds.
 
 **Props (`content.props`):**
 
 * `nrqlQueries` - (Required) Array of NRQL query objects.
-* `legendEnabled` - (Optional) Show or hide the legend. Defaults to `true`.
-* `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
-* `colors` - (Optional) Per-series color overrides.
-* `thresholds` - (Optional) Horizontal threshold lines.
-* `refreshRate` - (Optional) Refresh interval in ms.
-* `tooltip` - (Optional) Tooltip mode.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `legend.enabled` - (Optional) Default: `true`.
+* `legend.position` - (Optional) `"bottom"` | `"left"` | `"right"` | `null`. Default: `"bottom"`.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `colors.colorPalette` - (Optional) `"consistent"` | `"dynamic"` | `null`. Default: `"consistent"`.
+* `colors.seriesOverrides[].seriesName` / `.color`
+* `units.unit` / `units.seriesOverrides[]`
+* `thresholds.isLabelVisible` / `thresholds.thresholds[].name/from/to/severity`
+* `chartStyles.gradient.enabled` - (Optional) Default: `false`.
+* `chartStyles.stacked.enabled` - (Optional) Default: `true`.
+* `chartTypes.seriesOverrides[].seriesName` / `.chartType` — Valid: `"line"`, `"area"`.
+* `nullValues.nullValue` / `nullValues.seriesOverrides[]` — Values: `"default"`, `"zero"`, `"preserve"`.
+* `tooltip.mode` - (Optional) `"single"` | `"all"` | `"hidden"`. Default: `"single"`.
+* `yAxisLeft.min` / `.max` / `.zero` / `.scale`
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -952,12 +615,73 @@ Like a bar chart but with facets stacked within each bar, showing composition.
     "id": "viz.stacked-bar",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT count(*) FROM Transaction FACET httpResponseCode TIMESERIES 5 minutes SINCE 3 hours ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT count(*) FROM Transaction FACET httpResponseCode TIMESERIES 5 minutes SINCE 3 hours ago" }
       ],
-      "legendEnabled": true
+      "legend": { "enabled": true }
+    }
+  }
+}
+```
+
+---
+
+### `viz.bar` — Simplified Bar chart
+
+Simple horizontal bar chart for categorical FACET comparisons. Fewer props than `viz.stacked-bar`.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `colors.colorPalette` - (Optional) Default: `"consistent"`.
+* `colors.seriesOverrides[].seriesName` / `.color`
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Top error transactions" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.bar",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT count(*) FROM Transaction WHERE error IS true FACET name SINCE 1 hour ago ORDER BY count(*) DESC LIMIT 10" }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.stacked-horizontal-bar` — Horizontal Stacked Bar
+
+Horizontal bars stacked by FACET. Minimal configuration.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `legend.enabled` - (Optional) Default: `true`.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Errors by service" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.stacked-horizontal-bar",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT count(*) FROM Transaction WHERE error IS true FACET appName SINCE 7 days ago" }
+      ]
     }
   }
 }
@@ -967,15 +691,17 @@ Like a bar chart but with facets stacked within each bar, showing composition.
 
 ### `viz.pie` — Pie chart
 
-Displays proportional data as a pie. Best for 5-7 categories.
-
 **Props (`content.props`):**
 
 * `nrqlQueries` - (Required) Array of NRQL query objects.
-* `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
-* `colors` - (Optional) Per-series color overrides.
-* `legendEnabled` - (Optional) Show or hide the legend. Defaults to `true`.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `facet.showOtherSeries` - (Optional) Default: **`true`** (pie default differs from other viz types).
+* `legend.enabled` - (Optional) Default: `true`.
+* `colors.colorPalette` - (Optional) Default: `"consistent"`.
+* `colors.seriesOverrides[].seriesName` / `.color`
+* `chartStyles.gradient.enabled` - (Optional) Default: `false`.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -987,12 +713,9 @@ Displays proportional data as a pie. Best for 5-7 categories.
     "id": "viz.pie",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT count(*) FROM Transaction FACET httpResponseCode SINCE 1 hour ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT count(*) FROM Transaction FACET httpResponseCode SINCE 1 hour ago" }
       ],
-      "facetShowOtherSeries": true
+      "facet": { "showOtherSeries": true }
     }
   }
 }
@@ -1002,13 +725,20 @@ Displays proportional data as a pie. Best for 5-7 categories.
 
 ### `viz.table` — Table
 
-Displays query results as a tabular list. Supports multi-column data.
-
 **Props (`content.props`):**
 
 * `nrqlQueries` - (Required) Array of NRQL query objects.
-* `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `initialSorting` - (Optional) Default sort configuration. Object with: `name` (string, column name) and `direction` (`"asc"` | `"desc"`).
+* `hiddenColumns[].columnName` - (Optional) Columns to hide from the rendered table. Matches either the raw column name from the query (e.g. `"timestamp"`) or the display label (e.g. `"Timestamp"`).
+* `thresholds[].columnName` - (Optional) Column to apply the threshold to.
+* `thresholds[].from` - (Optional) Lower bound.
+* `thresholds[].to` - (Optional) Upper bound.
+* `thresholds[].severity` - (Optional) `"critical"` | `"severe"` | `"warning"` | `"success"` | `"unavailable"`.
+* `dataFormatters` - (Optional) Custom data format configuration (see the vizco documentation for format details).
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -1020,10 +750,13 @@ Displays query results as a tabular list. Supports multi-column data.
     "id": "viz.table",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT average(duration)*1000 AS 'Avg ms', max(duration)*1000 AS 'Max ms', count(*) AS 'Calls' FROM Transaction FACET name SINCE 1 hour ago ORDER BY average(duration) DESC LIMIT 20"
-        }
+        { "accountIds": [1234567], "query": "SELECT average(duration)*1000 AS 'Avg ms', max(duration)*1000 AS 'Max ms', count(*) AS 'Calls' FROM Transaction FACET name SINCE 1 hour ago" }
+      ],
+      "initialSorting": { "name": "Avg ms", "direction": "desc" },
+      "hiddenColumns": [{ "columnName": "Calls" }],
+      "thresholds": [
+        { "columnName": "Avg ms", "from": 500, "severity": "warning" },
+        { "columnName": "Avg ms", "from": 1000, "severity": "critical" }
       ]
     }
   }
@@ -1034,13 +767,31 @@ Displays query results as a tabular list. Supports multi-column data.
 
 ### `viz.billboard` — Billboard
 
-Displays a single large metric value with optional color-coded thresholds. Use for KPIs and summary statistics.
+Single large metric value with color-coded threshold ranges.
 
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query should return a single aggregated value or a small number of faceted values.
-* `thresholdsWithSeriesOverrides` - (Optional) Threshold ranges that control the color of the displayed value. See [Nested `thresholdsWithSeriesOverrides` blocks (billboard)](#nested-thresholdswithseriesoverrides-blocks-billboard) below.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `thresholdsWithSeriesOverrides.thresholds[].from` - (Optional) Lower bound of threshold range.
+* `thresholdsWithSeriesOverrides.thresholds[].to` - (Optional) Upper bound of threshold range.
+* `thresholdsWithSeriesOverrides.thresholds[].severity` - (Optional) `"critical"` | `"severe"` | `"warning"` | `"success"` | `"unavailable"`.
+* `thresholdsWithSeriesOverrides.seriesOverrides[].seriesName` - (Optional) Series name to apply custom thresholds.
+* `thresholdsWithSeriesOverrides.seriesOverrides[].from` / `.to` / `.severity` - (Optional) Per-series threshold.
+* `billboardSettings.visual.alignment` - (Optional) Layout of value and label. Valid values: `"auto"`, `"stacked"`, `"inline"`.
+* `billboardSettings.visual.display` - (Optional) What to show. Valid values: `"auto"`, `"all"`, `"value"`, `"label"`, `"none"`.
+* `billboardSettings.gridOptions.columns` - (Optional) Number of columns in the grid (for multi-value billboards).
+* `billboardSettings.gridOptions.label` - (Optional) Font size of the label in pixels.
+* `billboardSettings.gridOptions.value` - (Optional) Font size of the value in pixels.
+* `billboardSettings.link.url` - (Optional) URL to navigate to when the billboard is clicked.
+* `billboardSettings.link.title` - (Optional) Link text.
+* `billboardSettings.link.newTab` - (Optional) Open link in a new tab. Default: `false`.
+* `chartStyles.lineInterpolation` - (Optional) Line interpolation if the billboard shows a trend sparkline.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `units.unit` / `units.seriesOverrides[]`
+* `dataFormatters` - (Optional) Custom data format configuration.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -1052,16 +803,73 @@ Displays a single large metric value with optional color-coded thresholds. Use f
     "id": "viz.billboard",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT percentage(count(*), WHERE error IS true) AS 'Error %' FROM Transaction SINCE 1 hour ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT percentage(count(*), WHERE error IS true) AS 'Error %' FROM Transaction SINCE 1 hour ago" }
       ],
       "thresholdsWithSeriesOverrides": {
         "thresholds": [
-          { "to": 1,           "severity": "success"  },
+          { "to": 1,            "severity": "success"  },
           { "from": 1, "to": 5, "severity": "warning"  },
           { "from": 5,          "severity": "critical" }
+        ]
+      },
+      "billboardSettings": {
+        "visual": { "alignment": "inline", "display": "auto" }
+      }
+    }
+  }
+}
+```
+
+---
+
+### `viz.gauge` — Gauge
+
+Dial, ring, or bar gauge with threshold coloring.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `gaugeSettings.displayMode` - (Optional) Gauge style. Valid values: `"arc"` (270° dial, default), `"circular"` (360° ring), `"bar"` (horizontal bar).
+* `gaugeSettings.min` - (Optional) Minimum value of the gauge scale.
+* `gaugeSettings.max` - (Optional) Maximum value of the gauge scale. Default: `100`.
+* `gaugeSettings.display` - (Optional) What to show inside the gauge. Valid values: `"auto"` (default), `"all"`, `"value"`, `"name"`, `"none"`.
+* `gaugeSettings.showThresholdMarkers` - (Optional) Show the threshold color ring/strip. Default: `true`.
+* `gaugeSettings.showThresholdLabels` - (Optional) Show value labels at threshold boundaries. Default: `false`.
+* `gaugeSettings.thresholdsColorMode` - (Optional) How threshold zones are colored. Valid values: `"solid"` (default), `"gradient"`.
+* `thresholds.thresholds[].from` - (Optional) Lower bound.
+* `thresholds.thresholds[].severity` - (Optional) `"critical"` | `"severe"` | `"warning"` | `"success"` | `"unavailable"`.
+* `thresholds.seriesOverrides[].seriesName` - (Optional) Per-series threshold overrides.
+* `colors.colorPalette` - (Optional) Default: `"consistent"`.
+* `units.unit` / `units.seriesOverrides[]`
+* `dataFormatters` - (Optional) Custom data format configuration.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "CPU utilisation" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.gauge",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT average(cpuPercent) FROM SystemSample SINCE 5 minutes ago" }
+      ],
+      "gaugeSettings": {
+        "displayMode": "arc",
+        "min": 0,
+        "max": 100,
+        "showThresholdMarkers": true,
+        "thresholdsColorMode": "solid"
+      },
+      "thresholds": {
+        "thresholds": [
+          { "from": 80, "severity": "warning" },
+          { "from": 90, "severity": "critical" }
         ]
       }
     }
@@ -1073,13 +881,20 @@ Displays a single large metric value with optional color-coded thresholds. Use f
 
 ### `viz.histogram` — Histogram
 
-Shows the distribution of values across automatically computed buckets. Requires the `histogram()` NRQL function.
+Distribution of values across buckets. Requires the `histogram()` NRQL function.
 
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query must use `histogram(attribute)` or `histogram(attribute, width: N, buckets: N)`.
-* `colors` - (Optional) Per-series color overrides.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `nrqlQueries` - (Required) Array of NRQL query objects. Query must use `histogram(attr)` or `histogram(attr, width: N, buckets: N)`.
+* `legend.enabled` - (Optional) Default: `true`.
+* `legend.position` - (Optional) Default: `"bottom"`.
+* `colors.colorPalette` - (Optional) Default: `"consistent"`.
+* `colors.seriesOverrides[].seriesName` / `.color`
+* `chartStyles.gradient.enabled` - (Optional) Default: `false`.
+* `thresholds.isLabelVisible` / `thresholds.thresholds[].name/from/to/severity`
+* `yAxisLeft.min` / `.max` / `.zero` / `.scale`
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -1091,10 +906,7 @@ Shows the distribution of values across automatically computed buckets. Requires
     "id": "viz.histogram",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT histogram(duration, width: 0.1, buckets: 20) FROM Transaction SINCE 1 hour ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT histogram(duration, width: 0.1, buckets: 20) FROM Transaction SINCE 1 hour ago" }
       ]
     }
   }
@@ -1105,13 +917,14 @@ Shows the distribution of values across automatically computed buckets. Requires
 
 ### `viz.heatmap` — Heatmap
 
-Displays a histogram-style distribution broken down by a `FACET`. Useful for comparing distributions across entities.
+2D distribution grid, showing a `histogram()` broken down by `FACET`.
 
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query must use `histogram()` with a `FACET`.
-* `colors` - (Optional) Per-series color overrides.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `nrqlQueries` - (Required) Array of NRQL query objects. Query must use `histogram()` with `FACET`.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -1123,42 +936,7 @@ Displays a histogram-style distribution broken down by a `FACET`. Useful for com
     "id": "viz.heatmap",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT histogram(duration) FROM Transaction FACET appName SINCE 1 hour ago"
-        }
-      ]
-    }
-  }
-}
-```
-
----
-
-### `viz.funnel` — Funnel chart
-
-Visualizes a conversion funnel across sequential steps. Requires the `funnel()` NRQL function.
-
-**Props (`content.props`):**
-
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query must use the `funnel()` function.
-* `colors` - (Optional) Per-series color overrides.
-* `refreshRate` - (Optional) Refresh interval in ms.
-
-**Example:**
-```json
-{
-  "type": "widget",
-  "props": { "title": "User conversion funnel" },
-  "content": {
-    "type": "visualization",
-    "id": "viz.funnel",
-    "props": {
-      "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT funnel(session, WHERE name = 'HomeView' AS 'Home', WHERE name = 'ProductView' AS 'Product', WHERE name = 'CartView' AS 'Cart', WHERE name = 'ConfirmationView' AS 'Purchase') FROM PageView SINCE 1 day ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT histogram(duration) FROM Transaction FACET appName SINCE 1 hour ago" }
       ]
     }
   }
@@ -1169,29 +947,65 @@ Visualizes a conversion funnel across sequential steps. Requires the `funnel()` 
 
 ### `viz.scatter` — Scatter plot
 
-Plots data points on an X-Y plane. The query should return two numeric values per facet.
+X-Y scatter plot. Query should return two numeric values and a `FACET`.
 
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query should return two numeric attributes and a `FACET`.
-* `colors` - (Optional) Per-series color overrides.
-* `refreshRate` - (Optional) Refresh interval in ms.
-* `tooltip` - (Optional) Tooltip mode.
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `legend.enabled` - (Optional) Default: `true`.
+* `legend.position` - (Optional) Default: `"bottom"`.
+* `colors.colorPalette` - (Optional) Default: `"consistent"`.
+* `colors.seriesOverrides[].seriesName` / `.color`
+* `units.unit` / `units.seriesOverrides[]`
+* `nullValues.nullValue` / `nullValues.seriesOverrides[]` — Values: `"default"`, `"zero"`, `"preserve"`, `"remove"`.
+* `yAxisLeft.min` / `.max` / `.zero` / `.scale`
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
 {
   "type": "widget",
-  "props": { "title": "Duration vs Apdex by app" },
+  "props": { "title": "Apdex vs avg duration" },
   "content": {
     "type": "visualization",
     "id": "viz.scatter",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT apdex(duration, t: 0.5), average(duration) FROM Transaction FACET appName LIMIT 20 SINCE 1 hour ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT apdex(duration, t: 0.5), average(duration) FROM Transaction FACET appName LIMIT 20 SINCE 1 hour ago" }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.apdex` — Apdex
+
+Dedicated Apdex score display with legend.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `legend.enabled` - (Optional) Default: `true`.
+* `legend.position` - (Optional) Default: `"bottom"`.
+* `tooltip.mode` - (Optional) `"single"` | `"all"` | `"hidden"`. Default: `"single"`.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Overall Apdex" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.apdex",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT apdex(duration, 0.5) FROM Transaction WHERE appName IN ('web-frontend', 'api-backend') TIMESERIES 1 day SINCE 7 days ago" }
       ]
     }
   }
@@ -1202,13 +1016,15 @@ Plots data points on an X-Y plane. The query should return two numeric values pe
 
 ### `viz.bullet` — Bullet chart
 
-Displays a value as a horizontal bar against a target limit. The target is set via the `limit` prop.
+Horizontal progress bar showing a value against a target.
 
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query should return a single aggregated value.
-* `limit` - (Required) The target value shown as the bullet chart's goal line.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `nrqlQueries` - (Required) Array of NRQL query objects. Should return a single aggregated value.
+* `sqlQueries` - (Optional) Array of SQL query objects.
+* `limit` - (Required) The target value shown as the bullet goal line.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -1220,10 +1036,7 @@ Displays a value as a horizontal bar against a target limit. The target is set v
     "id": "viz.bullet",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT rate(count(*), 1 minute) AS 'Requests/min' FROM Transaction SINCE 5 minutes ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT rate(count(*), 1 minute) AS 'Requests/min' FROM Transaction SINCE 5 minutes ago" }
       ],
       "limit": 5000
     }
@@ -1233,14 +1046,110 @@ Displays a value as a horizontal bar against a target limit. The target is set v
 
 ---
 
-### `viz.sparkline` — Sparkline
+### `viz.funnel` — Funnel chart
 
-A compact mini line chart without axes or labels. Useful for quick trend indicators inline with other content.
+Conversion funnel across sequential steps. Requires the `funnel()` NRQL function.
 
 **Props (`content.props`):**
 
-* `nrqlQueries` - (Required) Array of NRQL query objects. The query should use `TIMESERIES`.
-* `refreshRate` - (Optional) Refresh interval in ms.
+* `nrqlQueries` - (Required) Array of NRQL query objects. Query must use the `funnel()` function.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "User conversion" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.funnel",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT funnel(session, WHERE name = 'HomeView' AS 'Home', WHERE name = 'ProductView' AS 'Product', WHERE name = 'ConfirmationView' AS 'Purchase') FROM PageView SINCE 1 day ago" }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.event-feed` — Event Feed
+
+Scrolling list of events returned by the NRQL query.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Recent errors" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.event-feed",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT message, error.class FROM Transaction WHERE error IS true SINCE 1 hour ago LIMIT 50" }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.json` — JSON
+
+Renders the raw JSON output of the NRQL query. Useful for debugging.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects.
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Raw query output" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.json",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT * FROM Transaction LIMIT 5 SINCE 5 minutes ago" }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.sparkline` — Sparkline
+
+Compact time-series line chart with Y-axis labels and full prop support.
+
+**Props (`content.props`):**
+
+* `nrqlQueries` - (Required) Array of NRQL query objects with `TIMESERIES`.
+* `facet.showOtherSeries` - (Optional) Default: `false`.
+* `legend.enabled` / `legend.position` (implicitly via sparkline display)
+* `colors.colorPalette` / `colors.seriesOverrides[]`
+* `units.unit` / `units.seriesOverrides[]`
+* `nullValues.nullValue` / `nullValues.seriesOverrides[]` — Values: `"default"`, `"zero"`, `"preserve"`, `"remove"`.
+* `chartStyles.lineInterpolation` - (Optional) `"linear"` | `"smooth"` | `"stepBefore"` | `"stepAfter"`. Default: `"linear"`.
+* `tooltip.mode` - (Optional) `"single"` | `"all"` | `"hidden"`. Default: `"single"`.
+* `yAxisLeft.min` / `.max` / `.zero`
+* `platformOptions.ignoreTimeRange` - (Optional) Default: `false`.
+* `refreshRate.frequency` - (Optional) Default: `"auto"`.
 
 **Example:**
 ```json
@@ -1252,11 +1161,60 @@ A compact mini line chart without axes or labels. Useful for quick trend indicat
     "id": "viz.sparkline",
     "props": {
       "nrqlQueries": [
-        {
-          "accountIds": [1234567],
-          "query": "SELECT count(*) FROM Transaction TIMESERIES AUTO SINCE 1 hour ago"
-        }
+        { "accountIds": [1234567], "query": "SELECT count(*) FROM Transaction TIMESERIES AUTO SINCE 1 hour ago" }
       ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.sparkline-lite` — Sparkline Lite
+
+Ultra-compact sparkline with no axis labels. Ideal as an inline trend indicator.
+
+**Props (`content.props`):**
+
+Same as `viz.sparkline` except `yAxisLeft` is not supported.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Throughput (mini)" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.sparkline-lite",
+    "props": {
+      "nrqlQueries": [
+        { "accountIds": [1234567], "query": "SELECT count(*) FROM Transaction TIMESERIES AUTO SINCE 1 hour ago" }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `viz.markdown` — Markdown text block
+
+Renders Markdown-formatted text.
+
+**Props (`content.props`):**
+
+* `text` - (Required) Markdown source string, or an array of strings (each rendered on a new line). Supports headings, bold, italic, inline code, fenced code blocks, ordered and unordered lists, task lists (`- [ ]`), tables, and links.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": {},
+  "content": {
+    "type": "visualization",
+    "id": "viz.markdown",
+    "props": {
+      "text": "## Investigation Notes\n\n- [ ] Check alert history\n- [ ] Review recent deploys\n\n| Metric | Target |\n|---|---|\n| Error rate | < 1% |\n| P95 latency | < 500 ms |"
     }
   }
 }
@@ -1266,305 +1224,62 @@ A compact mini line chart without axes or labels. Useful for quick trend indicat
 
 ## Nested `nrqlQueries` blocks
 
-All query-based visualizations accept a `nrqlQueries` array. Each item in the array supports the following:
+All query-based visualizations accept a `nrqlQueries` array. Each item supports:
 
-* `accountIds` - (Required) An array of one or more New Relic account IDs to query against, e.g. `[1234567]`. For cross-account queries, include multiple IDs: `[1234567, 7654321]`.
-* `query` - (Required) A valid NRQL query string. See [Introduction to NRQL](https://docs.newrelic.com/docs/nrql/get-started/introduction-nrql-new-relics-query-language/) for help.
+* `accountIds` - (Required) An array of one or more New Relic account IDs, e.g. `[1234567]`. For cross-account queries: `[1234567, 7654321]`.
+* `query` - (Required) A valid NRQL query string. See [Introduction to NRQL](https://docs.newrelic.com/docs/nrql/get-started/introduction-nrql-new-relics-query-language/).
+* `offset` - (Optional) Number of milliseconds to offset the query time window.
+
+Most viz types also accept `sqlQueries` as an alternative data source for Federated Data Source (FDS) connections. Each SQL query object requires `query` (string) and `accountId` (number) or `accountIds` (number[]).
 
 -> **NOTE:** If you query an account to which you do not have access, the widget will render with a "data inaccessible" message. No Terraform error is raised.
 
-Multiple `nrqlQueries` objects can be provided on query-based widgets to overlay results from different accounts or queries on the same chart.
+---
+
+## Valid `units.unit` values
+
+The following unit identifiers are accepted for `units.unit` and `units.seriesOverrides[].unit`:
+
+`APDEX`, `BITS`, `BITS_PER_MS`, `BITS_PER_SECOND`, `BYTES`, `BYTES_PER_MS`, `BYTES_PER_SECOND`, `CELSIUS`, `COUNT`, `DOLLAR`, `HERTZ`, `MS`, `PAGES_PER_SECOND`, `PERCENTAGE`, `REQUESTS_PER_SECOND`, `REQUESTS_PER_MINUTE`, `SECONDS`, `TIMESTAMP`
 
 ---
 
-## Nested `yAxisLeft` / `yAxisRight` blocks
-
-Applies to: `viz.line`, `viz.area`.
-
-Both blocks accept the same fields:
-
-* `zero` - (Optional) When `true`, the axis always starts at zero even if the minimum data value is higher. Defaults to `true`.
-* `min` - (Optional) The minimum value to display on the axis. Overrides `zero` if set.
-* `max` - (Optional) The maximum value to display on the axis. Set to `0` to auto-scale.
-* `scale` - (Optional) The scale type of the axis. Valid values: `"linear"` (default), `"log"` (logarithmic).
-
-For `yAxisRight` only:
-
-* `series` - (Optional) An array of series names (strings) to plot against the right Y axis instead of the left.
-
-**Example:**
-```json
-{
-  "yAxisLeft": { "zero": true, "min": 0, "max": 100, "scale": "linear" },
-  "yAxisRight": { "zero": true, "min": 0, "series": ["P99 latency"] }
-}
-```
-
----
-
-## Nested `thresholds` blocks (line, area, and stacked-bar)
-
-Applies to: `viz.line`, `viz.area`, `viz.stacked-bar`.
-
-The `thresholds` key is an array of threshold range objects that draw horizontal bands on the chart:
-
-* `name` - (Optional) A label for the threshold.
-* `from` - (Optional) The lower bound of the threshold range (inclusive). Omit to start from negative infinity.
-* `to` - (Optional) The upper bound of the threshold range (inclusive). Omit to extend to positive infinity.
-* `severity` - (Required) The color applied to data within the threshold range. Valid values: `"success"` (green), `"warning"` (yellow), `"severe"` (orange), `"critical"` (red), `"unavailable"` (grey).
-* `isLabelVisible` - (Optional) When `true`, always shows the threshold label on the chart regardless of whether the data crosses it. Defaults to `false`.
-
-**Example:**
-```json
-{
-  "thresholds": [
-    { "name": "OK",       "to": 1,            "severity": "success"  },
-    { "name": "Warning",  "from": 1,  "to": 5, "severity": "warning"  },
-    { "name": "Critical", "from": 5,            "severity": "critical" }
-  ]
-}
-```
-
----
-
-## Nested `thresholdsWithSeriesOverrides` blocks (billboard)
-
-Applies to: `viz.billboard`.
-
-The billboard threshold format is different from line/area. The `thresholdsWithSeriesOverrides` key contains a `thresholds` array and an optional `seriesOverrides` array:
-
-### `thresholds`
-
-Each threshold defines a value range and the color to apply:
-
-* `from` - (Optional) Lower bound (inclusive). Omit to start from negative infinity.
-* `to` - (Optional) Upper bound (inclusive). Omit to extend to positive infinity.
-* `severity` - (Required) The color applied when the value falls in this range. Valid values: `"success"` (green), `"warning"` (yellow), `"severe"` (orange), `"critical"` (red), `"unavailable"` (grey).
-
-### `seriesOverrides`
-
-When a billboard query returns multiple faceted values, `seriesOverrides` lets you apply different thresholds to specific series by name:
-
-* `seriesName` - (Required) The series name (facet value) to override.
-* `thresholds` - (Required) An array of threshold objects in the same format as above.
-
-**Example:**
-```json
-{
-  "thresholdsWithSeriesOverrides": {
-    "thresholds": [
-      { "to": 1,            "severity": "success"  },
-      { "from": 1, "to": 5, "severity": "warning"  },
-      { "from": 5,           "severity": "critical" }
-    ],
-    "seriesOverrides": [
-      {
-        "seriesName": "EU error rate",
-        "thresholds": [
-          { "to": 2,            "severity": "success"  },
-          { "from": 2, "to": 8, "severity": "warning"  },
-          { "from": 8,           "severity": "critical" }
-        ]
-      }
-    ]
-  }
-}
-```
-
----
-
-## Nested `nullValues` blocks
-
-Applies to: `viz.line`, `viz.area`.
-
-Controls how null (missing) data points are handled.
-
-* `nullValue` - (Optional) The strategy for the entire chart. Valid values:
-  - `"default"` — Platform default (typically shows a gap).
-  - `"remove"` — Removes the data point; line skips over the gap.
-  - `"preserve"` — Keeps the null as a visible gap in the line.
-  - `"zero"` — Treats null as zero.
-* `seriesOverrides` - (Optional) An array of per-series overrides. Each object supports:
-  - `seriesName` - (Required) The series name (string) to override.
-  - `nullValue` - (Required) One of the values above, applied only to this series.
-
-**Example:**
-```json
-{
-  "nullValues": {
-    "nullValue": "zero",
-    "seriesOverrides": [
-      { "seriesName": "P99 latency", "nullValue": "preserve" }
-    ]
-  }
-}
-```
-
----
-
-## Nested `colors` blocks
-
-Applies to: `viz.line`, `viz.area`, `viz.bar`, `viz.stacked-bar`, `viz.pie`, `viz.histogram`, `viz.heatmap`, `viz.funnel`, `viz.scatter`.
-
-* `color` - (Optional) A default color applied to all series. Accepted formats: RGB hex (`"#ff0000"`), named colors.
-* `seriesOverrides` - (Optional) An array of per-series overrides. Each object supports:
-  - `seriesName` - (Required) The series name (string) to override.
-  - `color` - (Required) The color for this series. Accepted formats: RGB hex or named colors.
-
-**Example:**
-```json
-{
-  "colors": {
-    "color": "#0070F0",
-    "seriesOverrides": [
-      { "seriesName": "errors", "color": "#FF0000" },
-      { "seriesName": "warnings", "color": "#FFA500" }
-    ]
-  }
-}
-```
-
----
-
-## Nested `units` blocks
-
-Applies to: `viz.line`, `viz.area`.
-
-Adds unit labels to Y axis values and chart tooltips.
-
-* `unit` - (Optional) The default unit string applied to all series (e.g. `"ms"`, `"%"`, `"MB"`).
-* `seriesOverrides` - (Optional) An array of per-series unit overrides. Each object supports:
-  - `seriesName` - (Required) The series name (string) to override.
-  - `unit` - (Required) The unit string for this series.
-
-**Example:**
-```json
-{
-  "units": {
-    "unit": "ms",
-    "seriesOverrides": [
-      { "seriesName": "Throughput", "unit": "rpm" }
-    ]
-  }
-}
-```
-
----
-
-## Nested `tooltip` blocks
-
-Applies to: `viz.line`, `viz.area`, `viz.bar`, `viz.stacked-bar`, `viz.scatter`.
-
-* `mode` - (Required) How tooltips are displayed when hovering over the chart. Valid values:
-  - `"all"` — Show a tooltip for all series at the hovered time.
-  - `"single"` — Show a tooltip for the closest single series only.
-  - `"hidden"` — Disable tooltips entirely.
-
-**Example:**
-```json
-{
-  "tooltip": { "mode": "all" }
-}
-```
-
----
-
-## Nested `markers` blocks
-
-Applies to: `viz.line`, `viz.area`.
-
-Vertical reference lines drawn at specific values or timestamps. Use markers to annotate events such as deploys or incidents directly on a time series chart.
-
-* `data` - (Required) An array of marker objects. Each marker supports:
-  - `label` - (Required) The text label shown on the marker line.
-  - `value` - (Optional) A numeric Y-axis value at which to draw the marker (for threshold-style markers).
-  - `timestamp` - (Optional) A Unix timestamp in milliseconds at which to draw the marker (for time-based annotations).
-  - `color` - (Optional) The color of the marker line. Accepted formats: RGB hex (e.g. `"#FF0000"`).
-
-**Example:**
-```json
-{
-  "markers": {
-    "data": [
-      { "label": "Deploy v2.1", "timestamp": 1728000000000, "color": "#FF6600" },
-      { "label": "Rollback",    "timestamp": 1728003600000, "color": "#FF0000" }
-    ]
-  }
-}
-```
-
----
-
-## Nested `chartTypeOverrides` blocks
-
-Applies to: `viz.line`, `viz.area`, `viz.stacked-bar`.
-
-Overrides the chart type for individual series within the same query result. This allows, for example, rendering a specific FACET series as a line while the rest appear as areas.
-
-* An array of override objects. Each object supports:
-  - `seriesName` - (Required) The series name (facet value or alias) to override.
-  - `chartType` - (Required) The visualization type for this series. Valid values: `"LINE"`, `"AREA"`, `"BAR"`, `"STACKED_BAR"`, `"SCATTER"`.
-
-**Example:**
-```json
-{
-  "chartTypeOverrides": [
-    { "seriesName": "P99 latency", "chartType": "LINE" },
-    { "seriesName": "P50 latency", "chartType": "AREA" }
-  ]
-}
-```
-
----
-
-## Valid `refreshRate` values
-
-Applies to all query-based visualization types.
-
-The `refreshRate` prop sets how frequently the widget re-executes its NRQL query and re-renders the chart. The value is specified in milliseconds:
+## Valid `refreshRate.frequency` values
 
 | Value | Refresh interval |
 |---|---|
+| `"auto"` | Platform default (based on query) |
 | `0` | No automatic refresh |
-| `5000` | Every 5 seconds |
-| `30000` | Every 30 seconds |
-| `60000` | Every 60 seconds (1 minute) |
-| `300000` | Every 5 minutes |
-| `1800000` | Every 30 minutes |
-| `3600000` | Every 60 minutes (1 hour) |
-| `10800000` | Every 3 hours |
-| `43200000` | Every 12 hours |
-| `86400000` | Every 24 hours |
-
-When omitted, the widget uses the platform default refresh rate.
+| `5000` | 5 seconds |
+| `30000` | 30 seconds |
+| `60000` | 1 minute |
+| `300000` | 5 minutes |
+| `1800000` | 30 minutes |
+| `3600000` | 1 hour |
+| `10800000` | 3 hours |
+| `43200000` | 12 hours |
+| `86400000` | 24 hours |
 
 ---
 
 ## Further reading
 
-The Blob API stores notebook content verbatim. Terraform tracks the entire blob. New Relic does not assign special meaning to any field outside of the declarative UI envelope, so you can include arbitrary top-level metadata; Terraform will diff those fields exactly like any other part of the content if they change.
-
-For additional reference on visualization types, props, and NRQL:
-
-- [Visualizations in notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/visualizations-in-notebooks/) — chart types available in notebooks
-- [Blob Storage API for notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/blob-storage-api-for-notebooks/) — the underlying REST API used by this resource
-- [Notebook examples](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/notebooks-examples/) — worked multi-block notebook JSON from the docs team
-- [NR1 SDK: Chart components](https://docs.newrelic.com/docs/new-relic-solutions/build-nr-ui/sdk-component/charts/Charts/) — the SDK chart components notebooks viz IDs map to
-- [NerdGraph: Create dashboard widgets](https://docs.newrelic.com/docs/apis/nerdgraph/examples/create-widgets-dashboards-api/) — `props` schema reference for each widget type (shared with notebooks)
+- [Visualizations in notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/visualizations-in-notebooks/) — chart types available
+- [Blob Storage API for notebooks](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/blob-storage-api-for-notebooks/) — the underlying REST API
+- [Notebook examples](https://docs.newrelic.com/docs/query-your-data/explore-query-data/notebooks/notebooks-examples/) — worked multi-block examples
+- [NR1 SDK: Chart components](https://docs.newrelic.com/docs/new-relic-solutions/build-nr-ui/sdk-component/charts/Charts/) — SDK chart components notebooks viz IDs map to
 - [Introduction to NRQL](https://docs.newrelic.com/docs/nrql/get-started/introduction-nrql-new-relics-query-language/) — writing NRQL queries
 
 ---
 
 ## Import
 
-Notebooks can be imported by GUID. Optionally append `:content` or `:content_json` to control which field is populated in state, matching your Terraform configuration.
-
 ```
-# Default - imports into content_json (for configs using content_json = file(...) or inline JSON)
+# Default - imports into content_json
 $ terraform import newrelic_notebook.example <guid>
 $ terraform import newrelic_notebook.example <guid>:content_json
 
-# Import into content field (for configs using content = jsonencode({...}))
+# Import into content field
 $ terraform import newrelic_notebook.example <guid>:content
 ```
 
