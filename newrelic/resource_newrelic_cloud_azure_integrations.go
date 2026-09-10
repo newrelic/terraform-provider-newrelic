@@ -1301,7 +1301,8 @@ func expandCloudAzureIntegrationMonitorInput(d *schema.ResourceData, b []interfa
 		}
 
 		if enabled, ok := in["enabled"]; ok {
-			azureMonitorInput.Enabled = enabled.(bool)
+			enabledVal := enabled.(bool)
+			azureMonitorInput.Enabled = &enabledVal
 		}
 		expanded[i] = azureMonitorInput
 	}
