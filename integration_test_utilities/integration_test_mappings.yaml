@@ -199,6 +199,12 @@ resource_newrelic_cardinality_management.go:
 resource_newrelic_cardinality_management_test.go:
   test: true
   product_mapping: INGEST
+resource_newrelic_change_tracking_deployment.go:
+  test: false
+  product_mapping: EVENTS
+resource_newrelic_change_tracking_event.go:
+  test: false
+  product_mapping: EVENTS
 resource_newrelic_cloud_aws_eu_sovereign_integrations.go:
   test: false
   product_mapping: CLOUD
@@ -553,6 +559,12 @@ structures_newrelic_api_access_key.go:
 structures_newrelic_application_settings.go:
   test: false
   product_mapping: APM
+structures_newrelic_change_tracking_deployment.go:
+  test: false
+  product_mapping: EVENTS
+structures_newrelic_change_tracking_event.go:
+  test: false
+  product_mapping: EVENTS
 structures_newrelic_cloud_aws_eu_sovereign_link_account.go:
   test: false
   product_mapping: CLOUD
