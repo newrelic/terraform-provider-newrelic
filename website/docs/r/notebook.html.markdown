@@ -752,6 +752,7 @@ Each widget block within a container's `content` array supports the following st
 These are set directly on the `widget` object's `props`, not inside the `content.props`. They are optional and shared across all widget types:
 
 * `title` - (Optional) A label displayed above the rendered chart. Corresponds to the **Name** field in the UI's chart customization panel.
+* `ignoreTimeRange` - (Optional) When `true`, the widget uses the time range specified in its own NRQL query instead of inheriting the notebook's global time picker. Defaults to `false`.
 
 ### Supported visualization types
 
@@ -819,6 +820,8 @@ Plots one or more NRQL time series as line(s).
 * `refreshRate` - (Optional) Data refresh interval in milliseconds. See [Valid `refreshRate` values](#valid-refreshrate-values) below.
 * `tooltip` - (Optional) Tooltip display mode. See [Nested `tooltip` blocks](#nested-tooltip-blocks) below.
 * `lineInterpolation` - (Optional) How data points are connected. Valid values: `"linear"` (default), `"smooth"`, `"stepBefore"`, `"stepAfter"`.
+* `markers` - (Optional) Vertical reference lines drawn at specific timestamps or values on the chart. See [Nested `markers` blocks](#nested-markers-blocks) below.
+* `chartTypeOverrides` - (Optional) Override the chart type for individual series within the same query result. See [Nested `chartTypeOverrides` blocks](#nested-charttypeoverrides-blocks) below.
 
 **Example:**
 ```json
@@ -863,6 +866,7 @@ Plots time series with filled areas below the lines. Useful for showing volume.
 * `refreshRate` - (Optional) Refresh interval in ms.
 * `tooltip` - (Optional) Tooltip mode.
 * `lineInterpolation` - (Optional) Line interpolation. Valid values: `"linear"` (default), `"smooth"`, `"stepBefore"`, `"stepAfter"`.
+* `markers` - (Optional) Vertical reference lines at specific timestamps or values. See [Nested `markers` blocks](#nested-markers-blocks) below.
 
 **Example:**
 ```json
@@ -898,7 +902,6 @@ Compares values across discrete categories.
 * `legendEnabled` - (Optional) Show or hide the legend. Defaults to `true`.
 * `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
 * `colors` - (Optional) Per-series color overrides.
-* `units` - (Optional) Per-series unit overrides.
 * `refreshRate` - (Optional) Refresh interval in ms.
 * `tooltip` - (Optional) Tooltip mode.
 
@@ -971,8 +974,8 @@ Displays proportional data as a pie. Best for 5-7 categories.
 * `nrqlQueries` - (Required) Array of NRQL query objects.
 * `facetShowOtherSeries` - (Optional) Show aggregated "Other" group. Defaults to `false`.
 * `colors` - (Optional) Per-series color overrides.
+* `legendEnabled` - (Optional) Show or hide the legend. Defaults to `true`.
 * `refreshRate` - (Optional) Refresh interval in ms.
-* `tooltip` - (Optional) Tooltip mode.
 
 **Example:**
 ```json
@@ -1461,6 +1464,54 @@ Applies to: `viz.line`, `viz.area`, `viz.bar`, `viz.stacked-bar`, `viz.scatter`.
 ```json
 {
   "tooltip": { "mode": "all" }
+}
+```
+
+---
+
+## Nested `markers` blocks
+
+Applies to: `viz.line`, `viz.area`.
+
+Vertical reference lines drawn at specific values or timestamps. Use markers to annotate events such as deploys or incidents directly on a time series chart.
+
+* `data` - (Required) An array of marker objects. Each marker supports:
+  - `label` - (Required) The text label shown on the marker line.
+  - `value` - (Optional) A numeric Y-axis value at which to draw the marker (for threshold-style markers).
+  - `timestamp` - (Optional) A Unix timestamp in milliseconds at which to draw the marker (for time-based annotations).
+  - `color` - (Optional) The color of the marker line. Accepted formats: RGB hex (e.g. `"#FF0000"`).
+
+**Example:**
+```json
+{
+  "markers": {
+    "data": [
+      { "label": "Deploy v2.1", "timestamp": 1728000000000, "color": "#FF6600" },
+      { "label": "Rollback",    "timestamp": 1728003600000, "color": "#FF0000" }
+    ]
+  }
+}
+```
+
+---
+
+## Nested `chartTypeOverrides` blocks
+
+Applies to: `viz.line`, `viz.area`, `viz.stacked-bar`.
+
+Overrides the chart type for individual series within the same query result. This allows, for example, rendering a specific FACET series as a line while the rest appear as areas.
+
+* An array of override objects. Each object supports:
+  - `seriesName` - (Required) The series name (facet value or alias) to override.
+  - `chartType` - (Required) The visualization type for this series. Valid values: `"LINE"`, `"AREA"`, `"BAR"`, `"STACKED_BAR"`, `"SCATTER"`.
+
+**Example:**
+```json
+{
+  "chartTypeOverrides": [
+    { "seriesName": "P99 latency", "chartType": "LINE" },
+    { "seriesName": "P50 latency", "chartType": "AREA" }
+  ]
 }
 ```
 
