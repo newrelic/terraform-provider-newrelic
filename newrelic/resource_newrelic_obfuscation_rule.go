@@ -76,6 +76,11 @@ func ObfuscationRuleActionInputSchemaElem() *schema.Resource {
 				Required:    true,
 				Description: "Expression Id for action.",
 			},
+			"action_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the obfuscation action.",
+			},
 			"method": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -194,6 +199,7 @@ func flattenActions(actions *[]logconfigurations.LogConfigurationsObfuscationAct
 			"expression_id": v.Expression.ID,
 			"attribute":     v.Attributes,
 			"method":        v.Method,
+			"action_id":     v.ID,
 		}
 		flatActions = append(flatActions, m)
 	}
