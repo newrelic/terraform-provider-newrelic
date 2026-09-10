@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,7 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/changetracking"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/nrtime"
 )
+
+// Ensure unused imports are referenced somewhere in the file (used by CRUD section).
+var _ = log.Printf
+var _ = context.Background
+var _ diag.Diagnostics
+var _ common.EntityGUID
+var _ nrtime.EpochMilliseconds
 
 func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 	return &schema.Resource{
@@ -34,7 +41,7 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "A URL to the changelog or a list of changes.",
+				Description: "A URL to the changelog or, if not linkable, a list of changes.",
 			},
 			"commit": {
 				Type:        schema.TypeString,
@@ -46,14 +53,14 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "A link to the system that generated the deployment.",
+				Description: "A URL to the system that generated the deployment.",
 			},
 			"deployment_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(listValidChangeTrackingDeploymentTypes(), false),
-				Description:  fmt.Sprintf("The type of deployment. One of: (%s).", listValidChangeTrackingDeploymentTypesString()),
+				Description:  "The type of deployment.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -70,15 +77,20 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 			"timestamp": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Computed:    true,
 				ForceNew:    true,
-				Description: "The start time of the deployment as the number of milliseconds since the Unix epoch.",
+				Description: "The start time of the deployment as the number of milliseconds since the Unix epoch. Defaults to now.",
 			},
 			"user": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "The username of the deployer or bot.",
+			},
+			// Computed
+			"deployment_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A unique deployment identifier.",
 			},
 		},
 	}
@@ -95,34 +107,15 @@ func listValidChangeTrackingDeploymentTypes() []string {
 	}
 }
 
-func listValidChangeTrackingDeploymentTypesString() string {
-	types := listValidChangeTrackingDeploymentTypes()
-	result := ""
-	for i, t := range types {
-		if i > 0 {
-			result += ", "
-		}
-		result += t
-	}
-	return result
-}
-
-var _ = log.Printf
-var _ = context.Background
-var _ *common.EntityGUID
-var _ *changetracking.ChangeTrackingDeploymentInput
-var _ diag.Diagnostics
-
 func resourceNewRelicChangeTrackingEventCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
+	client := meta.(*ProviderConfig).NewClient
+
+	log.Printf("[INFO] Creating New Relic Change Tracking Event")
 
 	changeTrackingEvent, dataHandlingRules, err := expandChangeTrackingEvent(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	log.Printf("[INFO] Creating New Relic change tracking event")
 
 	result, err := client.ChangeTracking.ChangeTrackingCreateEventWithContext(ctx, changeTrackingEvent, dataHandlingRules)
 	if err != nil {
@@ -133,22 +126,24 @@ func resourceNewRelicChangeTrackingEventCreate(ctx context.Context, d *schema.Re
 		return diag.Errorf("error creating change tracking event: empty response")
 	}
 
+	var changeTrackingID string
 	if result.ChangeTrackingEvent != nil {
 		switch e := result.ChangeTrackingEvent.(type) {
 		case *changetracking.ChangeTrackingDeploymentEvent:
-			d.SetId(e.ChangeTrackingId)
+			changeTrackingID = e.ChangeTrackingId
 		case *changetracking.ChangeTrackingFeatureFlagEvent:
-			d.SetId(e.ChangeTrackingId)
+			changeTrackingID = e.ChangeTrackingId
 		case *changetracking.ChangeTrackingGenericEvent:
-			d.SetId(e.ChangeTrackingId)
+			changeTrackingID = e.ChangeTrackingId
 		case *changetracking.ChangeTrackingEvent:
-			d.SetId(e.ChangeTrackingId)
-		default:
-			d.SetId(fmt.Sprintf("change-tracking-event-%d", d.Get("timestamp").(int)))
+			changeTrackingID = e.ChangeTrackingId
 		}
-	} else {
-		d.SetId(fmt.Sprintf("change-tracking-event-%d", d.Get("timestamp").(int)))
 	}
 
+	if changeTrackingID == "" {
+		changeTrackingID = "change-tracking-event"
+	}
+
+	d.SetId(changeTrackingID)
 	return nil
 }
