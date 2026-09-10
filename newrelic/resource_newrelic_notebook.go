@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/notebooks"
 )
 
@@ -60,6 +59,7 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
+				ValidateFunc:     validateNotebookContent,
 				ExactlyOneOf:     []string{"content", "content_json"},
 				Description: "The notebook body, expressed as an HCL object using " +
 					"jsonencode({...}). Terraform evaluates the expression at plan " +
@@ -72,7 +72,7 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
-				ValidateFunc:     validation.StringIsJSON,
+				ValidateFunc:     validateNotebookContent,
 				ExactlyOneOf:     []string{"content", "content_json"},
 				Description: "The notebook body as a raw JSON string. Intended for " +
 					"notebooks exported from the New Relic UI (for example, via the " +
@@ -193,6 +193,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	//   2. Prevents a terraform plan run immediately after apply (common in
 	//      CI) from triggering a spurious Blob GET because content.id was null.
 	indexingDeadline := time.Now().Add(d.Timeout(schema.TimeoutCreate))
+	backoff := time.Second
 	for {
 		nb, nbErr := client.Notebooks.GetNotebookWithContext(ctx, resp.EntityGUID)
 		if nbErr == nil && nb != nil && nb.Content.ID != "" {
@@ -215,8 +216,11 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 				),
 			})
 		}
-		log.Printf("[DEBUG] Waiting for notebook %s to be indexed in NerdGraph...", resp.EntityGUID)
-		time.Sleep(3 * time.Second)
+		log.Printf("[DEBUG] Waiting for notebook %s to be indexed in NerdGraph (retry in %s)...", resp.EntityGUID, backoff)
+		time.Sleep(backoff)
+		if backoff < 15*time.Second {
+			backoff *= 2
+		}
 	}
 
 	return resourceNewRelicNotebookRead(ctx, d, meta)
@@ -295,6 +299,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	guid := d.Id()
 	orgID, _ := d.Get("organization_id").(string)
 	if orgID == "" {
+		log.Printf("[DEBUG] organization_id not in state for notebook %s, resolving from provider credentials", guid)
 		var err error
 		orgID, err = getOrganizationID(ctx, providerConfig, "")
 		if err != nil {
@@ -319,6 +324,12 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	contentChanged := d.HasChange("content") || d.HasChange("content_json")
 
 	log.Printf("[INFO] Updating New Relic notebook %s (title_changed=%v, content_changed=%v)", guid, titleChanged, contentChanged)
+
+	if !titleChanged && !contentChanged {
+		// Nothing to do - both fields are unchanged. Skip the Blob API call and
+		// let the trailing Read confirm state is in sync.
+		return resourceNewRelicNotebookRead(ctx, d, meta)
+	}
 
 	var mutResp *notebooks.NotebookMutationResponse
 	if titleChanged {
@@ -349,6 +360,7 @@ func resourceNewRelicNotebookDelete(ctx context.Context, d *schema.ResourceData,
 	guid := d.Id()
 	orgID, _ := d.Get("organization_id").(string)
 	if orgID == "" {
+		log.Printf("[DEBUG] organization_id not in state for notebook %s, resolving from provider credentials", guid)
 		var err error
 		orgID, err = getOrganizationID(ctx, providerConfig, "")
 		if err != nil {
@@ -407,7 +419,9 @@ func resourceNewRelicNotebookImportState(ctx context.Context, d *schema.Resource
 	// Set a minimal valid placeholder in the target field so notebookContentField
 	// detects the desired mode when Read runs immediately after this function.
 	// Read overwrites it with the actual normalized content from the Blob API.
-	placeholder := `{"version":"1","blocks":[]}`
+	// The placeholder must be a syntactically valid declarative UI document so
+	// that CustomizeDiff does not reject it before Read has a chance to replace it.
+	placeholder := `{"type":"declarative","version":1,"content":[]}`
 	if err := d.Set(mode, placeholder); err != nil {
 		return nil, fmt.Errorf("failed to signal import mode %q: %w", mode, err)
 	}

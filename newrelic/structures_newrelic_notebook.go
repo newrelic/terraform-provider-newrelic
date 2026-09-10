@@ -8,6 +8,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// validateNotebookContent is the ValidateFunc for both content and content_json.
+// It enforces that the value is non-empty, valid JSON, and follows the
+// minimum declarative UI envelope required by the Notebooks platform:
+//
+//	{ "type": "declarative", "version": 1, "content": [...] }
+//
+// This catches mistyped or stale schema formats (e.g. the legacy "blocks" key)
+// at plan time so the user gets a clear error before any API call is made.
+func validateNotebookContent(v interface{}, k string) (warnings []string, errors []error) {
+	raw, ok := v.(string)
+	if !ok || raw == "" {
+		errors = append(errors, fmt.Errorf("%q must not be empty", k))
+		return
+	}
+
+	var doc map[string]interface{}
+	if err := json.Unmarshal([]byte(raw), &doc); err != nil {
+		errors = append(errors, fmt.Errorf("%q is not valid JSON: %w", k, err))
+		return
+	}
+
+	t, hasType := doc["type"]
+	if !hasType {
+		errors = append(errors, fmt.Errorf(`%q: missing required field "type" (expected "declarative")`, k))
+	} else if t != "declarative" {
+		errors = append(errors, fmt.Errorf(`%q: "type" must be "declarative", got %q`, k, t))
+	}
+
+	if _, hasContent := doc["content"]; !hasContent {
+		errors = append(errors, fmt.Errorf(`%q: missing required field "content" (expected an array of container blocks)`, k))
+	} else if _, isArray := doc["content"].([]interface{}); !isArray {
+		errors = append(errors, fmt.Errorf(`%q: "content" must be an array`, k))
+	}
+
+	if ver, hasVersion := doc["version"]; !hasVersion {
+		errors = append(errors, fmt.Errorf(`%q: missing required field "version" (expected 1)`, k))
+	} else {
+		// json.Unmarshal decodes numbers as float64; accept integer 1 only.
+		if f, ok := ver.(float64); !ok || f != 1 {
+			errors = append(errors, fmt.Errorf(`%q: "version" must be 1 (integer), got %v`, k, ver))
+		}
+	}
+
+	return
+}
+
 // normalizeNotebookContent converts any valid JSON string to a canonical form
 // with alphabetically sorted keys and consistent 2-space indentation. Storing
 // and comparing this canonical form means that two documents with the same
