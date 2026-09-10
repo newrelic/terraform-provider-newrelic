@@ -1,0 +1,129 @@
+package newrelic
+
+import (
+	"context"
+	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/changetracking"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+)
+
+func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceNewRelicChangeTrackingDeploymentCreate,
+		ReadContext:   schema.NoopContext,
+		Delete:        schema.RemoveFromState,
+		Schema: map[string]*schema.Schema{
+			"version": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The version of the deployed software, for example, something like v1.1.",
+			},
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The GUID of the New Relic entity that was deployed.",
+			},
+			"changelog": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A URL for the changelog or, if not linkable, a list of changes.",
+			},
+			"commit": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The commit identifier, for example, a Git commit SHA.",
+			},
+			"deep_link": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A URL to the system that generated the deployment.",
+			},
+			"deployment_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(listValidChangeTrackingDeploymentTypes(), false),
+				Description:  "The type of deployment, for example, 'Blue green' or 'Rolling'.",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "A description of the deployment.",
+			},
+			"group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "An identifier used to correlate account-wide changes across entities.",
+			},
+			"timestamp": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The start time of the deployment as the number of milliseconds since the Unix epoch. Defaults to now.",
+			},
+			"user": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The username of the deployer or bot.",
+			},
+
+			// Computed fields from result
+			"deployment_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A unique deployment identifier.",
+			},
+		},
+	}
+}
+
+func listValidChangeTrackingDeploymentTypes() []string {
+	return []string{
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.BASIC),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.BLUE_GREEN),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.CANARY),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.OTHER),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.ROLLING),
+		string(changetracking.ChangeTrackingDeploymentTypeTypes.SHADOW),
+	}
+}
+
+// ensure packages are used (context is used by CRUD, log and common are used by CRUD)
+var _ = context.Background
+var _ = log.Printf
+var _ diag.Diagnostics
+var _ = common.EntityGUID("")
+
+func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
+
+	dataHandlingRules, deployment, err := expandChangeTrackingDeployment(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	log.Printf("[INFO] Creating New Relic change tracking deployment for entity %s", deployment.EntityGUID)
+
+	result, err := client.ChangeTracking.ChangeTrackingCreateDeploymentWithContext(ctx, dataHandlingRules, deployment)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(result.DeploymentId)
+
+	return nil
+}
