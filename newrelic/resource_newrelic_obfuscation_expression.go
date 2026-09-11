@@ -44,12 +44,12 @@ func resourceNewRelicObfuscationExpression() *schema.Resource {
 			},
 			"created_at": {
 				Type:        schema.TypeString,
-				Description: "The date and time when the expression was created.",
+				Description: "The date and time the expression was created.",
 				Computed:    true,
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
-				Description: "The date and time when the expression was last updated.",
+				Description: "The date and time the expression was last updated.",
 				Computed:    true,
 			},
 		},
@@ -115,8 +115,8 @@ func resourceNewRelicObfuscationExpressionRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("created_at", expression.CreatedAt.String())
-	_ = d.Set("updated_at", expression.UpdatedAt.String())
+	_ = d.Set("created_at", string(expression.CreatedAt))
+	_ = d.Set("updated_at", string(expression.UpdatedAt))
 
 	return nil
 }
