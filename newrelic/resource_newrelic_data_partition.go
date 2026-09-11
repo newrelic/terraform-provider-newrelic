@@ -64,6 +64,32 @@ func resourceNewRelicDataPartition() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not this data partition rule is deleted. Deleting a data partition rule does not delete the already persisted data. This data will be retained for a given period of time specified in the retention policy field.",
 			},
+			"matching_criteria": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "The matching criteria of the data partition rule.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"attribute_name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The attribute name against which this matching condition will be evaluated.",
+						},
+						"matching_expression": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The matching expression of the data partition rule definition.",
+						},
+						"matching_method": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The matching method of the data partition rule definition.",
+							ValidateFunc: validation.StringInSlice(listValidDataPartitionRuleMatchingOperator(), false),
+						},
+					},
+				},
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
@@ -73,6 +99,7 @@ func resourceNewRelicDataPartition() *schema.Resource {
 
 func listValidDataPartitionRuleRetentionPolicyType() []string {
 	return []string{
+		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.ARCHIVE),
 		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.SECONDARY),
 		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.STANDARD),
 	}
@@ -98,6 +125,13 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 
 	if e, ok := d.GetOk("retention_policy"); ok {
 		createInput.RetentionPolicy = logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyType(e.(string))
+	}
+
+	if v, ok := d.GetOk("matching_criteria"); ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			createInput.MatchingCriteria = expandDataPartitionMatchingCriteria(items[0].(map[string]interface{}))
+		}
 	}
 	log.Printf("[INFO] Creating New Relic Data Partition Rule  %s", createInput.TargetDataPartition)
 
@@ -177,6 +211,12 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("retention_policy", rule.RetentionPolicy)
 	_ = d.Set("deleted", rule.Deleted)
 
+	if rule.MatchingCriteria.AttributeName != "" {
+		if err := d.Set("matching_criteria", flattenDataPartitionMatchingCriteria(rule.MatchingCriteria)); err != nil {
+			return diag.FromErr(fmt.Errorf("[DEBUG] Error setting `matching_criteria`: %v", err))
+		}
+	}
+
 	return nil
 }
 
@@ -228,7 +268,39 @@ func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.Lo
 		updateInp.NRQL = logconfigurations.NRQL(e.(string))
 	}
 
+	if v, ok := d.GetOk("matching_criteria"); ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			updateInp.MatchingCriteria = expandDataPartitionMatchingCriteria(items[0].(map[string]interface{}))
+		}
+	}
+
 	return updateInp
+}
+
+func listValidDataPartitionRuleMatchingOperator() []string {
+	return []string{
+		string(logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperatorTypes.EQUALS),
+		string(logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperatorTypes.LIKE),
+	}
+}
+
+func expandDataPartitionMatchingCriteria(cfg map[string]interface{}) *logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput {
+	input := &logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput{
+		AttributeName:      cfg["attribute_name"].(string),
+		MatchingExpression: cfg["matching_expression"].(string),
+		MatchingMethod:     logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperator(cfg["matching_method"].(string)),
+	}
+	return input
+}
+
+func flattenDataPartitionMatchingCriteria(criteria logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteria) []interface{} {
+	m := map[string]interface{}{
+		"attribute_name":      criteria.AttributeName,
+		"matching_expression": criteria.MatchingExpression,
+		"matching_method":     string(criteria.MatchingOperator),
+	}
+	return []interface{}{m}
 }
 
 // Delete the data partition rule
