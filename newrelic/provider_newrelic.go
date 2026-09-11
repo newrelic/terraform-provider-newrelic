@@ -208,6 +208,7 @@ func Provider() *schema.Provider {
 			"newrelic_team":                                     resourceNewRelicTeam(),
 			"newrelic_scorecard":                                resourceNewRelicScorecard(),
 			"newrelic_scorecard_rule":                           resourceNewRelicScorecardRule(),
+			"newrelic_teams_hierarchy_level":                    resourceNewRelicTeamsHierarchyLevel(),
 		},
 	}
 

@@ -216,11 +216,11 @@ func resourceNewRelicScorecardRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("tags", flattenNGEPTags(sc.Tags))
 	_ = d.Set("rules_collection_id", sc.Rules.ID)
 
-	// progress_levels: ForceNew so only set from create result; on Read we
-	// preserve what's in state to avoid spurious diffs from the update bug.
-	if _, alreadySet := d.GetOk("progress_levels"); !alreadySet {
-		_ = d.Set("progress_levels", flattenProgressLevels(sc.ProgressLevels))
-	}
+	// progress_levels: always read from the entity. ForceNew on the schema
+	// ensures Terraform will never call Update with a progress_levels change
+	// (it would trigger recreation instead), so we never hit the NGEP backend
+	// bug that blocks updates to progress levels via entityManagementUpdateScorecard.
+	_ = d.Set("progress_levels", flattenProgressLevels(sc.ProgressLevels))
 
 	// Read attached rules from the rules collection.
 	ruleGUIDs, err := readScorecardRuleGUIDs(ctx, &client.Scorecards, sc.Rules.ID)
