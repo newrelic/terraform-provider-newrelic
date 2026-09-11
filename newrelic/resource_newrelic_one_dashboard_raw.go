@@ -111,6 +111,28 @@ func dashboardRawWidgetSchemaElem() *schema.Resource {
 		Description: "The visualization ID of the widget.",
 	}
 
+	s["description"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "A description of the widget.",
+	}
+
+	s["link"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "A nested block describing a link to be displayed in the widget.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"url": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "The target URL for the link.",
+				},
+			},
+		},
+	}
+
 	// TODO: raw_configuration
 	s["configuration"] = &schema.Schema{
 		Type:             schema.TypeString,

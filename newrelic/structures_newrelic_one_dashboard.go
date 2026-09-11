@@ -756,6 +756,12 @@ func expandDashboardWidgetInput(w map[string]interface{}, meta interface{}, visu
 	if i, ok := w["id"]; ok {
 		widget.ID = i.(string)
 	}
+	if i, ok := w["description"]; ok {
+		widget.Description = i.(string)
+	}
+	if i, ok := w["link_url"]; ok && i.(string) != "" {
+		widget.Link = dashboards.DashboardWidgetLinkInput{URL: i.(string)}
+	}
 	if i, ok := w["column"]; ok {
 		widget.Layout.Column = i.(int)
 	}
@@ -1420,6 +1426,12 @@ func flattenDashboardWidget(in *entities.DashboardWidget, pageGUID string) (stri
 	out["width"] = in.Layout.Width
 	if in.Title != "" {
 		out["title"] = in.Title
+	}
+	if in.Description != "" {
+		out["description"] = in.Description
+	}
+	if in.Link.URL != "" {
+		out["link_url"] = in.Link.URL
 	}
 
 	// NOTE: The widget types that currently support linked entities

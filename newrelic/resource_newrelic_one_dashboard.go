@@ -305,6 +305,16 @@ func dashboardWidgetSchemaBase() map[string]*schema.Schema {
 			Required:    true,
 			Description: "A title for the widget.",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "A description of the widget.",
+		},
+		"link_url": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "A URL to link to from the widget.",
+		},
 		"column": {
 			Type:     schema.TypeInt,
 			Required: true,

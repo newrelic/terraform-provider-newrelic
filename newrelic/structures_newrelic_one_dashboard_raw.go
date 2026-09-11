@@ -123,6 +123,17 @@ func expandDashboardRawWidgetInput(w map[string]interface{}, meta interface{}) (
 		widget.LinkedEntityGUIDs = expandLinkedEntityGUIDs(i.([]interface{}))
 	}
 
+	if i, ok := w["description"]; ok {
+		widget.Description = i.(string)
+	}
+
+	if i, ok := w["link"]; ok {
+		if l := i.([]interface{}); len(l) > 0 {
+			cfg := l[0].(map[string]interface{})
+			widget.Link.URL = cfg["url"].(string)
+		}
+	}
+
 	return widget, nil
 }
 
@@ -224,6 +235,16 @@ func flattenDashboardRawWidget(in *entities.DashboardWidget) (string, map[string
 	out["width"] = in.Layout.Width
 	if in.Title != "" {
 		out["title"] = in.Title
+	}
+	if in.Description != "" {
+		out["description"] = in.Description
+	}
+	if in.Link.URL != "" {
+		out["link"] = []interface{}{
+			map[string]interface{}{
+				"url": in.Link.URL,
+			},
+		}
 	}
 
 	// NOTE: The widget types that currently support linked entities
