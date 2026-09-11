@@ -40,6 +40,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the data partition rule.
 * `deleted` - Whether or not this data partition rule is deleted. Deleting a data partition rule does not delete the already persisted data. This data will be retained for a given period of time specified in the retention policy field.
+* `created_at` - The date and time when the rule was created.
+* `updated_at` - The date and time when the rule was last updated.
 
 ## Import
 

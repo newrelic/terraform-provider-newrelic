@@ -64,6 +64,16 @@ func resourceNewRelicDataPartition() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not this data partition rule is deleted. Deleting a data partition rule does not delete the already persisted data. This data will be retained for a given period of time specified in the retention policy field.",
 			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time when the rule was created.",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time when the rule was last updated.",
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
@@ -176,6 +186,8 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("nrql", rule.NRQL)
 	_ = d.Set("retention_policy", rule.RetentionPolicy)
 	_ = d.Set("deleted", rule.Deleted)
+	_ = d.Set("created_at", string(rule.CreatedAt))
+	_ = d.Set("updated_at", string(rule.UpdatedAt))
 
 	return nil
 }
