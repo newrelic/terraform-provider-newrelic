@@ -28,11 +28,18 @@ resource "newrelic_data_partition_rule" "foo"{
 The following arguments are supported:
 
 * `account_id` - (Optional) The account id associated with the data partition rule.
+* `matching_criteria` - (Optional) The matching criteria of the data partition rule. See [Nested `matching_criteria` blocks](#nested-matching_criteria-blocks) below for details.
 * `description` - (Optional) The description of the data partition rule.
 * `enabled` - (Required) Whether or not this data partition rule is enabled.
 * `nrql` - (Required) The NRQL to match events for this data partition rule. Logs matching this criteria will be routed to the specified data partition.
 * `retention_policy` - (Required) The retention policy of the data partition data. Valid values are `SECONDARY` and `STANDARD`.
 * `target_data_partition` - (Required) The name of the data partition where logs will be allocated once the rule is enabled.
+
+### Nested `matching_criteria` blocks
+
+* `attribute_name` - (Required) The attribute name against which this matching condition will be evaluated.
+* `matching_expression` - (Required) The matching expression of the data partition rule definition.
+* `matching_method` - (Required) The matching method of the data partition rule definition. Valid values are `EQUALS` and `LIKE`.
 
 ## Attributes Reference
 
@@ -40,6 +47,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the data partition rule.
 * `deleted` - Whether or not this data partition rule is deleted. Deleting a data partition rule does not delete the already persisted data. This data will be retained for a given period of time specified in the retention policy field.
+* `created_at` - The date and time when the rule was created.
+* `updated_at` - The date and time when the rule was last updated.
 
 ## Import
 

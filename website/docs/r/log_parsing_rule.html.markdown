@@ -58,6 +58,7 @@ The following arguments are supported:
 * `nrql` - (Required) The NRQL to match events to the parsing rule.
 * `account_id` - (Optional) The account id associated with the obfuscation rule.
 * `matched` - (Optional) Whether the Grok pattern matched.
+* `source` - (Optional) The source of the parsing rule.
 
 
 
@@ -67,6 +68,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the log parsing rule.
+* `updated_at` - The date and time when the rule was last updated.
 
 ## Import
 

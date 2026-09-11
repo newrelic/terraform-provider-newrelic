@@ -36,6 +36,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the obfuscation expression.
+* `created_at` - The date and time the expression was created.
+* `updated_at` - The date and time the expression was last updated.
 
 ## Import
 

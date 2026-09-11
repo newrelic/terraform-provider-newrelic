@@ -57,6 +57,16 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 				Required:    true,
 				Elem:        ObfuscationRuleActionInputSchemaElem(),
 			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Description: "The date and time the rule was created.",
+				Computed:    true,
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Description: "The date and time the rule was last updated.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -183,6 +193,9 @@ func resourceNewRelicObfuscationRuleRead(ctx context.Context, d *schema.Resource
 	if err := d.Set("action", flattenActions(&rule.Actions)); err != nil {
 		return diag.FromErr(err)
 	}
+
+	_ = d.Set("created_at", string(rule.CreatedAt))
+	_ = d.Set("updated_at", string(rule.UpdatedAt))
 
 	return nil
 }

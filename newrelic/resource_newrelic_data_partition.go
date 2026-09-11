@@ -64,6 +64,42 @@ func resourceNewRelicDataPartition() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not this data partition rule is deleted. Deleting a data partition rule does not delete the already persisted data. This data will be retained for a given period of time specified in the retention policy field.",
 			},
+			"matching_criteria": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "The matching criteria of the data partition rule.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"attribute_name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The attribute name against which this matching condition will be evaluated.",
+						},
+						"matching_expression": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The matching expression of the data partition rule definition.",
+						},
+						"matching_method": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The matching method of the data partition rule definition. Valid values are `EQUALS` and `LIKE`.",
+							ValidateFunc: validation.StringInSlice([]string{"EQUALS", "LIKE"}, false),
+						},
+					},
+				},
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time when the rule was created.",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time when the rule was last updated.",
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
@@ -89,6 +125,13 @@ func resourceNewRelicDataPartitionCreate(ctx context.Context, d *schema.Resource
 		Description: d.Get("description").(string),
 		Enabled:     d.Get("enabled").(bool),
 		NRQL:        logconfigurations.NRQL(d.Get("nrql").(string)),
+	}
+
+	if v, ok := d.GetOk("matching_criteria"); ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			createInput.MatchingCriteria = expandDataPartitionMatchingCriteria(items[0].(map[string]interface{}))
+		}
 	}
 
 	//The name of a log data partition. Has to start with 'Log_' prefix and can only contain alphanumeric characters and underscores.
@@ -176,6 +219,12 @@ func resourceNewRelicDataPartitionRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("nrql", rule.NRQL)
 	_ = d.Set("retention_policy", rule.RetentionPolicy)
 	_ = d.Set("deleted", rule.Deleted)
+	_ = d.Set("created_at", string(rule.CreatedAt))
+	_ = d.Set("updated_at", string(rule.UpdatedAt))
+
+	if err := d.Set("matching_criteria", flattenDataPartitionMatchingCriteria(rule.MatchingCriteria)); err != nil {
+		return diag.FromErr(fmt.Errorf("[DEBUG] Error setting `matching_criteria`: %v", err))
+	}
 
 	return nil
 }
@@ -228,6 +277,13 @@ func expandDataPartitionUpdateInput(d *schema.ResourceData) logconfigurations.Lo
 		updateInp.NRQL = logconfigurations.NRQL(e.(string))
 	}
 
+	if v, ok := d.GetOk("matching_criteria"); ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			updateInp.MatchingCriteria = expandDataPartitionMatchingCriteria(items[0].(map[string]interface{}))
+		}
+	}
+
 	return updateInp
 }
 
@@ -248,6 +304,27 @@ func resourceNewRelicDataPartitionDelete(ctx context.Context, d *schema.Resource
 	}
 
 	return nil
+}
+
+func expandDataPartitionMatchingCriteria(cfg map[string]interface{}) *logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput {
+	return &logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteriaInput{
+		AttributeName:      cfg["attribute_name"].(string),
+		MatchingExpression: cfg["matching_expression"].(string),
+		MatchingMethod:     logconfigurations.LogConfigurationsDataPartitionRuleMatchingOperator(cfg["matching_method"].(string)),
+	}
+}
+
+func flattenDataPartitionMatchingCriteria(mc logconfigurations.LogConfigurationsDataPartitionRuleMatchingCriteria) []interface{} {
+	if mc.AttributeName == "" && mc.MatchingExpression == "" {
+		return []interface{}{}
+	}
+	return []interface{}{
+		map[string]interface{}{
+			"attribute_name":      mc.AttributeName,
+			"matching_expression": mc.MatchingExpression,
+			"matching_method":     string(mc.MatchingOperator),
+		},
+	}
 }
 
 func getDataPartitionByID(ctx context.Context, client *newrelic.NewRelic, accountID int, ruleID string) (*logconfigurations.LogConfigurationsDataPartitionRule, error) {
