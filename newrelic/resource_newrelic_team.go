@@ -390,7 +390,22 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if d.HasChange("tags") {
-			upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
+			userTags := expandNGEPTags(d.Get("tags").([]interface{}))
+			// Always merge with current system tags (e.g. nr.hierarchy.level) —
+			// NGEP rejects any update that would remove tags prefixed with "nr.".
+			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
+			mergedTags := mergeWithSystemTags(userTags, sysTags)
+
+			if len(mergedTags) > 0 {
+				// Normal path: send user tags + preserved system tags.
+				upd.Tags = mergedTags
+			} else {
+				// Edge case: user clearing all tags on a team with no system tags.
+				// omitempty would silently drop an empty slice, so use a raw call.
+				if err := clearTeamTagsRaw(ctx, client, d.Id()); err != nil {
+					return diag.Errorf("clearing tags on team %s: %v", d.Id(), err)
+				}
+			}
 		}
 		if d.HasChange("resources") {
 			upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))

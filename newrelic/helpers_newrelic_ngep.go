@@ -7,9 +7,73 @@ package newrelic
 
 import (
 	"context"
+	"strings"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
+
+// ── Tag helpers ───────────────────────────────────────────────────────────────
+
+// mergeWithSystemTags merges user-supplied tags with any existing system tags
+// (those whose keys begin with "nr.") from the entity's current state. This is
+// necessary because the NGEP API rejects an update that would implicitly remove
+// system-managed tags — for example, "nr.hierarchy.level" which is injected
+// automatically when a Team is assigned a parentId.
+//
+// Pass the current entity tags from a prior Read; the function returns the
+// merged list safe to send in any entityManagement*Update mutation.
+func mergeWithSystemTags(
+	userTags []scorecards.EntityManagementTagInput,
+	currentEntityTags []scorecards.EntityManagementTag,
+) []scorecards.EntityManagementTagInput {
+	out := make([]scorecards.EntityManagementTagInput, 0, len(userTags))
+	out = append(out, userTags...)
+
+	for _, t := range currentEntityTags {
+		if strings.HasPrefix(t.Key, "nr.") {
+			out = append(out, scorecards.EntityManagementTagInput{
+				Key:    t.Key,
+				Values: t.Values,
+			})
+		}
+	}
+	return out
+}
+
+// fetchEntitySystemTags reads the current entity and returns only its
+// system-managed tags (those with keys prefixed "nr."). These must be
+// preserved in every tags-update mutation because the NGEP API rejects
+// updates that would implicitly remove them.
+func fetchEntitySystemTags(ctx context.Context, client *scorecards.Scorecards, entityID string) []scorecards.EntityManagementTag {
+	iface, err := client.GetEntityWithContext(ctx, entityID)
+	if err != nil || iface == nil {
+		return nil
+	}
+	type tagged interface {
+		GetTags() []scorecards.EntityManagementTag
+	}
+	// EntityManagementTeamEntity, ScorecardEntity etc. all have Tags directly.
+	// Use a reflective switch to extract them without coupling to a specific type.
+	switch e := (*iface).(type) {
+	case *scorecards.EntityManagementTeamEntity:
+		return filterSystemTags(e.Tags)
+	case *scorecards.EntityManagementScorecardEntity:
+		return filterSystemTags(e.Tags)
+	case *scorecards.EntityManagementScorecardRuleEntity:
+		return filterSystemTags(e.Tags)
+	}
+	return nil
+}
+
+func filterSystemTags(tags []scorecards.EntityManagementTag) []scorecards.EntityManagementTag {
+	var out []scorecards.EntityManagementTag
+	for _, t := range tags {
+		if strings.HasPrefix(t.Key, "nr.") {
+			out = append(out, t)
+		}
+	}
+	return out
+}
 
 // ── Collection pagination ─────────────────────────────────────────────────────
 

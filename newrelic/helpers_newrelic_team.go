@@ -343,6 +343,23 @@ func applyTeamCollections(
 
 // ── Miscellaneous team helpers ────────────────────────────────────────────────
 
+// clearTeamTagsRaw sends tags: [] via a raw NerdGraph call to clear all user
+// tags on a team that has no system-managed tags. Required because the
+// generated struct uses omitempty on Tags, which would silently drop an empty
+// slice — preventing the user from clearing tags via the normal struct path.
+func clearTeamTagsRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
+	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
+  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
+    entity { id tags { key values } }
+  }
+}`
+	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
+		"id":         teamID,
+		"teamEntity": map[string]interface{}{"tags": []interface{}{}},
+	})
+	return err
+}
+
 // clearTeamParentID sends an explicit parentId: null to NGEP to detach a team
 // from its parent hierarchy. The generated EntityManagementTeamEntityUpdateInput
 // uses json:"parentId,omitempty" which silently drops an empty string; this
