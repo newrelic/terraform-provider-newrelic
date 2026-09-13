@@ -47,7 +47,7 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 	} else {
 		// json.Unmarshal decodes numbers as float64; accept integer 1 only.
 		if f, ok := ver.(float64); !ok || f != 1 {
-			errors = append(errors, fmt.Errorf(`%q: "version" must be 1 (integer), got %v`, k, ver))
+			errors = append(errors, fmt.Errorf(`%q: "version" must be the integer 1, got %#v (%T)`, k, ver, ver))
 		}
 	}
 
