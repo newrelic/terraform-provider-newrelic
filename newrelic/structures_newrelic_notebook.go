@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -52,67 +53,114 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 		}
 	}
 
-	// Widget-level props rules — enforced to match the convention the New Relic
-	// UI uses when saving notebooks. Violating these causes drift the next time
-	// the notebook is edited via the UI.
-	//
-	//   viz.markdown: the "props" key must be absent from the widget object.
-	//                 Markdown does not support a title; the UI omits props entirely.
-	//
-	//   all other viz: "props.title" is required (may be an empty string "").
-	//                  The UI always writes props.title; omitting it causes the UI
-	//                  to inject it on the next save, surfacing false drift.
-	var widgetErrs []string
-	if containers, ok := doc["content"].([]interface{}); ok {
-		for _, c := range containers {
-			container, cOK := c.(map[string]interface{})
-			if !cOK {
-				continue
-			}
-			widgets, wOK := container["content"].([]interface{})
-			if !wOK {
-				continue
-			}
-			for _, w := range widgets {
-				widget, wdOK := w.(map[string]interface{})
-				if !wdOK {
-					continue
-				}
-				vizContent, _ := widget["content"].(map[string]interface{})
-				vizID, _ := vizContent["id"].(string)
-				if vizID == "" {
-					continue
-				}
-				_, hasWidgetProps := widget["props"]
-
-				if vizID == "viz.markdown" {
-					if hasWidgetProps {
-						widgetErrs = append(widgetErrs,
-							fmt.Sprintf("%s: widget-level \"props\" must not be present; markdown widgets do not support a title", vizID))
-					}
-				} else {
-					widgetProps, _ := widget["props"].(map[string]interface{})
-					if widgetProps == nil {
-						widgetErrs = append(widgetErrs,
-							fmt.Sprintf("%s: widget-level \"props\" is required and must include \"title\" (use \"\" for no title)", vizID))
-					} else if _, hasTitle := widgetProps["title"]; !hasTitle {
-						widgetErrs = append(widgetErrs,
-							fmt.Sprintf("%s: widget-level \"props.title\" is required (use \"\" for no title)", vizID))
-					}
-				}
-			}
-		}
-	}
-
-	if len(widgetErrs) > 0 {
-		msg := fmt.Sprintf("%q: the following widget props violations were found:\n", k)
-		for i, e := range widgetErrs {
-			msg += fmt.Sprintf("(%d) %s\n", i+1, e)
-		}
-		errors = append(errors, fmt.Errorf("%s", strings.TrimRight(msg, "\n")))
-	}
-
 	return
+}
+
+// nbDoc / nbContainer / nbWidget are lightweight typed structs for navigating
+// the notebook document tree. Declaring only the fields needed for validation
+// avoids the repeated interface{} type assertions that the untyped approach
+// requires, and gives us a single clean parse pass through json.Unmarshal.
+// Unrecognised JSON keys pass through untouched via the encoding/json package.
+
+type nbDoc struct {
+	Content []nbContainer `json:"content"`
+}
+
+type nbContainer struct {
+	Content []nbWidget `json:"content"`
+}
+
+type nbWidget struct {
+	// Props is a pointer so we can distinguish "absent" (nil) from "present but
+	// empty" ({}) — both are structurally different for validation purposes.
+	Props   *nbWidgetProps `json:"props,omitempty"`
+	Content *nbVizContent  `json:"content,omitempty"`
+}
+
+// nbWidgetProps holds the widget-level props. Title is a pointer to
+// json.RawMessage so we can distinguish key-absent (nil) from key-present-
+// but-empty-string ("") — both are syntactically different.
+type nbWidgetProps struct {
+	Title *json.RawMessage `json:"title,omitempty"`
+}
+
+type nbVizContent struct {
+	ID string `json:"id"`
+}
+
+// checkWidgetLevelProps walks the parsed notebook document and returns a
+// human-readable error string for each widget that violates the props rules:
+//
+//   - viz.markdown: the widget-level "props" key must be absent entirely.
+//   - all other viz: "props.title" is required (may be an empty string "").
+//
+// Using typed structs (nbDoc/nbContainer/nbWidget) instead of interface{} maps
+// means a single json.Unmarshal call populates the full tree with no type
+// assertions; validation is then a straightforward typed field check.
+//
+// The caller is responsible for surfacing the returned strings as Terraform
+// diagnostics or errors with the appropriate format.
+func checkWidgetLevelProps(raw string) []string {
+	var doc nbDoc
+	if err := json.Unmarshal([]byte(raw), &doc); err != nil {
+		return nil // JSON errors are caught by the envelope validator
+	}
+
+	var errs []string
+	for ci, container := range doc.Content {
+		for wi, widget := range container.Content {
+			if widget.Content == nil || widget.Content.ID == "" {
+				continue
+			}
+			vizID := widget.Content.ID
+			path := fmt.Sprintf("content[%d].widget[%d] (%s)", ci, wi, vizID)
+
+			if vizID == "viz.markdown" {
+				if widget.Props != nil {
+					errs = append(errs, path+`: widget-level "props" must not be present; markdown widgets do not support a title`)
+				}
+			} else {
+				if widget.Props == nil {
+					errs = append(errs, path+`: widget-level "props" is required and must include "title" (use "" for no title)`)
+				} else if widget.Props.Title == nil {
+					errs = append(errs, path+`: "props.title" is required (use "" for no title)`)
+				}
+			}
+		}
+	}
+	return errs
+}
+
+// customizeNotebookDiff enforces widget-level props rules at plan time.
+// Placing this in CustomizeDiff (rather than ValidateFunc) means Terraform
+// shows only the attribute name in the error location, not the full JSON body —
+// the body can be many hundreds of characters and its presence in the error
+// output makes the actual violation harder to find.
+func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	// Skip the parse-and-walk if neither content field changed — there is nothing
+	// new to validate and the previous plan already caught any violations.
+	if !d.HasChanges("content", "content_json") {
+		return nil
+	}
+
+	raw := d.Get("content").(string)
+	if raw == "" {
+		raw = d.Get("content_json").(string)
+	}
+	if raw == "" {
+		return nil // ValidateFunc already reports missing content
+	}
+
+	errs := checkWidgetLevelProps(raw)
+	if len(errs) == 0 {
+		return nil
+	}
+
+	msg := "the following widget props violations were found:\n"
+	for i, e := range errs {
+		msg += fmt.Sprintf("(%d) %s\n", i+1, e)
+	}
+	return fmt.Errorf("%s", strings.TrimRight(msg, "\n"))
 }
 
 // normalizeNotebookContent converts any valid JSON string to a canonical form

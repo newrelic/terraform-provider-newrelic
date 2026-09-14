@@ -32,6 +32,7 @@ func resourceNewRelicNotebook() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Second),
 			Delete: schema.DefaultTimeout(30 * time.Second),
 		},
+		CustomizeDiff: customizeNotebookDiff,
 		Schema: map[string]*schema.Schema{
 			"title": {
 				Type:        schema.TypeString,
