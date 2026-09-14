@@ -52,6 +52,65 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 		}
 	}
 
+	// Widget-level props rules — enforced to match the convention the New Relic
+	// UI uses when saving notebooks. Violating these causes drift the next time
+	// the notebook is edited via the UI.
+	//
+	//   viz.markdown: the "props" key must be absent from the widget object.
+	//                 Markdown does not support a title; the UI omits props entirely.
+	//
+	//   all other viz: "props.title" is required (may be an empty string "").
+	//                  The UI always writes props.title; omitting it causes the UI
+	//                  to inject it on the next save, surfacing false drift.
+	if containers, ok := doc["content"].([]interface{}); ok {
+		for ci, c := range containers {
+			container, cOK := c.(map[string]interface{})
+			if !cOK {
+				continue
+			}
+			widgets, wOK := container["content"].([]interface{})
+			if !wOK {
+				continue
+			}
+			for wi, w := range widgets {
+				widget, wdOK := w.(map[string]interface{})
+				if !wdOK {
+					continue
+				}
+				vizContent, _ := widget["content"].(map[string]interface{})
+				vizID, _ := vizContent["id"].(string)
+				if vizID == "" {
+					continue
+				}
+				_, hasWidgetProps := widget["props"]
+
+				if vizID == "viz.markdown" {
+					if hasWidgetProps {
+						errors = append(errors, fmt.Errorf(
+							`%q: container[%d].widget[%d] (viz.markdown): `+
+								`widget-level "props" must not be present — `+
+								`markdown does not support a title; remove the "props" key entirely`,
+							k, ci, wi))
+					}
+				} else {
+					widgetProps, _ := widget["props"].(map[string]interface{})
+					if widgetProps == nil {
+						errors = append(errors, fmt.Errorf(
+							`%q: container[%d].widget[%d] (%s): `+
+								`widget-level "props" is required and must include "title" `+
+								`(use "" for no title)`,
+							k, ci, wi, vizID))
+					} else if _, hasTitle := widgetProps["title"]; !hasTitle {
+						errors = append(errors, fmt.Errorf(
+							`%q: container[%d].widget[%d] (%s): `+
+								`widget-level "props.title" is required (use "" for no title)`,
+							k, ci, wi, vizID))
+					}
+				}
+			}
+		}
+	}
+
 	return
 }
 

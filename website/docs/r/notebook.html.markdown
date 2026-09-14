@@ -33,7 +33,6 @@ resource "newrelic_notebook" "incident_runbook" {
       content = [
         {
           type  = "widget"
-          props = {}
           content = {
             type = "visualization"
             id   = "viz.markdown"
@@ -96,7 +95,6 @@ resource "newrelic_notebook" "incident_runbook" {
         },
         {
           type  = "widget"
-          props = {}
           content = {
             type = "visualization"
             id   = "viz.markdown"
@@ -184,9 +182,14 @@ Each widget inside a container's `content` array follows this structure:
 
 #### Widget-level `props`
 
-The following arguments are available directly on the widget's `props` object and apply to all visualization types:
+The `props` key at the widget level has different requirements depending on the visualization type:
 
-  * `title` - (Optional) A label shown above the rendered chart.
+  * **`viz.markdown` widgets**: `props` must be **absent entirely** from the widget object. Do not include `"props": {}` or `props = {}` on a markdown widget.
+  * **All other viz widgets**: `props` must be present and must include `title`. The `title` key is **required** (can be an empty string `""`).
+
+The following arguments are available on the widget's `props` object for non-markdown visualizations:
+
+  * `title` - (Required for non-markdown widgets) A label shown above the rendered chart. May be an empty string `""`.
   * `ignoreTimeRange` - Equivalent to `platformOptions.ignoreTimeRange` in some visualizations. Prefer setting `platformOptions.ignoreTimeRange` directly on the visualization props.
 
 ### Supported visualization types
@@ -222,13 +225,14 @@ The `id` field identifies the chart type. The following values are supported:
 
 Renders a text block supporting GitHub-flavoured Markdown.
 
+-> **NOTE:** The widget-level `props` key must be **absent entirely** on `viz.markdown` widgets. Do not include `"props": {}` or `props = {}` on a markdown widget — omit the key altogether.
+
   * `text` - (Required) The Markdown source string. Supports headings, bold, italic, code, lists, task lists (`- [ ]`), tables, and links. Use `\n` for newlines within the string.
 
 **Example:**
 ```json
 {
   "type": "widget",
-  "props": {},
   "content": {
     "type": "visualization",
     "id": "viz.markdown",
@@ -242,6 +246,8 @@ Renders a text block supporting GitHub-flavoured Markdown.
 ---
 
 ### `viz.line` — Line chart
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`). Example: `props = { title = "My chart" }` or `"props": {"title": ""}`.
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `alertQueries` - (Optional) Array of alert violation objects to overlay warning/critical bands on the chart. Only available for `viz.line`. Each object requires `accountIds` (number[]), `violationId` (number), `duration` (number, ms), `endTime` (number, epoch ms).
@@ -273,6 +279,8 @@ Renders a text block supporting GitHub-flavoured Markdown.
 
 ### `viz.area` — Area chart
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
 Supports the same props as `viz.line`, with the following differences:
 
   * `alertQueries` and `yAxisRight` are not available.
@@ -283,11 +291,15 @@ Supports the same props as `viz.line`, with the following differences:
 
 ### `viz.stacked-bar` — Bar chart (stacked / timeseries)
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
 Supports all `viz.line` props except `alertQueries`, `yAxisRight`, `nullValues.remove`, `chartStyles.lineInterpolation`, `chartStyles.gradient`, and `chartTypes`. Additional prop: `chartStyles.stacked.enabled` - (Optional) Default: `true`.
 
 ---
 
 ### `viz.bar` — Bar chart (simplified)
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
 A simpler bar chart for categorical FACET comparisons.
 
@@ -302,6 +314,8 @@ A simpler bar chart for categorical FACET comparisons.
 
 ### `viz.stacked-horizontal-bar` — Horizontal stacked bar
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
   * `nrqlQueries` - (Required)
   * `facet.showOtherSeries` - (Optional) Default: `false`.
   * `legend.enabled` - (Optional) Default: `true`.
@@ -311,6 +325,8 @@ A simpler bar chart for categorical FACET comparisons.
 ---
 
 ### `viz.pie` — Pie chart
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
   * `nrqlQueries` - (Required)
   * `sqlQueries` - (Optional)
@@ -324,6 +340,8 @@ A simpler bar chart for categorical FACET comparisons.
 ---
 
 ### `viz.table` — Table
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
   * `nrqlQueries` - (Required)
   * `sqlQueries` - (Optional)
@@ -339,6 +357,8 @@ A simpler bar chart for categorical FACET comparisons.
 ---
 
 ### `viz.billboard` — Billboard
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
 Displays a single large metric value with color-coded threshold ranges.
 
@@ -358,6 +378,8 @@ Displays a single large metric value with color-coded threshold ranges.
 ---
 
 ### `viz.gauge` — Gauge
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
 Displays a value as a dial, ring, or horizontal bar gauge.
 
@@ -380,6 +402,8 @@ Displays a value as a dial, ring, or horizontal bar gauge.
 
 ### `viz.histogram` — Histogram
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
 Requires the `histogram()` NRQL function.
 
   * `nrqlQueries` - (Required) Query must use `histogram(attr)` or `histogram(attr, width: N, buckets: N)`.
@@ -395,6 +419,8 @@ Requires the `histogram()` NRQL function.
 
 ### `viz.heatmap` — Heatmap
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
 Requires `histogram()` with a `FACET`.
 
   * `nrqlQueries` - (Required)
@@ -405,6 +431,8 @@ Requires `histogram()` with a `FACET`.
 ---
 
 ### `viz.scatter` — Scatter plot
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
   * `nrqlQueries` - (Required) Query should return two numeric values and a `FACET`.
   * `facet.showOtherSeries` - (Optional)
@@ -420,6 +448,8 @@ Requires `histogram()` with a `FACET`.
 
 ### `viz.apdex` — Apdex
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
   * `nrqlQueries` - (Required)
   * `legend.enabled` / `legend.position` - (Optional)
   * `tooltip.mode` - (Optional)
@@ -429,6 +459,8 @@ Requires `histogram()` with a `FACET`.
 ---
 
 ### `viz.bullet` — Bullet chart
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
   * `nrqlQueries` - (Required)
   * `limit` - (Required) The target value shown as the goal line.
@@ -440,6 +472,8 @@ Requires `histogram()` with a `FACET`.
 
 ### `viz.funnel` — Funnel chart
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
 Requires the `funnel()` NRQL function.
 
   * `nrqlQueries` - (Required)
@@ -450,6 +484,8 @@ Requires the `funnel()` NRQL function.
 
 ### `viz.event-feed` — Event feed
 
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
+
   * `nrqlQueries` - (Required)
   * `platformOptions.ignoreTimeRange` - (Optional)
   * `refreshRate.frequency` - (Optional)
@@ -457,6 +493,8 @@ Requires the `funnel()` NRQL function.
 ---
 
 ### `viz.json` — JSON
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
 Renders the raw JSON output of the NRQL query. Useful for debugging.
 
@@ -467,6 +505,8 @@ Renders the raw JSON output of the NRQL query. Useful for debugging.
 ---
 
 ### `viz.sparkline` — Sparkline
+
+-> **NOTE:** The widget-level `props` must be present and must include `title` (can be `""`).
 
 Compact time-series line chart with Y-axis labels.
 
@@ -571,7 +611,6 @@ resource "newrelic_notebook" "weekly_review" {
       "content": [
         {
           "type": "widget",
-          "props": {},
           "content": {
             "type": "visualization",
             "id": "viz.markdown",
@@ -655,7 +694,6 @@ resource "newrelic_notebook" "weekly_review" {
         },
         {
           "type": "widget",
-          "props": {},
           "content": {
             "type": "visualization",
             "id": "viz.markdown",
@@ -687,7 +725,6 @@ resource "newrelic_notebook" "service_health" {
       content = [
         {
           type  = "widget"
-          props = {}
           content = {
             type = "visualization"
             id   = "viz.markdown"
@@ -736,7 +773,6 @@ resource "newrelic_notebook" "runbooks" {
       content = [
         {
           type  = "widget"
-          props = {}
           content = {
             type = "visualization", id = "viz.markdown"
             props = { text = "# ${each.value}\n\nAdd runbook steps here." }
@@ -771,7 +807,6 @@ resource "newrelic_notebook" "runbooks" {
       "content": [
         {
           "type": "widget",
-          "props": {},
           "content": {
             "type": "visualization",
             "id": "viz.markdown",
