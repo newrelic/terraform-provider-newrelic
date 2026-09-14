@@ -3,7 +3,6 @@ package newrelic
 import (
 	"context"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,7 +45,9 @@ func dataSourceNewRelicNotebook() *schema.Resource {
 			},
 
 			// Populated only when fetch_content = true.
-			"content": {
+			// Named content_json to match the resource attribute — always a raw JSON
+			// string regardless of which mode the source resource used to author the notebook.
+			"content_json": {
 				Type:     schema.TypeString,
 				Computed: true,
 				Description: "The notebook body as a normalized JSON string. Only populated when " +
@@ -67,7 +68,7 @@ func dataSourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData,
 
 	nb, err := client.Notebooks.GetNotebookWithContext(ctx, guid)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
+		if isNotebookNotFoundError(err) {
 			return diag.Errorf("notebook %s not found", guid)
 		}
 		return diag.FromErr(err)
@@ -97,9 +98,9 @@ func dataSourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData,
 		if normErr != nil {
 			return diag.FromErr(normErr)
 		}
-		_ = d.Set("content", normalized)
+		_ = d.Set("content_json", normalized)
 	} else {
-		_ = d.Set("content", "")
+		_ = d.Set("content_json", "")
 	}
 
 	return nil

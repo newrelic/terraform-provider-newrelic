@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -113,4 +114,39 @@ func flattenNotebookContent(raw json.RawMessage, d *schema.ResourceData, field s
 		return fmt.Errorf("could not normalize notebook content returned by the API: %w", err)
 	}
 	return d.Set(field, normalized)
+}
+
+// parseAndNormalizeContent unmarshals raw JSON, produces the canonical
+// normalized string for state storage, and returns the parsed value for direct
+// use in API calls — avoiding the double-parse that would occur if callers ran
+// normalizeNotebookContent followed by a separate json.Unmarshal.
+func parseAndNormalizeContent(raw string) (normalized string, body interface{}, err error) {
+	if raw == "" {
+		return "", nil, fmt.Errorf("notebook content must not be empty")
+	}
+	if err = json.Unmarshal([]byte(raw), &body); err != nil {
+		return "", nil, fmt.Errorf("invalid JSON: %w", err)
+	}
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	if err = enc.Encode(body); err != nil {
+		return "", nil, fmt.Errorf("could not re-serialize JSON: %w", err)
+	}
+	normalized = string(bytes.TrimRight(buf.Bytes(), "\n"))
+	return normalized, body, nil
+}
+
+// isNotebookNotFoundError returns true when an error from the Notebooks client
+// indicates the requested notebook does not exist. Centralised here so both the
+// resource and data source use the same detection logic.
+func isNotebookNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "not found") ||
+		strings.Contains(msg, "404") ||
+		strings.Contains(msg, "Blob not found")
 }

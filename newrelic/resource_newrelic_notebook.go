@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -26,14 +25,8 @@ func resourceNewRelicNotebook() *schema.Resource {
 			//   terraform import newrelic_notebook.example NjQy...
 			//   terraform import newrelic_notebook.example NjQy...:content_json
 			//   terraform import newrelic_notebook.example NjQy...:content
-			//
-			// Specifying :content means the imported state will have the content
-			// field populated (matching a config that uses content = jsonencode({...})).
-			// Specifying :content_json (or omitting the mode) populates content_json,
-			// matching a config that uses content_json = file("...") or a raw JSON string.
 			StateContext: resourceNewRelicNotebookImportState,
 		},
-		CustomizeDiff: resourceNewRelicNotebookCustomizeDiff,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Second),
 			Update: schema.DefaultTimeout(30 * time.Second),
@@ -46,14 +39,11 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Description: "The title of the notebook.",
 			},
 
-			// Exactly one of content or content_json must be set; they cannot
-			// be used together. Choose content when you want to author the
-			// notebook directly in HCL and get field-level plan diffs. Choose
-			// content_json when you are working from JSON exported out of the
-			// New Relic UI or stored in a file. Both fields store the content
-			// in a normalized form (alphabetically sorted keys, consistent
-			// indentation), so purely cosmetic formatting changes never show
-			// up as a planned update.
+			// Exactly one of content or content_json must be set. Choose content
+			// when authoring in HCL (field-level plan diffs). Choose content_json
+			// when working from a UI export or file() (line-level JSON diffs).
+			// Both fields store the content in normalized form (alphabetically
+			// sorted keys, 2-space indent) so cosmetic formatting never diffs.
 
 			"content": {
 				Type:             schema.TypeString,
@@ -82,10 +72,7 @@ func resourceNewRelicNotebook() *schema.Resource {
 					"Mutually exclusive with content.",
 			},
 
-			// organization_id is resolved automatically from the authenticated
-			// account and stored in state for subsequent API calls. It is not
-			// a user-facing argument; notebooks are organization-scoped and the
-			// organization is derived from the provider credentials.
+			// organization_id is resolved automatically and stored for API calls.
 			"organization_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -96,15 +83,10 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Computed:    true,
 				Description: "The unique entity identifier of the notebook in New Relic.",
 			},
-			// blob_id is the identifier of the current content blob returned by
-			// the Blob Storage API after every write. Because blobs are immutable
-			// (confirmed: each write produces a new, permanently fixed blob),
-			// blob_id equality is a reliable signal that the content has not
-			// changed since the last Terraform-managed write. On every Read we
-			// compare the stored blob_id against the one returned by NerdGraph
-			// (content.id). If they match we skip the Blob Storage GET, reducing
-			// terraform plan from two serial API calls to one in the common
-			// no-change case.
+			// blob_id tracks the immutable content blob written by the last
+			// Terraform-managed write. Because each write creates a new blob,
+			// blob_id equality is a reliable signal that content is unchanged,
+			// allowing Read to skip a Blob Storage GET in the common no-diff case.
 			"blob_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -114,26 +96,10 @@ func resourceNewRelicNotebook() *schema.Resource {
 	}
 }
 
-// resourceNewRelicNotebookCustomizeDiff runs at plan time to catch malformed
-// JSON early, so users see a clear error before an apply is attempted.
-func resourceNewRelicNotebookCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	for _, key := range []string{"content", "content_json"} {
-		raw, ok := d.GetOk(key)
-		if !ok || raw.(string) == "" {
-			continue
-		}
-		if _, err := normalizeNotebookContent(raw.(string)); err != nil {
-			return fmt.Errorf("%s: %w", key, err)
-		}
-	}
-	return nil
-}
-
 // notebookContentField returns the name of the active content field
 // ("content" or "content_json") along with its current value. When neither
-// field is set - for example, immediately after terraform import before the
-// first plan - it defaults to "content_json" so the imported state is
-// immediately usable.
+// field is set — for example immediately after terraform import before the
+// first plan — it defaults to "content_json".
 func notebookContentField(d *schema.ResourceData) (field, raw string) {
 	if v, ok := d.GetOk("content"); ok && v.(string) != "" {
 		return "content", v.(string)
@@ -144,11 +110,22 @@ func notebookContentField(d *schema.ResourceData) (field, raw string) {
 	return "content_json", ""
 }
 
-func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
+// notebookOrgID returns the organization ID from state if present, or resolves
+// it from provider credentials. Centralises the fallback logic used by Update
+// and Delete.
+func notebookOrgID(ctx context.Context, guid string, d *schema.ResourceData, pc *ProviderConfig) (string, error) {
+	if id, _ := d.Get("organization_id").(string); id != "" {
+		return id, nil
+	}
+	log.Printf("[DEBUG] organization_id not in state for notebook %s, resolving from provider credentials", guid)
+	return getOrganizationID(ctx, pc, "")
+}
 
-	orgID, err := getOrganizationID(ctx, providerConfig, "")
+func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	pc := meta.(*ProviderConfig)
+	client := pc.NewClient
+
+	orgID, err := getOrganizationID(ctx, pc, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,19 +133,14 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	title := d.Get("title").(string)
 	field, rawContent := notebookContentField(d)
 
-	normalized, err := normalizeNotebookContent(rawContent)
+	normalized, body, err := parseAndNormalizeContent(rawContent)
 	if err != nil {
 		return diag.Errorf("%s: %s", field, err)
 	}
 
-	var contentBody interface{}
-	if unmarshalErr := json.Unmarshal([]byte(normalized), &contentBody); unmarshalErr != nil {
-		return diag.Errorf("%s re-parse: %s", field, unmarshalErr)
-	}
-
 	log.Printf("[INFO] Creating New Relic notebook: %s", title)
 
-	resp, err := client.Notebooks.CreateNotebookWithContext(ctx, orgID, title, contentBody)
+	resp, err := client.Notebooks.CreateNotebookWithContext(ctx, orgID, title, body)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,15 +155,13 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("blob_id", resp.BlobID)
 	_ = d.Set(field, normalized)
 
-	// Poll NerdGraph until content.id is populated for the new notebook.
+	// Poll NerdGraph until content.id is populated.
 	//
 	// The Blob Storage API and NerdGraph are asynchronously consistent: the
-	// notebook exists in the Blob API immediately but NerdGraph may take a
-	// few seconds to index the entity and populate content.id. Waiting here:
-	//   1. Ensures blob_id in state comes from a NerdGraph-confirmed value,
-	//      making the short-circuit in subsequent Reads reliable right away.
-	//   2. Prevents a terraform plan run immediately after apply (common in
-	//      CI) from triggering a spurious Blob GET because content.id was null.
+	// notebook exists in the Blob API immediately but NerdGraph may take a few
+	// seconds to index the entity and populate content.id. Waiting here ensures
+	// blob_id in state is NerdGraph-confirmed, making the short-circuit in
+	// subsequent Reads reliable right away.
 	indexingDeadline := time.Now().Add(d.Timeout(schema.TimeoutCreate))
 	backoff := time.Second
 	for {
@@ -202,18 +172,13 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 			break
 		}
 		if ctx.Err() != nil || time.Now().After(indexingDeadline) {
-			// Notebook was created in Blob Storage; return a warning so the
-			// resource is not left broken. The next plan will self-correct.
 			log.Printf("[WARN] Notebook %s created but NerdGraph indexing timed out", resp.EntityGUID)
 			return append(resourceNewRelicNotebookRead(ctx, d, meta), diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  "Notebook created but NerdGraph indexing timed out",
-				Detail: fmt.Sprintf(
-					"Notebook %s was created successfully via the Blob Storage API but "+
-						"did not appear in NerdGraph within the create timeout (%s). "+
-						"Run terraform plan again to confirm the resource is in the expected state.",
-					resp.EntityGUID, d.Timeout(schema.TimeoutCreate),
-				),
+				Detail: "Notebook was created successfully via the Blob Storage API but did not " +
+					"appear in NerdGraph within the create timeout. Run terraform plan again " +
+					"to confirm the resource is in the expected state.",
 			})
 		}
 		log.Printf("[DEBUG] Waiting for notebook %s to be indexed in NerdGraph (retry in %s)...", resp.EntityGUID, backoff)
@@ -227,15 +192,15 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
+	pc := meta.(*ProviderConfig)
+	client := pc.NewClient
 
 	guid := d.Id()
 	log.Printf("[INFO] Reading New Relic notebook %s", guid)
 
 	nb, err := client.Notebooks.GetNotebookWithContext(ctx, guid)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
+		if isNotebookNotFoundError(err) {
 			log.Printf("[WARN] Notebook %s not found, removing from state", guid)
 			d.SetId("")
 			return nil
@@ -248,16 +213,12 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		orgID, _ = d.Get("organization_id").(string)
 	}
 
-	// Blob-ID-based short-circuit: every write produces a new, immutable blob
-	// with a unique blob_id. If the blob_id returned by NerdGraph (content.id)
-	// matches what we have in state, the blob has not changed and we can skip
-	// the Blob Storage GET. NerdGraph may return content as null due to
-	// propagation lag; in that case we fall through to the full fetch safely.
+	// Blob-ID short-circuit: if NerdGraph's content.id matches what we have in
+	// state, the blob has not changed and we can skip the Blob Storage GET.
+	// NerdGraph may return content as null due to propagation lag; fall through
+	// to the full fetch in that case.
 	storedBlobID, _ := d.Get("blob_id").(string)
-	currentBlobID := ""
-	if nb.Content.ID != "" {
-		currentBlobID = nb.Content.ID
-	}
+	currentBlobID := nb.Content.ID
 	if storedBlobID != "" && currentBlobID != "" && currentBlobID == storedBlobID {
 		log.Printf("[DEBUG] Notebook %s content unchanged (blob_id %s) - skipping Blob GET", guid, storedBlobID)
 		_ = d.Set("title", nb.Name)
@@ -266,7 +227,6 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	}
 
-	// Content may have changed - fetch from Blob Storage.
 	rawContent, err := client.Notebooks.GetNotebookContentWithContext(ctx, orgID, guid)
 	if err != nil {
 		return diag.FromErr(err)
@@ -275,15 +235,10 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("title", nb.Name)
 	_ = d.Set("guid", nb.ID)
 	_ = d.Set("organization_id", orgID)
-	// Update blob_id from NerdGraph if it was returned; otherwise leave the
-	// stored value intact - it will be refreshed on the next Terraform write.
 	if currentBlobID != "" {
 		_ = d.Set("blob_id", currentBlobID)
 	}
 
-	// Write the fetched content back into whichever field the user declared.
-	// On a fresh import, neither field is set yet; default to content_json so
-	// the imported state is immediately usable without a plan change.
 	field, _ := notebookContentField(d)
 	if err := flattenNotebookContent(rawContent, d, field); err != nil {
 		return diag.FromErr(err)
@@ -293,31 +248,13 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
+	pc := meta.(*ProviderConfig)
+	client := pc.NewClient
 
 	guid := d.Id()
-	orgID, _ := d.Get("organization_id").(string)
-	if orgID == "" {
-		log.Printf("[DEBUG] organization_id not in state for notebook %s, resolving from provider credentials", guid)
-		var err error
-		orgID, err = getOrganizationID(ctx, providerConfig, "")
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	title := d.Get("title").(string)
-	field, rawContent := notebookContentField(d)
-
-	normalized, err := normalizeNotebookContent(rawContent)
+	orgID, err := notebookOrgID(ctx, guid, d, pc)
 	if err != nil {
-		return diag.Errorf("%s: %s", field, err)
-	}
-
-	var contentBody interface{}
-	if unmarshalErr := json.Unmarshal([]byte(normalized), &contentBody); unmarshalErr != nil {
-		return diag.Errorf("%s re-parse: %s", field, unmarshalErr)
+		return diag.FromErr(err)
 	}
 
 	titleChanged := d.HasChange("title")
@@ -326,52 +263,94 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[INFO] Updating New Relic notebook %s (title_changed=%v, content_changed=%v)", guid, titleChanged, contentChanged)
 
 	if !titleChanged && !contentChanged {
-		// Nothing to do - both fields are unchanged. Skip the Blob API call and
-		// let the trailing Read confirm state is in sync.
 		return resourceNewRelicNotebookRead(ctx, d, meta)
+	}
+
+	title := d.Get("title").(string)
+	field, rawContent := notebookContentField(d)
+
+	normalized, body, err := parseAndNormalizeContent(rawContent)
+	if err != nil {
+		return diag.Errorf("%s: %s", field, err)
+	}
+
+	// When the user switches modes (content ↔ content_json) without changing
+	// the actual JSON, the SDK sees both fields as changed but the server blob
+	// is identical. Skip the API write if the normalized content matches what is
+	// already stored in state to avoid a redundant blob version.
+	if contentChanged && !titleChanged {
+		_, prevRaw := func() (string, string) {
+			if d.HasChange("content") {
+				old, _ := d.GetChange("content")
+				if s, _ := old.(string); s != "" {
+					return "content", s
+				}
+			}
+			if d.HasChange("content_json") {
+				old, _ := d.GetChange("content_json")
+				if s, _ := old.(string); s != "" {
+					return "content_json", s
+				}
+			}
+			return "", ""
+		}()
+		if prevRaw != "" {
+			prevNorm, _, normErr := parseAndNormalizeContent(prevRaw)
+			if normErr == nil && prevNorm == normalized {
+				log.Printf("[DEBUG] Notebook %s: mode switch with identical content — skipping Blob API write", guid)
+				// Update only the state field name; the server blob is unchanged.
+				_ = d.Set(field, normalized)
+				return resourceNewRelicNotebookRead(ctx, d, meta)
+			}
+		}
 	}
 
 	var mutResp *notebooks.NotebookMutationResponse
 	if titleChanged {
-		// Rename is atomic with a content POST - the Blob API has no rename-only path.
-		mutResp, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, contentBody)
-	} else if contentChanged {
-		mutResp, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, contentBody)
+		mutResp, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, body)
+	} else {
+		mutResp, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, body)
 	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Capture the new blob_id from the mutation response immediately so state
-	// is up-to-date before the subsequent Read call runs the short-circuit.
-	if mutResp != nil && mutResp.BlobID != "" {
-		_ = d.Set("blob_id", mutResp.BlobID)
-	}
-
 	_ = d.Set(field, normalized)
 
-	return resourceNewRelicNotebookRead(ctx, d, meta)
+	// Set blob_id from the mutation response before calling Read. Read may see
+	// a stale NerdGraph blob_id due to propagation lag and would otherwise
+	// overwrite our fresh value. We re-assert it after Read completes.
+	freshBlobID := ""
+	if mutResp != nil && mutResp.BlobID != "" {
+		freshBlobID = mutResp.BlobID
+		_ = d.Set("blob_id", freshBlobID)
+	}
+
+	diags := resourceNewRelicNotebookRead(ctx, d, meta)
+
+	// Re-assert the mutation's blob_id in case Read overwrote it with a stale
+	// NerdGraph value. This prevents an unnecessary Blob GET on the next plan.
+	if freshBlobID != "" {
+		_ = d.Set("blob_id", freshBlobID)
+	}
+
+	return diags
 }
 
 func resourceNewRelicNotebookDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerConfig := meta.(*ProviderConfig)
-	client := providerConfig.NewClient
+	pc := meta.(*ProviderConfig)
+	client := pc.NewClient
 
 	guid := d.Id()
-	orgID, _ := d.Get("organization_id").(string)
-	if orgID == "" {
-		log.Printf("[DEBUG] organization_id not in state for notebook %s, resolving from provider credentials", guid)
-		var err error
-		orgID, err = getOrganizationID(ctx, providerConfig, "")
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	orgID, err := notebookOrgID(ctx, guid, d, pc)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Deleting New Relic notebook %s", guid)
 
 	if err := client.Notebooks.DeleteNotebookWithContext(ctx, orgID, guid); err != nil {
-		if strings.Contains(err.Error(), "not found") {
+		if isNotebookNotFoundError(err) {
 			return nil
 		}
 		return diag.FromErr(err)
@@ -381,20 +360,9 @@ func resourceNewRelicNotebookDelete(ctx context.Context, d *schema.ResourceData,
 }
 
 // resourceNewRelicNotebookImportState handles terraform import for notebooks.
-//
-// It accepts either a bare GUID or a composite "GUID:mode" ID where mode is
-// "content" or "content_json". The mode tells the resource which field to
-// populate when Read fetches the notebook body from the Blob Storage API:
-//
-//   - content_json (default) - populates the content_json field, matching a
-//     config that uses content_json = file("...") or an inline JSON string.
-//   - content - populates the content field, matching a config that uses
-//     content = jsonencode({...}).
-//
-// After importing, run terraform plan to confirm the imported state matches
-// your configuration. If the modes differ (e.g., you import without a mode
-// but your config uses content), the next plan will surface the difference so
-// you can align your config accordingly.
+// Accepts either a bare GUID or a composite "GUID:mode" ID where mode is
+// "content" or "content_json" (default). The mode signals which field Read
+// should populate in state to match the user's configuration.
 func resourceNewRelicNotebookImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), ":", 2)
 	guid := parts[0]
@@ -416,11 +384,9 @@ func resourceNewRelicNotebookImportState(ctx context.Context, d *schema.Resource
 
 	d.SetId(guid)
 
-	// Set a minimal valid placeholder in the target field so notebookContentField
-	// detects the desired mode when Read runs immediately after this function.
-	// Read overwrites it with the actual normalized content from the Blob API.
-	// The placeholder must be a syntactically valid declarative UI document so
-	// that CustomizeDiff does not reject it before Read has a chance to replace it.
+	// Set a minimal valid placeholder so notebookContentField detects the desired
+	// mode when Read runs immediately after this function. Read overwrites it
+	// with the actual normalized content from the Blob API.
 	placeholder := `{"type":"declarative","version":1,"content":[]}`
 	if err := d.Set(mode, placeholder); err != nil {
 		return nil, fmt.Errorf("failed to signal import mode %q: %w", mode, err)

@@ -11,8 +11,8 @@ import (
 )
 
 // TestAccNewRelicNotebookDataSource_MetadataOnly verifies that the data source
-// returns title, organization_id and blob_id when fetch_content = false and
-// does not make a Blob Storage API call (content is empty).
+// returns title, organization_id, and blob_id when fetch_content = false, and
+// that content_json is empty (no Blob Storage API call made).
 func TestAccNewRelicNotebookDataSource_MetadataOnly(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-ds-notebook-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
@@ -26,27 +26,25 @@ func TestAccNewRelicNotebookDataSource_MetadataOnly(t *testing.T) {
 			{
 				Config: testAccNotebookDataSourceConfig(rName, false),
 				Check: resource.ComposeTestCheckFunc(
-					// Resource fields populated.
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 					resource.TestCheckResourceAttr(resourceName, "title", rName),
 
-					// Data source matches the resource.
 					resource.TestCheckResourceAttrPair(dataSourceName, "guid", resourceName, "guid"),
 					resource.TestCheckResourceAttr(dataSourceName, "title", rName),
 					resource.TestCheckResourceAttrSet(dataSourceName, "organization_id"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "blob_id"),
 
-					// Content NOT fetched - should be empty.
-					resource.TestCheckResourceAttr(dataSourceName, "content", ""),
+					// content_json must be empty when fetch_content = false.
+					resource.TestCheckResourceAttr(dataSourceName, "content_json", ""),
 				),
 			},
 		},
 	})
 }
 
-// TestAccNewRelicNotebookDataSource_WithContent verifies that when
-// fetch_content = true the data source populates the content attribute with
-// the normalized notebook JSON returned by the Blob Storage API.
+// TestAccNewRelicNotebookDataSource_WithContent verifies that fetch_content = true
+// populates content_json with normalized JSON, and that blob_id on the data source
+// matches the resource's blob_id.
 func TestAccNewRelicNotebookDataSource_WithContent(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-ds-notebook-content-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
@@ -62,14 +60,16 @@ func TestAccNewRelicNotebookDataSource_WithContent(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
 
-					// Data source attributes.
 					resource.TestCheckResourceAttrPair(dataSourceName, "guid", resourceName, "guid"),
 					resource.TestCheckResourceAttr(dataSourceName, "title", rName),
 					resource.TestCheckResourceAttrSet(dataSourceName, "organization_id"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "blob_id"),
 
-					// Content IS fetched - must be non-empty JSON.
-					resource.TestCheckResourceAttrSet(dataSourceName, "content"),
+					// content_json must be populated when fetch_content = true.
+					resource.TestCheckResourceAttrSet(dataSourceName, "content_json"),
+
+					// blob_id from data source must match the managed resource.
+					resource.TestCheckResourceAttrPair(dataSourceName, "blob_id", resourceName, "blob_id"),
 				),
 			},
 		},
@@ -85,23 +85,19 @@ resource "newrelic_notebook" "test" {
   content = jsonencode({
     type    = "declarative"
     version = 1
-    content = [
-      {
-        type  = "container"
-        props = { layout = "stack" }
-        content = [
-          {
-            type  = "widget"
-            props = {}
-            content = {
-              type = "visualization"
-              id   = "viz.markdown"
-              props = { text = "Data source acceptance test notebook." }
-            }
-          }
-        ]
-      }
-    ]
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type  = "widget"
+        props = {}
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "Data source acceptance test notebook." }
+        }
+      }]
+    }]
   })
 }
 

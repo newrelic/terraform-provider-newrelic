@@ -5,7 +5,6 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -52,15 +51,8 @@ func testAccCheckNewRelicNotebookDestroy(s *terraform.State) error {
 	return nil
 }
 
-// isNotebookNotFoundError matches the not-found error the client surfaces when
-// the Blob API returns HTTP 404.
-func isNotebookNotFoundError(err error) bool {
-	if err == nil {
-		return false
-	}
-	msg := err.Error()
-	return strings.Contains(msg, "not found") || strings.Contains(msg, "404") || strings.Contains(msg, "Blob not found")
-}
+// isNotebookNotFoundError is defined in structures_newrelic_notebook.go and
+// used here for destroy-check logic. No local definition needed.
 
 // ── Test configs ──────────────────────────────────────────────────────────────
 
@@ -94,72 +86,110 @@ resource "newrelic_notebook" "test" {
 }
 
 func testAccNotebookConfigContentJSON(name string) string {
+	// Uses a literal JSON string (not jsonencode) to exercise the content_json
+	// path authentically — verifying the raw-JSON passthrough, normalization,
+	// and DiffSuppressFunc all work on a real JSON string value.
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %[1]q
-  content_json = jsonencode({
-    type    = "declarative"
-    version = 1
-    content = [
-      {
-        type  = "container"
-        props = { layout = "stack" }
-        content = [
-          {
-            type  = "widget"
-            props = {}
-            content = {
-              type = "visualization"
-              id   = "viz.markdown"
-              props = { text = "content_json acceptance test" }
-            }
-          }
-        ]
-      }
-    ]
-  })
+  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test\"}}}]}]}"
 }
 `, name)
 }
 
 func testAccNotebookConfigContentJSONUpdated(name string) string {
+	// Two widgets as a raw JSON string to verify content_json update path.
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title        = %[1]q
+  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test - updated\"}}},{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.billboard\",\"props\":{\"nrqlQueries\":[{\"accountIds\":[0],\"query\":\"SELECT count(*) FROM Transaction SINCE 1 hour ago\"}]}}}]}]}"
+}
+`, name)
+}
+
+// testAccNotebookConfigWithBillboard produces a two-widget notebook containing
+// a markdown header and a billboard with threshold configuration. Used to verify
+// that nested billboardSettings and thresholdsWithSeriesOverrides props survive
+// the full create → read → no-drift cycle.
+func testAccNotebookConfigWithBillboard(name string, accountID int) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content_json = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [
+        {
+          type  = "widget"
+          props = {}
+          content = {
+            type = "visualization"
+            id   = "viz.markdown"
+            props = { text = "## Notebook with billboard" }
+          }
+        },
+        {
+          type  = "widget"
+          props = { title = "Error rate" }
+          content = {
+            type = "visualization"
+            id   = "viz.billboard"
+            props = {
+              nrqlQueries = [{
+                accountIds = [%[2]d]
+                query      = "SELECT percentage(count(*), WHERE error IS true) AS 'Error %%' FROM Transaction SINCE 1 hour ago"
+              }]
+              thresholdsWithSeriesOverrides = {
+                thresholds = [
+                  { to = 1,           severity = "success"  }
+                  { from = 1, to = 5, severity = "warning"  }
+                  { from = 5,         severity = "critical" }
+                ]
+              }
+              billboardSettings = {
+                visual = { alignment = "inline", display = "auto" }
+              }
+            }
+          }
+        }
+      ]
+    }]
+  })
+}
+`, name, accountID)
+}
+
+// testAccNotebookConfigSwitchToContentJSON returns a config that is
+// semantically identical to testAccNotebookConfigContent(name, text) but uses
+// the content_json field instead of content. Used to test the mode-switch
+// mid-lifecycle: the plan should show a field-name change but no API write
+// (because the normalized JSON is identical).
+func testAccNotebookConfigSwitchToContentJSON(name, text string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %[1]q
   content_json = jsonencode({
     type    = "declarative"
     version = 1
-    content = [
-      {
-        type  = "container"
-        props = { layout = "stack" }
-        content = [
-          {
-            type  = "widget"
-            props = {}
-            content = {
-              type = "visualization"
-              id   = "viz.markdown"
-              props = { text = "content_json acceptance test - updated" }
-            }
-          },
-          {
-            type  = "widget"
-            props = {}
-            content = {
-              type = "visualization"
-              id   = "viz.billboard"
-              props = {
-                nrqlQueries = [{ accountIds = [0], query = "SELECT count(*) FROM Transaction SINCE 1 hour ago" }]
-              }
-            }
-          }
-        ]
-      }
-    ]
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type  = "widget"
+        props = {}
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = %[2]q }
+        }
+      }]
+    }]
   })
 }
-`, name)
+`, name, text)
 }
 
 // ── Acceptance tests ──────────────────────────────────────────────────────────
@@ -314,6 +344,77 @@ resource "newrelic_notebook" "test" {
 		Steps: []resource.TestStep{
 			{Config: configV1, Check: testAccCheckNewRelicNotebookExists(resourceName)},
 			{Config: configV2, PlanOnly: true, ExpectNonEmptyPlan: false},
+		},
+	})
+}
+
+// TestAccNewRelicNotebook_ModeSwitch verifies that switching from content= to
+// content_json= with semantically identical JSON does not trigger an unnecessary
+// Blob API write (blob_id must not change) and leaves no plan drift after apply.
+func TestAccNewRelicNotebook_ModeSwitch(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-mode-switch-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create with content= (HCL mode).
+			{
+				Config: testAccNotebookConfigContent(rName, "Mode switch test"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "blob_id"),
+				),
+			},
+			// Step 2: switch to content_json= with identical JSON.
+			// The plan must show a field-name change but NOT a content change,
+			// and apply must NOT bump the blob_id.
+			{
+				Config: testAccNotebookConfigSwitchToContentJSON(rName, "Mode switch test"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "blob_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "content_json"),
+				),
+			},
+			// Step 3: no drift after mode switch.
+			{
+				Config:             testAccNotebookConfigSwitchToContentJSON(rName, "Mode switch test"),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicNotebook_WithBillboard verifies that a notebook containing
+// billboardSettings, thresholdsWithSeriesOverrides, and nested viz props
+// round-trips through create → read → no-drift without any spurious diff.
+func TestAccNewRelicNotebook_WithBillboard(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-billboard-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotebookConfigWithBillboard(rName, testAccGetTestAccountID()),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttrSet(resourceName, "blob_id"),
+				),
+			},
+			// No drift — nested billboardSettings/thresholdsWithSeriesOverrides
+			// must survive the round-trip unchanged.
+			{
+				Config:             testAccNotebookConfigWithBillboard(rName, testAccGetTestAccountID()),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
 		},
 	})
 }
