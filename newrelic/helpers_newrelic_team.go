@@ -343,6 +343,22 @@ func applyTeamCollections(
 
 // ── Miscellaneous team helpers ────────────────────────────────────────────────
 
+// clearTeamAliasesRaw explicitly sends aliases: [] to clear all aliases on a
+// team. Required because omitempty on Aliases would drop an empty slice,
+// preventing the user from clearing aliases via the normal struct path.
+func clearTeamAliasesRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
+	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
+  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
+    entity { id aliases }
+  }
+}`
+	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
+		"id":         teamID,
+		"teamEntity": map[string]interface{}{"aliases": []interface{}{}},
+	})
+	return err
+}
+
 // clearTeamTagsRaw sends tags: [] via a raw NerdGraph call to clear all user
 // tags on a team that has no system-managed tags. Required because the
 // generated struct uses omitempty on Tags, which would silently drop an empty

@@ -385,8 +385,16 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			upd.Description = d.Get("description").(string)
 		}
 		if d.HasChange("aliases") {
-			for _, a := range d.Get("aliases").([]interface{}) {
-				upd.Aliases = append(upd.Aliases, a.(string))
+			newAliases := d.Get("aliases").([]interface{})
+			if len(newAliases) > 0 {
+				for _, a := range newAliases {
+					upd.Aliases = append(upd.Aliases, a.(string))
+				}
+			} else {
+				// Explicit clear: omitempty would drop nil, so use raw call.
+				if err := clearTeamAliasesRaw(ctx, client, d.Id()); err != nil {
+					return diag.Errorf("clearing aliases on team %s: %v", d.Id(), err)
+				}
 			}
 		}
 		if d.HasChange("tags") {
