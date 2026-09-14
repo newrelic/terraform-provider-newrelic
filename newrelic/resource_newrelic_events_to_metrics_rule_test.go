@@ -4,6 +4,7 @@ package newrelic
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -33,6 +34,14 @@ func TestAccNewRelicEventsToMetricsRule_Basic(t *testing.T) {
 				Config: testAccNewRelicEventsToMetricsRuleConfigUpdated(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicEventsToMetricsRuleExists(resourceName),
+				),
+			},
+			// Test: account_id omitted falls back to the provider account
+			{
+				Config: testAccNewRelicEventsToMetricsRuleConfigNoAccountID(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicEventsToMetricsRuleExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "account_id", strconv.Itoa(testAccountID)),
 				),
 			},
 			// Test: Import
@@ -116,4 +125,14 @@ resource "newrelic_events_to_metrics_rule" "foo" {
   enabled = false
 }
 `, testAccountID, name)
+}
+
+func testAccNewRelicEventsToMetricsRuleConfigNoAccountID(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_events_to_metrics_rule" "foo" {
+  name = "%s"
+  description = "test description"
+  nrql = "SELECT uniqueCount(account_id) AS `+"`"+"Transaction.account_id"+"`"+` FROM Transaction FACET appName, name"
+}
+`, name)
 }

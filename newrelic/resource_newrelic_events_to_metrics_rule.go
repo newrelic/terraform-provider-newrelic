@@ -68,7 +68,7 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 
 	createInput := []eventstometrics.EventsToMetricsCreateRuleInput{
 		{
-			AccountID:   d.Get("account_id").(int),
+			AccountID:   selectAccountID(providerConfig, d),
 			Description: d.Get("description").(string),
 			Name:        d.Get("name").(string),
 			NRQL:        d.Get("nrql").(string),
