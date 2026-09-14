@@ -70,7 +70,6 @@ resource "newrelic_notebook" "test" {
         content = [
           {
             type  = "widget"
-            props = {}
             content = {
               type = "visualization"
               id   = "viz.markdown"
@@ -92,7 +91,7 @@ func testAccNotebookConfigContentJSON(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %[1]q
-  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test\"}}}]}]}"
+  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test\"}}}]}]}"
 }
 `, name)
 }
@@ -102,7 +101,7 @@ func testAccNotebookConfigContentJSONUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %[1]q
-  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test - updated\"}}},{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.billboard\",\"props\":{\"nrqlQueries\":[{\"accountIds\":[0],\"query\":\"SELECT count(*) FROM Transaction SINCE 1 hour ago\"}]}}}]}]}"
+  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test - updated\"}}},{\"type\":\"widget\",\"props\":{\"title\":\"\"},\"content\":{\"type\":\"visualization\",\"id\":\"viz.billboard\",\"props\":{\"nrqlQueries\":[{\"accountIds\":[0],\"query\":\"SELECT count(*) FROM Transaction SINCE 1 hour ago\"}]}}}]}]}"
 }
 `, name)
 }
@@ -124,7 +123,6 @@ resource "newrelic_notebook" "test" {
       content = [
         {
           type  = "widget"
-          props = {}
           content = {
             type = "visualization"
             id   = "viz.markdown"
@@ -179,7 +177,6 @@ resource "newrelic_notebook" "test" {
       props = { layout = "stack" }
       content = [{
         type  = "widget"
-        props = {}
         content = {
           type = "visualization"
           id   = "viz.markdown"
@@ -325,7 +322,7 @@ func TestAccNewRelicNotebook_JSONReformatNoDrift(t *testing.T) {
 	configV1 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %q
-  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"props\":{},\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}]}"
+  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}]}"
 }
 `, rName)
 
@@ -333,7 +330,7 @@ resource "newrelic_notebook" "test" {
 	configV2 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %q
-  content_json = "{\"content\":[{\"content\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"props\":{},\"type\":\"widget\"}],\"props\":{\"layout\":\"stack\"},\"type\":\"container\"}],\"type\":\"declarative\",\"version\":1}"
+  content_json = "{\"content\":[{\"content\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"type\":\"widget\"}],\"props\":{\"layout\":\"stack\"},\"type\":\"container\"}],\"type\":\"declarative\",\"version\":1}"
 }
 `, rName)
 
@@ -401,7 +398,7 @@ func TestAccNewRelicNotebook_WithBillboard(t *testing.T) {
 		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNotebookConfigWithBillboard(rName, testAccGetTestAccountID()),
+				Config: testAccNotebookConfigWithBillboard(rName, testAccountID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
@@ -411,7 +408,7 @@ func TestAccNewRelicNotebook_WithBillboard(t *testing.T) {
 			// No drift — nested billboardSettings/thresholdsWithSeriesOverrides
 			// must survive the round-trip unchanged.
 			{
-				Config:             testAccNotebookConfigWithBillboard(rName, testAccGetTestAccountID()),
+				Config:             testAccNotebookConfigWithBillboard(rName, testAccountID),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},

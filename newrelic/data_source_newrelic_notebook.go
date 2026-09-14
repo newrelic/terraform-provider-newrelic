@@ -94,7 +94,7 @@ func dataSourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData,
 		if contentErr != nil {
 			return diag.FromErr(contentErr)
 		}
-		normalized, normErr := normalizeNotebookContent(string(rawContent))
+		normalized, _, normErr := normalizeNotebookContent(string(rawContent))
 		if normErr != nil {
 			return diag.FromErr(normErr)
 		}
