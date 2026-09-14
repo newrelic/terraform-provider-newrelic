@@ -382,7 +382,15 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			upd.Name = d.Get("name").(string)
 		}
 		if d.HasChange("description") {
-			upd.Description = d.Get("description").(string)
+			newDesc := d.Get("description").(string)
+			if newDesc != "" {
+				upd.Description = newDesc
+			} else {
+				// Explicit clear: omitempty drops "", so use a raw call.
+				if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
+					return diag.Errorf("clearing description on team %s: %v", d.Id(), err)
+				}
+			}
 		}
 		if d.HasChange("aliases") {
 			newAliases := d.Get("aliases").([]interface{})

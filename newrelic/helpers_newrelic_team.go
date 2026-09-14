@@ -343,6 +343,22 @@ func applyTeamCollections(
 
 // ── Miscellaneous team helpers ────────────────────────────────────────────────
 
+// clearTeamDescriptionRaw explicitly sends description: "" to clear it via a
+// raw NerdGraph call. Required because omitempty on Description would drop
+// an empty string, preventing the user from clearing the description field.
+func clearTeamDescriptionRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
+	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
+  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
+    entity { id description }
+  }
+}`
+	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
+		"id":         teamID,
+		"teamEntity": map[string]interface{}{"description": ""},
+	})
+	return err
+}
+
 // clearTeamAliasesRaw explicitly sends aliases: [] to clear all aliases on a
 // team. Required because omitempty on Aliases would drop an empty slice,
 // preventing the user from clearing aliases via the normal struct path.
