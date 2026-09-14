@@ -343,68 +343,45 @@ func applyTeamCollections(
 
 // ── Miscellaneous team helpers ────────────────────────────────────────────────
 
-// clearTeamDescriptionRaw explicitly sends description: "" to clear it via a
-// raw NerdGraph call. Required because omitempty on Description would drop
-// an empty string, preventing the user from clearing the description field.
+// patchTeamField issues a raw entityManagementUpdateTeam call that sets a
+// single field to an explicit value, bypassing Go struct omitempty rules.
+//
+// Use this when the generated TeamEntityUpdateInput drops the field via
+// omitempty but the user intends an explicit clear (e.g. description → "",
+// aliases → [], tags → [], parentId → nil).
+//
+//	patchTeamField(ctx, client, id, "description", "")
+//	patchTeamField(ctx, client, id, "aliases",     []interface{}{})
+//	patchTeamField(ctx, client, id, "tags",        []interface{}{})
+//	patchTeamField(ctx, client, id, "parentId",    nil)
+func patchTeamField(ctx context.Context, client *nr.NewRelic, teamID, field string, value interface{}) error {
+	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
+  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
+    entity { id }
+  }
+}`
+	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
+		"id":         teamID,
+		"teamEntity": map[string]interface{}{field: value},
+	})
+	return err
+}
+
+// Convenience wrappers around patchTeamField for the four fields that require
+// explicit clearing. Each wrapper name makes the call-site self-documenting.
+
 func clearTeamDescriptionRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
-  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
-    entity { id description }
-  }
-}`
-	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
-		"id":         teamID,
-		"teamEntity": map[string]interface{}{"description": ""},
-	})
-	return err
+	return patchTeamField(ctx, client, teamID, "description", "")
 }
 
-// clearTeamAliasesRaw explicitly sends aliases: [] to clear all aliases on a
-// team. Required because omitempty on Aliases would drop an empty slice,
-// preventing the user from clearing aliases via the normal struct path.
 func clearTeamAliasesRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
-  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
-    entity { id aliases }
-  }
-}`
-	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
-		"id":         teamID,
-		"teamEntity": map[string]interface{}{"aliases": []interface{}{}},
-	})
-	return err
+	return patchTeamField(ctx, client, teamID, "aliases", []interface{}{})
 }
 
-// clearTeamTagsRaw sends tags: [] via a raw NerdGraph call to clear all user
-// tags on a team that has no system-managed tags. Required because the
-// generated struct uses omitempty on Tags, which would silently drop an empty
-// slice — preventing the user from clearing tags via the normal struct path.
 func clearTeamTagsRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
-  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
-    entity { id tags { key values } }
-  }
-}`
-	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
-		"id":         teamID,
-		"teamEntity": map[string]interface{}{"tags": []interface{}{}},
-	})
-	return err
+	return patchTeamField(ctx, client, teamID, "tags", []interface{}{})
 }
 
-// clearTeamParentID sends an explicit parentId: null to NGEP to detach a team
-// from its parent hierarchy. The generated EntityManagementTeamEntityUpdateInput
-// uses json:"parentId,omitempty" which silently drops an empty string; this
-// function bypasses that by issuing a raw NerdGraph call with null.
 func clearTeamParentID(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	const mutation = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
-  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
-    entity { id parentId }
-  }
-}`
-	_, err := client.NerdGraph.QueryWithContext(ctx, mutation, map[string]interface{}{
-		"id":         teamID,
-		"teamEntity": map[string]interface{}{"parentId": nil},
-	})
-	return err
+	return patchTeamField(ctx, client, teamID, "parentId", nil)
 }

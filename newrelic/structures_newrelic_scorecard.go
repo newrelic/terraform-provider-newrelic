@@ -54,40 +54,45 @@ func expandRuleIDsFromSet(s *schema.Set) []string {
 
 // ── NRQL engine ───────────────────────────────────────────────────────────────
 
+// expandIntListFromInterface converts a Terraform []interface{} of ints
+// to []int. Shared between NRQL engine accounts and join_accounts.
+func expandIntListFromInterface(raw []interface{}) []int {
+	out := make([]int, 0, len(raw))
+	for _, v := range raw {
+		out = append(out, v.(int))
+	}
+	return out
+}
+
+// expandNRQLEngineCreate maps the nrql_engine block to the Create input type.
 func expandNRQLEngineCreate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineCreateInput {
 	if len(raw) == 0 || raw[0] == nil {
 		return nil
 	}
 	m := raw[0].(map[string]interface{})
 	engine := &scorecards.EntityManagementNRQLRuleEngineCreateInput{
-		Query: m["query"].(string),
+		Query:    m["query"].(string),
+		Accounts: expandIntListFromInterface(m["accounts"].([]interface{})),
 	}
-	for _, a := range m["accounts"].([]interface{}) {
-		engine.Accounts = append(engine.Accounts, a.(int))
-	}
-	if v, ok := m["join_accounts"].([]interface{}); ok {
-		for _, a := range v {
-			engine.JoinAccounts = append(engine.JoinAccounts, a.(int))
-		}
+	if v, ok := m["join_accounts"].([]interface{}); ok && len(v) > 0 {
+		engine.JoinAccounts = expandIntListFromInterface(v)
 	}
 	return engine
 }
 
+// expandNRQLEngineUpdate maps the nrql_engine block to the Update input type.
+// The input types differ in name only; the field set is identical.
 func expandNRQLEngineUpdate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineUpdateInput {
 	if len(raw) == 0 || raw[0] == nil {
 		return nil
 	}
 	m := raw[0].(map[string]interface{})
 	engine := &scorecards.EntityManagementNRQLRuleEngineUpdateInput{
-		Query: m["query"].(string),
+		Query:    m["query"].(string),
+		Accounts: expandIntListFromInterface(m["accounts"].([]interface{})),
 	}
-	for _, a := range m["accounts"].([]interface{}) {
-		engine.Accounts = append(engine.Accounts, a.(int))
-	}
-	if v, ok := m["join_accounts"].([]interface{}); ok {
-		for _, a := range v {
-			engine.JoinAccounts = append(engine.JoinAccounts, a.(int))
-		}
+	if v, ok := m["join_accounts"].([]interface{}); ok && len(v) > 0 {
+		engine.JoinAccounts = expandIntListFromInterface(v)
 	}
 	return engine
 }

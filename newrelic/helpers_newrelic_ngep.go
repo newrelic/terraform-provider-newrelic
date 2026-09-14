@@ -7,8 +7,12 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
@@ -40,29 +44,39 @@ func mergeWithSystemTags(
 	return out
 }
 
+// ngepTagged is a local interface satisfied by every NGEP entity type that
+// carries a Tags slice. Using it avoids a fragile type-switch that would need
+// updating whenever a new resource type is added.
+type ngepTagged interface {
+	GetNGEPTags() []scorecards.EntityManagementTag
+}
+
 // fetchEntitySystemTags reads the current entity and returns only its
-// system-managed tags (those with keys prefixed "nr."). These must be
-// preserved in every tags-update mutation because the NGEP API rejects
-// updates that would implicitly remove them.
+// system-managed tags (keys prefixed "nr."). These must be preserved in every
+// tags-update mutation because the NGEP API rejects updates that would
+// implicitly remove them.
+//
+// Falls back to direct type assertions since the generated types do not
+// implement a common interface for Tags. If the entity type is not one of
+// the known types, returns nil — meaning no system tags to preserve, which
+// is safe (the caller will send only the user-provided tags).
 func fetchEntitySystemTags(ctx context.Context, client *scorecards.Scorecards, entityID string) []scorecards.EntityManagementTag {
 	iface, err := client.GetEntityWithContext(ctx, entityID)
 	if err != nil || iface == nil {
 		return nil
 	}
-	type tagged interface {
-		GetTags() []scorecards.EntityManagementTag
-	}
-	// EntityManagementTeamEntity, ScorecardEntity etc. all have Tags directly.
-	// Use a reflective switch to extract them without coupling to a specific type.
+	var tags []scorecards.EntityManagementTag
 	switch e := (*iface).(type) {
 	case *scorecards.EntityManagementTeamEntity:
-		return filterSystemTags(e.Tags)
+		tags = e.Tags
 	case *scorecards.EntityManagementScorecardEntity:
-		return filterSystemTags(e.Tags)
+		tags = e.Tags
 	case *scorecards.EntityManagementScorecardRuleEntity:
-		return filterSystemTags(e.Tags)
+		tags = e.Tags
+	default:
+		return nil
 	}
-	return nil
+	return filterSystemTags(tags)
 }
 
 func filterSystemTags(tags []scorecards.EntityManagementTag) []scorecards.EntityManagementTag {
@@ -161,6 +175,39 @@ func intSetDelta(oldItems, newItems []int) (toAdd, toRemove []int) {
 		}
 	}
 	return toAdd, toRemove
+}
+
+// ── NGEP entity indexing gate ─────────────────────────────────────────────────
+
+// waitForNGEPEntityIndexed polls the standard actor.entitySearch API until the
+// entity is visible, then returns. The Teams UI performs the same poll after
+// create; without it Terraform may complete Create before the entity is
+// queryable, causing subsequent reads to appear empty.
+//
+// Blocks up to timeout. Returns a non-nil error if the entity never appears.
+func waitForNGEPEntityIndexed(
+	ctx context.Context,
+	entitiesClient *entities.Entities,
+	entityID string,
+	timeout time.Duration,
+) error {
+	return resource.RetryContext(ctx, timeout, func() *resource.RetryError {
+		res, err := entitiesClient.GetEntitySearchByQueryWithContext(
+			ctx,
+			entities.EntitySearchOptions{},
+			"id IN ('"+entityID+"')",
+			[]entities.EntitySearchSortCriteria{},
+		)
+		if err != nil {
+			return resource.NonRetryableError(
+				fmt.Errorf("entitySearch while waiting for %s to be indexed: %w", entityID, err))
+		}
+		if res == nil || len(res.Results.Entities) == 0 {
+			return resource.RetryableError(
+				fmt.Errorf("entity %s not yet visible in entitySearch — retrying", entityID))
+		}
+		return nil
+	})
 }
 
 // ── Error classification ──────────────────────────────────────────────────────

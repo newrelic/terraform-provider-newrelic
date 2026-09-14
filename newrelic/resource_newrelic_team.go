@@ -8,9 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
@@ -231,29 +229,11 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// ── Indexing gate ─────────────────────────────────────────────────────
-	// NGEP entities are asynchronously synced to the standard entitySearch
-	// index. The Teams UI polls for this after create; we do the same so
-	// Terraform doesn't return until the entity is queryable.
+	// NGEP syncs entities to the standard entitySearch index asynchronously.
+	// Wait until the team is visible before returning from Create.
 	log.Printf("[INFO] Waiting for team %s to appear in entitySearch index", teamID)
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		res, err := client.Entities.GetEntitySearchByQueryWithContext(
-			ctx,
-			entities.EntitySearchOptions{},
-			fmt.Sprintf("id IN ('%s')", teamID),
-			[]entities.EntitySearchSortCriteria{},
-		)
-		if err != nil {
-			return resource.NonRetryableError(
-				fmt.Errorf("entitySearch failed while waiting for team %s: %w", teamID, err))
-		}
-		if res == nil || len(res.Results.Entities) == 0 {
-			return resource.RetryableError(
-				fmt.Errorf("team %s not yet visible in entitySearch — retrying", teamID))
-		}
-		return nil
-	})
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
+	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, teamID, d.Timeout(schema.TimeoutCreate)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceNewRelicTeamRead(ctx, d, meta)

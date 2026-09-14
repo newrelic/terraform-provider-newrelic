@@ -3,15 +3,12 @@ package newrelic
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
@@ -161,24 +158,9 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	// Indexing gate — same as team resource.
-	retryErr := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		res, err := client.Entities.GetEntitySearchByQueryWithContext(
-			ctx,
-			entities.EntitySearchOptions{},
-			fmt.Sprintf("id IN ('%s')", scorecardID),
-			[]entities.EntitySearchSortCriteria{},
-		)
-		if err != nil {
-			return resource.NonRetryableError(fmt.Errorf("entitySearch for scorecard %s: %w", scorecardID, err))
-		}
-		if res == nil || len(res.Results.Entities) == 0 {
-			return resource.RetryableError(fmt.Errorf("scorecard %s not yet indexed", scorecardID))
-		}
-		return nil
-	})
-	if retryErr != nil {
-		return diag.FromErr(retryErr)
+	// Indexing gate — wait until the scorecard is visible in entitySearch.
+	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, scorecardID, d.Timeout(schema.TimeoutCreate)); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceNewRelicScorecardRead(ctx, d, meta)
