@@ -62,8 +62,9 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 	//   all other viz: "props.title" is required (may be an empty string "").
 	//                  The UI always writes props.title; omitting it causes the UI
 	//                  to inject it on the next save, surfacing false drift.
+	var widgetErrs []string
 	if containers, ok := doc["content"].([]interface{}); ok {
-		for ci, c := range containers {
+		for _, c := range containers {
 			container, cOK := c.(map[string]interface{})
 			if !cOK {
 				continue
@@ -72,7 +73,7 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 			if !wOK {
 				continue
 			}
-			for wi, w := range widgets {
+			for _, w := range widgets {
 				widget, wdOK := w.(map[string]interface{})
 				if !wdOK {
 					continue
@@ -86,29 +87,29 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 
 				if vizID == "viz.markdown" {
 					if hasWidgetProps {
-						errors = append(errors, fmt.Errorf(
-							`%q: container[%d].widget[%d] (viz.markdown): `+
-								`widget-level "props" must not be present — `+
-								`markdown does not support a title; remove the "props" key entirely`,
-							k, ci, wi))
+						widgetErrs = append(widgetErrs,
+							fmt.Sprintf("%s: widget-level \"props\" must not be present; markdown widgets do not support a title", vizID))
 					}
 				} else {
 					widgetProps, _ := widget["props"].(map[string]interface{})
 					if widgetProps == nil {
-						errors = append(errors, fmt.Errorf(
-							`%q: container[%d].widget[%d] (%s): `+
-								`widget-level "props" is required and must include "title" `+
-								`(use "" for no title)`,
-							k, ci, wi, vizID))
+						widgetErrs = append(widgetErrs,
+							fmt.Sprintf("%s: widget-level \"props\" is required and must include \"title\" (use \"\" for no title)", vizID))
 					} else if _, hasTitle := widgetProps["title"]; !hasTitle {
-						errors = append(errors, fmt.Errorf(
-							`%q: container[%d].widget[%d] (%s): `+
-								`widget-level "props.title" is required (use "" for no title)`,
-							k, ci, wi, vizID))
+						widgetErrs = append(widgetErrs,
+							fmt.Sprintf("%s: widget-level \"props.title\" is required (use \"\" for no title)", vizID))
 					}
 				}
 			}
 		}
+	}
+
+	if len(widgetErrs) > 0 {
+		msg := fmt.Sprintf("%q: the following widget props violations were found:\n", k)
+		for i, e := range widgetErrs {
+			msg += fmt.Sprintf("(%d) %s\n", i+1, e)
+		}
+		errors = append(errors, fmt.Errorf("%s", strings.TrimRight(msg, "\n")))
 	}
 
 	return
