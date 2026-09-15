@@ -13,7 +13,7 @@ import (
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
-// validateNotebookContent is the ValidateFunc for both content and content_json.
+// validateNotebookContent is the ValidateFunc for both content and content.
 // It enforces that the value is non-empty, valid JSON, and matches the minimum
 // declarative UI envelope: { "type": "declarative", "version": 1, "content": [...] }.
 func validateNotebookContent(v interface{}, k string) (warnings []string, errors []error) {
@@ -58,11 +58,11 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 // Using CustomizeDiff (rather than ValidateFunc) means Terraform does not echo
 // the full JSON body in the error output when a violation is found.
 func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !d.HasChange("content_json") {
+	if !d.HasChange("content") {
 		return nil
 	}
 
-	raw := d.Get("content_json").(string)
+	raw := d.Get("content").(string)
 	if raw == "" {
 		return nil
 	}
@@ -199,7 +199,7 @@ func suppressEquivalentNotebookContent(_, oldVal, newVal string, _ *schema.Resou
 }
 
 // flattenNotebookContent normalizes the raw JSON returned by the API and stores
-// it in the correct state field ("content" or "content_json").
+// it in the correct state field ("content" or "content").
 func flattenNotebookContent(raw json.RawMessage, d *schema.ResourceData, field string) error {
 	if len(raw) == 0 {
 		return nil

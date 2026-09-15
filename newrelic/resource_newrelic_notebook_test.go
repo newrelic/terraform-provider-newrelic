@@ -53,23 +53,23 @@ func testAccCheckNewRelicNotebookDestroy(s *terraform.State) error {
 
 // ── Test configs ──────────────────────────────────────────────────────────────
 
-func testAccNotebookConfigContentJSON(name string) string {
+func testAccNotebookConfigContent(name string) string {
 	// Raw JSON string — exercises the string-passthrough, normalization,
 	// and DiffSuppressFunc code paths directly.
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %[1]q
-  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test\"}}}]}]}"
+  content = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content acceptance test\"}}}]}]}"
 }
 `, name)
 }
 
-func testAccNotebookConfigContentJSONUpdated(name string) string {
-	// Two widgets — verifies the content_json update path.
+func testAccNotebookConfigContentUpdated(name string) string {
+	// Two widgets — verifies the content update path.
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %[1]q
-  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content_json acceptance test - updated\"}}},{\"type\":\"widget\",\"props\":{\"title\":\"\"},\"content\":{\"type\":\"visualization\",\"id\":\"viz.billboard\",\"props\":{\"nrqlQueries\":[{\"accountIds\":[0],\"query\":\"SELECT count(*) FROM Transaction SINCE 1 hour ago\"}]}}}]}]}"
+  content = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"content acceptance test - updated\"}}},{\"type\":\"widget\",\"props\":{\"title\":\"\"},\"content\":{\"type\":\"visualization\",\"id\":\"viz.billboard\",\"props\":{\"nrqlQueries\":[{\"accountIds\":[0],\"query\":\"SELECT count(*) FROM Transaction SINCE 1 hour ago\"}]}}}]}]}"
 }
 `, name)
 }
@@ -82,7 +82,7 @@ func testAccNotebookConfigWithBillboard(name string, accountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title = %[1]q
-  content_json = jsonencode({
+  content = jsonencode({
     type    = "declarative"
     version = 1
     content = [{
@@ -130,9 +130,9 @@ resource "newrelic_notebook" "test" {
 
 // ── Acceptance tests ──────────────────────────────────────────────────────────
 
-// TestAccNewRelicNotebook_ContentJSONMode covers the full lifecycle using
-// content_json with a raw JSON string.
-func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
+// TestAccNewRelicNotebook_ContentMode covers the full lifecycle using
+// content with a raw JSON string.
+func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-notebook-json-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
 
@@ -143,34 +143,34 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: create.
 			{
-				Config: testAccNotebookConfigContentJSON(rName),
+				Config: testAccNotebookConfigContent(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "title", rName),
 					resource.TestCheckResourceAttrSet(resourceName, "guid"),
-					resource.TestCheckResourceAttrSet(resourceName, "content_json"),
+					resource.TestCheckResourceAttrSet(resourceName, "content"),
 				),
 			},
 			// Step 2: no drift.
 			{
-				Config:             testAccNotebookConfigContentJSON(rName),
+				Config:             testAccNotebookConfigContent(rName),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
 			// Step 3: update — add a second widget.
 			{
-				Config: testAccNotebookConfigContentJSONUpdated(rName),
+				Config: testAccNotebookConfigContentUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "content_json"),
+					resource.TestCheckResourceAttrSet(resourceName, "content"),
 				),
 			},
 			// Step 4: no drift after update.
 			{
-				Config:             testAccNotebookConfigContentJSONUpdated(rName),
+				Config:             testAccNotebookConfigContentUpdated(rName),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
-			// Step 5: import — Read populates content_json so pre- and
+			// Step 5: import — Read populates content so pre- and
 			// post-import state use the same field and the same normalized value.
 			{
 				ResourceName:      resourceName,
@@ -181,16 +181,16 @@ func TestAccNewRelicNotebook_ContentJSONMode(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicNotebook_JSONReformatNoDrift verifies that reformatting
-// content_json (key reordering, whitespace) does not trigger a plan change.
-func TestAccNewRelicNotebook_JSONReformatNoDrift(t *testing.T) {
+// TestAccNewRelicNotebook_ReformatNoDrift verifies that reformatting
+// content (key reordering, whitespace) does not trigger a plan change.
+func TestAccNewRelicNotebook_ReformatNoDrift(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-notebook-nodrift-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
 
 	configV1 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %q
-  content_json = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}]}"
+  content = "{\"type\":\"declarative\",\"version\":1,\"content\":[{\"type\":\"container\",\"props\":{\"layout\":\"stack\"},\"content\":[{\"type\":\"widget\",\"content\":{\"type\":\"visualization\",\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"}}}]}]}"
 }
 `, rName)
 
@@ -198,7 +198,7 @@ resource "newrelic_notebook" "test" {
 	configV2 := fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
   title        = %q
-  content_json = "{\"content\":[{\"content\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"type\":\"widget\"}],\"props\":{\"layout\":\"stack\"},\"type\":\"container\"}],\"type\":\"declarative\",\"version\":1}"
+  content = "{\"content\":[{\"content\":[{\"content\":{\"id\":\"viz.markdown\",\"props\":{\"text\":\"nodrift\"},\"type\":\"visualization\"},\"type\":\"widget\"}],\"props\":{\"layout\":\"stack\"},\"type\":\"container\"}],\"type\":\"declarative\",\"version\":1}"
 }
 `, rName)
 

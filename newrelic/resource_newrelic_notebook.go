@@ -33,7 +33,7 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Required:    true,
 				Description: "The title of the notebook.",
 			},
-			"content_json": {
+			"content": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
@@ -69,11 +69,11 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	title := d.Get("title").(string)
-	rawContent := d.Get("content_json").(string)
+	rawContent := d.Get("content").(string)
 
 	normalized, body, err := normalizeNotebookContent(rawContent)
 	if err != nil {
-		return diag.Errorf("content_json: %s", err)
+		return diag.Errorf("content: %s", err)
 	}
 
 	log.Printf("[INFO] Creating New Relic notebook: %s", title)
@@ -91,7 +91,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("guid", resp.EntityGUID)
 	_ = d.Set("organization_id", orgID)
 	_ = d.Set("blob_id", resp.BlobID)
-	_ = d.Set("content_json", normalized)
+	_ = d.Set("content", normalized)
 
 	// NerdGraph indexes the notebook entity asynchronously after the Blob Storage
 	// write. RetryContext polls until content.id is populated, ensuring blob_id
@@ -165,7 +165,7 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		_ = d.Set("blob_id", currentBlobID)
 	}
 
-	if err := flattenNotebookContent(rawContent, d, "content_json"); err != nil {
+	if err := flattenNotebookContent(rawContent, d, "content"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -183,7 +183,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	titleChanged := d.HasChange("title")
-	contentChanged := d.HasChange("content_json")
+	contentChanged := d.HasChange("content")
 
 	if !titleChanged && !contentChanged {
 		return nil
@@ -192,9 +192,9 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[INFO] Updating New Relic notebook %s (title=%v, content=%v)", guid, titleChanged, contentChanged)
 
 	title := d.Get("title").(string)
-	normalized, body, err := normalizeNotebookContent(d.Get("content_json").(string))
+	normalized, body, err := normalizeNotebookContent(d.Get("content").(string))
 	if err != nil {
-		return diag.Errorf("content_json: %s", err)
+		return diag.Errorf("content: %s", err)
 	}
 
 	var mutResp *notebooks.NotebookMutationResponse
@@ -207,7 +207,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("content_json", normalized)
+	_ = d.Set("content", normalized)
 	if mutResp != nil && mutResp.BlobID != "" {
 		_ = d.Set("blob_id", mutResp.BlobID)
 	}
@@ -246,9 +246,9 @@ func resourceNewRelicNotebookImportState(_ context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(guid)
-	// Seed content_json with a valid placeholder so Read populates it with the
+	// Seed content with a valid placeholder so Read populates it with the
 	// real content from the API immediately after this function returns.
-	if err := d.Set("content_json", `{"type":"declarative","version":1,"content":[]}`); err != nil {
+	if err := d.Set("content", `{"type":"declarative","version":1,"content":[]}`); err != nil {
 		return nil, fmt.Errorf("failed to initialise import state: %w", err)
 	}
 

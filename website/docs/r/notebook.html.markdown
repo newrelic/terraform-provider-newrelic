@@ -22,7 +22,7 @@ See additional [examples](#additional-examples).
 resource "newrelic_notebook" "incident_runbook" {
   title = "Production API Incident - Investigation"
 
-  content_json = jsonencode({
+  content = jsonencode({
     type    = "declarative"
     version = 1
     content = [{
@@ -112,7 +112,7 @@ resource "newrelic_notebook" "incident_runbook" {
 The following arguments are supported:
 
   * `title` - (Required) The title of the notebook. Must be unique within the organization.
-  * `content_json` - (Required) The notebook body as a JSON string. Accepts the raw JSON exported from the New Relic UI or produced by `jsonencode({...})`. Produces line-level diffs of the normalized JSON in `terraform plan`.
+  * `content` - (Required) The notebook body as a JSON string. Accepts the raw JSON exported from the New Relic UI or produced by `jsonencode({...})`. Produces line-level diffs of the normalized JSON in `terraform plan`.
 
 ## Attributes Reference
 
@@ -130,7 +130,7 @@ Notebooks can be imported using their entity GUID:
 $ terraform import newrelic_notebook.example <guid>
 ```
 
-After importing, run `terraform plan`. The plan will show no changes if the `content_json` in your configuration matches the normalized content fetched from the API.
+After importing, run `terraform plan`. The plan will show no changes if the `content` in your configuration matches the normalized content fetched from the API.
 
 ---
 
@@ -553,7 +553,7 @@ All query-based visualizations accept a `nrqlQueries` array. Each item supports:
 ```hcl
 resource "newrelic_notebook" "weekly_review" {
   title        = "Weekly Service Health Review"
-  content_json = file("${path.module}/notebooks/weekly-health.json")
+  content = file("${path.module}/notebooks/weekly-health.json")
 }
 ```
 
@@ -569,7 +569,7 @@ resource "newrelic_notebook" "runbooks" {
   for_each = var.services
   title    = "${each.value} runbook"
 
-  content_json = jsonencode({
+  content = jsonencode({
     type    = "declarative"
     version = 1
     content = [{

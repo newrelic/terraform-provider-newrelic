@@ -45,9 +45,9 @@ func dataSourceNewRelicNotebook() *schema.Resource {
 			},
 
 			// Populated only when fetch_content = true.
-			// Named content_json to match the resource attribute — always a raw JSON
+			// Named content to match the resource attribute — always a raw JSON
 			// string regardless of which mode the source resource used to author the notebook.
-			"content_json": {
+			"content": {
 				Type:     schema.TypeString,
 				Computed: true,
 				Description: "The notebook body as a normalized JSON string. Only populated when " +
@@ -98,9 +98,9 @@ func dataSourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData,
 		if normErr != nil {
 			return diag.FromErr(normErr)
 		}
-		_ = d.Set("content_json", normalized)
+		_ = d.Set("content", normalized)
 	} else {
-		_ = d.Set("content_json", "")
+		_ = d.Set("content", "")
 	}
 
 	return nil
