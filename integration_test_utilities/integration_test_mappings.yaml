@@ -601,6 +601,9 @@ structures_newrelic_monitor_downtime.go:
 structures_newrelic_notebook.go:
   test: false
   product_mapping: DASHBOARDS
+structures_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
 structures_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
