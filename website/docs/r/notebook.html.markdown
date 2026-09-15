@@ -114,14 +114,20 @@ In addition to all arguments above, the following attributes are exported:
 
 A notebook body is a JSON document with a fixed three-level structure. The first two levels are always written the same way. The third level is where all your widgets go.
 
+-> **WARNING:** The `//` annotations in the snippet below are for illustration only and are **not valid JSON**. Do not include them in your actual notebook body.
+
 ```json
 {
   // Level 1 - always fixed
+  // This structure is identical across every notebook. Do not modify these fields.
+
   "type": "declarative",
   "version": 1,
   "content": [
     {
       // Level 2 - always fixed
+      // This structure is identical across every notebook. Do not modify these fields.
+
       "type": "container",
       "props": { "layout": "stack" },
       "content": [
@@ -160,8 +166,6 @@ A notebook body is a JSON document with a fixed three-level structure. The first
 }
 ```
 
--> **NOTE:** The `//` comments above are for illustration only. Do not include comments in your actual notebook JSON.
-
 ### Understanding the structure
 
 **Levels 1 and 2 are always identical.** You always write them exactly as shown above - they cannot be customized beyond what is described here.
@@ -173,7 +177,7 @@ A notebook body is a JSON document with a fixed three-level structure. The first
 
   * **Level 2 - Container (fixed)**
     * `type` must always be `"container"`.
-    * `props.layout` controls widget arrangement: `"stack"` (default, vertical) or `"grid"`.
+    * `props` must always be `{ "layout": "stack" }`.
     * `content` is the array where your widgets live. This is the only attribute in Level 2 that varies - add as many widget objects as you need.
 
 **Level 3 is where you do your work.** Every object in the Level 2 `content` array is a widget. Each widget has three attributes:
@@ -185,12 +189,25 @@ A notebook body is a JSON document with a fixed three-level structure. The first
       * **All other chart types:** `props` must be present and must include a `title` key. An empty string `""` is valid as a title.
     * `content` - The visualization to render. Three sub-fields are always required:
       * `type` must be `"visualization"`.
-      * `id` identifies the chart type. See [Supported visualization types](#supported-visualization-types) below.
-      * `props` holds the chart-specific configuration. Each chart type defines its own supported attributes in the sections below.
+      * `id` identifies the chart type - for example `"viz.markdown"`, `"viz.line"`, `"viz.area"`. See [Supported visualization types](#supported-visualization-types) for the full list.
+      * `props` holds the chart-specific configuration. Each chart type defines its own supported attributes in the sections that follow.
 
-### Supported visualization types
+**Putting it together - a quick reference:**
 
-The `id` field inside the widget's `content` object identifies which chart type to render. The following values are supported:
+1. Start with Level 1: `"type": "declarative"`, `"version": 1`, and a `"content"` array with one object.
+2. Inside that object, add Level 2: `"type": "container"`, `"props": { "layout": "stack" }`, and a `"content"` array.
+3. Inside the Level 2 `"content"` array, add as many Level 3 widget objects as you need. Each widget must have:
+   - `"type": "widget"` - always.
+   - `"props": { "title": "..." }` - required for all chart types. **Omit entirely** for `viz.markdown` widgets.
+   - `"content"` with `"type": "visualization"`, `"id": "<chart-type>"`, and `"props": { ... }` for the chart configuration.
+
+---
+
+## Supported Visualization Types
+
+The `id` field inside a widget's `content` object identifies which chart type to render. The following visualization types are supported:
+
+### Visualization type reference
 
 | `id` | Display name | Typical NRQL shape |
 |---|---|---|
@@ -214,6 +231,10 @@ The `id` field inside the widget's `content` object identifies which chart type 
 | `viz.json` | JSON | Any |
 | `viz.sparkline` | Sparkline | `TIMESERIES` |
 | `viz.sparkline-lite` | Sparkline Lite | `TIMESERIES` |
+
+### Widget props reference
+
+Each visualization type below lists its supported `props`. These go inside the widget's `content.props` object.
 
 ---
 
@@ -688,7 +709,11 @@ Ultra-compact sparkline with no axis labels. Supports the same props as `viz.spa
 
 ---
 
-## Nested `nrqlQueries` blocks
+## Nested Blocks Reference
+
+The following sections describe the structure of blocks that appear repeatedly across multiple visualization types.
+
+### Nested `nrqlQueries` blocks
 
 All query-based visualizations accept a `nrqlQueries` array. Each entry in the array supports:
 
@@ -696,7 +721,7 @@ All query-based visualizations accept a `nrqlQueries` array. Each entry in the a
   * `query` - (Required) A valid NRQL query string.
   * `offset` - (Optional) Number of milliseconds to offset the query time window.
 
-## Nested `thresholds` blocks (line, area, stacked-bar)
+### Nested `thresholds` blocks (line, area, stacked-bar)
 
 Used with the `thresholds.thresholds` array inside `viz.line`, `viz.area`, and `viz.stacked-bar` to draw horizontal threshold bands across the chart.
 
@@ -705,7 +730,7 @@ Used with the `thresholds.thresholds` array inside `viz.line`, `viz.area`, and `
   * `to` - (Optional) Upper bound of the threshold range (inclusive).
   * `severity` - (Required) Color coding applied to data in this range. Valid values: `"success"`, `"warning"`, `"severe"`, `"critical"`, `"unavailable"`.
 
-## Nested `thresholds` blocks (table)
+### Nested `thresholds` blocks (table)
 
 Used with the `thresholds` array inside `viz.table` to apply color coding per column.
 
@@ -714,7 +739,7 @@ Used with the `thresholds` array inside `viz.table` to apply color coding per co
   * `to` - (Optional) Upper bound of the range.
   * `severity` - (Required) Color coding for values in this range. Valid values: `"success"`, `"warning"`, `"severe"`, `"critical"`, `"unavailable"`.
 
-## Nested `thresholdsWithSeriesOverrides` blocks (billboard)
+### Nested `thresholdsWithSeriesOverrides` blocks (billboard)
 
 Used with `viz.billboard` to control color coding for the displayed metric values.
 
@@ -728,11 +753,13 @@ Used with `viz.billboard` to control color coding for the displayed metric value
     * `to` - (Optional) Upper bound.
     * `severity` - (Required) Severity level for this series.
 
-## Valid `units.unit` values
+## Valid Values Reference
+
+### Valid `units.unit` values
 
 `APDEX`, `BITS`, `BITS_PER_MS`, `BITS_PER_SECOND`, `BYTES`, `BYTES_PER_MS`, `BYTES_PER_SECOND`, `CELSIUS`, `COUNT`, `DOLLAR`, `HERTZ`, `MS`, `PAGES_PER_SECOND`, `PERCENTAGE`, `REQUESTS_PER_SECOND`, `REQUESTS_PER_MINUTE`, `SECONDS`, `TIMESTAMP`
 
-## Valid `refreshRate.frequency` values
+### Valid `refreshRate.frequency` values
 
 | Value | Interval |
 |---|---|
