@@ -1,3 +1,8 @@
+<a name="unreleased"></a>
+## [Unreleased]
+### Features
+- **notebooks:** add `newrelic_notebook` resource and data source ([#3196](https://github.com/newrelic/terraform-provider-newrelic/pull/3196))
+
 <a name="v3.97.5"></a>
 ## [v3.97.5] - 2026-09-10
 ### Bug Fixes
