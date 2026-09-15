@@ -37,9 +37,11 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 	}
 
 	if _, hasContent := doc["content"]; !hasContent {
-		errors = append(errors, fmt.Errorf(`%q: missing required field "content" (expected an array of container blocks)`, k))
-	} else if _, isArray := doc["content"].([]interface{}); !isArray {
+		errors = append(errors, fmt.Errorf(`%q: missing required field "content" (expected an array with exactly one container block)`, k))
+	} else if containers, isArray := doc["content"].([]interface{}); !isArray {
 		errors = append(errors, fmt.Errorf(`%q: "content" must be an array`, k))
+	} else if len(containers) > 1 {
+		errors = append(errors, fmt.Errorf(`%q: "content" must contain exactly one container, got %d; the New Relic Notebooks UI only renders the first container — place all widgets inside a single container block`, k, len(containers)))
 	}
 
 	if ver, hasVersion := doc["version"]; !hasVersion {
