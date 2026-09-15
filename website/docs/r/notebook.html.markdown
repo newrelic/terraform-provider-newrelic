@@ -52,7 +52,7 @@ resource "newrelic_notebook" "incident_runbook" {
                 "props": {
                   "nrqlQueries": [
                     {
-                      "accountIds": [YOUR_ACCOUNT_ID],
+                      "accountIds": [1234567],
                       "query": "SELECT percentage(count(*), WHERE httpResponseCode >= 400) AS 'Error Rate %' FROM Transaction WHERE appName = 'api-production' SINCE 1 hour ago"
                     }
                   ],
@@ -75,7 +75,7 @@ resource "newrelic_notebook" "incident_runbook" {
                 "props": {
                   "nrqlQueries": [
                     {
-                      "accountIds": [YOUR_ACCOUNT_ID],
+                      "accountIds": [1234567],
                       "query": "SELECT percentage(count(*), WHERE httpResponseCode >= 400) FROM Transaction WHERE appName = 'api-production' TIMESERIES 1 minute SINCE 1 hour ago"
                     }
                   ],
@@ -330,25 +330,47 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Throughput by Application (requests / min)" },
+  "props": {
+    "title": "Throughput by Application (requests / min)"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.line",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT rate(count(*), 1 minute) AS 'rpm' FROM Transaction FACET appName TIMESERIES 5 minutes SINCE 3 hours ago"
         }
       ],
-      "legend":     { "enabled": true, "position": "bottom" },
-      "yAxisLeft":  { "min": 0, "zero": true },
-      "nullValues": { "nullValue": "zero" },
-      "chartStyles": { "lineInterpolation": "smooth" },
-      "tooltip":    { "mode": "all" },
-      "colors":     { "colorPalette": "consistent" },
-      "platformOptions": { "ignoreTimeRange": false },
-      "refreshRate": { "frequency": 60000 }
+      "legend": {
+        "enabled": true,
+        "position": "bottom"
+      },
+      "yAxisLeft": {
+        "min": 0,
+        "zero": true
+      },
+      "nullValues": {
+        "nullValue": "zero"
+      },
+      "chartStyles": {
+        "lineInterpolation": "smooth"
+      },
+      "tooltip": {
+        "mode": "all"
+      },
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      },
+      "refreshRate": {
+        "frequency": 60000
+      }
     }
   }
 }
@@ -374,29 +396,55 @@ Supports the same props as `viz.line`, with the following differences:
 ```json
 {
   "type": "widget",
-  "props": { "title": "Response Time Percentiles (ms)" },
+  "props": {
+    "title": "Response Time Percentiles (ms)"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.area",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT percentile(duration * 1000, 50) AS 'P50 ms', percentile(duration * 1000, 95) AS 'P95 ms', percentile(duration * 1000, 99) AS 'P99 ms' FROM Transaction TIMESERIES 5 minutes SINCE 3 hours ago"
         }
       ],
-      "legend":     { "enabled": true, "position": "bottom" },
-      "yAxisLeft":  { "zero": true },
-      "nullValues": { "nullValue": "zero" },
-      "chartStyles": { "stacked": { "enabled": false } },
+      "legend": {
+        "enabled": true,
+        "position": "bottom"
+      },
+      "yAxisLeft": {
+        "zero": true
+      },
+      "nullValues": {
+        "nullValue": "zero"
+      },
+      "chartStyles": {
+        "stacked": {
+          "enabled": false
+        }
+      },
       "colors": {
         "seriesOverrides": [
-          { "seriesName": "P50 ms", "color": "#11A600" },
-          { "seriesName": "P95 ms", "color": "#FFB951" },
-          { "seriesName": "P99 ms", "color": "#BF0016" }
+          {
+            "seriesName": "P50 ms",
+            "color": "#11A600"
+          },
+          {
+            "seriesName": "P95 ms",
+            "color": "#FFB951"
+          },
+          {
+            "seriesName": "P99 ms",
+            "color": "#BF0016"
+          }
         ]
       },
-      "platformOptions": { "ignoreTimeRange": false }
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -420,29 +468,51 @@ Supports all `viz.line` props except `alertQueries`, `yAxisRight`, and the `"rem
 ```json
 {
   "type": "widget",
-  "props": { "title": "Request Volume by App (stacked)" },
+  "props": {
+    "title": "Request Volume by App (stacked)"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.stacked-bar",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT count(*) FROM Transaction FACET appName TIMESERIES 10 minutes SINCE 3 hours ago"
         }
       ],
-      "legend":    { "enabled": true },
-      "yAxisLeft": { "zero": true },
-      "nullValues": { "nullValue": "zero" },
-      "chartStyles": { "stacked": { "enabled": true } },
+      "legend": {
+        "enabled": true
+      },
+      "yAxisLeft": {
+        "zero": true
+      },
+      "nullValues": {
+        "nullValue": "zero"
+      },
+      "chartStyles": {
+        "stacked": {
+          "enabled": true
+        }
+      },
       "thresholds": {
         "isLabelVisible": true,
         "thresholds": [
-          { "name": "High traffic", "from": 5000, "severity": "warning" }
+          {
+            "name": "High traffic",
+            "from": 5000,
+            "severity": "warning"
+          }
         ]
       },
-      "platformOptions": { "ignoreTimeRange": false },
-      "refreshRate": { "frequency": 60000 }
+      "platformOptions": {
+        "ignoreTimeRange": false
+      },
+      "refreshRate": {
+        "frequency": 60000
+      }
     }
   }
 }
@@ -473,20 +543,30 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Top Transaction Types by Count" },
+  "props": {
+    "title": "Top Transaction Types by Count"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.bar",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT count(*) FROM Transaction FACET name SINCE 1 hour ago LIMIT 10"
         }
       ],
-      "facet":  { "showOtherSeries": false },
-      "colors": { "colorPalette": "consistent" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "facet": {
+        "showOtherSeries": false
+      },
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -514,20 +594,30 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Log Volume by Level" },
+  "props": {
+    "title": "Log Volume by Level"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.stacked-horizontal-bar",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT count(*) AS 'Log Lines' FROM Log FACET level SINCE 3 hours ago"
         }
       ],
-      "legend": { "enabled": true },
-      "facet":  { "showOtherSeries": false },
-      "platformOptions": { "ignoreTimeRange": false }
+      "legend": {
+        "enabled": true
+      },
+      "facet": {
+        "showOtherSeries": false
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -563,21 +653,33 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Disk Utilisation by Host" },
+  "props": {
+    "title": "Disk Utilisation by Host"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.pie",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT average(diskUsedPercent) AS 'Disk Used %' FROM StorageSample FACET hostname SINCE 30 minutes ago"
         }
       ],
-      "legend": { "enabled": true },
-      "facet":  { "showOtherSeries": false },
-      "colors": { "colorPalette": "consistent" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "legend": {
+        "enabled": true
+      },
+      "facet": {
+        "showOtherSeries": false
+      },
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -614,26 +716,54 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Host Health - CPU, Memory and Disk" },
+  "props": {
+    "title": "Host Health - CPU, Memory and Disk"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.table",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT average(cpuPercent) AS 'Avg CPU %', max(cpuPercent) AS 'Max CPU %', average(memoryUsedPercent) AS 'Avg Mem %', average(diskUsedPercent) AS 'Disk Used %' FROM SystemSample FACET hostname SINCE 30 minutes ago LIMIT 20"
         }
       ],
-      "initialSorting": { "name": "Avg CPU %", "direction": "desc" },
+      "initialSorting": {
+        "name": "Avg CPU %",
+        "direction": "desc"
+      },
       "thresholds": [
-        { "columnName": "Avg CPU %",   "from": 80, "severity": "critical" },
-        { "columnName": "Avg CPU %",   "from": 60, "to": 80, "severity": "warning" },
-        { "columnName": "Avg Mem %",   "from": 90, "severity": "critical" },
-        { "columnName": "Disk Used %", "from": 85, "severity": "critical" }
+        {
+          "columnName": "Avg CPU %",
+          "from": 80,
+          "severity": "critical"
+        },
+        {
+          "columnName": "Avg CPU %",
+          "from": 60,
+          "to": 80,
+          "severity": "warning"
+        },
+        {
+          "columnName": "Avg Mem %",
+          "from": 90,
+          "severity": "critical"
+        },
+        {
+          "columnName": "Disk Used %",
+          "from": 85,
+          "severity": "critical"
+        }
       ],
-      "facet": { "showOtherSeries": false },
-      "platformOptions": { "ignoreTimeRange": false }
+      "facet": {
+        "showOtherSeries": false
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -687,33 +817,60 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Request Volume and Error Rate" },
+  "props": {
+    "title": "Request Volume and Error Rate"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.billboard",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT rate(count(*), 1 minute) AS 'Requests / min', percentage(count(*), WHERE error IS true) AS 'Error Rate %', count(*) AS 'Total Requests' FROM Transaction SINCE 1 hour ago"
         }
       ],
       "thresholdsWithSeriesOverrides": {
         "thresholds": [
-          { "to": 1,   "severity": "success"  },
-          { "from": 1, "to": 5, "severity": "warning"  },
-          { "from": 5, "severity": "critical" }
+          {
+            "to": 1,
+            "severity": "success"
+          },
+          {
+            "from": 1,
+            "to": 5,
+            "severity": "warning"
+          },
+          {
+            "from": 5,
+            "severity": "critical"
+          }
         ],
         "seriesOverrides": [
-          { "seriesName": "Error Rate %", "from": 1, "severity": "critical" }
+          {
+            "seriesName": "Error Rate %",
+            "from": 1,
+            "severity": "critical"
+          }
         ]
       },
       "billboardSettings": {
-        "visual": { "alignment": "inline", "display": "all" }
+        "visual": {
+          "alignment": "inline",
+          "display": "all"
+        }
       },
-      "facet": { "showOtherSeries": false },
-      "platformOptions": { "ignoreTimeRange": false },
-      "refreshRate": { "frequency": 60000 }
+      "facet": {
+        "showOtherSeries": false
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      },
+      "refreshRate": {
+        "frequency": 60000
+      }
     }
   }
 }
@@ -761,14 +918,18 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Memory Utilisation (%)" },
+  "props": {
+    "title": "Memory Utilisation (%)"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.gauge",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT average(memoryUsedPercent) AS 'Memory %' FROM SystemSample SINCE 30 minutes ago"
         }
       ],
@@ -783,14 +944,29 @@ This chart type requires a widget-level `props` object with a `title` key. See [
       },
       "thresholds": {
         "thresholds": [
-          { "from": 0,  "severity": "success"  },
-          { "from": 60, "severity": "warning"  },
-          { "from": 80, "severity": "critical" }
+          {
+            "from": 0,
+            "severity": "success"
+          },
+          {
+            "from": 60,
+            "severity": "warning"
+          },
+          {
+            "from": 80,
+            "severity": "critical"
+          }
         ]
       },
-      "colors":  { "colorPalette": "consistent" },
-      "units":   { "unit": "PERCENTAGE" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "units": {
+        "unit": "PERCENTAGE"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -827,21 +1003,33 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Transaction Duration Distribution" },
+  "props": {
+    "title": "Transaction Duration Distribution"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.histogram",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT histogram(duration * 1000, 0.5, 20) FROM Transaction SINCE 1 hour ago"
         }
       ],
-      "legend":    { "enabled": true },
-      "yAxisLeft": { "zero": true },
-      "colors":    { "colorPalette": "consistent" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "legend": {
+        "enabled": true
+      },
+      "yAxisLeft": {
+        "zero": true
+      },
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -867,19 +1055,27 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Duration Distribution by App" },
+  "props": {
+    "title": "Duration Distribution by App"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.heatmap",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT histogram(duration * 1000, 0.5, 20) FROM Transaction FACET appName SINCE 3 hours ago"
         }
       ],
-      "facet": { "showOtherSeries": false },
-      "platformOptions": { "ignoreTimeRange": false }
+      "facet": {
+        "showOtherSeries": false
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -923,21 +1119,33 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "CPU % vs Memory % by Host" },
+  "props": {
+    "title": "CPU % vs Memory % by Host"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.scatter",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT average(cpuPercent) AS 'Avg CPU %', average(memoryUsedPercent) AS 'Avg Mem %' FROM SystemSample FACET hostname SINCE 1 hour ago TIMESERIES 5 minutes"
         }
       ],
-      "legend":    { "enabled": true },
-      "yAxisLeft": { "zero": true },
-      "facet":     { "showOtherSeries": false },
-      "platformOptions": { "ignoreTimeRange": false }
+      "legend": {
+        "enabled": true
+      },
+      "yAxisLeft": {
+        "zero": true
+      },
+      "facet": {
+        "showOtherSeries": false
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -966,20 +1174,31 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Apdex Score Over Time" },
+  "props": {
+    "title": "Apdex Score Over Time"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.apdex",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT apdex(duration, 0.5) AS 'Apdex' FROM Transaction SINCE 3 hours ago TIMESERIES 5 minutes"
         }
       ],
-      "legend":  { "enabled": true, "position": "bottom" },
-      "tooltip": { "mode": "single" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "legend": {
+        "enabled": true,
+        "position": "bottom"
+      },
+      "tooltip": {
+        "mode": "single"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1004,19 +1223,25 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Requests vs Target" },
+  "props": {
+    "title": "Requests vs Target"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.bullet",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT count(*) AS 'Requests' FROM Transaction SINCE 1 hour ago"
         }
       ],
       "limit": 50000,
-      "platformOptions": { "ignoreTimeRange": false }
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1040,18 +1265,24 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Transaction Funnel" },
+  "props": {
+    "title": "Transaction Funnel"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.funnel",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT funnel(session, WHERE name = 'step1' AS 'Step 1', WHERE name = 'step2' AS 'Step 2') FROM PageView SINCE 1 hour ago"
         }
       ],
-      "platformOptions": { "ignoreTimeRange": false }
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1075,18 +1306,24 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Recent Transactions" },
+  "props": {
+    "title": "Recent Transactions"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.event-feed",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT * FROM Transaction SINCE 10 minutes ago LIMIT 20"
         }
       ],
-      "platformOptions": { "ignoreTimeRange": false }
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1110,18 +1347,24 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Transaction Metrics (JSON)" },
+  "props": {
+    "title": "Transaction Metrics (JSON)"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.json",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT count(*) AS 'count', average(duration)*1000 AS 'avg_ms', percentile(duration*1000, 95) AS 'p95_ms' FROM Transaction FACET appName SINCE 1 hour ago"
         }
       ],
-      "platformOptions": { "ignoreTimeRange": false }
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1158,23 +1401,39 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 ```json
 {
   "type": "widget",
-  "props": { "title": "Throughput Trend" },
+  "props": {
+    "title": "Throughput Trend"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.sparkline",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT rate(count(*), 1 minute) AS 'rpm' FROM Transaction TIMESERIES 5 minutes SINCE 3 hours ago"
         }
       ],
-      "chartStyles": { "lineInterpolation": "smooth" },
-      "nullValues":  { "nullValue": "zero" },
-      "yAxisLeft":   { "zero": true },
-      "colors":      { "colorPalette": "consistent" },
-      "tooltip":     { "mode": "single" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "chartStyles": {
+        "lineInterpolation": "smooth"
+      },
+      "nullValues": {
+        "nullValue": "zero"
+      },
+      "yAxisLeft": {
+        "zero": true
+      },
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "tooltip": {
+        "mode": "single"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1190,21 +1449,33 @@ Ultra-compact sparkline with no axis labels. Supports the same props as `viz.spa
 ```json
 {
   "type": "widget",
-  "props": { "title": "Log Volume Trend" },
+  "props": {
+    "title": "Log Volume Trend"
+  },
   "content": {
     "type": "visualization",
     "id": "viz.sparkline-lite",
     "props": {
       "nrqlQueries": [
         {
-          "accountIds": [YOUR_ACCOUNT_ID],
+          "accountIds": [
+            1234567
+          ],
           "query": "SELECT count(*) AS 'Log lines' FROM Log TIMESERIES 5 minutes SINCE 3 hours ago"
         }
       ],
-      "chartStyles": { "lineInterpolation": "stepAfter" },
-      "nullValues":  { "nullValue": "zero" },
-      "colors":      { "colorPalette": "consistent" },
-      "platformOptions": { "ignoreTimeRange": false }
+      "chartStyles": {
+        "lineInterpolation": "stepAfter"
+      },
+      "nullValues": {
+        "nullValue": "zero"
+      },
+      "colors": {
+        "colorPalette": "consistent"
+      },
+      "platformOptions": {
+        "ignoreTimeRange": false
+      }
     }
   }
 }
@@ -1368,7 +1639,9 @@ A notebook for monitoring a single application's golden signals: request rate, e
   "content": [
     {
       "type": "container",
-      "props": { "layout": "stack" },
+      "props": {
+        "layout": "stack"
+      },
       "content": [
         {
           "type": "widget",
@@ -1382,64 +1655,109 @@ A notebook for monitoring a single application's golden signals: request rate, e
         },
         {
           "type": "widget",
-          "props": { "title": "Throughput and Error Rate" },
+          "props": {
+            "title": "Throughput and Error Rate"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.billboard",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT rate(count(*), 1 minute) AS 'rpm', percentage(count(*), WHERE error IS true) AS 'Error %' FROM Transaction WHERE appName = 'Dummy App Two Max' SINCE 1 hour ago"
                 }
               ],
               "thresholdsWithSeriesOverrides": {
-                "thresholds": [{ "from": 1, "severity": "critical" }],
-                "seriesOverrides": [{ "seriesName": "Error %", "from": 1, "severity": "critical" }]
+                "thresholds": [
+                  {
+                    "from": 1,
+                    "severity": "critical"
+                  }
+                ],
+                "seriesOverrides": [
+                  {
+                    "seriesName": "Error %",
+                    "from": 1,
+                    "severity": "critical"
+                  }
+                ]
               }
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "Requests per minute" },
+          "props": {
+            "title": "Requests per minute"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.line",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT rate(count(*), 1 minute) AS 'rpm' FROM Transaction WHERE appName = 'Dummy App Two Max' TIMESERIES 5 minutes SINCE 3 hours ago"
                 }
               ],
-              "legend":     { "enabled": true },
-              "yAxisLeft":  { "zero": true },
-              "nullValues": { "nullValue": "zero" }
+              "legend": {
+                "enabled": true
+              },
+              "yAxisLeft": {
+                "zero": true
+              },
+              "nullValues": {
+                "nullValue": "zero"
+              }
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "Response time - P50 / P95 / P99" },
+          "props": {
+            "title": "Response time - P50 / P95 / P99"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.area",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT percentile(duration * 1000, 50) AS 'P50 ms', percentile(duration * 1000, 95) AS 'P95 ms', percentile(duration * 1000, 99) AS 'P99 ms' FROM Transaction WHERE appName = 'Dummy App Two Max' TIMESERIES 5 minutes SINCE 3 hours ago"
                 }
               ],
-              "legend":     { "enabled": true, "position": "bottom" },
-              "yAxisLeft":  { "zero": true },
-              "nullValues": { "nullValue": "zero" },
+              "legend": {
+                "enabled": true,
+                "position": "bottom"
+              },
+              "yAxisLeft": {
+                "zero": true
+              },
+              "nullValues": {
+                "nullValue": "zero"
+              },
               "colors": {
                 "seriesOverrides": [
-                  { "seriesName": "P50 ms", "color": "#11A600" },
-                  { "seriesName": "P95 ms", "color": "#FFB951" },
-                  { "seriesName": "P99 ms", "color": "#BF0016" }
+                  {
+                    "seriesName": "P50 ms",
+                    "color": "#11A600"
+                  },
+                  {
+                    "seriesName": "P95 ms",
+                    "color": "#FFB951"
+                  },
+                  {
+                    "seriesName": "P99 ms",
+                    "color": "#BF0016"
+                  }
                 ]
               }
             }
@@ -1469,7 +1787,9 @@ A notebook for host-level visibility across your environment: an at-a-glance tab
   "content": [
     {
       "type": "container",
-      "props": { "layout": "stack" },
+      "props": {
+        "layout": "stack"
+      },
       "content": [
         {
           "type": "widget",
@@ -1483,59 +1803,97 @@ A notebook for host-level visibility across your environment: an at-a-glance tab
         },
         {
           "type": "widget",
-          "props": { "title": "Host Health - CPU, Memory and Disk" },
+          "props": {
+            "title": "Host Health - CPU, Memory and Disk"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.table",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT average(cpuPercent) AS 'Avg CPU %', max(cpuPercent) AS 'Max CPU %', average(memoryUsedPercent) AS 'Avg Mem %', average(diskUsedPercent) AS 'Disk %' FROM SystemSample FACET hostname SINCE 30 minutes ago LIMIT 20"
                 }
               ],
-              "initialSorting": { "name": "Avg CPU %", "direction": "desc" },
+              "initialSorting": {
+                "name": "Avg CPU %",
+                "direction": "desc"
+              },
               "thresholds": [
-                { "columnName": "Avg CPU %", "from": 80, "severity": "critical" },
-                { "columnName": "Avg CPU %", "from": 60, "to": 80, "severity": "warning" },
-                { "columnName": "Avg Mem %", "from": 90, "severity": "critical" }
+                {
+                  "columnName": "Avg CPU %",
+                  "from": 80,
+                  "severity": "critical"
+                },
+                {
+                  "columnName": "Avg CPU %",
+                  "from": 60,
+                  "to": 80,
+                  "severity": "warning"
+                },
+                {
+                  "columnName": "Avg Mem %",
+                  "from": 90,
+                  "severity": "critical"
+                }
               ]
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "CPU by Host" },
+          "props": {
+            "title": "CPU by Host"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.stacked-bar",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT average(cpuPercent) FROM SystemSample FACET hostname TIMESERIES 5 minutes SINCE 1 hour ago"
                 }
               ],
-              "legend":    { "enabled": true },
-              "yAxisLeft": { "zero": true, "min": 0, "max": 100 }
+              "legend": {
+                "enabled": true
+              },
+              "yAxisLeft": {
+                "zero": true,
+                "min": 0,
+                "max": 100
+              }
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "Disk Utilisation" },
+          "props": {
+            "title": "Disk Utilisation"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.pie",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT average(diskUsedPercent) FROM StorageSample FACET hostname SINCE 30 minutes ago"
                 }
               ],
-              "facet":  { "showOtherSeries": false },
-              "colors": { "colorPalette": "consistent" }
+              "facet": {
+                "showOtherSeries": false
+              },
+              "colors": {
+                "colorPalette": "consistent"
+              }
             }
           }
         }
@@ -1561,7 +1919,9 @@ A structured investigation template. Fill in the severity and on-call fields at 
   "content": [
     {
       "type": "container",
-      "props": { "layout": "stack" },
+      "props": {
+        "layout": "stack"
+      },
       "content": [
         {
           "type": "widget",
@@ -1575,67 +1935,117 @@ A structured investigation template. Fill in the severity and on-call fields at 
         },
         {
           "type": "widget",
-          "props": { "title": "Current error rate" },
+          "props": {
+            "title": "Current error rate"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.billboard",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT percentage(count(*), WHERE error IS true) AS 'Error Rate %', count(*) AS 'Total Requests' FROM Transaction SINCE 15 minutes ago"
                 }
               ],
               "thresholdsWithSeriesOverrides": {
                 "thresholds": [
-                  { "to": 1,   "severity": "success"  },
-                  { "from": 1, "to": 5, "severity": "warning"  },
-                  { "from": 5, "severity": "critical" }
+                  {
+                    "to": 1,
+                    "severity": "success"
+                  },
+                  {
+                    "from": 1,
+                    "to": 5,
+                    "severity": "warning"
+                  },
+                  {
+                    "from": 5,
+                    "severity": "critical"
+                  }
                 ],
-                "seriesOverrides": [{ "seriesName": "Error Rate %", "from": 1, "severity": "critical" }]
+                "seriesOverrides": [
+                  {
+                    "seriesName": "Error Rate %",
+                    "from": 1,
+                    "severity": "critical"
+                  }
+                ]
               }
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "Error rate over the last hour" },
+          "props": {
+            "title": "Error rate over the last hour"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.line",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT percentage(count(*), WHERE error IS true) FROM Transaction TIMESERIES 1 minute SINCE 1 hour ago"
                 }
               ],
-              "legend":    { "enabled": false },
-              "yAxisLeft": { "zero": true },
+              "legend": {
+                "enabled": false
+              },
+              "yAxisLeft": {
+                "zero": true
+              },
               "thresholds": {
                 "isLabelVisible": true,
-                "thresholds": [{ "name": "Alert threshold", "from": 5, "severity": "critical" }]
+                "thresholds": [
+                  {
+                    "name": "Alert threshold",
+                    "from": 5,
+                    "severity": "critical"
+                  }
+                ]
               }
             }
           }
         },
         {
           "type": "widget",
-          "props": { "title": "Slowest transactions" },
+          "props": {
+            "title": "Slowest transactions"
+          },
           "content": {
             "type": "visualization",
             "id": "viz.table",
             "props": {
               "nrqlQueries": [
                 {
-                  "accountIds": [3957524],
+                  "accountIds": [
+                    1234567
+                  ],
                   "query": "SELECT average(duration)*1000 AS 'Avg ms', max(duration)*1000 AS 'Max ms', count(*) AS 'Calls' FROM Transaction FACET name SINCE 30 minutes ago ORDER BY average(duration) DESC LIMIT 20"
                 }
               ],
-              "initialSorting": { "name": "Avg ms", "direction": "desc" },
+              "initialSorting": {
+                "name": "Avg ms",
+                "direction": "desc"
+              },
               "thresholds": [
-                { "columnName": "Avg ms", "from": 500, "severity": "critical" },
-                { "columnName": "Avg ms", "from": 200, "to": 500, "severity": "warning" }
+                {
+                  "columnName": "Avg ms",
+                  "from": 500,
+                  "severity": "critical"
+                },
+                {
+                  "columnName": "Avg ms",
+                  "from": 200,
+                  "to": 500,
+                  "severity": "warning"
+                }
               ]
             }
           }
