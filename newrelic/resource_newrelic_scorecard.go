@@ -294,4 +294,3 @@ func readScorecardRuleGUIDs(ctx context.Context, client *scorecards.Scorecards, 
 	})
 	return guids, err
 }
-

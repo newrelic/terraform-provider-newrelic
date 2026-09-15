@@ -110,9 +110,9 @@ func TestAccNewRelicScorecard_WithRules(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"progress_levels"},
 			},
 			// Detach rule
@@ -128,7 +128,6 @@ func TestAccNewRelicScorecard_WithRules(t *testing.T) {
 }
 
 // ── Config templates ──────────────────────────────────────────────────────────
-
 
 func testAccNewRelicScorecardRuleConfig(name string, accountID int, enabled bool, runInterval int) string {
 	return fmt.Sprintf(`

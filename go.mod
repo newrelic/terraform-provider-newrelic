@@ -70,4 +70,4 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
 
-replace github.com/newrelic/newrelic-client-go/v2 => /Users/pnandula/myWork/src/github.com/newrelic-client-go/.claude/worktrees/scorecards-package
+replace github.com/newrelic/newrelic-client-go/v2 => /Users/pnandula/myWork/src/github.com/newrelic-client-go

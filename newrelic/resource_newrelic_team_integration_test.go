@@ -122,8 +122,8 @@ func TestAccNewRelicTeam_Hierarchy(t *testing.T) {
 	childName := fmt.Sprintf("tf-acc-child-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckTeam(t) },
-		Providers:    testAccProviders,
+		PreCheck:  func() { testAccPreCheckTeam(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNewRelicTeamConfigHierarchy(parentName, childName),

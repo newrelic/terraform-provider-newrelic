@@ -94,9 +94,9 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 			// Allowed values: 60, 360, 720, 1440, 4320 (minutes).
 			// Do NOT use the deprecated 'schedule' field.
 			"run_interval": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Evaluation frequency in minutes. Must be one of: 60, 360, 720, 1440, 4320.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "Evaluation frequency in minutes. Must be one of: 60, 360, 720, 1440, 4320.",
 				ValidateFunc: validation.IntInSlice(runIntervalAllowedMinutes),
 			},
 			"tags": {
