@@ -110,8 +110,8 @@ resource "newrelic_notebook" "test" {
               }]
               thresholdsWithSeriesOverrides = {
                 thresholds = [
-                  { to = 1,           severity = "success"  }
-                  { from = 1, to = 5, severity = "warning"  }
+                  { to = 1,           severity = "success"  },
+                  { from = 1, to = 5, severity = "warning"  },
                   { from = 5,         severity = "critical" }
                 ]
               }
