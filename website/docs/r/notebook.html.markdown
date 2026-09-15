@@ -326,6 +326,34 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Throughput by Application (requests / min)" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.line",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT rate(count(*), 1 minute) AS 'rpm' FROM Transaction FACET appName TIMESERIES 5 minutes SINCE 3 hours ago"
+        }
+      ],
+      "legend":     { "enabled": true, "position": "bottom" },
+      "yAxisLeft":  { "min": 0, "zero": true },
+      "nullValues": { "nullValue": "zero" },
+      "chartStyles": { "lineInterpolation": "smooth" },
+      "tooltip":    { "mode": "all" },
+      "colors":     { "colorPalette": "consistent" },
+      "platformOptions": { "ignoreTimeRange": false },
+      "refreshRate": { "frequency": 60000 }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.area` - Area chart
@@ -342,6 +370,38 @@ Supports the same props as `viz.line`, with the following differences:
     * `stacked` - (Optional) Stack multiple series on top of each other.
       * `enabled` - (Optional) Enable stacked layout. Defaults to `true`.
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Response Time Percentiles (ms)" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.area",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT percentile(duration * 1000, 50) AS 'P50 ms', percentile(duration * 1000, 95) AS 'P95 ms', percentile(duration * 1000, 99) AS 'P99 ms' FROM Transaction TIMESERIES 5 minutes SINCE 3 hours ago"
+        }
+      ],
+      "legend":     { "enabled": true, "position": "bottom" },
+      "yAxisLeft":  { "zero": true },
+      "nullValues": { "nullValue": "zero" },
+      "chartStyles": { "stacked": { "enabled": false } },
+      "colors": {
+        "seriesOverrides": [
+          { "seriesName": "P50 ms", "color": "#11A600" },
+          { "seriesName": "P95 ms", "color": "#FFB951" },
+          { "seriesName": "P99 ms", "color": "#BF0016" }
+        ]
+      },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.stacked-bar` - Bar chart (stacked / timeseries)
@@ -355,6 +415,38 @@ Supports all `viz.line` props except `alertQueries`, `yAxisRight`, and the `"rem
   * `chartStyles` - (Optional) Visual style configuration.
     * `stacked` - (Optional) Stack configuration.
       * `enabled` - (Optional) Enable stacked layout. Defaults to `true`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Request Volume by App (stacked)" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.stacked-bar",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT count(*) FROM Transaction FACET appName TIMESERIES 10 minutes SINCE 3 hours ago"
+        }
+      ],
+      "legend":    { "enabled": true },
+      "yAxisLeft": { "zero": true },
+      "nullValues": { "nullValue": "zero" },
+      "chartStyles": { "stacked": { "enabled": true } },
+      "thresholds": {
+        "isLabelVisible": true,
+        "thresholds": [
+          { "name": "High traffic", "from": 5000, "severity": "warning" }
+        ]
+      },
+      "platformOptions": { "ignoreTimeRange": false },
+      "refreshRate": { "frequency": 60000 }
+    }
+  }
+}
+```
 
 ---
 
@@ -377,6 +469,29 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Top Transaction Types by Count" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.bar",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT count(*) FROM Transaction FACET name SINCE 1 hour ago LIMIT 10"
+        }
+      ],
+      "facet":  { "showOtherSeries": false },
+      "colors": { "colorPalette": "consistent" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.stacked-horizontal-bar` - Horizontal stacked bar
@@ -394,6 +509,29 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Log Volume by Level" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.stacked-horizontal-bar",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT count(*) AS 'Log Lines' FROM Log FACET level SINCE 3 hours ago"
+        }
+      ],
+      "legend": { "enabled": true },
+      "facet":  { "showOtherSeries": false },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
 
 ---
 
@@ -421,6 +559,30 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Disk Utilisation by Host" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.pie",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT average(diskUsedPercent) AS 'Disk Used %' FROM StorageSample FACET hostname SINCE 30 minutes ago"
+        }
+      ],
+      "legend": { "enabled": true },
+      "facet":  { "showOtherSeries": false },
+      "colors": { "colorPalette": "consistent" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.table` - Table
@@ -447,6 +609,35 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Host Health - CPU, Memory and Disk" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.table",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT average(cpuPercent) AS 'Avg CPU %', max(cpuPercent) AS 'Max CPU %', average(memoryUsedPercent) AS 'Avg Mem %', average(diskUsedPercent) AS 'Disk Used %' FROM SystemSample FACET hostname SINCE 30 minutes ago LIMIT 20"
+        }
+      ],
+      "initialSorting": { "name": "Avg CPU %", "direction": "desc" },
+      "thresholds": [
+        { "columnName": "Avg CPU %",   "from": 80, "severity": "critical" },
+        { "columnName": "Avg CPU %",   "from": 60, "to": 80, "severity": "warning" },
+        { "columnName": "Avg Mem %",   "from": 90, "severity": "critical" },
+        { "columnName": "Disk Used %", "from": 85, "severity": "critical" }
+      ],
+      "facet": { "showOtherSeries": false },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
 
 ---
 
@@ -492,6 +683,42 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Request Volume and Error Rate" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.billboard",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT rate(count(*), 1 minute) AS 'Requests / min', percentage(count(*), WHERE error IS true) AS 'Error Rate %', count(*) AS 'Total Requests' FROM Transaction SINCE 1 hour ago"
+        }
+      ],
+      "thresholdsWithSeriesOverrides": {
+        "thresholds": [
+          { "to": 1,   "severity": "success"  },
+          { "from": 1, "to": 5, "severity": "warning"  },
+          { "from": 5, "severity": "critical" }
+        ],
+        "seriesOverrides": [
+          { "seriesName": "Error Rate %", "from": 1, "severity": "critical" }
+        ]
+      },
+      "billboardSettings": {
+        "visual": { "alignment": "inline", "display": "all" }
+      },
+      "facet": { "showOtherSeries": false },
+      "platformOptions": { "ignoreTimeRange": false },
+      "refreshRate": { "frequency": 60000 }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.gauge` - Gauge
@@ -530,6 +757,45 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Memory Utilisation (%)" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.gauge",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT average(memoryUsedPercent) AS 'Memory %' FROM SystemSample SINCE 30 minutes ago"
+        }
+      ],
+      "gaugeSettings": {
+        "displayMode": "arc",
+        "min": 0,
+        "max": 100,
+        "display": "auto",
+        "showThresholdMarkers": true,
+        "showThresholdLabels": false,
+        "thresholdsColorMode": "solid"
+      },
+      "thresholds": {
+        "thresholds": [
+          { "from": 0,  "severity": "success"  },
+          { "from": 60, "severity": "warning"  },
+          { "from": 80, "severity": "critical" }
+        ]
+      },
+      "colors":  { "colorPalette": "consistent" },
+      "units":   { "unit": "PERCENTAGE" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.histogram` - Histogram
@@ -557,6 +823,30 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Transaction Duration Distribution" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.histogram",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT histogram(duration * 1000, 0.5, 20) FROM Transaction SINCE 1 hour ago"
+        }
+      ],
+      "legend":    { "enabled": true },
+      "yAxisLeft": { "zero": true },
+      "colors":    { "colorPalette": "consistent" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.heatmap` - Heatmap
@@ -572,6 +862,28 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Duration Distribution by App" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.heatmap",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT histogram(duration * 1000, 0.5, 20) FROM Transaction FACET appName SINCE 3 hours ago"
+        }
+      ],
+      "facet": { "showOtherSeries": false },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
 
 ---
 
@@ -607,6 +919,30 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "CPU % vs Memory % by Host" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.scatter",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT average(cpuPercent) AS 'Avg CPU %', average(memoryUsedPercent) AS 'Avg Mem %' FROM SystemSample FACET hostname SINCE 1 hour ago TIMESERIES 5 minutes"
+        }
+      ],
+      "legend":    { "enabled": true },
+      "yAxisLeft": { "zero": true },
+      "facet":     { "showOtherSeries": false },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.apdex` - Apdex
@@ -626,6 +962,29 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Apdex Score Over Time" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.apdex",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT apdex(duration, 0.5) AS 'Apdex' FROM Transaction SINCE 3 hours ago TIMESERIES 5 minutes"
+        }
+      ],
+      "legend":  { "enabled": true, "position": "bottom" },
+      "tooltip": { "mode": "single" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.bullet` - Bullet chart
@@ -641,6 +1000,28 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Requests vs Target" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.bullet",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT count(*) AS 'Requests' FROM Transaction SINCE 1 hour ago"
+        }
+      ],
+      "limit": 50000,
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.funnel` - Funnel chart
@@ -654,6 +1035,27 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Transaction Funnel" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.funnel",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT funnel(session, WHERE name = 'step1' AS 'Step 1', WHERE name = 'step2' AS 'Step 2') FROM PageView SINCE 1 hour ago"
+        }
+      ],
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
 
 ---
 
@@ -669,6 +1071,27 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Recent Transactions" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.event-feed",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT * FROM Transaction SINCE 10 minutes ago LIMIT 20"
+        }
+      ],
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.json` - JSON
@@ -682,6 +1105,27 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Transaction Metrics (JSON)" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.json",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT count(*) AS 'count', average(duration)*1000 AS 'avg_ms', percentile(duration*1000, 95) AS 'p95_ms' FROM Transaction FACET appName SINCE 1 hour ago"
+        }
+      ],
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
 
 ---
 
@@ -710,11 +1154,61 @@ This chart type requires a widget-level `props` object with a `title` key. See [
   * `refreshRate` - (Optional) Auto-refresh configuration.
     * `frequency` - (Optional) Refresh interval in milliseconds, or `"auto"`. See [Valid `refreshRate.frequency` values](#valid-refreshratefrequency-values).
 
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Throughput Trend" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.sparkline",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT rate(count(*), 1 minute) AS 'rpm' FROM Transaction TIMESERIES 5 minutes SINCE 3 hours ago"
+        }
+      ],
+      "chartStyles": { "lineInterpolation": "smooth" },
+      "nullValues":  { "nullValue": "zero" },
+      "yAxisLeft":   { "zero": true },
+      "colors":      { "colorPalette": "consistent" },
+      "tooltip":     { "mode": "single" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
+
 ---
 
 ### `viz.sparkline-lite` - Sparkline Lite
 
 Ultra-compact sparkline with no axis labels. Supports the same props as `viz.sparkline` except `yAxisLeft`.
+
+**Example:**
+```json
+{
+  "type": "widget",
+  "props": { "title": "Log Volume Trend" },
+  "content": {
+    "type": "visualization",
+    "id": "viz.sparkline-lite",
+    "props": {
+      "nrqlQueries": [
+        {
+          "accountIds": [YOUR_ACCOUNT_ID],
+          "query": "SELECT count(*) AS 'Log lines' FROM Log TIMESERIES 5 minutes SINCE 3 hours ago"
+        }
+      ],
+      "chartStyles": { "lineInterpolation": "stepAfter" },
+      "nullValues":  { "nullValue": "zero" },
+      "colors":      { "colorPalette": "consistent" },
+      "platformOptions": { "ignoreTimeRange": false }
+    }
+  }
+}
+```
 
 ---
 
