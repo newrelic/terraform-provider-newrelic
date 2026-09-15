@@ -167,12 +167,8 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/newrelic/go-agent/v3 v3.30.0 h1:ZXHCT/Cot4iIPwcegCZURuRQOsfmGA6wilW+S3bfBjY=
 github.com/newrelic/go-agent/v3 v3.30.0/go.mod h1:9utrgxlSryNqRrTvII2XBL+0lpofXbqXApvVWPpbzUg=
-github.com/newrelic/newrelic-client-go/v2 v2.93.5-0.20260911065027-76080058c186 h1:8p3u0HYsJPJgqZiWLmHx00Cq46T7H4HllhbHVPAcW2A=
-github.com/newrelic/newrelic-client-go/v2 v2.93.5-0.20260911065027-76080058c186/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
-github.com/newrelic/newrelic-client-go/v2 v2.93.5-0.20260914103139-ef2c66ba8ee5 h1:pwBinLe0lxu0e/+W52VmMadfp3FsRR8l0f3MTJZmHc8=
-github.com/newrelic/newrelic-client-go/v2 v2.93.5-0.20260914103139-ef2c66ba8ee5/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
-github.com/newrelic/newrelic-client-go/v2 v2.93.5-0.20260914103940-104978d084c0 h1:6I/xtK7aFptjwJNRDbi0ziKDgRq7rJzmQvnf94e/kwo=
-github.com/newrelic/newrelic-client-go/v2 v2.93.5-0.20260914103940-104978d084c0/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
+github.com/newrelic/newrelic-client-go/v2 v2.94.0 h1:/X4hMV7EdpAT/zQDQ4GZ1EPqc4TFFTXZQ5Ho1O0KuoM=
+github.com/newrelic/newrelic-client-go/v2 v2.94.0/go.mod h1:kROngr/zeNyxbdOI3zPK4Al+ze32XjLEVUDzjxsKW9g=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=

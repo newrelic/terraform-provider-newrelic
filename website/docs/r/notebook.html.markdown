@@ -201,7 +201,7 @@ The following summarizes the steps to create a notebook that follows the require
 3. Inside the Level 2 `"content"` array, add as many Level 3 widget objects as you need. Each widget must have:
    - `"type": "widget"` - always.
    - `"props": { "title": "..." }` *(widget-level - display title only, not chart config)* - Required for all chart types. **Omit entirely** for `viz.markdown` widgets.
-   - `"content"` containing `"type": "visualization"`, `"id": "<chart-type>"`, and `"props": { ... }` *(content-level - chart configuration such as queries, thresholds, axis options)*.
+   - `"content"` containing `"type": "visualization"`, `"id": "<chart-type>"` (see [Supported Visualization Types](#supported-visualization-types) for all valid values), and `"props": { ... }` *(content-level - chart configuration such as queries, thresholds, axis options)*.
 
 ---
 
