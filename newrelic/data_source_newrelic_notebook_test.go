@@ -81,8 +81,8 @@ func TestAccNewRelicNotebookDataSource_WithContent(t *testing.T) {
 func testAccNotebookDataSourceConfig(name string, fetchContent bool) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
+  title        = %[1]q
+  content_json = jsonencode({
     type    = "declarative"
     version = 1
     content = [{
@@ -90,7 +90,6 @@ resource "newrelic_notebook" "test" {
       props = { layout = "stack" }
       content = [{
         type  = "widget"
-        props = {}
         content = {
           type = "visualization"
           id   = "viz.markdown"

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,21 +33,12 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Required:    true,
 				Description: "The title of the notebook.",
 			},
-			"content": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: suppressEquivalentNotebookContent,
-				ValidateFunc:     validateNotebookContent,
-				ExactlyOneOf:     []string{"content", "content_json"},
-				Description:      "The notebook body as a jsonencode({...}) expression. Mutually exclusive with content_json.",
-			},
 			"content_json": {
 				Type:             schema.TypeString,
-				Optional:         true,
+				Required:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
 				ValidateFunc:     validateNotebookContent,
-				ExactlyOneOf:     []string{"content", "content_json"},
-				Description:      "The notebook body as a raw JSON string. Mutually exclusive with content.",
+				Description:      "The notebook body as a JSON string. Accepts a raw JSON string, a file() reference, or a jsonencode({...}) expression.",
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -79,11 +69,11 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	title := d.Get("title").(string)
-	field, rawContent := notebookContentField(d)
+	rawContent := d.Get("content_json").(string)
 
 	normalized, body, err := normalizeNotebookContent(rawContent)
 	if err != nil {
-		return diag.Errorf("%s: %s", field, err)
+		return diag.Errorf("content_json: %s", err)
 	}
 
 	log.Printf("[INFO] Creating New Relic notebook: %s", title)
@@ -101,7 +91,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("guid", resp.EntityGUID)
 	_ = d.Set("organization_id", orgID)
 	_ = d.Set("blob_id", resp.BlobID)
-	_ = d.Set(field, normalized)
+	_ = d.Set("content_json", normalized)
 
 	// NerdGraph indexes the notebook entity asynchronously after the Blob Storage
 	// write. RetryContext polls until content.id is populated, ensuring blob_id
@@ -175,8 +165,7 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		_ = d.Set("blob_id", currentBlobID)
 	}
 
-	field, _ := notebookContentField(d)
-	if err := flattenNotebookContent(rawContent, d, field); err != nil {
+	if err := flattenNotebookContent(rawContent, d, "content_json"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -194,7 +183,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	titleChanged := d.HasChange("title")
-	contentChanged := d.HasChange("content") || d.HasChange("content_json")
+	contentChanged := d.HasChange("content_json")
 
 	if !titleChanged && !contentChanged {
 		return nil
@@ -203,25 +192,9 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 	log.Printf("[INFO] Updating New Relic notebook %s (title=%v, content=%v)", guid, titleChanged, contentChanged)
 
 	title := d.Get("title").(string)
-	field, rawContent := notebookContentField(d)
-
-	normalized, body, err := normalizeNotebookContent(rawContent)
+	normalized, body, err := normalizeNotebookContent(d.Get("content_json").(string))
 	if err != nil {
-		return diag.Errorf("%s: %s", field, err)
-	}
-
-	// Skip the Blob API write when the user switches between content and
-	// content_json modes without changing the actual JSON value.
-	if contentChanged && !titleChanged {
-		prevRaw := previousContentRaw(d)
-		if prevRaw != "" {
-			prevNorm, _, normErr := normalizeNotebookContent(prevRaw)
-			if normErr == nil && prevNorm == normalized {
-				log.Printf("[DEBUG] Notebook %s: mode switch with identical content — skipping Blob API write", guid)
-				_ = d.Set(field, normalized)
-				return resourceNewRelicNotebookRead(ctx, d, meta)
-			}
-		}
+		return diag.Errorf("content_json: %s", err)
 	}
 
 	var mutResp *notebooks.NotebookMutationResponse
@@ -234,7 +207,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set(field, normalized)
+	_ = d.Set("content_json", normalized)
 	if mutResp != nil && mutResp.BlobID != "" {
 		_ = d.Set("blob_id", mutResp.BlobID)
 	}
@@ -264,54 +237,20 @@ func resourceNewRelicNotebookDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-// resourceNewRelicNotebookImportState handles terraform import. Accepts either
-// a bare GUID or "GUID:mode" where mode is "content" or "content_json" (default).
-func resourceNewRelicNotebookImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	parts := strings.SplitN(d.Id(), ":", 2)
-	guid := parts[0]
+// resourceNewRelicNotebookImportState handles terraform import.
+// Accepts the notebook entity GUID as the import ID.
+func resourceNewRelicNotebookImportState(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	guid := d.Id()
 	if guid == "" {
-		return nil, fmt.Errorf("import ID must be a notebook GUID, optionally followed by :content or :content_json")
-	}
-
-	mode := "content_json"
-	if len(parts) == 2 {
-		mode = parts[1]
-		if mode != "content" && mode != "content_json" {
-			return nil, fmt.Errorf(
-				"invalid import mode %q: use %q for HCL jsonencode authoring or %q for raw JSON / file() authoring "+
-					"(e.g. terraform import newrelic_notebook.example %s:%s)",
-				mode, "content", "content_json", guid, "content_json",
-			)
-		}
+		return nil, fmt.Errorf("import ID must be the notebook entity GUID")
 	}
 
 	d.SetId(guid)
-	// Seed the mode field with a valid placeholder so notebookContentField picks
-	// up the intended mode when Read runs immediately after this function.
-	placeholder := `{"type":"declarative","version":1,"content":[]}`
-	if err := d.Set(mode, placeholder); err != nil {
-		return nil, fmt.Errorf("failed to signal import mode %q: %w", mode, err)
+	// Seed content_json with a valid placeholder so Read populates it with the
+	// real content from the API immediately after this function returns.
+	if err := d.Set("content_json", `{"type":"declarative","version":1,"content":[]}`); err != nil {
+		return nil, fmt.Errorf("failed to initialise import state: %w", err)
 	}
 
 	return []*schema.ResourceData{d}, nil
-}
-
-// previousContentRaw returns the old raw value from the content field that changed,
-// used by Update to detect a mode-switch with semantically identical JSON.
-func previousContentRaw(d *schema.ResourceData) string {
-	if d.HasChange("content") {
-		if old, _ := d.GetChange("content"); old != nil {
-			if s, _ := old.(string); s != "" {
-				return s
-			}
-		}
-	}
-	if d.HasChange("content_json") {
-		if old, _ := d.GetChange("content_json"); old != nil {
-			if s, _ := old.(string); s != "" {
-				return s
-			}
-		}
-	}
-	return ""
 }

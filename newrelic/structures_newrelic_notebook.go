@@ -58,14 +58,11 @@ func validateNotebookContent(v interface{}, k string) (warnings []string, errors
 // Using CustomizeDiff (rather than ValidateFunc) means Terraform does not echo
 // the full JSON body in the error output when a violation is found.
 func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !d.HasChanges("content", "content_json") {
+	if !d.HasChange("content_json") {
 		return nil
 	}
 
-	raw := d.Get("content").(string)
-	if raw == "" {
-		raw = d.Get("content_json").(string)
-	}
+	raw := d.Get("content_json").(string)
 	if raw == "" {
 		return nil
 	}
@@ -215,19 +212,6 @@ func flattenNotebookContent(raw json.RawMessage, d *schema.ResourceData, field s
 }
 
 // ── Resource helpers ──────────────────────────────────────────────────────────
-
-// notebookContentField returns the active content field name ("content" or
-// "content_json") and its current value. Defaults to "content_json" when
-// neither is set (e.g. immediately after terraform import).
-func notebookContentField(d *schema.ResourceData) (field, raw string) {
-	if v, ok := d.GetOk("content"); ok && v.(string) != "" {
-		return "content", v.(string)
-	}
-	if v, ok := d.GetOk("content_json"); ok && v.(string) != "" {
-		return "content_json", v.(string)
-	}
-	return "content_json", ""
-}
 
 // notebookOrgID returns the organization ID from state when available, or
 // resolves it from provider credentials as a fallback.
