@@ -184,22 +184,24 @@ A notebook body is a JSON document with a fixed three-level structure. The first
 
   * **Level 3 - Widgets (customizable)**
     * `type` must always be `"widget"`.
-    * `props` - Widget-level settings. The rules differ by chart type:
+    * `props` *(widget-level, controls the title label above the chart)* - The rules differ by chart type. Note: this `props` is **not** the same as `content.props` below - it only controls the widget's display title, not the chart configuration.
       * **`viz.markdown` only:** `props` must be **absent entirely** from the widget object. Including even an empty `"props": {}` will fail validation at `terraform plan` time.
-      * **All other chart types:** `props` must be present and must include a `title` key. An empty string `""` is valid as a title.
+      * **All other chart types:** `props` must be present and must include a `title` key. An empty string `""` is valid as a title. Example: `"props": { "title": "Error rate" }`.
     * `content` - The visualization to render. Three sub-fields are always required:
       * `type` must be `"visualization"`.
       * `id` identifies the chart type - for example `"viz.markdown"`, `"viz.line"`, `"viz.area"`. See [Supported visualization types](#supported-visualization-types) for the full list.
-      * `props` holds the chart-specific configuration. Each chart type defines its own supported attributes in the sections that follow.
+      * `props` *(content-level, chart configuration)* - Holds the chart-specific configuration such as NRQL queries, axis settings, and thresholds. This is **separate** from the widget-level `props` described above - these props define how the chart renders its data, not the display title.
 
 **Putting it together - a quick reference:**
+
+The following summarizes the steps to create a notebook that follows the required structure and passes validation without errors.
 
 1. Start with Level 1: `"type": "declarative"`, `"version": 1`, and a `"content"` array with one object.
 2. Inside that object, add Level 2: `"type": "container"`, `"props": { "layout": "stack" }`, and a `"content"` array.
 3. Inside the Level 2 `"content"` array, add as many Level 3 widget objects as you need. Each widget must have:
    - `"type": "widget"` - always.
-   - `"props": { "title": "..." }` - required for all chart types. **Omit entirely** for `viz.markdown` widgets.
-   - `"content"` with `"type": "visualization"`, `"id": "<chart-type>"`, and `"props": { ... }` for the chart configuration.
+   - `"props": { "title": "..." }` *(widget-level - display title only, not chart config)* - Required for all chart types. **Omit entirely** for `viz.markdown` widgets.
+   - `"content"` containing `"type": "visualization"`, `"id": "<chart-type>"`, and `"props": { ... }` *(content-level - chart configuration such as queries, thresholds, axis options)*.
 
 ---
 
@@ -274,7 +276,6 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `violationId` - (Required) The violation ID to overlay.
     * `duration` - (Required) Duration in milliseconds.
     * `endTime` - (Required) End time as an epoch millisecond timestamp.
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS). Each requires `query` (string) and `accountId` (number) or `accountIds` (number[]).
   * `legend` - (Optional) Controls the chart legend.
     * `enabled` - (Optional) Show or hide the legend. Defaults to `true`.
     * `position` - (Optional) Where to place the legend. Valid values are `"bottom"` (default), `"left"`, or `"right"`.
@@ -349,7 +350,7 @@ Use this when you want to compare part-to-whole relationships over time - for ex
 
 This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
-Supports all `viz.line` props except `alertQueries`, `yAxisRight`, the `"remove"` null value, `chartStyles.lineInterpolation`, `chartStyles.gradient`, and `chartTypes`. Additional prop:
+Supports all `viz.line` props except `alertQueries`, `yAxisRight`, and the `"remove"` null value. Additional prop:
 
   * `chartStyles` - (Optional) Visual style configuration.
     * `stacked` - (Optional) Stack configuration.
@@ -364,7 +365,6 @@ A simpler bar chart for categorical FACET comparisons - when you want counts or 
 This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
   * `facet` - (Optional) Controls FACET grouping behaviour.
     * `showOtherSeries` - (Optional) Show the "Other" group for `FACET` queries. Defaults to `false`.
   * `colors` - (Optional) Controls chart coloring.
@@ -404,7 +404,6 @@ Good for showing how a whole is divided among a small number of categories. If y
 This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
   * `facet` - (Optional) Controls FACET grouping behaviour.
     * `showOtherSeries` - (Optional) Show the "Other" group for `FACET` queries. Defaults to `true` (differs from other chart types).
   * `legend` - (Optional) Controls the chart legend.
@@ -431,7 +430,6 @@ The right choice when you need to show raw rows, multi-column comparisons, or so
 This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
   * `facet` - (Optional) Controls FACET grouping behaviour.
     * `showOtherSeries` - (Optional) Show the "Other" group for `FACET` queries. Defaults to `false`.
   * `initialSorting` - (Optional) Default sort applied when the table first renders.
@@ -459,7 +457,8 @@ Displays a single large metric value with color-coded threshold ranges. Perfect 
 This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
+  * `facet` - (Optional) Controls FACET grouping behaviour.
+    * `showOtherSeries` - (Optional) Show the "Other" group for `FACET` queries. Defaults to `false`.
   * `thresholdsWithSeriesOverrides` - (Optional) Threshold configuration for the billboard. See [Nested `thresholdsWithSeriesOverrides` blocks (billboard)](#nested-thresholdswithseriesoverrides-blocks-billboard).
     * `thresholds` - (Optional) Global threshold ranges applied to all series.
       * `from` - (Optional) Lower bound of the range.
@@ -502,7 +501,13 @@ Shows a single value against a min/max scale, making it easy to communicate how 
 This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
+  * `colors` - (Optional) Controls chart coloring.
+    * `colorPalette` - (Optional) Color palette. Valid values are `"consistent"` (default) and `"dynamic"`.
+    * `seriesOverrides` - (Optional) Per-series color overrides.
+      * `seriesName` - (Required) The series to override.
+      * `color` - (Required) RGB hex color, e.g. `"#FF0000"`.
+  * `facet` - (Optional) Controls FACET grouping behaviour.
+    * `showOtherSeries` - (Optional) Show the "Other" group for `FACET` queries. Defaults to `false`.
   * `gaugeSettings` - (Optional) Appearance and scale options for the gauge.
     * `displayMode` - (Optional) Gauge shape. Valid values: `"arc"` (default), `"circular"`, `"bar"`.
     * `min` - (Optional) Lower bound of the scale.
@@ -592,6 +597,11 @@ This chart type requires a widget-level `props` object with a `title` key. See [
     * `max` - (Optional) Fixed maximum value for the axis.
     * `zero` - (Optional) Force zero as the axis origin. Defaults to `true`.
     * `scale` - (Optional) Axis scale. Valid values are `"linear"` (default) and `"logarithmic"`.
+  * `units` - (Optional) Data units for display formatting.
+    * `unit` - (Optional) Default unit for all series. See [Valid `units.unit` values](#valid-unitsunit-values).
+    * `seriesOverrides` - (Optional) Per-series unit overrides.
+      * `seriesName` - (Required) The series to override.
+      * `unit` - (Required) The unit for that series.
   * `platformOptions` - (Optional) Platform-level rendering options.
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
@@ -626,7 +636,6 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `limit` - (Required) The target value shown as the goal line on the chart.
-  * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
   * `platformOptions` - (Optional) Platform-level rendering options.
     * `ignoreTimeRange` - (Optional) Use the query's own time range instead of the notebook time picker. Defaults to `false`.
   * `refreshRate` - (Optional) Auto-refresh configuration.
