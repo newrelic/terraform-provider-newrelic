@@ -112,24 +112,46 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Content Format and Schema
 
-Every notebook body is a JSON document that follows this structure - from the outer envelope down to the individual widgets:
+A notebook body is a JSON document with a fixed three-level structure. The first two levels are always written the same way. The third level is where all your widgets go.
 
 ```json
 {
+  // Level 1 - always fixed
   "type": "declarative",
   "version": 1,
   "content": [
     {
+      // Level 2 - always fixed
       "type": "container",
       "props": { "layout": "stack" },
       "content": [
+
+        // Level 3 - your widgets go here. Add as many as you need.
+
         {
           "type": "widget",
-          "props": { "title": "My chart" },
+          "content": {
+            "type": "visualization",
+            "id": "viz.markdown",
+            "props": { "text": "## Section header\n\nAdd narrative, context, or action items here." }
+          }
+        },
+        {
+          "type": "widget",
+          "props": { "title": "Error rate" },
+          "content": {
+            "type": "visualization",
+            "id": "viz.billboard",
+            "props": { ... }
+          }
+        },
+        {
+          "type": "widget",
+          "props": { "title": "Throughput over time" },
           "content": {
             "type": "visualization",
             "id": "viz.line",
-            "props": { "nrqlQueries": [ ... ] }
+            "props": { ... }
           }
         }
       ]
@@ -138,66 +160,37 @@ Every notebook body is a JSON document that follows this structure - from the ou
 }
 ```
 
-### Envelope fields
+-> **NOTE:** The `//` comments above are for illustration only. Do not include comments in your actual notebook JSON.
 
-  * `type` - (Required) Must be `"declarative"`.
-  * `version` - (Required) Must be the integer `1`.
-  * `content` - (Required) An array containing exactly one container object. The New Relic Notebooks UI renders only the first container, so all widgets must be placed within a single container.
+### Understanding the structure
 
-### Container fields
+**Levels 1 and 2 are always identical.** You always write them exactly as shown above - they cannot be customized beyond what is described here.
 
-  * `type` - (Required) Must be `"container"`.
-  * `props` - (Optional) Layout configuration.
-    * `layout` - (Optional) How to arrange widgets. Valid values are `"stack"` (vertical, default) and `"grid"`.
-  * `content` - (Required) Array of widget objects.
+  * **Level 1 - Document envelope (fixed)**
+    * `type` must always be `"declarative"`.
+    * `version` must always be the integer `1`.
+    * `content` is an array containing exactly **one** container object (Level 2). The New Relic Notebooks UI only renders the first container - place all widgets inside it.
 
-### Widget fields
+  * **Level 2 - Container (fixed)**
+    * `type` must always be `"container"`.
+    * `props.layout` controls widget arrangement: `"stack"` (default, vertical) or `"grid"`.
+    * `content` is the array where your widgets live. This is the only attribute in Level 2 that varies - add as many widget objects as you need.
 
-  * `type` - (Required) Must be `"widget"`.
-  * `props` - Widget-level settings. See [Widget-level props](#widget-level-props) below.
-  * `content` - (Required) The visualization specification for this widget.
-    * `type` - (Required) Must be `"visualization"`.
-    * `id` - (Required) Identifies the chart type. See [Supported visualization types](#supported-visualization-types).
-    * `props` - (Optional) Visualization-specific configuration. Each chart type defines its own props in the sections below.
+**Level 3 is where you do your work.** Every object in the Level 2 `content` array is a widget. Each widget has three attributes:
 
-### Widget-level props
-
-The `props` field at the widget level works differently depending on the chart type:
-
-**`viz.markdown` - no widget-level props:**
-
-The `props` key must be absent entirely. Including even an empty `"props": {}` will cause a validation error at `terraform plan` time.
-
-```json
-{
-  "type": "widget",
-  "content": {
-    "type": "visualization",
-    "id": "viz.markdown",
-    "props": { "text": "## Notes\n\n- [ ] Check alert history\n- [ ] Review recent deploys" }
-  }
-}
-```
-
-**All other chart types - `props.title` is required:**
-
-The `props` key must be present and must contain a `title` key. An empty string is valid.
-
-```json
-{
-  "type": "widget",
-  "props": { "title": "Error rate" },
-  "content": {
-    "type": "visualization",
-    "id": "viz.billboard",
-    "props": { "nrqlQueries": [ ... ] }
-  }
-}
-```
+  * **Level 3 - Widgets (customizable)**
+    * `type` must always be `"widget"`.
+    * `props` - Widget-level settings. The rules differ by chart type:
+      * **`viz.markdown` only:** `props` must be **absent entirely** from the widget object. Including even an empty `"props": {}` will fail validation at `terraform plan` time.
+      * **All other chart types:** `props` must be present and must include a `title` key. An empty string `""` is valid as a title.
+    * `content` - The visualization to render. Three sub-fields are always required:
+      * `type` must be `"visualization"`.
+      * `id` identifies the chart type. See [Supported visualization types](#supported-visualization-types) below.
+      * `props` holds the chart-specific configuration. Each chart type defines its own supported attributes in the sections below.
 
 ### Supported visualization types
 
-The `id` field inside `content` identifies which chart type to render. The following values are supported:
+The `id` field inside the widget's `content` object identifies which chart type to render. The following values are supported:
 
 | `id` | Display name | Typical NRQL shape |
 |---|---|---|
@@ -228,7 +221,7 @@ The `id` field inside `content` identifies which chart type to render. The follo
 
 Renders a text block supporting GitHub-flavoured Markdown. Use it to add context, section headers, runbook steps, or action-item checklists between your charts.
 
--> **NOTE:** The `props` key must be **absent entirely** from the widget object for `viz.markdown`. Including `"props": {}` will fail validation. See [Widget-level props](#widget-level-props) for both a code example and an explanation of why this restriction exists.
+-> **NOTE:** The `props` key must be **absent entirely** from the widget object for `viz.markdown`. Including `"props": {}` will fail validation. See [Understanding the structure](#understanding-the-structure) for both a code example and an explanation of why this restriction exists.
 
   * `text` - (Required) The Markdown source string. Supports headings, bold, italic, code, lists, task lists (`- [ ]`), tables, and links. Use `\n` for newlines within the string.
 
@@ -252,7 +245,7 @@ Renders a text block supporting GitHub-flavoured Markdown. Use it to add context
 
 The workhorse for time-series data. Use it when you want to show how a metric changes over time and need full control over axes, thresholds, and per-series styling.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `alertQueries` - (Optional) Alert violation objects to overlay warning/critical bands on the chart. Only available for `viz.line`. Each object supports:
@@ -317,7 +310,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Great for showing cumulative totals or filled time-series where the area under the line carries meaning.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
 Supports the same props as `viz.line`, with the following differences:
 
@@ -333,7 +326,7 @@ Supports the same props as `viz.line`, with the following differences:
 
 Use this when you want to compare part-to-whole relationships over time - for example, traffic broken down by endpoint or host.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
 Supports all `viz.line` props except `alertQueries`, `yAxisRight`, the `"remove"` null value, `chartStyles.lineInterpolation`, `chartStyles.gradient`, and `chartTypes`. Additional prop:
 
@@ -347,7 +340,7 @@ Supports all `viz.line` props except `alertQueries`, `yAxisRight`, the `"remove"
 
 A simpler bar chart for categorical FACET comparisons - when you want counts or averages across a dimension and a timeseries axis isn't needed.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
@@ -369,7 +362,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Useful for comparing proportions across categories when your label text is long and reads better horizontally.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `facet` - (Optional) Controls FACET grouping behaviour.
@@ -387,7 +380,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Good for showing how a whole is divided among a small number of categories. If you have more than 7-8 slices, a bar chart is usually clearer.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
@@ -414,7 +407,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 The right choice when you need to show raw rows, multi-column comparisons, or sortable ranked lists. Pairs well with `initialSorting` and column-level thresholds.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
@@ -442,7 +435,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Displays a single large metric value with color-coded threshold ranges. Perfect for at-a-glance status tiles at the top of a notebook.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
@@ -485,7 +478,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Shows a single value against a min/max scale, making it easy to communicate how close you are to a limit or target.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `sqlQueries` - (Optional) Array of SQL query objects for Federated Data Source (FDS).
@@ -517,7 +510,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Visualizes the distribution of a numeric attribute across buckets. Your query must use the `histogram()` NRQL function.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. Query must use `histogram(attr)` or `histogram(attr, width: N, buckets: N)`. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `legend` - (Optional) Controls the chart legend.
@@ -544,7 +537,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Renders a two-dimensional density map. Requires `histogram()` combined with a `FACET` to produce the row-and-bucket structure.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. Query must use `histogram()` with a `FACET` clause. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `facet` - (Optional) Controls FACET grouping behaviour.
@@ -560,7 +553,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Plots two numeric measures against each other to reveal correlations. Your query should return two numeric values and a `FACET` for the data points.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. Query should return two numeric values and a `FACET`. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `facet` - (Optional) Controls FACET grouping behaviour.
@@ -589,7 +582,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Renders an Apdex score widget. Use it when you're tracking application performance against a satisfaction threshold.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `legend` - (Optional) Controls the chart legend.
@@ -608,7 +601,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Compares an actual value against a target goal. The `limit` sets the goal line - without it the chart won't render correctly.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `limit` - (Required) The target value shown as the goal line on the chart.
@@ -624,7 +617,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Tracks how users or events progress through sequential steps. Requires the `funnel()` NRQL function.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. Query must use the `funnel()` NRQL function. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `platformOptions` - (Optional) Platform-level rendering options.
@@ -638,7 +631,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Streams individual events as a scrollable list. Useful when you want to show raw log entries or transaction events rather than aggregations.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `platformOptions` - (Optional) Platform-level rendering options.
@@ -652,7 +645,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 Renders the raw JSON payload returned by your query. Handy for debugging complex nested event structures.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `platformOptions` - (Optional) Platform-level rendering options.
@@ -666,7 +659,7 @@ This chart type requires a widget-level `props` object with a `title` key. See [
 
 A compact inline time-series with no axis labels. Good for dense notebooks where you want trend at a glance without the full chart chrome.
 
-This chart type requires a widget-level `props` object with a `title` key. See [Widget-level props](#widget-level-props).
+This chart type requires a widget-level `props` object with a `title` key. See [Understanding the structure](#understanding-the-structure).
 
   * `nrqlQueries` - (Required) Array of NRQL query objects. See [Nested `nrqlQueries` blocks](#nested-nrqlqueries-blocks).
   * `facet` - (Optional) Controls FACET grouping behaviour.
