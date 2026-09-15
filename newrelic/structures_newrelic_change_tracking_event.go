@@ -1,0 +1,160 @@
+package newrelic
+
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/changetracking"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/nrtime"
+	"time"
+)
+
+func expandChangeTrackingEvent(d *schema.ResourceData) (changetracking.ChangeTrackingCreateEventInput, changetracking.ChangeTrackingDataHandlingRules, error) {
+	eventInput := changetracking.ChangeTrackingCreateEventInput{}
+
+	if v, ok := d.GetOk("description"); ok {
+		eventInput.Description = v.(string)
+	}
+
+	if v, ok := d.GetOk("group_id"); ok {
+		eventInput.GroupId = v.(string)
+	}
+
+	if v, ok := d.GetOk("short_description"); ok {
+		eventInput.ShortDescription = v.(string)
+	}
+
+	if v, ok := d.GetOk("timestamp"); ok {
+		eventInput.Timestamp = nrtime.EpochMilliseconds(time.UnixMilli(int64(v.(int))))
+	}
+
+	if v, ok := d.GetOk("user"); ok {
+		eventInput.User = v.(string)
+	}
+
+	if v, ok := d.GetOk("entity_search"); ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			cfg := items[0].(map[string]interface{})
+			eventInput.EntitySearch = expandChangeTrackingEventEntitySearch(cfg)
+		}
+	}
+
+	if v, ok := d.GetOk("category_and_type_data"); ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			cfg := items[0].(map[string]interface{})
+			eventInput.CategoryAndTypeData = expandChangeTrackingEventCategoryRelated(cfg)
+		}
+	}
+
+	dataHandlingRules := expandChangeTrackingEventDataHandlingRules(d)
+
+	return eventInput, dataHandlingRules, nil
+}
+
+func expandChangeTrackingEventEntitySearch(cfg map[string]interface{}) changetracking.ChangeTrackingEntitySearchInput {
+	input := changetracking.ChangeTrackingEntitySearchInput{}
+	if v, ok := cfg["query"]; ok {
+		input.Query = v.(string)
+	}
+	return input
+}
+
+func expandChangeTrackingEventCategoryRelated(cfg map[string]interface{}) *changetracking.ChangeTrackingCategoryRelatedInput {
+	input := &changetracking.ChangeTrackingCategoryRelatedInput{}
+
+	if v, ok := cfg["kind"]; ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			kindCfg := items[0].(map[string]interface{})
+			input.Kind = expandChangeTrackingEventCategoryAndType(kindCfg)
+		}
+	}
+
+	if v, ok := cfg["category_fields"]; ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			cfCfg := items[0].(map[string]interface{})
+			input.CategoryFields = expandChangeTrackingEventCategoryFields(cfCfg)
+		}
+	}
+
+	return input
+}
+
+func expandChangeTrackingEventCategoryAndType(cfg map[string]interface{}) *changetracking.ChangeTrackingCategoryAndTypeInput {
+	input := &changetracking.ChangeTrackingCategoryAndTypeInput{}
+	if v, ok := cfg["category"]; ok {
+		input.Category = v.(string)
+	}
+	if v, ok := cfg["type"]; ok {
+		input.Type = v.(string)
+	}
+	return input
+}
+
+func expandChangeTrackingEventCategoryFields(cfg map[string]interface{}) *changetracking.ChangeTrackingCategoryFieldsInput {
+	input := &changetracking.ChangeTrackingCategoryFieldsInput{}
+
+	if v, ok := cfg["deployment"]; ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			depCfg := items[0].(map[string]interface{})
+			input.Deployment = expandChangeTrackingEventDeploymentFields(depCfg)
+		}
+	}
+
+	if v, ok := cfg["feature_flag"]; ok {
+		items := v.([]interface{})
+		if len(items) > 0 {
+			ffCfg := items[0].(map[string]interface{})
+			input.FeatureFlag = expandChangeTrackingEventFeatureFlagFields(ffCfg)
+		}
+	}
+
+	return input
+}
+
+func expandChangeTrackingEventDeploymentFields(cfg map[string]interface{}) *changetracking.ChangeTrackingDeploymentFieldsInput {
+	input := &changetracking.ChangeTrackingDeploymentFieldsInput{}
+	if v, ok := cfg["changelog"]; ok {
+		input.Changelog = v.(string)
+	}
+	if v, ok := cfg["commit"]; ok {
+		input.Commit = v.(string)
+	}
+	if v, ok := cfg["deep_link"]; ok {
+		input.DeepLink = v.(string)
+	}
+	if v, ok := cfg["version"]; ok {
+		input.Version = v.(string)
+	}
+	return input
+}
+
+func expandChangeTrackingEventFeatureFlagFields(cfg map[string]interface{}) *changetracking.ChangeTrackingFeatureFlagFieldsInput {
+	input := &changetracking.ChangeTrackingFeatureFlagFieldsInput{}
+	if v, ok := cfg["feature_flag_id"]; ok {
+		input.FeatureFlagId = v.(string)
+	}
+	return input
+}
+
+func expandChangeTrackingEventDataHandlingRules(d *schema.ResourceData) changetracking.ChangeTrackingDataHandlingRules {
+	rules := changetracking.ChangeTrackingDataHandlingRules{}
+
+	if v, ok := d.GetOk("validation_flags"); ok {
+		flagList := v.([]interface{})
+		flags := make([]changetracking.ChangeTrackingValidationFlag, len(flagList))
+		for i, f := range flagList {
+			flags[i] = changetracking.ChangeTrackingValidationFlag(f.(string))
+		}
+		rules.ValidationFlags = flags
+	}
+
+	return rules
+}
+
+var _ = common.EntityGUID("")
+
+// No flatten functions: this API is write-only.
