@@ -1,12 +1,15 @@
 package newrelic
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
 // ── Progress levels ───────────────────────────────────────────────────────────
 
+// expandProgressLevels converts the progress_levels Terraform list to CreateInput slice.
 func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionCreateInput {
 	if len(raw) == 0 {
 		return nil
@@ -29,6 +32,7 @@ func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgre
 	return out
 }
 
+// flattenProgressLevels converts API ProgressLevelDefinition values back to Terraform maps.
 func flattenProgressLevels(levels []scorecards.EntityManagementProgressLevelDefinition) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(levels))
 	for _, l := range levels {
@@ -44,6 +48,7 @@ func flattenProgressLevels(levels []scorecards.EntityManagementProgressLevelDefi
 
 // ── Rule IDs (for scorecard ↔ rule attachment) ────────────────────────────────
 
+// expandRuleIDsFromSet extracts string rule GUIDs from a TypeSet of plain strings.
 func expandRuleIDsFromSet(s *schema.Set) []string {
 	out := make([]string, 0, s.Len())
 	for _, raw := range s.List() {
@@ -97,6 +102,7 @@ func expandNRQLEngineUpdate(raw []interface{}) *scorecards.EntityManagementNRQLR
 	return engine
 }
 
+// flattenNRQLEngine converts an API NRQLRuleEngine value back to the nrql_engine Terraform block.
 func flattenNRQLEngine(engine scorecards.EntityManagementNRQLRuleEngine) []map[string]interface{} {
 	accounts := make([]int, len(engine.Accounts))
 	copy(accounts, engine.Accounts)
@@ -109,4 +115,21 @@ func flattenNRQLEngine(engine scorecards.EntityManagementNRQLRuleEngine) []map[s
 		"accounts":      accounts,
 		"join_accounts": joinAccounts,
 	}}
+}
+
+// ── Rules collection reader ───────────────────────────────────────────────────
+
+// readScorecardRuleGUIDs pages through the scorecard's rules collection and
+// returns the GUID of every ScorecardRule entity in it.
+func readScorecardRuleGUIDs(ctx context.Context, client *scorecards.Scorecards, rulesColID string) ([]string, error) {
+	if rulesColID == "" {
+		return nil, nil
+	}
+	var guids []string
+	err := pageCollectionItems(ctx, client, rulesColID, func(item scorecards.EntityManagementEntityInterface) {
+		if r, ok := item.(*scorecards.EntityManagementScorecardRuleEntity); ok {
+			guids = append(guids, r.ID)
+		}
+	})
+	return guids, err
 }

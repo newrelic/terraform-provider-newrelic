@@ -296,20 +296,3 @@ func resourceNewRelicScorecardDelete(ctx context.Context, d *schema.ResourceData
 	}
 	return nil
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-// readScorecardRuleGUIDs pages through the scorecard's rules collection and
-// returns the GUID of every ScorecardRule entity in it.
-func readScorecardRuleGUIDs(ctx context.Context, client *scorecards.Scorecards, rulesColID string) ([]string, error) {
-	if rulesColID == "" {
-		return nil, nil
-	}
-	var guids []string
-	err := pageCollectionItems(ctx, client, rulesColID, func(item scorecards.EntityManagementEntityInterface) {
-		if r, ok := item.(*scorecards.EntityManagementScorecardRuleEntity); ok {
-			guids = append(guids, r.ID)
-		}
-	})
-	return guids, err
-}

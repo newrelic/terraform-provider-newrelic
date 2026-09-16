@@ -79,6 +79,7 @@ func fetchEntitySystemTags(ctx context.Context, client *scorecards.Scorecards, e
 	return filterSystemTags(tags)
 }
 
+// filterSystemTags returns only tags whose keys begin with "nr." (system-managed tags).
 func filterSystemTags(tags []scorecards.EntityManagementTag) []scorecards.EntityManagementTag {
 	var out []scorecards.EntityManagementTag
 	for _, t := range tags {

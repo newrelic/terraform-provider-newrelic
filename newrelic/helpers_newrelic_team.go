@@ -375,18 +375,22 @@ func patchTeamField(ctx context.Context, client *nr.NewRelic, teamID, field stri
 // Convenience wrappers around patchTeamField for the four fields that require
 // explicit clearing. Each wrapper name makes the call-site self-documenting.
 
+// clearTeamDescriptionRaw sends an explicit empty string to clear the team description field.
 func clearTeamDescriptionRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
 	return patchTeamField(ctx, client, teamID, "description", "")
 }
 
+// clearTeamAliasesRaw sends an explicit empty list to clear all team aliases.
 func clearTeamAliasesRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
 	return patchTeamField(ctx, client, teamID, "aliases", []interface{}{})
 }
 
+// clearTeamTagsRaw sends an explicit empty list to clear all user-managed team tags.
 func clearTeamTagsRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
 	return patchTeamField(ctx, client, teamID, "tags", []interface{}{})
 }
 
+// clearTeamParentID sends an explicit null to remove the team's parent association.
 func clearTeamParentID(ctx context.Context, client *nr.NewRelic, teamID string) error {
 	return patchTeamField(ctx, client, teamID, "parentId", nil)
 }
