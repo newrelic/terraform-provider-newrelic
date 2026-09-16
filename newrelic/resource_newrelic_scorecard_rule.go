@@ -245,7 +245,9 @@ func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.Resource
 		upd.RunInterval = d.Get("run_interval").(int)
 	}
 	if d.HasChange("tags") {
-		upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
+		userTags := expandNGEPTags(d.Get("tags").([]interface{}))
+		sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
+		upd.Tags = mergeWithSystemTags(userTags, sysTags)
 	}
 
 	if _, err := client.Scorecards.EntityManagementUpdateScorecardRule(d.Id(), upd); err != nil {

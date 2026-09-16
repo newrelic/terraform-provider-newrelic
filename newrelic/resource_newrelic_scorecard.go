@@ -13,6 +13,18 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
+// customizeScorecardDiff forces resource replacement whenever progress_levels
+// changes. The NGEP API rejects progress level updates via the standard update
+// mutation, so any change to these fields must result in destroy + recreate.
+// Setting ForceNew on the outer TypeList alone does not cascade to nested-field
+// changes in SDK v2; CustomizeDiff is the reliable mechanism.
+func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if d.HasChange("progress_levels") {
+		return d.ForceNew("progress_levels")
+	}
+	return nil
+}
+
 func resourceNewRelicScorecard() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicScorecardCreate,
@@ -25,6 +37,7 @@ func resourceNewRelicScorecard() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
+		CustomizeDiff: customizeScorecardDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -57,21 +70,25 @@ func resourceNewRelicScorecard() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "A unique identifier for this level (e.g. 'red', 'green').",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Display name of the level.",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "Description of what this level means.",
 						},
 						"hex_color_code": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							ForceNew:     true,
 							Description:  "Hex colour for this level, e.g. '#FF0000'.",
 							ValidateFunc: validation.StringLenBetween(4, 9),
 						},
@@ -231,7 +248,9 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 			upd.Description = d.Get("description").(string)
 		}
 		if d.HasChange("tags") {
-			upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
+			userTags := expandNGEPTags(d.Get("tags").([]interface{}))
+			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
+			upd.Tags = mergeWithSystemTags(userTags, sysTags)
 		}
 
 		if _, err := client.Scorecards.EntityManagementUpdateScorecard(d.Id(), upd); err != nil {

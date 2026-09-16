@@ -7,15 +7,21 @@ terraform {
 }
 
 provider "newrelic" {
-  account_id = var.account_id
-  api_key    = var.api_key
   region     = "US"
 }
 
-variable "account_id" {}
-variable "api_key" {}
+variable "account_id" {
+  type = number
+  default = 3806526
+}
 
-variable "user_id" {
-  type    = number
-  default = 0
+
+
+resource "newrelic_teams_organization_settings" "org" {
+  discovery_enabled  = true
+  discovery_tag_keys = ["team"]
+}
+
+resource "newrelic_teams_hierarchy_level" "squad" {
+  name = "Squad"
 }

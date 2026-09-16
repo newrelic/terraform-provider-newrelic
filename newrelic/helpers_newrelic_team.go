@@ -257,7 +257,12 @@ func syncTeamOwnership(ctx context.Context, client *scorecards.Scorecards, owner
 	}
 	if len(toRemove) > 0 {
 		if _, err := client.EntityManagementRemoveCollectionMembers(ownershipColID, toRemove); err != nil {
-			return fmt.Errorf("removing entities from team ownership collection %s: %w", ownershipColID, err)
+			// Treat "entity not found in collection" as a no-op: the entity may
+			// have been deleted externally (e.g. via a ForceNew recreation of a
+			// scorecard), in which case NGEP already removed it from the collection.
+			if !strings.Contains(err.Error(), "not found in collection") {
+				return fmt.Errorf("removing entities from team ownership collection %s: %w", ownershipColID, err)
+			}
 		}
 	}
 	return nil
