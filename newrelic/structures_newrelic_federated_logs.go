@@ -216,6 +216,9 @@ func flattenFederatedLogsSetupIntoState(d *schema.ResourceData, s *federatedlogs
 	}}); err != nil {
 		return err
 	}
+	if err := d.Set("derived_lifecycle_state", string(s.DerivedLifecycleState)); err != nil {
+		return err
+	}
 	if err := d.Set("health_check", flattenFederatedLogsSetupHealthCheck(s.HealthCheck)); err != nil {
 		return err
 	}
@@ -314,6 +317,9 @@ func flattenFederatedLogsPartitionIntoState(d *schema.ResourceData, p *federated
 		"message":         p.LifecycleStatus.Message,
 		"last_updated_at": string(p.LifecycleStatus.LastUpdatedAt),
 	}}); err != nil {
+		return err
+	}
+	if err := d.Set("derived_lifecycle_state", string(p.DerivedLifecycleState)); err != nil {
 		return err
 	}
 	if err := d.Set("health_check", flattenFederatedLogsPartitionHealthCheck(p.HealthCheck)); err != nil {
