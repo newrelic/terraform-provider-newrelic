@@ -35,20 +35,10 @@ func mergeWithSystemTags(
 
 	for _, t := range currentEntityTags {
 		if strings.HasPrefix(t.Key, "nr.") {
-			out = append(out, scorecards.EntityManagementTagInput{
-				Key:    t.Key,
-				Values: t.Values,
-			})
+			out = append(out, scorecards.EntityManagementTagInput(t))
 		}
 	}
 	return out
-}
-
-// ngepTagged is a local interface satisfied by every NGEP entity type that
-// carries a Tags slice. Using it avoids a fragile type-switch that would need
-// updating whenever a new resource type is added.
-type ngepTagged interface {
-	GetNGEPTags() []scorecards.EntityManagementTag
 }
 
 // fetchEntitySystemTags reads the current entity and returns only its

@@ -73,7 +73,9 @@ func extractUserIDFromEntityTags(e entities.EntityOutlineInterface) int {
 	for _, tag := range t.GetTags() {
 		if tag.Key == "userId" && len(tag.Values) > 0 {
 			var id int
-			fmt.Sscanf(tag.Values[0], "%d", &id)
+			if _, err := fmt.Sscanf(tag.Values[0], "%d", &id); err != nil {
+				return 0
+			}
 			return id
 		}
 	}
