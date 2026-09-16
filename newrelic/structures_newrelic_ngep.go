@@ -5,6 +5,7 @@ package newrelic
 // resource-specific structures file to avoid duplication.
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
@@ -42,6 +43,10 @@ func expandNGEPTags(raw []interface{}) []scorecards.EntityManagementTagInput {
 // strings. Tags whose keys begin with "nr." are stripped — NGEP auto-injects
 // system tags (e.g. "nr.hierarchy.level") that must not appear in Terraform
 // state and trigger spurious plan diffs.
+//
+// The output is sorted alphabetically by the full "key:values" string to
+// guarantee a stable ordering across API calls. The NGEP API does not preserve
+// tag order, so without sorting every plan could show spurious reordering diffs.
 func flattenNGEPTags(tags []scorecards.EntityManagementTag) []string {
 	out := make([]string, 0, len(tags))
 	for _, t := range tags {
@@ -50,5 +55,6 @@ func flattenNGEPTags(tags []scorecards.EntityManagementTag) []string {
 		}
 		out = append(out, t.Key+":"+strings.Join(t.Values, ","))
 	}
+	sort.Strings(out)
 	return out
 }

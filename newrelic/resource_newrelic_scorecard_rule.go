@@ -200,15 +200,12 @@ func resourceNewRelicScorecardRuleRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("tags", flattenNGEPTags(rule.Tags))
 	_ = d.Set("organization_id", rule.Scope.ID)
 
-	if rule.ImpactWeight != 0 {
-		_ = d.Set("impact_weight", rule.ImpactWeight)
-	}
-	if rule.ProgressLevel != "" {
-		_ = d.Set("progress_level", rule.ProgressLevel)
-	}
-	if rule.RunInterval != 0 {
-		_ = d.Set("run_interval", rule.RunInterval)
-	}
+	// Always set these optional int/string fields so that clearing them (setting
+	// to zero/empty) is reflected in state. Guarding with != 0 / != "" would
+	// leave stale non-zero values in state when the server returns 0/"".
+	_ = d.Set("impact_weight", rule.ImpactWeight)
+	_ = d.Set("progress_level", rule.ProgressLevel)
+	_ = d.Set("run_interval", rule.RunInterval)
 
 	_ = d.Set("nrql_engine", flattenNRQLEngine(rule.NRQLEngine))
 

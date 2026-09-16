@@ -227,9 +227,10 @@ func syncTeamMembership(ctx context.Context, client *nr.NewRelic, membershipColI
 // An empty slice explicitly clears all current managers.
 func syncTeamManagers(ctx context.Context, client *nr.NewRelic, teamID string, managerUserIDs []int) error {
 	if len(managerUserIDs) == 0 {
-		_, err := client.Scorecards.EntityManagementUpdateTeam(teamID,
-			scorecards.EntityManagementTeamEntityUpdateInput{Managers: []string{}})
-		return err
+		// Managers has omitempty in TeamEntityUpdateInput, so sending an empty
+		// []string{} via the typed struct would be silently dropped by the JSON
+		// encoder. Use a raw mutation to guarantee the explicit empty list is sent.
+		return patchTeamField(ctx, client, teamID, "managers", []interface{}{})
 	}
 
 	guids, err := lookupUserNGEPGUIDs(ctx, &client.Entities, managerUserIDs)
