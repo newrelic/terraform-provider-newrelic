@@ -8,20 +8,20 @@ description: |-
 
 # Resource: newrelic\_change\_tracking\_deployment
 
-Use this resource to create a deployment marker for change tracking in New Relic. Details regarding change tracking and supported entity types can be found [here](https://docs.newrelic.com/docs/change-tracking/change-tracking-introduction/).
+Use this resource to create and manage New Relic change tracking deployment markers. Details regarding change tracking and supported entity types can be found [here](https://docs.newrelic.com/docs/change-tracking/change-tracking-introduction/).
 
 ## Example Usage
 
 ```hcl
 resource "newrelic_change_tracking_deployment" "foo" {
-  entity_guid     = "MXxBUE18QVBQTElDQVRJT058MTIzNDU2Nzg"
+  entity_guid     = "MXxBUE18QVBQTElDQVRJT058MQ"
   version         = "v1.2.3"
   deployment_type = "BASIC"
+  commit          = "abc123"
   changelog       = "https://github.com/example/repo/blob/main/CHANGELOG.md"
-  commit          = "abc123def456"
+  description     = "Example deployment"
   deep_link       = "https://ci.example.com/builds/42"
-  description     = "Deploying version v1.2.3 to production"
-  group_id        = "deployment-group-1"
+  group_id        = "my-group-id"
   user            = "deployer-bot"
   timestamp       = 1698000000000
 }
@@ -31,14 +31,14 @@ resource "newrelic_change_tracking_deployment" "foo" {
 
 The following arguments are supported:
 
-* `entity_guid` - (Required) The GUID of the entity the deployment belongs to.
 * `version` - (Required) The version of the deployed software, for example, something like v1.1.
+* `entity_guid` - (Required) The GUID of the entity the deployment belongs to.
 * `changelog` - (Optional) A URL for the changelog or, if not linkable, a list of changes.
 * `commit` - (Optional) The commit identifier, for example, a Git commit SHA.
 * `deep_link` - (Optional) A URL to the system that generated the deployment.
 * `deployment_type` - (Optional) The type of deployment. One of: `BASIC`, `BLUE_GREEN`, `CANARY`, `OTHER`, `ROLLING`, or `SHADOW`.
 * `description` - (Optional) A description of the deployment.
-* `group_id` - (Optional) An identifier used to correlate account-wide changes across entities.
+* `group_id` - (Optional) An identifier used to correlate account-wide changes across entities. These changes are shown together in the `Changes in group` section of the change event details UI.
 * `timestamp` - (Optional) The start time of the deployment as the number of milliseconds since the Unix epoch. Should be within the boundary of the past or future 24 hours. Defaults to now.
 * `user` - (Optional) The username of the deployer or bot.
 
