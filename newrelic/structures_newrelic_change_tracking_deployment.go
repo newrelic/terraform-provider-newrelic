@@ -1,19 +1,20 @@
 package newrelic
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/changetracking"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/nrtime"
-	"time"
 )
 
 func expandChangeTrackingDeployment(d *schema.ResourceData) (changetracking.ChangeTrackingDataHandlingRules, changetracking.ChangeTrackingDeploymentInput, error) {
 	dataHandlingRules := changetracking.ChangeTrackingDataHandlingRules{}
 
 	deployment := changetracking.ChangeTrackingDeploymentInput{
-		Version:    d.Get("version").(string),
 		EntityGUID: common.EntityGUID(d.Get("entity_guid").(string)),
+		Version:    d.Get("version").(string),
 	}
 
 	if v, ok := d.GetOk("changelog"); ok {
