@@ -80,7 +80,7 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 				Description: "The username of the deployer or bot.",
 			},
 
-			// Computed
+			// Computed (result-only)
 			"deployment_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -101,10 +101,10 @@ func listValidChangeTrackingDeploymentTypes() []string {
 	}
 }
 
-var _ = common.EntityGUID("")
 var _ = log.Printf
-var _ = diag.FromErr
 var _ = context.Background
+var _ diag.Diagnostics
+var _ = common.EntityGUID("")
 
 func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -115,7 +115,7 @@ func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating New Relic change tracking deployment for entity GUID %s", deployment.EntityGUID)
+	log.Printf("[INFO] Creating New Relic change tracking deployment for entity %s", deployment.EntityGUID)
 
 	result, err := client.ChangeTracking.ChangeTrackingCreateDeploymentWithContext(ctx, dataHandlingRules, deployment)
 	if err != nil {
