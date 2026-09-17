@@ -63,6 +63,16 @@ func resourceNewRelicLogParsingRule() *schema.Resource {
 				Description: "Whether or not this rule is deleted.",
 				Computed:    true,
 			},
+			"source": {
+				Type:        schema.TypeString,
+				Description: "The source of the parsing rule.",
+				Computed:    true,
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Description: "The date and time when the rule was last updated.",
+				Computed:    true,
+			},
 			"matched": {
 				Type:        schema.TypeBool,
 				Description: "Whether the Grok pattern matched.",
@@ -173,6 +183,9 @@ func resourceNewRelicLogParsingRuleRead(ctx context.Context, d *schema.ResourceD
 	if err := d.Set("deleted", rule.Deleted); err != nil {
 		return diag.FromErr(err)
 	}
+
+	_ = d.Set("source", string(rule.Source))
+	_ = d.Set("updated_at", string(rule.UpdatedAt))
 
 	return nil
 }
