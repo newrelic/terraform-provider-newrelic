@@ -59,12 +59,15 @@ The following arguments are supported:
 * `account_id` - (Optional) The account id associated with the obfuscation rule.
 * `matched` - (Optional) Whether the Grok pattern matched.
 
-
-
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+* `source` - The source of the parsing rule.
+* `updated_at` - The date and time when the rule was last updated.
+
+
+
 
 * `id` - The id of the log parsing rule.
 
