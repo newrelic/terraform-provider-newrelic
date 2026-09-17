@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,11 +24,10 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 				Description: "The version of the deployed software, for example, something like v1.1.",
 			},
 			"entity_guid": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The GUID of the entity the deployment is associated with.",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The NR entity that was deployed.",
 			},
 			"changelog": {
 				Type:        schema.TypeString,
@@ -54,7 +52,7 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(listValidChangeTrackingDeploymentTypes(), false),
-				Description:  fmt.Sprintf("The type of deployment. One of: (%s).", listValidChangeTrackingDeploymentTypesString()),
+				Description:  "The type of deployment, for example, 'Blue green' or 'Rolling'.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -85,7 +83,7 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 			"deployment_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The unique deployment identifier.",
+				Description: "A unique deployment identifier.",
 			},
 		},
 	}
@@ -102,29 +100,24 @@ func listValidChangeTrackingDeploymentTypes() []string {
 	}
 }
 
-func listValidChangeTrackingDeploymentTypesString() string {
-	types := listValidChangeTrackingDeploymentTypes()
-	result := ""
-	for i, t := range types {
-		if i > 0 {
-			result += ", "
-		}
-		result += t
-	}
-	return result
-}
+// ensure imports used by CRUD are referenced
+var _ = log.Printf
+var _ = context.Background
+var _ = diag.FromErr
+var _ = common.EntityGUID("")
 
 func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderConfig).NewClient
+	providerConfig := meta.(*ProviderConfig)
+	client := providerConfig.NewClient
 
-	log.Printf("[INFO] Creating New Relic change tracking deployment")
-
-	dataHandlingRules, input, err := expandChangeTrackingDeployment(d)
+	dataHandlingRules, deployment, err := expandChangeTrackingDeployment(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	result, err := client.ChangeTracking.ChangeTrackingCreateDeploymentWithContext(ctx, dataHandlingRules, input)
+	log.Printf("[INFO] Creating New Relic change tracking deployment for entity %s", deployment.EntityGUID)
+
+	result, err := client.ChangeTracking.ChangeTrackingCreateDeploymentWithContext(ctx, dataHandlingRules, deployment)
 	if err != nil {
 		return diag.FromErr(err)
 	}
