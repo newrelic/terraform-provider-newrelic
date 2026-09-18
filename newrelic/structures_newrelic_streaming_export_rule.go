@@ -6,45 +6,44 @@ import (
 )
 
 func expandStreamingExportRule(d *schema.ResourceData) (streamingexport.StreamingExportAwsInput, streamingexport.StreamingExportAzureInput, streamingexport.StreamingExportGcpInput, streamingexport.StreamingExportRuleInput, error) {
-	awsInput := streamingexport.StreamingExportAwsInput{}
-	azureInput := streamingexport.StreamingExportAzureInput{}
-	gcpInput := streamingexport.StreamingExportGcpInput{}
-
-	ruleInput := streamingexport.StreamingExportRuleInput{
+	ruleParameters := streamingexport.StreamingExportRuleInput{
 		Name: d.Get("name").(string),
 		NRQL: streamingexport.NRQL(d.Get("nrql").(string)),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		ruleInput.Description = v.(string)
+		ruleParameters.Description = v.(string)
 	}
 
 	if v, ok := d.GetOk("payload_compression"); ok {
-		ruleInput.PayloadCompression = streamingexport.StreamingExportPayloadCompression(v.(string))
+		ruleParameters.PayloadCompression = streamingexport.StreamingExportPayloadCompression(v.(string))
 	}
 
+	var awsParameters streamingexport.StreamingExportAwsInput
 	if v, ok := d.GetOk("aws"); ok {
 		items := v.([]interface{})
 		if len(items) > 0 {
-			awsInput = expandStreamingExportRuleAws(items[0].(map[string]interface{}))
+			awsParameters = expandStreamingExportRuleAws(items[0].(map[string]interface{}))
 		}
 	}
 
+	var azureParameters streamingexport.StreamingExportAzureInput
 	if v, ok := d.GetOk("azure"); ok {
 		items := v.([]interface{})
 		if len(items) > 0 {
-			azureInput = expandStreamingExportRuleAzure(items[0].(map[string]interface{}))
+			azureParameters = expandStreamingExportRuleAzure(items[0].(map[string]interface{}))
 		}
 	}
 
+	var gcpParameters streamingexport.StreamingExportGcpInput
 	if v, ok := d.GetOk("gcp"); ok {
 		items := v.([]interface{})
 		if len(items) > 0 {
-			gcpInput = expandStreamingExportRuleGcp(items[0].(map[string]interface{}))
+			gcpParameters = expandStreamingExportRuleGcp(items[0].(map[string]interface{}))
 		}
 	}
 
-	return awsInput, azureInput, gcpInput, ruleInput, nil
+	return awsParameters, azureParameters, gcpParameters, ruleParameters, nil
 }
 
 func expandStreamingExportRuleAws(cfg map[string]interface{}) streamingexport.StreamingExportAwsInput {
@@ -97,61 +96,61 @@ func expandStreamingExportRuleGcp(cfg map[string]interface{}) streamingexport.St
 	return input
 }
 
-func flattenStreamingExportRule(result *streamingexport.StreamingExportRule, d *schema.ResourceData) error {
-	if result == nil {
+func flattenStreamingExportRule(rule *streamingexport.StreamingExportRule, d *schema.ResourceData) error {
+	if rule == nil {
 		return nil
 	}
 
-	if err := d.Set("name", result.Name); err != nil {
+	if err := d.Set("name", rule.Name); err != nil {
 		return err
 	}
 
-	if err := d.Set("nrql", string(result.NRQL)); err != nil {
+	if err := d.Set("nrql", string(rule.NRQL)); err != nil {
 		return err
 	}
 
-	if err := d.Set("description", result.Description); err != nil {
+	if err := d.Set("description", rule.Description); err != nil {
 		return err
 	}
 
-	if err := d.Set("payload_compression", string(result.PayloadCompression)); err != nil {
+	if err := d.Set("payload_compression", string(rule.PayloadCompression)); err != nil {
 		return err
 	}
 
-	if err := d.Set("status", string(result.Status)); err != nil {
+	if err := d.Set("status", string(rule.Status)); err != nil {
 		return err
 	}
 
-	if err := d.Set("message", result.Message); err != nil {
+	if err := d.Set("message", rule.Message); err != nil {
 		return err
 	}
 
-	if err := d.Set("created_at", string(result.CreatedAt)); err != nil {
+	if err := d.Set("created_at", string(rule.CreatedAt)); err != nil {
 		return err
 	}
 
-	if err := d.Set("updated_at", string(result.UpdatedAt)); err != nil {
+	if err := d.Set("updated_at", string(rule.UpdatedAt)); err != nil {
 		return err
 	}
 
-	if err := d.Set("account_id", result.Account.ID); err != nil {
+	if err := d.Set("account_id", rule.Account.ID); err != nil {
 		return err
 	}
 
-	if result.Aws != (streamingexport.StreamingExportAwsDetails{}) {
-		if err := d.Set("aws", flattenStreamingExportAwsDetails(result.Aws)); err != nil {
+	if rule.Aws != (streamingexport.StreamingExportAwsDetails{}) {
+		if err := d.Set("aws", flattenStreamingExportAwsDetails(rule.Aws)); err != nil {
 			return err
 		}
 	}
 
-	if result.Azure != (streamingexport.StreamingExportAzureDetails{}) {
-		if err := d.Set("azure", flattenStreamingExportAzureDetails(result.Azure)); err != nil {
+	if rule.Azure != (streamingexport.StreamingExportAzureDetails{}) {
+		if err := d.Set("azure", flattenStreamingExportAzureDetails(rule.Azure)); err != nil {
 			return err
 		}
 	}
 
-	if result.Gcp != (streamingexport.StreamingExportGcpDetails{}) {
-		if err := d.Set("gcp", flattenStreamingExportGcpDetails(result.Gcp)); err != nil {
+	if rule.Gcp != (streamingexport.StreamingExportGcpDetails{}) {
+		if err := d.Set("gcp", flattenStreamingExportGcpDetails(rule.Gcp)); err != nil {
 			return err
 		}
 	}
