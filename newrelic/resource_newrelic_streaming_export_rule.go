@@ -51,7 +51,7 @@ func resourceNewRelicStreamingExportRule() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(listValidStreamingExportPayloadCompressionTypes(), false),
-				Description:  fmt.Sprintf("Whether to compress payloads before sending them out. One of: (%s).", listValidStreamingExportPayloadCompressionTypesStr()),
+				Description:  fmt.Sprintf("Whether to compress payloads before sending them out. One of: (%s).", fmt.Sprintf("%s, %s", string(streamingexport.StreamingExportPayloadCompressionTypes.DISABLED), string(streamingexport.StreamingExportPayloadCompressionTypes.GZIP))),
 			},
 			"aws": {
 				Type:        schema.TypeList,
@@ -167,18 +167,11 @@ func listValidStreamingExportPayloadCompressionTypes() []string {
 	}
 }
 
-func listValidStreamingExportPayloadCompressionTypesStr() string {
-	return fmt.Sprintf("%s, %s",
-		string(streamingexport.StreamingExportPayloadCompressionTypes.DISABLED),
-		string(streamingexport.StreamingExportPayloadCompressionTypes.GZIP),
-	)
-}
-
-// Ensure unused imports are referenced in CRUD functions generated separately.
+// Ensure unused imports are referenced (they are used in CRUD functions appended later).
 var _ = context.Background
 var _ = log.Printf
-var _ = diag.FromErr
 var _ = nrErrors.NewNotFound
+var _ diag.Diagnostics
 
 func resourceNewRelicStreamingExportRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
