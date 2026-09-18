@@ -534,7 +534,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 	}
 
 	if v, ok := fetchAttributeValueFromResourceConfig(d, "monitor"); ok {
-		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(v.([]interface{}), linkedAccountID)
+		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(d, v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("monitor"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -1255,7 +1255,7 @@ func expandCloudAzureIntegrationMariadbInput(b []interface{}, linkedAccountID in
 }
 
 // Expanding the input for the azureMonitor integration
-func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMonitorIntegrationInput {
+func expandCloudAzureIntegrationMonitorInput(d *schema.ResourceData, b []interface{}, linkedAccountID int) []cloud.CloudAzureMonitorIntegrationInput {
 	expanded := make([]cloud.CloudAzureMonitorIntegrationInput, len(b))
 
 	for i, azureMonitor := range b {
@@ -1293,23 +1293,11 @@ func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID in
 			azureMonitorInput.ResourceTypes = rTypes
 		}
 		if et, ok := in["exclude_tags"]; ok {
-			excludeTags := et.([]interface{})
-			var eTags []string
-
-			for _, eTag := range excludeTags {
-				eTags = append(eTags, eTag.(string))
-			}
-			azureMonitorInput.ExcludeTags = eTags
+			azureMonitorInput.ExcludeTags = expandCloudAzureMonitorTags(d, i, "exclude_tags", et)
 		}
 
 		if it, ok := in["include_tags"]; ok {
-			includeTags := it.([]interface{})
-			var iTags []string
-
-			for _, iTag := range includeTags {
-				iTags = append(iTags, iTag.(string))
-			}
-			azureMonitorInput.IncludeTags = iTags
+			azureMonitorInput.IncludeTags = expandCloudAzureMonitorTags(d, i, "include_tags", it)
 		}
 
 		if enabled, ok := in["enabled"]; ok {
@@ -1320,6 +1308,66 @@ func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID in
 	}
 
 	return expanded
+}
+
+// expandCloudAzureMonitorTags builds the value sent to NerdGraph for the "include_tags" or
+// "exclude_tags" attribute of the "monitor" block at monitorIndex.
+//
+// These two fields carry no `omitempty` in newrelic-client-go, so the slice returned here decides
+// what NerdGraph does with the tags already configured on the integration:
+//
+//	nil        -> marshalled as `null`, which leaves the existing tags untouched
+//	[]string{} -> marshalled as `[]`, which clears the existing tags
+//
+// ResourceData reports an empty list both when the attribute is absent from the configuration and
+// when it is explicitly set to `[]`, so the raw configuration is what tells the two apart.
+func expandCloudAzureMonitorTags(d *schema.ResourceData, monitorIndex int, attributeName string, attributeValue interface{}) []string {
+	tags := attributeValue.([]interface{})
+
+	if len(tags) == 0 {
+		if isCloudAzureMonitorAttributeNullInConfig(d, monitorIndex, attributeName) {
+			return nil
+		}
+		return []string{}
+	}
+
+	expanded := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		expanded = append(expanded, tag.(string))
+	}
+
+	return expanded
+}
+
+// isCloudAzureMonitorAttributeNullInConfig reports whether monitor[monitorIndex].<attributeName> is
+// absent from the Terraform configuration. Anything other than a known, non-null value in the raw
+// configuration counts as absent, so an unspecified attribute is never mistaken for an explicit
+// empty list. Note that GetRawConfig returns a null value when no raw configuration is available,
+// which lands on the same "leave the existing tags alone" behaviour.
+func isCloudAzureMonitorAttributeNullInConfig(d *schema.ResourceData, monitorIndex int, attributeName string) bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() || !rawConfig.IsKnown() || !rawConfig.Type().IsObjectType() || !rawConfig.Type().HasAttribute("monitor") {
+		return true
+	}
+
+	monitor := rawConfig.GetAttr("monitor")
+	if monitor.IsNull() || !monitor.IsKnown() {
+		return true
+	}
+
+	monitorBlocks := monitor.AsValueSlice()
+	if monitorIndex >= len(monitorBlocks) {
+		return true
+	}
+
+	monitorBlock := monitorBlocks[monitorIndex]
+	if monitorBlock.IsNull() || !monitorBlock.IsKnown() || !monitorBlock.Type().IsObjectType() || !monitorBlock.Type().HasAttribute(attributeName) {
+		return true
+	}
+
+	tags := monitorBlock.GetAttr(attributeName)
+
+	return tags.IsNull() || !tags.IsKnown()
 }
 
 // Expanding the Azure_mysql
