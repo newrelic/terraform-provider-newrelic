@@ -181,6 +181,89 @@ func TestAccNewRelicNotebook_ContentMode(t *testing.T) {
 	})
 }
 
+// testAccNotebookConfigHeredocJSON returns a notebook whose content is written
+// as a multi-line heredoc raw JSON string — the authoring style most users
+// adopt when they don't want to use jsonencode. Exercises the heredoc JSON
+// parse, normalize, and DiffSuppress paths.
+func testAccNotebookConfigHeredocJSON(name string, accountID int) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = <<-JSON
+    {
+      "type": "declarative",
+      "version": 1,
+      "content": [
+        {
+          "type": "container",
+          "props": { "layout": "stack" },
+          "content": [
+            {
+              "type": "widget",
+              "content": {
+                "type": "visualization",
+                "id": "viz.markdown",
+                "props": { "text": "## Heredoc JSON test" }
+              }
+            },
+            {
+              "type": "widget",
+              "props": { "title": "Request count" },
+              "content": {
+                "type": "visualization",
+                "id": "viz.billboard",
+                "props": {
+                  "nrqlQueries": [
+                    { "accountIds": [%[2]d], "query": "SELECT count(*) FROM Transaction SINCE 1 hour ago" }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  JSON
+}
+`, name, accountID)
+}
+
+// TestAccNewRelicNotebook_HeredocJSON verifies the full lifecycle using a
+// multi-line heredoc raw JSON string — the most common real-world authoring
+// style. Confirms that create, no-drift, and import all work correctly.
+func TestAccNewRelicNotebook_HeredocJSON(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-heredoc-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotebookConfigHeredocJSON(rName, testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "title", rName),
+					resource.TestCheckResourceAttrSet(resourceName, "guid"),
+					resource.TestCheckResourceAttrSet(resourceName, "content"),
+				),
+			},
+			// No drift — normalized heredoc JSON must round-trip cleanly.
+			{
+				Config:             testAccNotebookConfigHeredocJSON(rName, testAccountID),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 // TestAccNewRelicNotebook_ReformatNoDrift verifies that reformatting
 // content (key reordering, whitespace) does not trigger a plan change.
 func TestAccNewRelicNotebook_ReformatNoDrift(t *testing.T) {
