@@ -59,6 +59,8 @@ All nested `action` blocks support the following common arguments:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the obfuscation rule.
+* `created_at` - The date and time when the rule was created.
+* `updated_at` - The date and time when the rule was last updated.
 
 ## Import
 
