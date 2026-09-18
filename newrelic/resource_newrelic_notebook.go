@@ -37,7 +37,6 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: suppressEquivalentNotebookContent,
-				ValidateFunc:     validateNotebookContent,
 				Description:      "The notebook body as a JSON string. Accepts a raw JSON string, a file() reference, or a jsonencode({...}) expression.",
 			},
 			"organization_id": {

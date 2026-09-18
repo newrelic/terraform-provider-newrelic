@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -13,70 +14,158 @@ import (
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
-// validateNotebookContent is the ValidateFunc for both content and content.
-// It enforces that the value is non-empty, valid JSON, and matches the minimum
-// declarative UI envelope: { "type": "declarative", "version": 1, "content": [...] }.
-func validateNotebookContent(v interface{}, k string) (warnings []string, errors []error) {
-	raw, ok := v.(string)
-	if !ok || raw == "" {
-		errors = append(errors, fmt.Errorf("%q must not be empty", k))
-		return
+// checkEnvelopeErrors validates the minimum declarative UI envelope:
+//
+//	{ "type": "declarative", "version": 1, "content": [ <single container> ] }
+//
+// It returns a slice of plain error strings (never the raw JSON) so callers can
+// pool them with other validation results before surfacing them to the user.
+func checkEnvelopeErrors(raw string) []string {
+	if raw == "" {
+		return []string{"content must not be empty"}
 	}
 
 	var doc map[string]interface{}
 	if err := json.Unmarshal([]byte(raw), &doc); err != nil {
-		errors = append(errors, fmt.Errorf("%q is not valid JSON: %w", k, err))
-		return
+		return []string{jsonParseHint(raw, err)}
 	}
+
+	var errs []string
 
 	t, hasType := doc["type"]
 	if !hasType {
-		errors = append(errors, fmt.Errorf(`%q: missing required field "type" (expected "declarative")`, k))
+		errs = append(errs, `missing required field "type" — expected "declarative"`)
 	} else if t != "declarative" {
-		errors = append(errors, fmt.Errorf(`%q: "type" must be "declarative", got %q`, k, t))
-	}
-
-	if _, hasContent := doc["content"]; !hasContent {
-		errors = append(errors, fmt.Errorf(`%q: missing required field "content" (expected an array with exactly one container block)`, k))
-	} else if containers, isArray := doc["content"].([]interface{}); !isArray {
-		errors = append(errors, fmt.Errorf(`%q: "content" must be an array`, k))
-	} else if len(containers) > 1 {
-		errors = append(errors, fmt.Errorf(`%q: "content" must contain exactly one container, got %d; the New Relic Notebooks UI only renders the first container — place all widgets inside a single container block`, k, len(containers)))
+		errs = append(errs, fmt.Sprintf(`"type" must be "declarative", got %q`, t))
 	}
 
 	if ver, hasVersion := doc["version"]; !hasVersion {
-		errors = append(errors, fmt.Errorf(`%q: missing required field "version" (expected 1)`, k))
+		errs = append(errs, `missing required field "version" — expected the integer 1`)
 	} else {
 		// json.Unmarshal decodes numbers as float64; accept integer 1 only.
 		if f, ok := ver.(float64); !ok || f != 1 {
-			errors = append(errors, fmt.Errorf(`%q: "version" must be the integer 1, got %#v (%T)`, k, ver, ver))
+			errs = append(errs, fmt.Sprintf(`"version" must be the integer 1, got %s`, jsonValueDesc(ver)))
 		}
 	}
 
+	if _, hasContent := doc["content"]; !hasContent {
+		errs = append(errs, `missing required field "content" — expected an array containing exactly one container block`)
+	} else if containers, isArray := doc["content"].([]interface{}); !isArray {
+		errs = append(errs, `"content" must be a JSON array`)
+	} else if len(containers) > 1 {
+		errs = append(errs, fmt.Sprintf(
+			`"content" array must contain exactly one container block, got %d — the New Relic UI only renders the first container; place all widgets inside a single container`,
+			len(containers),
+		))
+	} else if len(containers) == 1 {
+		// Validate the single container has at least one widget.
+		if container, ok := containers[0].(map[string]interface{}); ok {
+			widgets, _ := container["content"].([]interface{})
+			if len(widgets) == 0 {
+				errs = append(errs, `the container in "content[0]" has no widgets — add at least one widget block inside the container's "content" array`)
+			}
+		}
+	}
+
+	return errs
+}
+
+// jsonParseHint converts a json.Unmarshal error into a user-friendly message.
+// It surfaces line/column info from json.SyntaxError (far more useful than a
+// raw byte offset) and adds actionable hints for common mistakes such as using
+// comments or trailing commas in raw JSON strings.
+func jsonParseHint(raw string, err error) string {
+	var synErr *json.SyntaxError
+	if !errors.As(err, &synErr) {
+		return fmt.Sprintf("not valid JSON: %s", err)
+	}
+
+	offset := synErr.Offset
+	line, col := byteOffsetToLineCol(raw, offset)
+	base := fmt.Sprintf("JSON syntax error at line %d, column %d", line, col)
+
+	if offset > 0 && int(offset) <= len(raw) {
+		ch := rune(raw[offset-1])
+		switch {
+		case ch == '#':
+			base += " — found '#': JSON does not support comments; use jsonencode({...}) in Terraform instead of a raw JSON string"
+		case ch == '/' && int(offset) < len(raw) && raw[offset] == '/':
+			// SyntaxError.Offset points to the first '/' of '//'; the second '/' is raw[offset].
+			base += " — found '//': JSON does not support comments; use jsonencode({...}) instead"
+		default:
+			base += fmt.Sprintf(" — unexpected character %q", ch)
+		}
+	}
+
+	return base
+}
+
+// byteOffsetToLineCol converts a 1-based byte offset (as returned by
+// json.SyntaxError.Offset) to a 1-based line and column number. Both line and
+// column are 1-based so they match what editors display.
+func byteOffsetToLineCol(s string, offset int64) (line, col int) {
+	line, col = 1, 1
+	for i := int64(0); i < offset-1 && i < int64(len(s)); i++ {
+		if s[i] == '\n' {
+			line++
+			col = 1
+		} else {
+			col++
+		}
+	}
 	return
 }
 
-// customizeNotebookDiff enforces widget-level props rules at plan time.
-// Using CustomizeDiff (rather than ValidateFunc) means Terraform does not echo
-// the full JSON body in the error output when a violation is found.
+// jsonValueDesc formats a json.Unmarshal-decoded value in a user-friendly way,
+// avoiding Go-internal type names (float64, bool, etc.) in error messages.
+func jsonValueDesc(v interface{}) string {
+	switch val := v.(type) {
+	case float64:
+		// JSON numbers are decoded as float64; show the numeric value.
+		if val == float64(int64(val)) {
+			return fmt.Sprintf("%d (number)", int64(val))
+		}
+		return fmt.Sprintf("%g (number)", val)
+	case string:
+		return fmt.Sprintf("%q (string)", val)
+	case bool:
+		return fmt.Sprintf("%v (boolean)", val)
+	case nil:
+		return "null"
+	default:
+		return fmt.Sprintf("%T", v)
+	}
+}
+
+// customizeNotebookDiff runs all content validation at plan time.
+// Using CustomizeDiff (rather than ValidateFunc) means Terraform never echoes
+// the full JSON body in the error output — only the concise error messages are shown.
 func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !d.HasChange("content") {
-		return nil
-	}
-
 	raw := d.Get("content").(string)
-	if raw == "" {
+
+	// Skip validation only when the content is unchanged AND non-empty — meaning
+	// it was already validated on a previous plan. An empty string always requires
+	// validation because the Terraform SDK treats nil and "" as equivalent for string
+	// fields, so d.HasChange returns false even for a brand-new resource with content = "".
+	if raw != "" && !d.HasChange("content") {
 		return nil
 	}
 
-	errs := checkWidgetLevelProps(raw)
-	if len(errs) == 0 {
+	// Pool envelope errors first; if any exist, skip the widget-level check
+	// because the document structure may be too broken to walk safely.
+	var allErrs []string
+	allErrs = append(allErrs, checkEnvelopeErrors(raw)...)
+	if len(allErrs) == 0 {
+		allErrs = append(allErrs, checkWidgetLevelProps(raw)...)
+	}
+
+	if len(allErrs) == 0 {
 		return nil
 	}
 
-	msg := "the following widget props violations were found:\n"
-	for i, e := range errs {
-		msg += fmt.Sprintf("(%d) %s\n", i+1, e)
+	msg := "invalid notebook content:\n"
+	for i, e := range allErrs {
+		msg += fmt.Sprintf("  (%d) %s\n", i+1, e)
 	}
 	return fmt.Errorf("%s", strings.TrimRight(msg, "\n"))
 }

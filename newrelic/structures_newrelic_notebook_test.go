@@ -149,67 +149,67 @@ func TestCheckWidgetLevelProps_InvalidJSONReturnNil(t *testing.T) {
 	}
 }
 
-// ── validateNotebookContent ───────────────────────────────────────────────────
+// ── checkEnvelopeErrors ───────────────────────────────────────────────────────
 
-func TestValidateNotebookContent_ValidEnvelope(t *testing.T) {
-	_, errs := validateNotebookContent(`{"type":"declarative","version":1,"content":[]}`, "content")
+func TestCheckEnvelopeErrors_ValidEnvelope(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"type":"declarative","version":1,"content":[]}`)
 	if len(errs) != 0 {
 		t.Errorf("expected no errors for valid envelope, got: %v", errs)
 	}
 }
 
-func TestValidateNotebookContent_EmptyString(t *testing.T) {
-	_, errs := validateNotebookContent("", "content")
+func TestCheckEnvelopeErrors_EmptyString(t *testing.T) {
+	errs := checkEnvelopeErrors("")
 	if len(errs) == 0 {
 		t.Error("expected error for empty string")
 	}
 }
 
-func TestValidateNotebookContent_InvalidJSON(t *testing.T) {
-	_, errs := validateNotebookContent("{not json}", "content")
-	if len(errs) == 0 || !strings.Contains(errs[0].Error(), "not valid JSON") {
+func TestCheckEnvelopeErrors_InvalidJSON(t *testing.T) {
+	errs := checkEnvelopeErrors("{not json}")
+	if len(errs) == 0 || !strings.Contains(errs[0], "JSON syntax error") {
 		t.Errorf("expected JSON parse error, got: %v", errs)
 	}
 }
 
-func TestValidateNotebookContent_MissingType(t *testing.T) {
-	_, errs := validateNotebookContent(`{"version":1,"content":[]}`, "content")
-	if len(errs) == 0 || !strings.Contains(errs[0].Error(), `missing required field "type"`) {
+func TestCheckEnvelopeErrors_MissingType(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"version":1,"content":[]}`)
+	if len(errs) == 0 || !strings.Contains(errs[0], `missing required field "type"`) {
 		t.Errorf("expected missing-type error, got: %v", errs)
 	}
 }
 
-func TestValidateNotebookContent_WrongType(t *testing.T) {
-	_, errs := validateNotebookContent(`{"type":"legacy","version":1,"content":[]}`, "content")
-	if len(errs) == 0 || !strings.Contains(errs[0].Error(), `must be "declarative"`) {
+func TestCheckEnvelopeErrors_WrongType(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"type":"legacy","version":1,"content":[]}`)
+	if len(errs) == 0 || !strings.Contains(errs[0], `must be "declarative"`) {
 		t.Errorf("expected wrong-type error, got: %v", errs)
 	}
 }
 
-func TestValidateNotebookContent_MissingVersion(t *testing.T) {
-	_, errs := validateNotebookContent(`{"type":"declarative","content":[]}`, "content")
-	if len(errs) == 0 || !strings.Contains(errs[0].Error(), `missing required field "version"`) {
+func TestCheckEnvelopeErrors_MissingVersion(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"type":"declarative","content":[]}`)
+	if len(errs) == 0 || !strings.Contains(errs[0], `missing required field "version"`) {
 		t.Errorf("expected missing-version error, got: %v", errs)
 	}
 }
 
-func TestValidateNotebookContent_VersionAsString(t *testing.T) {
-	_, errs := validateNotebookContent(`{"type":"declarative","version":"1","content":[]}`, "content")
-	if len(errs) == 0 || !strings.Contains(errs[0].Error(), `"version" must be the integer 1`) {
+func TestCheckEnvelopeErrors_VersionAsString(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"type":"declarative","version":"1","content":[]}`)
+	if len(errs) == 0 || !strings.Contains(errs[0], `"version" must be the integer 1`) {
 		t.Errorf("expected version-type error, got: %v", errs)
 	}
 }
 
-func TestValidateNotebookContent_VersionWrongInteger(t *testing.T) {
-	_, errs := validateNotebookContent(`{"type":"declarative","version":2,"content":[]}`, "content")
+func TestCheckEnvelopeErrors_VersionWrongInteger(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"type":"declarative","version":2,"content":[]}`)
 	if len(errs) == 0 {
 		t.Error("expected error for version 2")
 	}
 }
 
-func TestValidateNotebookContent_ContentNotArray(t *testing.T) {
-	_, errs := validateNotebookContent(`{"type":"declarative","version":1,"content":{}}`, "content")
-	if len(errs) == 0 || !strings.Contains(errs[0].Error(), `"content" must be an array`) {
+func TestCheckEnvelopeErrors_ContentNotArray(t *testing.T) {
+	errs := checkEnvelopeErrors(`{"type":"declarative","version":1,"content":{}}`)
+	if len(errs) == 0 || !strings.Contains(errs[0], `"content" must be a JSON array`) {
 		t.Errorf("expected content-not-array error, got: %v", errs)
 	}
 }
