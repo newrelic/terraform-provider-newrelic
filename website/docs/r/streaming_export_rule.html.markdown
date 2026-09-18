@@ -41,11 +41,9 @@ The following arguments are supported:
 * `nrql` - (Required) NRQL to select the telemetry data to export.
 * `description` - (Optional) Additional information about the streaming export rule.
 * `payload_compression` - (Optional) Whether to compress payloads before sending them out. One of: `DISABLED`, `GZIP`.
-* `aws` - (Optional) A nested block that describes AWS parameters for the streaming export rule. Only one `aws` block is permitted per streaming export rule definition. See [Nested aws blocks](#nested-aws-blocks) below for details.
-* `azure` - (Optional) A nested block that describes Azure parameters for the streaming export rule. Only one `azure` block is permitted per streaming export rule definition. See [Nested azure blocks](#nested-azure-blocks) below for details.
-* `gcp` - (Optional) A nested block that describes GCP parameters for the streaming export rule. Only one `gcp` block is permitted per streaming export rule definition. See [Nested gcp blocks](#nested-gcp-blocks) below for details.
-
-~> **NOTE:** Exactly one of `aws`, `azure`, or `gcp` must be specified.
+* `aws` - (Optional) A nested block that describes AWS parameters for the streaming export rule. Only one `aws` block is permitted per resource definition. See [Nested aws blocks](#nested-aws-blocks) below for details.
+* `azure` - (Optional) A nested block that describes Azure parameters for the streaming export rule. Only one `azure` block is permitted per resource definition. See [Nested azure blocks](#nested-azure-blocks) below for details.
+* `gcp` - (Optional) A nested block that describes GCP parameters for the streaming export rule. Only one `gcp` block is permitted per resource definition. See [Nested gcp blocks](#nested-gcp-blocks) below for details.
 
 ### Nested `aws` blocks
 
@@ -64,6 +62,8 @@ The following arguments are supported:
 * `gcp_project_id` - (Required) The GCP project ID.
 * `pubsub_topic_id` - (Required) The Pub/Sub topic ID.
 
+~> **NOTE:** Exactly one of `aws`, `azure`, or `gcp` must be specified per streaming export rule.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -76,28 +76,30 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional Examples
 
-##### Azure Event Hub
+~> **NOTE:** Only one of `aws`, `azure`, or `gcp` may be specified per streaming export rule.
+
+#### Azure Event Hub
 
 ```hcl
 resource "newrelic_streaming_export_rule" "foo" {
   account_id  = 12345678
-  name        = "azure-streaming-export"
+  name        = "azure-streaming-rule"
   nrql        = "SELECT * FROM Log"
   description = "An Azure streaming export rule"
 
   azure {
-    event_hub_connection_string = "Endpoint=sb://example.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=abc123"
+    event_hub_connection_string = "Endpoint=sb://my-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=abc123"
     event_hub_name              = "my-event-hub"
   }
 }
 ```
 
-##### GCP Pub/Sub
+#### GCP Pub/Sub
 
 ```hcl
 resource "newrelic_streaming_export_rule" "foo" {
   account_id  = 12345678
-  name        = "gcp-streaming-export"
+  name        = "gcp-streaming-rule"
   nrql        = "SELECT * FROM Metric"
   description = "A GCP streaming export rule"
 
@@ -108,12 +110,12 @@ resource "newrelic_streaming_export_rule" "foo" {
 }
 ```
 
-##### With GZIP Compression
+#### With GZIP Compression
 
 ```hcl
 resource "newrelic_streaming_export_rule" "foo" {
   account_id          = 12345678
-  name                = "compressed-streaming-export"
+  name                = "compressed-streaming-rule"
   nrql                = "SELECT * FROM Transaction"
   payload_compression = "GZIP"
 
@@ -134,7 +136,7 @@ Streaming export rules can be imported using a composite ID of `<account_id>:<ru
 terraform import newrelic_streaming_export_rule.foo 12345678:<rule_id>
 ```
 
-~> **NOTE:** Deletion of streaming export rules is not supported via the API. Destroying this resource will only remove it from Terraform state.
+~> **NOTE:** Deleting a streaming export rule is not supported via the API. Destroying this resource will only remove it from Terraform state.
 
 ## Additional Information
 
