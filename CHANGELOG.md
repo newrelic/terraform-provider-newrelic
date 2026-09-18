@@ -1,3 +1,9 @@
+<a name="v3.97.6"></a>
+## [v3.97.6] - 2026-09-18
+### Bug Fixes
+- **deps:** bump newrelic-client-go to v2.94.1 ([#3231](https://github.com/newrelic/terraform-provider-newrelic/issues/3231))
+- **oci:** changes for resource name resolution ([#3209](https://github.com/newrelic/terraform-provider-newrelic/issues/3209))
+
 <a name="v3.97.5"></a>
 ## [v3.97.5] - 2026-09-10
 ### Bug Fixes
@@ -2862,7 +2868,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.6...HEAD
+[v3.97.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.5...v3.97.6
 [v3.97.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.4...v3.97.5
 [v3.97.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.3...v3.97.4
 [v3.97.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.2...v3.97.3
