@@ -57,6 +57,16 @@ func resourceNewRelicObfuscationRule() *schema.Resource {
 				Required:    true,
 				Elem:        ObfuscationRuleActionInputSchemaElem(),
 			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Description: "The time the rule was created.",
+				Computed:    true,
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Description: "The time the rule was last updated.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -81,6 +91,11 @@ func ObfuscationRuleActionInputSchemaElem() *schema.Resource {
 				Required:     true,
 				Description:  "Obfuscation method to use.",
 				ValidateFunc: validation.StringInSlice(listValidLogConfigurationsObfuscationMethod(), false),
+			},
+			"action_id": {
+				Type:        schema.TypeString,
+				Description: "The id of the obfuscation action.",
+				Computed:    true,
 			},
 		},
 	}
@@ -184,6 +199,9 @@ func resourceNewRelicObfuscationRuleRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("created_at", string(rule.CreatedAt))
+	_ = d.Set("updated_at", string(rule.UpdatedAt))
+
 	return nil
 }
 
@@ -194,6 +212,7 @@ func flattenActions(actions *[]logconfigurations.LogConfigurationsObfuscationAct
 			"expression_id": v.Expression.ID,
 			"attribute":     v.Attributes,
 			"method":        v.Method,
+			"action_id":     v.ID,
 		}
 		flatActions = append(flatActions, m)
 	}
