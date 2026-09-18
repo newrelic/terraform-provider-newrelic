@@ -39,6 +39,8 @@ resource "newrelic_obfuscation_rule" "foo" {
 The following arguments are supported:
 
 * `account_id` - (Optional) The account id associated with the obfuscation rule.
+* `created_at` - (Computed) The time the rule was created.
+* `updated_at` - (Computed) The time the rule was last updated.
 * `description` - (Optional) Description of rule.
 * `name` - (Required) Name of rule.
 * `filter` - (Required) NRQL for determining whether a given log record should have obfuscation actions applied.
@@ -52,6 +54,7 @@ All nested `action` blocks support the following common arguments:
 * `attribute` - (Required) Attribute names for action. An empty list applies the action to all the attributes.
 * `expression_id` - (Required) Expression Id for action.
 * `method` - (Required) Obfuscation method to use. Methods for replacing obfuscated values are `HASH_SHA256` and `MASK`.
+* `action_id` - (Computed) The id of the obfuscation action.
 
 
 ## Attributes Reference
@@ -59,6 +62,8 @@ All nested `action` blocks support the following common arguments:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The id of the obfuscation rule.
+* `created_at` - The time the rule was created.
+* `updated_at` - The time the rule was last updated.
 
 ## Import
 
