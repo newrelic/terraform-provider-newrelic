@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -171,6 +172,11 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 	// Attach any declared rules immediately after create.
 	if wantedRules := expandRuleIDsFromSet(d.Get("rule_ids").(*schema.Set)); len(wantedRules) > 0 {
 		if _, err := client.Scorecards.EntityManagementAddCollectionMembers(rulesColID, wantedRules); err != nil {
+			if strings.Contains(err.Error(), "already belongs to collection") {
+				return diag.Errorf(
+					"attaching rules to scorecard %s: one or more rules are already attached to another scorecard — "+
+						"each rule can only belong to one scorecard at a time: %v", scorecardID, err)
+			}
 			return diag.Errorf("attaching rules to scorecard %s: %v", scorecardID, err)
 		}
 	}
@@ -241,11 +247,13 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChangesExcept("rule_ids") {
 		upd := scorecards.EntityManagementScorecardEntityUpdateInput{}
+
+		// Always include description — it has no omitempty in the API input type,
+		// so guarding behind HasChange would send "" and clear it on any tag/name update.
+		upd.Description = d.Get("description").(string)
+
 		if d.HasChange("name") {
 			upd.Name = d.Get("name").(string)
-		}
-		if d.HasChange("description") {
-			upd.Description = d.Get("description").(string)
 		}
 		if d.HasChange("tags") {
 			userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
@@ -267,6 +275,11 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 		)
 		if len(toAdd) > 0 {
 			if _, err := client.Scorecards.EntityManagementAddCollectionMembers(rulesColID, toAdd); err != nil {
+				if strings.Contains(err.Error(), "already belongs to collection") {
+					return diag.Errorf(
+						"attaching rules to scorecard %s: one or more rules are already attached to another scorecard — "+
+							"each rule can only belong to one scorecard at a time: %v", d.Id(), err)
+				}
 				return diag.Errorf("attaching rules to scorecard %s: %v", d.Id(), err)
 			}
 		}

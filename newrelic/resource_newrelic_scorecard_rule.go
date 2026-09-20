@@ -220,14 +220,16 @@ func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.Resource
 	client := meta.(*ProviderConfig).NewClient
 
 	upd := scorecards.EntityManagementScorecardRuleEntityUpdateInput{}
+
+	// Always include enabled and description — they have no omitempty in the API
+	// input type, so guarding behind HasChange would send the zero value (false/"")
+	// for any update that touches other fields, accidentally disabling the rule or
+	// clearing its description.
+	upd.Enabled = d.Get("enabled").(bool)
+	upd.Description = d.Get("description").(string)
+
 	if d.HasChange("name") {
 		upd.Name = d.Get("name").(string)
-	}
-	if d.HasChange("description") {
-		upd.Description = d.Get("description").(string)
-	}
-	if d.HasChange("enabled") {
-		upd.Enabled = d.Get("enabled").(bool)
 	}
 	if d.HasChange("nrql_engine") {
 		upd.NRQLEngine = expandNRQLEngineUpdate(d.Get("nrql_engine").([]interface{}))
