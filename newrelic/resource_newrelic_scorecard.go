@@ -41,9 +41,10 @@ func resourceNewRelicScorecard() *schema.Resource {
 		CustomizeDiff: customizeScorecardDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the scorecard.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The name of the scorecard.",
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"description": {
 				Type:        schema.TypeString,

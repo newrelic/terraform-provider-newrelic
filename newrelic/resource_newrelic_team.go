@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
@@ -31,9 +32,10 @@ func resourceNewRelicTeam() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// ── Core identity ───────────────────────────────────────────────
 			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the team. Must be unique within the organization.",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "The name of the team. Must be unique within the organization.",
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"description": {
 				Type:        schema.TypeString,
