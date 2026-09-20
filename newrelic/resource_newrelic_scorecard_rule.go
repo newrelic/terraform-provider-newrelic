@@ -100,7 +100,7 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 				ValidateFunc: validation.IntInSlice(runIntervalAllowedMinutes),
 			},
 			"tags": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Tags in 'key:value1,value2' format.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -153,7 +153,7 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 		input.RunInterval = v.(int)
 	}
 	if v, ok := d.GetOk("tags"); ok {
-		input.Tags = expandNGEPTags(v.([]interface{}))
+		input.Tags = expandNGEPTags(v.(*schema.Set).List())
 	}
 
 	result, err := client.Scorecards.EntityManagementCreateScorecardRule(input)
@@ -242,7 +242,7 @@ func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.Resource
 		upd.RunInterval = d.Get("run_interval").(int)
 	}
 	if d.HasChange("tags") {
-		userTags := expandNGEPTags(d.Get("tags").([]interface{}))
+		userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
 		sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
 		upd.Tags = mergeWithSystemTags(userTags, sysTags)
 	}

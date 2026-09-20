@@ -50,7 +50,7 @@ func resourceNewRelicScorecard() *schema.Resource {
 				Description: "A description of the scorecard.",
 			},
 			"tags": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Tags in 'key:value1,value2' format.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -148,7 +148,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		input.Description = v.(string)
 	}
 	if v, ok := d.GetOk("tags"); ok {
-		input.Tags = expandNGEPTags(v.([]interface{}))
+		input.Tags = expandNGEPTags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("progress_levels"); ok {
 		input.ProgressLevels = expandProgressLevels(v.([]interface{}))
@@ -248,7 +248,7 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 			upd.Description = d.Get("description").(string)
 		}
 		if d.HasChange("tags") {
-			userTags := expandNGEPTags(d.Get("tags").([]interface{}))
+			userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
 			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
 			upd.Tags = mergeWithSystemTags(userTags, sysTags)
 		}

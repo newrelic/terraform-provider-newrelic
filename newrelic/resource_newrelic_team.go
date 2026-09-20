@@ -47,7 +47,7 @@ func resourceNewRelicTeam() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"tags": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Tags in 'key:value1,value2' format.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -189,7 +189,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 	if v, ok := d.GetOk("tags"); ok {
-		input.Tags = expandNGEPTags(v.([]interface{}))
+		input.Tags = expandNGEPTags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("resources"); ok {
 		input.Resources = expandTeamResources(v.([]interface{}))
@@ -386,7 +386,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if d.HasChange("tags") {
-			userTags := expandNGEPTags(d.Get("tags").([]interface{}))
+			userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
 			// Always merge with current system tags (e.g. nr.hierarchy.level) —
 			// NGEP rejects any update that would remove tags prefixed with "nr.".
 			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())

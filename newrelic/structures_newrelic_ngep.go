@@ -5,7 +5,6 @@ package newrelic
 // resource-specific structures file to avoid duplication.
 
 import (
-	"sort"
 	"strings"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
@@ -55,6 +54,5 @@ func flattenNGEPTags(tags []scorecards.EntityManagementTag) []string {
 		}
 		out = append(out, t.Key+":"+strings.Join(t.Values, ","))
 	}
-	sort.Strings(out)
 	return out
 }

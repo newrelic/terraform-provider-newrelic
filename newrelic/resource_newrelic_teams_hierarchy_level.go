@@ -40,7 +40,7 @@ func resourceNewRelicTeamsHierarchyLevel() *schema.Resource {
 				Description: "The display name for this hierarchy level (e.g. 'Department', 'Squad').",
 			},
 			"tags": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Tags in 'key:value1,value2' format.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -106,7 +106,7 @@ func resourceNewRelicTeamsHierarchyLevelUpdate(ctx context.Context, d *schema.Re
 		upd.Name = d.Get("name").(string)
 	}
 	if d.HasChange("tags") {
-		upd.Tags = expandNGEPTags(d.Get("tags").([]interface{}))
+		upd.Tags = expandNGEPTags(d.Get("tags").(*schema.Set).List())
 	}
 
 	if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(d.Id(), upd); err != nil {
