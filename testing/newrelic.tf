@@ -7,10 +7,6 @@ terraform {
 }
 
 provider "newrelic" {
-  region = "US"
+  region = "US" # US, EU, or JP
 }
 
-variable "account_id" {
-  type    = number
-  default = 3806526
-}
