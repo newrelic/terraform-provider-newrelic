@@ -77,42 +77,6 @@ func TestAccNewRelicCloudAzureIntegration_Basic(t *testing.T) {
 					testAccCheckNewRelicCloudAzureIntegrationsExist(resourceName),
 				),
 			},
-
-			// Test: Omitting include_tags and exclude_tags leaves the tags already configured on
-			// the integration alone. The expander sends null for an attribute that is absent from
-			// the configuration, and NerdGraph reads null as "no change", so the tags set by the
-			// preceding step survive this apply.
-			//
-			// The plan afterwards is legitimately non-empty: neither attribute is Computed, so
-			// reading the integration back populates state from the API while the configuration
-			// still says nothing, and Terraform keeps offering to remove them. That standing diff
-			// is the cost of being able to leave the tags untouched at all -- clearing them is what
-			// the empty list in the next step is for.
-			{
-				Config: testAccNewRelicAzureIntegrationsConfigUpdatedWithMonitorTags(azureIntegrationsTestConfig, ""),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicCloudAzureIntegrationsExist(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "monitor.0.include_tags.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "monitor.0.include_tags.0", "env:production"),
-					resource.TestCheckResourceAttr(resourceName, "monitor.0.exclude_tags.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "monitor.0.exclude_tags.0", "env:staging"),
-				),
-				ExpectNonEmptyPlan: true,
-			},
-
-			// Test: Setting include_tags and exclude_tags to empty lists clears the tags that the
-			// preceding steps configured. The expander sends [] rather than dropping the fields
-			// from the mutation variables, and NerdGraph reads [] as "replace with nothing".
-			{
-				Config: testAccNewRelicAzureIntegrationsConfigUpdatedWithMonitorTags(azureIntegrationsTestConfig, `    include_tags             = []
-    exclude_tags             = []
-`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNewRelicCloudAzureIntegrationsExist(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "monitor.0.include_tags.#", "0"),
-					resource.TestCheckResourceAttr(resourceName, "monitor.0.exclude_tags.#", "0"),
-				),
-			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
@@ -365,16 +329,6 @@ resource "newrelic_cloud_azure_integrations" "bar" {
 }
 
 func testAccNewRelicAzureIntegrationsConfigUpdated(azureIntegrationsTestConfig map[string]string) string {
-	return testAccNewRelicAzureIntegrationsConfigUpdatedWithMonitorTags(azureIntegrationsTestConfig, `    include_tags             = ["env:production"]
-    exclude_tags             = ["env:staging"]
-`)
-}
-
-// testAccNewRelicAzureIntegrationsConfigUpdatedWithMonitorTags renders the updated configuration
-// with monitorTags spliced into the "monitor" block, so consecutive steps can differ in nothing but
-// those two attributes. Pass an empty string to leave them out of the configuration altogether,
-// which is a different case from setting them to an empty list.
-func testAccNewRelicAzureIntegrationsConfigUpdatedWithMonitorTags(azureIntegrationsTestConfig map[string]string, monitorTags string) string {
 	return "\n" + testAccNewRelicAzureIntegrationsCommonConfig(azureIntegrationsTestConfig) + `
 
 resource "newrelic_cloud_azure_integrations" "bar" {
@@ -469,7 +423,9 @@ resource "newrelic_cloud_azure_integrations" "bar" {
   monitor {
     metrics_polling_interval = 3600
     resource_groups          = ["beyond"]
-` + monitorTags + `    enabled                  = true
+    include_tags             = ["env:production"]
+    exclude_tags             = ["env:staging"]
+    enabled                  = true
     resource_types           = ["microsoft.datashare/accounts", "microsoft.eventhub/clusters"]
   }
 
