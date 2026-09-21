@@ -13,10 +13,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
-// runIntervalAllowedMinutes is the complete list of values the NGEP API
-// accepts for runInterval (minutes). Any other value is rejected.
-var runIntervalAllowedMinutes = []int{60, 360, 720, 1440, 4320}
-
 func resourceNewRelicScorecardRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicScorecardRuleCreate,
@@ -69,7 +65,7 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeInt},
 						},
 						"join_accounts": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Optional:    true,
 							Description: "Additional account IDs to join with the query accounts.",
 							Elem:        &schema.Schema{Type: schema.TypeInt},
@@ -84,20 +80,21 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 				ValidateFunc: validation.IntAtLeast(0),
 			},
 			// progress_level references an ID defined in the parent scorecard's
-			// progress_levels. Leave empty for no level association.
+			// progress_levels. The value must match a progress_levels.id in the
+			// scorecard this rule is attached to. Leave empty for no level association.
 			"progress_level": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The progress level ID from the parent scorecard this rule maps to (e.g. 'red').",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The progress level ID from the parent scorecard this rule maps to (e.g. 'red'). Must match a progress_levels.id defined on the scorecard.",
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			// run_interval controls how often the rule is evaluated.
-			// Allowed values: 60, 360, 720, 1440, 4320 (minutes).
+			// run_interval controls how often the rule is evaluated (minutes).
 			// Do NOT use the deprecated 'schedule' field.
 			"run_interval": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Description:  "Evaluation frequency in minutes. Must be one of: 60, 360, 720, 1440, 4320.",
-				ValidateFunc: validation.IntInSlice(runIntervalAllowedMinutes),
+				Description:  "Evaluation frequency in minutes. Omit to use the API default.",
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"tags": {
 				Type:        schema.TypeSet,
