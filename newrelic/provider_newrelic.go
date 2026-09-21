@@ -188,6 +188,7 @@ func Provider() *schema.Provider {
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
 			"newrelic_service_level":                            resourceNewRelicServiceLevel(),
+			"newrelic_streaming_export_rule":                    resourceNewRelicStreamingExportRule(),
 			"newrelic_synthetics_alert_condition":               resourceNewRelicSyntheticsAlertCondition(),
 			"newrelic_synthetics_broken_links_monitor":          resourceNewRelicSyntheticsBrokenLinksMonitor(),
 			"newrelic_synthetics_cert_check_monitor":            resourceNewRelicSyntheticsCertCheckMonitor(),

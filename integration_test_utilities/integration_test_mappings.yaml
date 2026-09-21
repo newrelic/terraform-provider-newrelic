@@ -445,6 +445,9 @@ resource_newrelic_service_level.go:
 resource_newrelic_service_level_test.go:
   test: true
   product_mapping: WORKLOADS
+resource_newrelic_streaming_export_rule.go:
+  test: false
+  product_mapping: STREAMING_EXPORT
 resource_newrelic_synthetics_alert_condition.go:
   test: false
   product_mapping: ALERTS_DEPRECATED
@@ -640,6 +643,9 @@ structures_newrelic_one_dashboard_test.go:
 structures_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS
+structures_newrelic_streaming_export_rule.go:
+  test: false
+  product_mapping: STREAMING_EXPORT
 structures_newrelic_synthetics_all_monitors_validation_helpers.go:
   test: false
   product_mapping: SYNTHETICS
