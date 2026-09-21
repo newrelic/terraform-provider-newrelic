@@ -2,6 +2,18 @@ module github.com/newrelic/terraform-provider-newrelic/v3
 
 go 1.26.0
 
+// Temporary: consumes https://github.com/newrelic/newrelic-client-go/pull/1487, which drops
+// `omitempty` from CloudAzureMonitorIntegrationInput.IncludeTags/ExcludeTags so that an explicitly
+// empty list reaches NerdGraph as `[]` instead of being omitted from the mutation variables. The
+// `monitor` tag-clearing fix in this PR does nothing without it.
+//
+// The replacement names the fork because the PR branch lives there, so the commit is not reachable
+// at the canonical module path. Its content is client-go main (v2.94.1) plus that one commit; the
+// pseudo-version reads v2.93.5-0 only because the v2.94.x tags were never pushed to the fork.
+//
+// Revert to a plain `require` on the release that carries newrelic-client-go#1487 before merging.
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/sgore-nr/newrelic-client-go/v2 v2.93.5-0.20260921045604-d1926c5f2b1c
+
 require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
