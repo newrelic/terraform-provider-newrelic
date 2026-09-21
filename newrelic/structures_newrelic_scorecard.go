@@ -76,8 +76,11 @@ func expandNRQLEngineCreate(raw []interface{}) *scorecards.EntityManagementNRQLR
 	}
 	m := raw[0].(map[string]interface{})
 	engine := &scorecards.EntityManagementNRQLRuleEngineCreateInput{
-		Query:    m["query"].(string),
-		Accounts: expandIntListFromInterface(m["accounts"].([]interface{})),
+		Query: m["query"].(string),
+	}
+	// accounts is TypeSet — use .(*schema.Set).List() not .([]interface{})
+	if s, ok := m["accounts"].(*schema.Set); ok {
+		engine.Accounts = expandIntListFromInterface(s.List())
 	}
 	// join_accounts is TypeSet — use .(*schema.Set).List() not .([]interface{})
 	if s, ok := m["join_accounts"].(*schema.Set); ok && s.Len() > 0 {
@@ -94,8 +97,11 @@ func expandNRQLEngineUpdate(raw []interface{}) *scorecards.EntityManagementNRQLR
 	}
 	m := raw[0].(map[string]interface{})
 	engine := &scorecards.EntityManagementNRQLRuleEngineUpdateInput{
-		Query:    m["query"].(string),
-		Accounts: expandIntListFromInterface(m["accounts"].([]interface{})),
+		Query: m["query"].(string),
+	}
+	// accounts is TypeSet — use .(*schema.Set).List() not .([]interface{})
+	if s, ok := m["accounts"].(*schema.Set); ok {
+		engine.Accounts = expandIntListFromInterface(s.List())
 	}
 	if s, ok := m["join_accounts"].(*schema.Set); ok && s.Len() > 0 {
 		engine.JoinAccounts = expandIntListFromInterface(s.List())

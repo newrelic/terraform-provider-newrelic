@@ -45,7 +45,7 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 
 	// ── aliases must not be empty ───────────────────────────────────────────
 	if aliases, ok := d.GetOk("aliases"); ok {
-		for _, a := range aliases.([]interface{}) {
+		for _, a := range aliases.(*schema.Set).List() {
 			if strings.TrimSpace(a.(string)) == "" {
 				errs = append(errs, "aliases must not contain empty strings")
 				break

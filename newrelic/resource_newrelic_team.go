@@ -43,7 +43,7 @@ func resourceNewRelicTeam() *schema.Resource {
 				Description: "A free-text description of the team.",
 			},
 			"aliases": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Additional searchable names for the team. Each alias must be unique within the organization.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -68,9 +68,40 @@ func resourceNewRelicTeam() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The resource type (e.g. 'link').",
+							Type:     schema.TypeString,
+							Required: true,
+							Description: "The resource type. Must be one of: ATLASSIAN_CONFLUENCE, ATLASSIAN_JIRA, " +
+								"ATLASSIAN_JIRA_SCORECARDS, BASECAMP, BLAMELESS, EMAIL, FACEBOOK_WORKPLACE, " +
+								"GITHUB, GITLAB, GOOGLE_CHAT, GOOGLE_CLOUD_PLATFORM, GOOGLE_DRIVE, " +
+								"MICROSOFT_AZURE, MICROSOFT_SHAREPOINT, MICROSOFT_TEAMS, OPSGENIE, " +
+								"OTHER_CONTACT, OTHER_LINK, PAGERDUTY, ROCKET_CHAT, SERVICENOW, " +
+								"SKYPE, SLACK, ZENDESK.",
+							ValidateFunc: validation.StringInSlice([]string{
+								"ATLASSIAN_CONFLUENCE",
+								"ATLASSIAN_JIRA",
+								"ATLASSIAN_JIRA_SCORECARDS",
+								"BASECAMP",
+								"BLAMELESS",
+								"EMAIL",
+								"FACEBOOK_WORKPLACE",
+								"GITHUB",
+								"GITLAB",
+								"GOOGLE_CHAT",
+								"GOOGLE_CLOUD_PLATFORM",
+								"GOOGLE_DRIVE",
+								"MICROSOFT_AZURE",
+								"MICROSOFT_SHAREPOINT",
+								"MICROSOFT_TEAMS",
+								"OPSGENIE",
+								"OTHER_CONTACT",
+								"OTHER_LINK",
+								"PAGERDUTY",
+								"ROCKET_CHAT",
+								"SERVICENOW",
+								"SKYPE",
+								"SLACK",
+								"ZENDESK",
+							}, false),
 						},
 						"content": {
 							Type:        schema.TypeString,
@@ -186,7 +217,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		input.Description = v.(string)
 	}
 	if v, ok := d.GetOk("aliases"); ok {
-		for _, a := range v.([]interface{}) {
+		for _, a := range v.(*schema.Set).List() {
 			input.Aliases = append(input.Aliases, a.(string))
 		}
 	}
@@ -375,7 +406,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if d.HasChange("aliases") {
-			newAliases := d.Get("aliases").([]interface{})
+			newAliases := d.Get("aliases").(*schema.Set).List()
 			if len(newAliases) > 0 {
 				for _, a := range newAliases {
 					upd.Aliases = append(upd.Aliases, a.(string))

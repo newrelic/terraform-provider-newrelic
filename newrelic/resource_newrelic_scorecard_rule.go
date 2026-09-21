@@ -59,7 +59,7 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 							Description: "The NRQL query. Must be FACET-ed and alias the result as 'score'.",
 						},
 						"accounts": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Required:    true,
 							Description: "Account IDs where this rule runs.",
 							Elem:        &schema.Schema{Type: schema.TypeInt},
@@ -89,12 +89,15 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			// run_interval controls how often the rule is evaluated (minutes).
+			// The API accepts only 60, 360, 720, or 1440 minutes.
 			// Do NOT use the deprecated 'schedule' field.
 			"run_interval": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Description:  "Evaluation frequency in minutes. Omit to use the API default.",
-				ValidateFunc: validation.IntAtLeast(1),
+				Type:     schema.TypeInt,
+				Optional: true,
+				Description: "Evaluation frequency in minutes. " +
+					"Must be one of: 60 (hourly), 360 (6h), 720 (12h), 1440 (daily). " +
+					"Omit to use the API default.",
+				ValidateFunc: validation.IntInSlice([]int{60, 360, 720, 1440}),
 			},
 			"tags": {
 				Type:        schema.TypeSet,
