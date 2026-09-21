@@ -43,6 +43,7 @@ The following arguments are supported:
   * `enabled` - (Required) Whether the rule is active and collecting scores. Set to `false` to pause the rule without deleting it.
   * `run_interval` - (Required) How frequently (in minutes) the rule's NRQL query is executed. Common values: `60` (hourly), `720` (12h), `1440` (daily).
   * `nrql_engine` - (Required) A nested block defining the NRQL query that produces the score. See [Nested `nrql_engine` block](#nested-nrql_engine-block) below.
+  * `progress_level` - (Optional) The `id` of a progress level defined in the parent [`newrelic_scorecard`](scorecard.html) resource. This assigns the rule to a scoring tier so it is visually grouped under that tier in the Scorecards UI and contributes to the entity maturity profile. The value must match an `id` in the scorecard's `progress_levels` block (e.g. `"red"`, `"amber"`, `"green"`). If omitted the rule is ungrouped. See [Progress level relationship](#progress-level-relationship) below.
   * `tags` - (Optional) A list of tags in `"key:value"` format. Tags managed by New Relic (prefixed with `nr.`) are preserved automatically.
   * `organization_id` - (Optional, Computed) The NGEP organization UUID. Resolved automatically from the provider credentials if omitted.
 
@@ -59,6 +60,60 @@ The `nrql_engine` block supports the following arguments:
 In addition to all arguments above, the following attributes are exported:
 
   * `id` - The entity GUID of the scorecard rule.
+
+## Progress Level Relationship
+
+The `progress_level` field on a rule links it to a tier defined in the parent scorecard's `progress_levels` block. The value must match the `id` of one of those levels exactly.
+
+```hcl
+resource "newrelic_scorecard" "example" {
+  name = "My Scorecard"
+
+  progress_levels {
+    id             = "red"
+    name           = "Needs Baseline"
+    hex_color_code = "#CC0000"
+  }
+  progress_levels {
+    id             = "green"
+    name           = "Excellence"
+    hex_color_code = "#00CC44"
+  }
+
+  rule_ids = [
+    newrelic_scorecard_rule.baseline_check.id,
+    newrelic_scorecard_rule.performance_check.id,
+  ]
+}
+
+resource "newrelic_scorecard_rule" "baseline_check" {
+  name           = "Has alerts configured"
+  enabled        = true
+  run_interval   = 1440
+  progress_level = "red"   # ← must match a progress_levels.id in the scorecard
+
+  nrql_engine {
+    accounts = [var.account_id]
+    query    = "SELECT if(latest(alertSeverity) != 'NOT_CONFIGURED', 1, 0) AS 'score' FROM Entity WHERE type = 'APM-APPLICATION' FACET id LIMIT MAX SINCE 1 day ago"
+  }
+}
+
+resource "newrelic_scorecard_rule" "performance_check" {
+  name           = "P95 latency below 500ms"
+  enabled        = true
+  run_interval   = 60
+  progress_level = "green"  # ← maps to the "Excellence" tier
+
+  nrql_engine {
+    accounts = [var.account_id]
+    query    = "SELECT if(percentile(duration, 95) < 0.5, 1, 0) AS 'score' FROM Transaction FACET entity.guid LIMIT MAX SINCE 1 hour ago"
+  }
+}
+```
+
+**How the UI uses this:** Rules are visually grouped under their assigned tier label in the scorecard detail view. The entity maturity profile (donut chart) shows what percentage of entities are performing at each tier. Note that tiers are not hard gates — an entity can pass a `"green"` rule without having passed all `"red"` rules.
+
+-> **NOTE:** The `progress_level` value is stored on the rule entity itself, not on the scorecard-rule association. Because each rule can only belong to one scorecard at a time (the NGEP API enforces this), the level assignment is unambiguous in practice.
 
 ## Additional Examples
 

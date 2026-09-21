@@ -16,6 +16,8 @@ Scorecards let you define and track engineering quality standards across your or
 
 -> **NOTE:** `progress_levels` are set at create time only. Changes to progress levels require destroying and re-creating the scorecard. If omitted, the organization's default progress levels are applied.
 
+-> **NOTE:** To assign a rule to a specific tier, set `progress_level` on the [`newrelic_scorecard_rule`](scorecard_rule.html) to match one of the `id` values in the `progress_levels` block below (e.g. `progress_level = "red"`). See [Progress Level Relationship](scorecard_rule.html#progress-level-relationship) for a full example.
+
 ## Example Usage
 
 ```hcl
