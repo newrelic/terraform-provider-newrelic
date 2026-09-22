@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -62,34 +63,43 @@ func newAzureIntegrationsResourceData(t *testing.T, monitorAttributes map[string
 	return azureIntegrations.Data(state)
 }
 
-// TestExpandCloudAzureIntegrationMonitorInputTags asserts the three-way distinction that the
-// absence of `omitempty` on CloudAzureMonitorIntegrationInput.IncludeTags/ExcludeTags relies on: a
-// nil slice is serialized as `null` and leaves the tags configured on the integration alone, while
-// an empty slice is serialized as `[]` and clears them.
+// TestExpandCloudAzureIntegrationMonitorInputTags asserts the three-way distinction that
+// CloudAzureMonitorIntegrationInput.IncludeTags/ExcludeTags being `*[]string` with `omitempty`
+// makes expressible: a nil pointer omits the field and leaves the tags configured on the
+// integration alone, while a pointer to an empty slice is serialized as `[]` and clears them.
+//
+// The wire forms are asserted directly, since that distinction -- not the Go value -- is what
+// NerdGraph acts on. An explicit `null` is not a third option: the API rejects it with
+// "ERR_INVALID_DATA include_tags must be a list".
 func TestExpandCloudAzureIntegrationMonitorInputTags(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name     string
 		tags     cty.Value
-		expected []string
+		expected *[]string
+		// wire is what the field marshals to, or "" when it is omitted entirely.
+		wire string
 	}{
 		{
 			// Not present in the configuration: nothing should change.
 			name:     "absent from configuration",
 			tags:     cty.NullVal(cty.List(cty.String)),
 			expected: nil,
+			wire:     "",
 		},
 		{
 			// Explicitly empty: the existing tags should be overridden with an empty list.
 			name:     "explicitly set to an empty list",
 			tags:     cty.ListValEmpty(cty.String),
-			expected: []string{},
+			expected: &[]string{},
+			wire:     "[]",
 		},
 		{
 			name:     "populated",
 			tags:     cty.ListVal([]cty.Value{cty.StringVal("env:production")}),
-			expected: []string{"env:production"},
+			expected: &[]string{"env:production"},
+			wire:     `["env:production"]`,
 		},
 	}
 
@@ -112,14 +122,32 @@ func TestExpandCloudAzureIntegrationMonitorInputTags(t *testing.T) {
 			require.Equal(t, testCase.expected, monitor.IncludeTags)
 			require.Equal(t, testCase.expected, monitor.ExcludeTags)
 
-			// require.Equal treats a nil and an empty slice as different values, but be explicit
-			// about it: this is the whole distinction the change turns on.
+			// A nil pointer and a pointer to an empty slice are the whole distinction the change
+			// turns on, so be explicit rather than leaning on require.Equal.
 			if testCase.expected == nil {
 				require.Nil(t, monitor.IncludeTags)
 				require.Nil(t, monitor.ExcludeTags)
 			} else {
 				require.NotNil(t, monitor.IncludeTags)
 				require.NotNil(t, monitor.ExcludeTags)
+			}
+
+			// What actually reaches NerdGraph. `omitempty` on a pointer drops the field only when
+			// the pointer is nil, so an empty slice still renders as `[]`.
+			marshalled, err := json.Marshal(monitor)
+			require.NoError(t, err)
+
+			var wire map[string]json.RawMessage
+			require.NoError(t, json.Unmarshal(marshalled, &wire))
+
+			for _, field := range []string{"includeTags", "excludeTags"} {
+				raw, present := wire[field]
+				if testCase.wire == "" {
+					require.False(t, present, "%s should be omitted, got %s", field, raw)
+					continue
+				}
+				require.True(t, present, "%s should be present", field)
+				require.JSONEq(t, testCase.wire, string(raw))
 			}
 		})
 	}

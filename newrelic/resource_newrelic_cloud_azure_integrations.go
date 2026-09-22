@@ -1313,22 +1313,28 @@ func expandCloudAzureIntegrationMonitorInput(d *schema.ResourceData, b []interfa
 // expandCloudAzureMonitorTags builds the value sent to NerdGraph for the "include_tags" or
 // "exclude_tags" attribute of the "monitor" block at monitorIndex.
 //
-// These two fields carry no `omitempty` in newrelic-client-go, so the slice returned here decides
-// what NerdGraph does with the tags already configured on the integration:
+// These fields are `*[]string` with `omitempty` in newrelic-client-go, where `omitempty` keys off the
+// pointer rather than the length. That is what lets the pointer returned here express all three
+// outcomes:
 //
-//	nil        -> marshalled as `null`, which leaves the existing tags untouched
-//	[]string{} -> marshalled as `[]`, which clears the existing tags
+//	nil          -> field omitted, which leaves the existing tags untouched
+//	&[]string{}  -> `[]`, which clears the existing tags
+//	&[]string{x} -> `["x"]`
+//
+// A plain slice could not do this: `omitempty` drops nil and empty alike, and without it a nil slice
+// marshals to `null`, which NerdGraph rejects outright with
+// "ERR_INVALID_DATA include_tags must be a list".
 //
 // ResourceData reports an empty list both when the attribute is absent from the configuration and
 // when it is explicitly set to `[]`, so the raw configuration is what tells the two apart.
-func expandCloudAzureMonitorTags(d *schema.ResourceData, monitorIndex int, attributeName string, attributeValue interface{}) []string {
+func expandCloudAzureMonitorTags(d *schema.ResourceData, monitorIndex int, attributeName string, attributeValue interface{}) *[]string {
 	tags := attributeValue.([]interface{})
 
 	if len(tags) == 0 {
 		if isCloudAzureMonitorAttributeNullInConfig(d, monitorIndex, attributeName) {
 			return nil
 		}
-		return []string{}
+		return &[]string{}
 	}
 
 	expanded := make([]string, 0, len(tags))
@@ -1336,7 +1342,7 @@ func expandCloudAzureMonitorTags(d *schema.ResourceData, monitorIndex int, attri
 		expanded = append(expanded, tag.(string))
 	}
 
-	return expanded
+	return &expanded
 }
 
 // isCloudAzureMonitorAttributeNullInConfig reports whether monitor[monitorIndex].<attributeName> is
