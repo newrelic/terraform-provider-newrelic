@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/changetracking"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/nrtime"
 )
 
 func resourceNewRelicChangeTrackingEvent() *schema.Resource {
@@ -19,11 +17,22 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 		ReadContext:   schema.NoopContext,
 		Delete:        schema.RemoveFromState,
 		Schema: map[string]*schema.Schema{
-			"category": {
-				Type:        schema.TypeString,
+			"entity_search": {
+				Type:        schema.TypeList,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The category of the change event.",
+				MaxItems:    1,
+				Description: "Specify the entity to associate with the change tracking event via query.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"query": {
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+							Description: "Entity search query string that matches exactly one entity.",
+						},
+					},
+				},
 			},
 			"category_and_type_data": {
 				Type:        schema.TypeList,
@@ -33,6 +42,29 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 				Description: "The data that defines the category and type of change event.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"kind": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							ForceNew:    true,
+							MaxItems:    1,
+							Description: "The category and type of the change event.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"category": {
+										Type:        schema.TypeString,
+										Required:    true,
+										ForceNew:    true,
+										Description: "The category of the change event.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Required:    true,
+										ForceNew:    true,
+										Description: "The type of the change event.",
+									},
+								},
+							},
+						},
 						"category_fields": {
 							Type:        schema.TypeList,
 							Optional:    true,
@@ -50,24 +82,28 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"changelog": {
-													Type:     schema.TypeString,
-													Optional: true,
-													ForceNew: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													ForceNew:    true,
+													Description: "A URL to the changelog or a list of changes.",
 												},
 												"commit": {
-													Type:     schema.TypeString,
-													Optional: true,
-													ForceNew: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													ForceNew:    true,
+													Description: "The commit identifier.",
 												},
 												"deep_link": {
-													Type:     schema.TypeString,
-													Optional: true,
-													ForceNew: true,
+													Type:        schema.TypeString,
+													Optional:    true,
+													ForceNew:    true,
+													Description: "A link to the system that generated the deployment.",
 												},
 												"version": {
-													Type:     schema.TypeString,
-													Required: true,
-													ForceNew: true,
+													Type:        schema.TypeString,
+													Required:    true,
+													ForceNew:    true,
+													Description: "The version of the deployed software.",
 												},
 											},
 										},
@@ -81,9 +117,10 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"feature_flag_id": {
-													Type:     schema.TypeString,
-													Required: true,
-													ForceNew: true,
+													Type:        schema.TypeString,
+													Required:    true,
+													ForceNew:    true,
+													Description: "The identifier of the feature flag.",
 												},
 											},
 										},
@@ -91,57 +128,14 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 								},
 							},
 						},
-						"kind": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							ForceNew:    true,
-							MaxItems:    1,
-							Description: "The category and type of the change event.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"category": {
-										Type:     schema.TypeString,
-										Required: true,
-										ForceNew: true,
-									},
-									"type": {
-										Type:     schema.TypeString,
-										Required: true,
-										ForceNew: true,
-									},
-								},
-							},
-						},
 					},
 				},
-			},
-			"custom_attributes": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Custom attributes as a JSON string.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "A description of the event.",
-			},
-			"entity_search": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				MaxItems:    1,
-				Description: "Specify the entity to associate with the change tracking event via query.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"query": {
-							Type:     schema.TypeString,
-							Required: true,
-							ForceNew: true,
-						},
-					},
-				},
 			},
 			"group_id": {
 				Type:        schema.TypeString,
@@ -153,7 +147,7 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "A short description of the change event.",
+				Description: "A short description of the change suitable for showing in various parts of New Relic One.",
 			},
 			"timestamp": {
 				Type:        schema.TypeInt,
@@ -177,6 +171,12 @@ func resourceNewRelicChangeTrackingEvent() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(listValidChangeTrackingEventValidationFlags(), false),
 				},
 			},
+			// Computed
+			"change_tracking_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "A unique change tracking identifier.",
+			},
 		},
 	}
 }
@@ -189,26 +189,21 @@ func listValidChangeTrackingEventValidationFlags() []string {
 	}
 }
 
-var (
-	_ = fmt.Sprintf
-	_ = log.Printf
-	_ = context.Background
-	_ = diag.FromErr
-	_ = changetracking.ChangeTrackingValidationFlagTypes
-	_ = common.EntityGUID("")
-	_ = nrtime.EpochMilliseconds{}
-)
+var _ = fmt.Sprintf
+var _ = log.Printf
+var _ = context.Background
+var _ = diag.FromErr
 
 func resourceNewRelicChangeTrackingEventCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
+	log.Printf("[INFO] Creating New Relic change tracking event")
+
 	changeTrackingEvent, dataHandlingRules, err := expandChangeTrackingEvent(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	log.Printf("[INFO] Creating New Relic change tracking event")
 
 	result, err := client.ChangeTracking.ChangeTrackingCreateEventWithContext(ctx, changeTrackingEvent, dataHandlingRules)
 	if err != nil {
@@ -219,22 +214,26 @@ func resourceNewRelicChangeTrackingEventCreate(ctx context.Context, d *schema.Re
 		return diag.Errorf("error creating change tracking event: empty response")
 	}
 
+	var changeTrackingID string
 	if result.ChangeTrackingEvent != nil {
 		switch e := result.ChangeTrackingEvent.(type) {
 		case *changetracking.ChangeTrackingDeploymentEvent:
-			d.SetId(e.ChangeTrackingId)
+			changeTrackingID = e.ChangeTrackingId
 		case *changetracking.ChangeTrackingFeatureFlagEvent:
-			d.SetId(e.ChangeTrackingId)
+			changeTrackingID = e.ChangeTrackingId
 		case *changetracking.ChangeTrackingGenericEvent:
-			d.SetId(e.ChangeTrackingId)
+			changeTrackingID = e.ChangeTrackingId
 		case *changetracking.ChangeTrackingEvent:
-			d.SetId(e.ChangeTrackingId)
-		default:
-			d.SetId(fmt.Sprintf("change-tracking-event-%d", d.Get("timestamp").(int)))
+			changeTrackingID = e.ChangeTrackingId
 		}
-	} else {
-		d.SetId(fmt.Sprintf("change-tracking-event-%d", d.Get("timestamp").(int)))
 	}
+
+	if changeTrackingID == "" {
+		changeTrackingID = fmt.Sprintf("change-tracking-event-%d", d.Get("timestamp").(int))
+	}
+
+	d.SetId(changeTrackingID)
+	_ = d.Set("change_tracking_id", changeTrackingID)
 
 	return nil
 }
