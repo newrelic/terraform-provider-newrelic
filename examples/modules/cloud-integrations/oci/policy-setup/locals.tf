@@ -14,6 +14,12 @@ locals {
   create_vault = !local.is_user_vault_key_present || !local.is_ingest_vault_key_present
   user_api_key = local.is_user_vault_key_present ? base64decode(data.oci_secrets_secretbundle.user_api_key[0].secret_bundle_content[0].content) : var.newrelic_user_api_key
 
+  # Resolve the actual secret OCIDs New Relic uses (the caller-provided secret when present,
+  # otherwise the vault secret this module creates). These scope the "read secret-bundles"
+  # policy below to only New Relic's secrets instead of every secret in the tenancy.
+  ingest_key_secret_ocid = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
+  user_key_secret_ocid   = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
+
   freeform_tags = {
     newrelic-terraform = "true"
   }

@@ -22,6 +22,7 @@ func resourceNewRelicSyntheticsAlertCondition() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: blockGOVRegionDiff("newrelic_synthetics_alert_condition"),
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:        schema.TypeInt,
