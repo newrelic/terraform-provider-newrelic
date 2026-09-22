@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -14,16 +15,49 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
-// customizeScorecardDiff forces resource replacement whenever progress_levels
-// changes. The NGEP API rejects progress level updates via the standard update
-// mutation, so any change to these fields must result in destroy + recreate.
-// Setting ForceNew on the outer TypeList alone does not cascade to nested-field
-// changes in SDK v2; CustomizeDiff is the reliable mechanism.
+// customizeScorecardDiff forces resource replacement when progress_levels content
+// changes. It compares the old and new sets normalised by sorting on "id", so
+// simply reordering the blocks in config does NOT trigger replacement — only
+// adding, removing, or changing values does.
 func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if d.HasChange("progress_levels") {
+	if !d.HasChange("progress_levels") {
+		return nil
+	}
+	oldRaw, newRaw := d.GetChange("progress_levels")
+	oldList, _ := oldRaw.([]interface{})
+	newList, _ := newRaw.([]interface{})
+
+	if len(oldList) != len(newList) {
 		return d.ForceNew("progress_levels")
 	}
-	return nil
+
+	type level struct{ id, name, desc, color string }
+	toLevels := func(raw []interface{}) []level {
+		out := make([]level, 0, len(raw))
+		for _, r := range raw {
+			m, _ := r.(map[string]interface{})
+			if m == nil {
+				continue
+			}
+			out = append(out, level{
+				id:    m["id"].(string),
+				name:  m["name"].(string),
+				desc:  m["description"].(string),
+				color: m["hex_color_code"].(string),
+			})
+		}
+		sort.Slice(out, func(i, j int) bool { return out[i].id < out[j].id })
+		return out
+	}
+
+	oldLevels := toLevels(oldList)
+	newLevels := toLevels(newList)
+	for i := range oldLevels {
+		if oldLevels[i] != newLevels[i] {
+			return d.ForceNew("progress_levels")
+		}
+	}
+	return nil // same content, different order — no replacement needed
 }
 
 func resourceNewRelicScorecard() *schema.Resource {
@@ -72,25 +106,21 @@ func resourceNewRelicScorecard() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "A unique identifier for this level (e.g. 'red', 'green').",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							ForceNew:    true,
 							Description: "Display name of the level.",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "Description of what this level means.",
 						},
 						"hex_color_code": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ForceNew:     true,
 							Description:  "Hex colour for this level, e.g. '#FF0000'.",
 							ValidateFunc: validation.StringLenBetween(4, 9),
 						},
@@ -173,10 +203,13 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 	// Attach any declared rules immediately after create.
 	if wantedRules := expandRuleIDsFromSet(d.Get("rule_ids").(*schema.Set)); len(wantedRules) > 0 {
 		if _, err := client.Scorecards.EntityManagementAddCollectionMembers(rulesColID, wantedRules); err != nil {
-			if strings.Contains(err.Error(), "already belongs to collection") {
+			if strings.Contains(err.Error(), "already belongs to collection") || strings.Contains(err.Error(), "already exists in one collection") {
 				return diag.Errorf(
-					"attaching rules to scorecard %s: one or more rules are already attached to another scorecard — "+
-						"each rule can only belong to one scorecard at a time: %v", scorecardID, err)
+					"cannot attach one or more rules to scorecard %s:\n\n"+
+						"  • Each scorecard rule can only belong to ONE scorecard at a time.\n"+
+						"  • One or more of the rule_ids you specified is already attached to a different scorecard.\n"+
+						"  • To reuse a rule, first remove it from its current scorecard (remove its GUID from that scorecard's rule_ids).\n\n"+
+						"API error: %v", scorecardID, err)
 			}
 			return diag.Errorf("attaching rules to scorecard %s: %v", scorecardID, err)
 		}

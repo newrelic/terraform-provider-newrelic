@@ -10,7 +10,9 @@ description: |-
 
 Use this resource to create, update, and delete [New Relic Scorecard Rules](https://docs.newrelic.com/docs/service-architecture-intelligence/scorecards/getting-started/).
 
-A Scorecard Rule is a NRQL-based check that evaluates a binary score (0 or 1) for each entity in your account. Rules are standalone resources that can be attached to one or more [`newrelic_scorecard`](scorecard.html) resources via `rule_ids`.
+A Scorecard Rule is a NRQL-based check that evaluates a binary score (0 or 1) for each entity in your account on a recurring schedule. Rules are **standalone entities** that are attached to a [`newrelic_scorecard`](scorecard.html) via the scorecard's `rule_ids` attribute.
+
+-> **NOTE:** Each rule can only belong to **one scorecard at a time**. Attempting to add the same rule to a second scorecard will produce an error. Remove the rule from its current scorecard before re-attaching it elsewhere.
 
 -> **NOTE:** The deprecated `schedule` field is not supported. Use `run_interval` (minutes) together with `enabled` to control when and whether a rule runs.
 
@@ -38,13 +40,14 @@ See additional [examples](#additional-examples).
 
 The following arguments are supported:
 
-  * `name` - (Required) The name of the rule.
+  * `name` - (Required) The name of the rule. Must not be empty.
   * `description` - (Optional) A description of what this rule measures. Can be cleared by setting to an empty string `""`.
-  * `enabled` - (Required) Whether the rule is active and collecting scores. Set to `false` to pause the rule without deleting it.
-  * `run_interval` - (Required) How frequently (in minutes) the rule's NRQL query is executed. Common values: `60` (hourly), `720` (12h), `1440` (daily).
+  * `enabled` - (Required) Whether the rule is active and collecting scores. Set to `false` to pause evaluation without deleting the rule. Scores are not updated while a rule is disabled.
+  * `run_interval` - (Optional) How frequently (in minutes) the NRQL query is executed. Accepted values: `60` (hourly), `360` (6h), `720` (12h), `1440` (daily). Omit to use the API default.
   * `nrql_engine` - (Required) A nested block defining the NRQL query that produces the score. See [Nested `nrql_engine` block](#nested-nrql_engine-block) below.
-  * `progress_level` - (Optional) The `id` of a progress level defined in the parent [`newrelic_scorecard`](scorecard.html) resource. This assigns the rule to a scoring tier so it is visually grouped under that tier in the Scorecards UI and contributes to the entity maturity profile. The value must match an `id` in the scorecard's `progress_levels` block (e.g. `"red"`, `"amber"`, `"green"`). If omitted the rule is ungrouped. See [Progress level relationship](#progress-level-relationship) below.
-  * `tags` - (Optional) A list of tags in `"key:value"` format. Tags managed by New Relic (prefixed with `nr.`) are preserved automatically.
+  * `impact_weight` - (Optional) A positive integer weighting this rule's contribution to the overall scorecard score relative to other rules. Omit for equal weighting across all rules.
+  * `progress_level` - (Optional) The `id` of a progress level defined in the parent [`newrelic_scorecard`](scorecard.html). This assigns the rule to a scoring tier so it is visually grouped under that tier in the Scorecards UI and contributes to the entity maturity profile. The value must match an `id` in the scorecard's `progress_levels` block (e.g. `"red"`, `"amber"`, `"green"`). If omitted the rule is ungrouped. See [Progress level relationship](#progress-level-relationship) below.
+  * `tags` - (Optional) A set of tags in `"key:value"` format. Order does not matter. Tags managed by New Relic (prefixed with `nr.`) are preserved automatically and must not be included here.
   * `organization_id` - (Optional, Computed) The NGEP organization UUID. Resolved automatically from the provider credentials if omitted.
 
 ### Nested `nrql_engine` block
