@@ -8,7 +8,7 @@ description: |-
 
 # Resource: newrelic\_pathpoint\_flow
 
--> **LIMITED PREVIEW:** This resource is in limited preview and is only available for accounts that have been granted access. Features and behavior may change before general availability.
+-> **Beta Preview:** This resource is not yet available to the general public. Once public preview goes live, opted-in users will receive access.
 
 Pathpoint maps the health of your technical systems onto the business journeys they support. Each Flow in Pathpoint represents one journey — checkout, authentication, or onboarding — broken into stages, so when something goes wrong you can see which part of the customer journey the problem affects.
 
@@ -82,8 +82,6 @@ A step's signals can come from three sources:
 - **Entity signal** (`signals` with `type = "ENTITY"`): a specific New Relic entity pinned by its GUID. Use when you always want the same exact entity regardless of naming changes.
 - **Alert signal** (`signals` with `type = "ALERT"`): an alert condition pinned by its entity GUID. Use when step health should be driven by an alert policy rather than entity telemetry.
 
--> **NOTE:** Alert signals are not yet supported in this Limited Preview — the `type = "ALERT"` signal shown below is included to illustrate the shape of the config.
-
 ```hcl
 steps {
   name = "Login Page"
@@ -154,7 +152,7 @@ stage_kpis {
 }
 ```
 
--> **NOTE:** Cross-account KPIs — setting `account_id` on a `kpis`/`stage_kpis` block to an account other than the flow's own — are not yet supported in this Limited Preview.
+-> **NOTE:** Cross-account KPIs — setting `account_id` on a `kpis`/`stage_kpis` block to an account other than the flow's own — are not yet supported in this Beta Preview.
 
 ### Health
 
@@ -238,7 +236,7 @@ resource "newrelic_pathpoint_flow" "checkout" {
   account_id       = 1234
   name             = "Checkout Flow"
   description      = "End-to-end checkout pipeline"
-  refresh_interval = "FIVE_MINUTES"  # defaults to FIVE_MINUTES if not set
+  refresh_interval = "ONE_MINUTE"  # defaults to ONE_MINUTE if not set
 
   kpis {
     name        = "Order Success Rate"
@@ -337,7 +335,7 @@ The following arguments are supported:
 * `description` - (Optional) A brief description of the flow.
 * `category` - (Optional) A category used to group flows (e.g. `Marketing`, `Checkout`).
 * `health_rollup` - (Optional) Health rollup strategy for the flow, derived from its stages. Valid values: `ALERT_CONDITIONS`, `AUTOMATIC_ROLL_UP`.
-* `refresh_interval` - (Optional) How often the flow, stage, level, and step health statuses are refreshed. Defaults to `FIVE_MINUTES` if not set. Valid values: `ONE_MINUTE`, `FIVE_MINUTES`, `TEN_MINUTES`, `FIFTEEN_MINUTES`, `THIRTY_MINUTES`.
+* `refresh_interval` - (Optional) How often the flow, stage, level, and step health statuses are refreshed. Defaults to `ONE_MINUTE` if not set. Valid values: `ONE_MINUTE`, `FIVE_MINUTES`, `TEN_MINUTES`, `FIFTEEN_MINUTES`, `THIRTY_MINUTES`.
 * `kpis` - (Optional) A list of Key Performance Indicators tracked at the flow level. See [Nested `kpis` blocks](#nested-kpis-blocks) below for details.
 * `stages` - (Optional) An ordered list of stages that make up this flow. Maximum 50 stages. A flow can be created without stages and stages can be added later. See [Nested `stages` blocks](#nested-stages-blocks) below for details.
 
@@ -352,7 +350,7 @@ KPIs are numeric metrics derived from NRQL queries, displayed as scorecards abov
 * `query` - (Required) The NRQL query definition for this KPI. See [Nested `query` blocks](#nested-query-blocks) below for details.
 * `metric_query` - (Computed) The resolved NRQL metric query string synthesized by the API from the `query` block. Read-only.
 
--> **NOTE:** Cross-account KPIs — setting `account_id` to an account other than the flow's own account — are not yet supported in this Limited Preview.
+-> **NOTE:** Cross-account KPIs — setting `account_id` to an account other than the flow's own account — are not yet supported in this Beta Preview.
 
 ### Nested `query` blocks
 
@@ -448,8 +446,6 @@ Explicitly pins a specific New Relic entity or alert condition to the step by GU
 * `name` - (Optional) A display name for the signal as it appears in the step.
 * `type` - (Optional) Whether the GUID refers to a monitored entity (`ENTITY`) or an alert condition (`ALERT`). Valid values: `ENTITY`, `ALERT`.
 * `is_excluded` - (Optional) When `true`, this signal is excluded from the step's health calculation. Defaults to `false`.
-
--> **NOTE:** `type = "ALERT"` is not yet supported in this Limited Preview.
 
 ## Attributes Reference
 
