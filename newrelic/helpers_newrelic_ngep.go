@@ -200,20 +200,3 @@ func waitForNGEPEntityIndexed(
 		return nil
 	})
 }
-
-// ── Error classification ──────────────────────────────────────────────────────
-
-// isNGEPGhostNotFound detects the transient "ghost" NOT_FOUND that NGEP
-// returns for freshly-created entities before they are fully indexed.
-//
-// A real deletion carries the entity id in the error message prefix
-// (e.g. "abc123: Entity not found."); the ghost version has an empty prefix
-// (": Entity not found."). Callers should retry on a ghost but propagate a
-// real NOT_FOUND.
-func isNGEPGhostNotFound(err error) bool {
-	if err == nil {
-		return false
-	}
-	msg := err.Error()
-	return len(msg) > 1 && msg[0] == ':' && msg[1] == ' '
-}

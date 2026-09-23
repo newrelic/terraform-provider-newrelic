@@ -224,8 +224,8 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 
 	// nrql_engine is Required — use d.Get, not d.GetOk.
 	input := scorecards.EntityManagementScorecardRuleEntityCreateInput{
-		Name:    d.Get("name").(string),
-		Enabled: d.Get("enabled").(bool),
+		Name:       d.Get("name").(string),
+		Enabled:    d.Get("enabled").(bool),
 		NRQLEngine: expandNRQLEngineCreate(d.Get("nrql_engine").([]interface{})),
 		Scope: scorecards.EntityManagementScopedReferenceInput{
 			ID:   orgID,
