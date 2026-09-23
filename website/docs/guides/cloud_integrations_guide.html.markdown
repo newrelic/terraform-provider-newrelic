@@ -722,10 +722,9 @@ Example object structure:
 >
 > *Fix:* Recreate the trust through Terraform:
 > ```bash
-> terraform taint 'module.oci_wif_setup.null_resource.trust_setup'
-> terraform apply -target='module.oci_wif_setup.null_resource.trust_setup' -auto-approve
+> terraform apply -replace='module.oci_wif_setup.null_resource.trust_setup' -auto-approve
 > ```
-> This re-runs the module's curl POST against `IdentityPropagationTrusts`, rebuilding the trust with the correct `oauthClients` value. This is purely an OCI/IDCS-side state fix via taint and targeted apply.
+> This re-runs the module's curl POST against `IdentityPropagationTrusts`, rebuilding the trust with the correct `oauthClients` value. This is purely an OCI/IDCS-side state fix via targeted resource replacement.
 
 
 > When implementing the New Relic OCI integration with Workload Identity Federation, the modules must be applied in this order: `wif-setup` (to create OAuth credentials) → `policy-setup` (to configure IAM policies and vault secrets) → `metrics-integration` or `logging-integration` (to set up data collection). The `wif-setup` module outputs (`client_id`, `client_secret`, `oci_domain_url`) must be provided as inputs to the `policy-setup` module. These modules can be run together in a single Terraform configuration if the dependency graph can be successfully resolved by referencing outputs from earlier modules. Failure to apply modules in the correct order will result in authorization errors when creating Service Connector Hub resources or invoking functions.
