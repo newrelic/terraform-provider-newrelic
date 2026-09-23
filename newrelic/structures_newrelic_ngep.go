@@ -5,7 +5,6 @@ package newrelic
 // resource-specific structures file to avoid duplication.
 
 import (
-	"sort"
 	"strings"
 
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
@@ -13,48 +12,45 @@ import (
 
 // ── Tags ──────────────────────────────────────────────────────────────────────
 
-// expandNGEPTags converts a Terraform list of "key:value1,value2" strings into
-// EntityManagementTagInput values accepted by any entityManagement mutation.
+// expandNGEPTags converts a Terraform list of tag blocks (each with a "key"
+// string and "values" []string) into EntityManagementTagInput values accepted
+// by any entityManagement mutation.
 func expandNGEPTags(raw []interface{}) []scorecards.EntityManagementTagInput {
 	if len(raw) == 0 {
 		return nil
 	}
 	out := make([]scorecards.EntityManagementTagInput, 0, len(raw))
 	for _, r := range raw {
-		s, ok := r.(string)
-		if !ok {
-			continue
+		m := r.(map[string]interface{})
+		key := m["key"].(string)
+		valuesRaw := m["values"].([]interface{})
+		vals := make([]string, 0, len(valuesRaw))
+		for _, v := range valuesRaw {
+			if s, ok := v.(string); ok && s != "" {
+				vals = append(vals, s)
+			}
 		}
-		parts := strings.SplitN(s, ":", 2)
-		if len(parts) != 2 {
-			continue
+		if len(vals) > 0 {
+			out = append(out, scorecards.EntityManagementTagInput{Key: key, Values: vals})
 		}
-		key := strings.TrimSpace(parts[0])
-		vals := strings.Split(strings.TrimSpace(parts[1]), ",")
-		for i := range vals {
-			vals[i] = strings.TrimSpace(vals[i])
-		}
-		out = append(out, scorecards.EntityManagementTagInput{Key: key, Values: vals})
 	}
 	return out
 }
 
-// flattenNGEPTags converts EntityManagementTag values back to "key:value1,value2"
-// strings. Tags whose keys begin with "nr." are stripped — NGEP auto-injects
-// system tags (e.g. "nr.hierarchy.level") that must not appear in Terraform
-// state and trigger spurious plan diffs.
-//
-// The output is sorted alphabetically by the full "key:values" string to
-// guarantee a stable ordering across API calls. The NGEP API does not preserve
-// tag order, so without sorting every plan could show spurious reordering diffs.
-func flattenNGEPTags(tags []scorecards.EntityManagementTag) []string {
-	out := make([]string, 0, len(tags))
+// flattenNGEPTags converts EntityManagementTag values back to a list of
+// maps with "key" and "values" keys. Tags whose keys begin with "nr." are
+// stripped — NGEP auto-injects system tags (e.g. "nr.hierarchy.level") that
+// must not appear in Terraform state and trigger spurious plan diffs.
+func flattenNGEPTags(tags []scorecards.EntityManagementTag) []map[string]interface{} {
+	out := make([]map[string]interface{}, 0, len(tags))
 	for _, t := range tags {
 		if strings.HasPrefix(t.Key, "nr.") {
 			continue
 		}
-		out = append(out, t.Key+":"+strings.Join(t.Values, ","))
+		out = append(out, map[string]interface{}{
+			"key":    t.Key,
+			"values": t.Values,
+		})
 	}
-	sort.Strings(out)
 	return out
 }

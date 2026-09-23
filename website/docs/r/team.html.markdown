@@ -43,7 +43,7 @@ The following arguments are supported:
   * `name` - (Required) The display name of the team. Must be unique within the organization.
   * `description` - (Optional) A description of the team's role or responsibilities. Can be cleared by setting to an empty string `""`.
   * `aliases` - (Optional) A list of alternate names the team is known by. Used for tag-based entity discovery alongside the primary team name.
-  * `tags` - (Optional) A list of tags in `"key:value"` format to assign to the team entity. Tags managed by New Relic (prefixed with `nr.`) are preserved automatically and must not be included here.
+  * `tags` - (Optional) One or more nested `tag` blocks assigning tags to this resource. Each block requires a `key` (string) and `values` (list of strings). Tags managed by New Relic (prefixed with `nr.`) are preserved automatically.
   * `parent_id` - (Optional) The entity GUID of a parent team. Setting this establishes the team's position within a hierarchy. The parent must be another `newrelic_team` resource.
   * `managers` - (Optional) A list of New Relic user account IDs to designate as team managers.
   * `entities` - (Optional) One or more nested blocks each specifying an entity GUID that this team statically owns. See [Nested `entities` blocks](#nested-entities-blocks) below. Entities auto-assigned by tag discovery rules are ignored by Terraform.

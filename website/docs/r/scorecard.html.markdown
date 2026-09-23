@@ -35,7 +35,14 @@ resource "newrelic_scorecard_rule" "alert_coverage" {
 resource "newrelic_scorecard" "engineering" {
   name        = "Engineering Quality"
   description = "Tracks key observability standards across all APM services"
-  tags        = ["team:platform", "env:production"]
+  tag {
+    key    = "team"
+    values = ["platform"]
+  }
+  tag {
+    key    = "env"
+    values = ["production"]
+  }
 
   progress_levels {
     id             = "red"
@@ -70,10 +77,10 @@ The following arguments are supported:
 
   * `name` - (Required) The name of the scorecard. Must not be empty.
   * `description` - (Optional) A description of the scorecard's purpose. Can be cleared by setting to an empty string `""`.
-  * `tags` - (Optional) A set of tags in `"key:value"` format. Order does not matter. Tags managed by New Relic (prefixed with `nr.`) are preserved automatically and must not be included here.
+  * `tags` - (Optional) One or more nested `tag` blocks assigning tags to this resource. Each block requires a `key` (string) and `values` (list of strings). Tags managed by New Relic (prefixed with `nr.`) are preserved automatically.
   * `progress_levels` - (Optional) One or more nested blocks defining the scorecard's scoring tiers. Adding, removing, or changing level values requires resource recreation; reordering existing blocks does not. See [Nested `progress_levels` blocks](#nested-progress_levels-blocks) below.
   * `rule_ids` - (Optional) A set of `newrelic_scorecard_rule` entity GUIDs to attach to this scorecard. Each rule can only belong to one scorecard — removing a GUID detaches the rule (without deleting it) so it can be re-attached elsewhere.
-  * `organization_id` - (Optional, Computed) The NGEP organization UUID. Resolved automatically from the provider credentials if omitted.
+  * `organization_id` - (Computed) The NGEP organization UUID. Resolved automatically from the provider account — customers should not supply this.
 
 ### Nested `progress_levels` blocks
 
@@ -110,7 +117,10 @@ resource "newrelic_scorecard" "minimal" {
 ```hcl
 resource "newrelic_scorecard" "platform" {
   name = "Platform Standards"
-  tags = ["team:platform"]
+  tag {
+    key    = "team"
+    values = ["platform"]
+  }
 
   rule_ids = [
     newrelic_scorecard_rule.alert_coverage.id,

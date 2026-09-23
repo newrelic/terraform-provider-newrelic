@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -13,6 +14,70 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
+// customizeScorecardRuleDiff validates the nrql_engine accounts/join_accounts
+// lists for semantic correctness at plan time:
+//  1. No account ID ≤ 0 in either list.
+//  2. No duplicates within accounts.
+//  3. No duplicates within join_accounts.
+//  4. No account ID appears in both accounts AND join_accounts.
+func customizeScorecardRuleDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	rawEngine := d.Get("nrql_engine").([]interface{})
+	if len(rawEngine) == 0 || rawEngine[0] == nil {
+		return nil
+	}
+	m := rawEngine[0].(map[string]interface{})
+
+	toIntSlice := func(raw []interface{}) []int {
+		out := make([]int, 0, len(raw))
+		for _, v := range raw {
+			out = append(out, v.(int))
+		}
+		return out
+	}
+
+	accounts := toIntSlice(m["accounts"].([]interface{}))
+	joinAccounts := toIntSlice(m["join_accounts"].([]interface{}))
+
+	// 1. No account ID ≤ 0
+	for _, id := range accounts {
+		if id <= 0 {
+			return fmt.Errorf("nrql_engine.accounts: account ID %d is invalid (must be > 0)", id)
+		}
+	}
+	for _, id := range joinAccounts {
+		if id <= 0 {
+			return fmt.Errorf("nrql_engine.join_accounts: account ID %d is invalid (must be > 0)", id)
+		}
+	}
+
+	// 2. No duplicates within accounts
+	seen := make(map[int]bool, len(accounts))
+	for _, id := range accounts {
+		if seen[id] {
+			return fmt.Errorf("nrql_engine.accounts: duplicate account ID %d", id)
+		}
+		seen[id] = true
+	}
+
+	// 3. No duplicates within join_accounts
+	seenJoin := make(map[int]bool, len(joinAccounts))
+	for _, id := range joinAccounts {
+		if seenJoin[id] {
+			return fmt.Errorf("nrql_engine.join_accounts: duplicate account ID %d", id)
+		}
+		seenJoin[id] = true
+	}
+
+	// 4. No intersection between accounts and join_accounts
+	for _, id := range joinAccounts {
+		if seen[id] {
+			return fmt.Errorf("nrql_engine: account ID %d appears in both accounts and join_accounts — these lists must be disjoint", id)
+		}
+	}
+
+	return nil
+}
+
 func resourceNewRelicScorecardRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicScorecardRuleCreate,
@@ -22,6 +87,7 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: customizeScorecardRuleDiff,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 			Update: schema.DefaultTimeout(5 * time.Minute),
@@ -38,6 +104,9 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 				Optional:    true,
 				Description: "A description of the rule.",
 			},
+			// enabled uses schema.TypeBool which the Terraform SDK validates strictly:
+			// only true/false/1/0/yes/no are accepted; any other value produces a
+			// schema validation error before Create/Update is invoked.
 			"enabled": {
 				Type:        schema.TypeBool,
 				Required:    true,
@@ -54,18 +123,19 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"query": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The NRQL query. Must be FACET-ed and alias the result as 'score'.",
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The NRQL query. Must be FACET-ed and alias the result as 'score'.",
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"accounts": {
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Required:    true,
 							Description: "Account IDs where this rule runs.",
 							Elem:        &schema.Schema{Type: schema.TypeInt},
 						},
 						"join_accounts": {
-							Type:        schema.TypeSet,
+							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Additional account IDs to join with the query accounts.",
 							Elem:        &schema.Schema{Type: schema.TypeInt},
@@ -73,6 +143,9 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 					},
 				},
 			},
+			// TODO: Confirm the valid upper bound for impact_weight with the Scorecards
+			// team — currently accepts any non-negative integer. Update the ValidateFunc
+			// and the resource documentation once the valid range is confirmed.
 			"impact_weight": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -102,15 +175,34 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 			"tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Tags in 'key:value1,value2' format.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Tags to assign to this resource. Each tag has a key and one or more values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The tag key.",
+							ValidateFunc: validation.StringIsNotEmpty,
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "The tag values.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["key"].(string))
+				},
 			},
+			// organization_id is resolved automatically from the provider configuration.
+			// Customers should never supply it — it is fetched and stored as Computed.
 			"organization_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The NGEP organization UUID. Auto-fetched if omitted.",
+				Description: "The NGEP organization UUID. Resolved automatically from the provider account.",
 			},
 		},
 	}
@@ -124,14 +216,17 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	orgID, err := getOrganizationID(ctx, providerConfig, d.Get("organization_id").(string))
+	// organization_id is always resolved automatically — customers never supply it.
+	orgID, err := getOrganizationID(ctx, providerConfig, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	// nrql_engine is Required — use d.Get, not d.GetOk.
 	input := scorecards.EntityManagementScorecardRuleEntityCreateInput{
 		Name:    d.Get("name").(string),
 		Enabled: d.Get("enabled").(bool),
+		NRQLEngine: expandNRQLEngineCreate(d.Get("nrql_engine").([]interface{})),
 		Scope: scorecards.EntityManagementScopedReferenceInput{
 			ID:   orgID,
 			Type: scorecards.EntityManagementEntityScopeTypes.ORGANIZATION,
@@ -139,9 +234,6 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 	}
 	if v, ok := d.GetOk("description"); ok {
 		input.Description = v.(string)
-	}
-	if v, ok := d.GetOk("nrql_engine"); ok {
-		input.NRQLEngine = expandNRQLEngineCreate(v.([]interface{}))
 	}
 	if v, ok := d.GetOk("impact_weight"); ok {
 		input.ImpactWeight = v.(int)
@@ -165,6 +257,11 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 	_ = d.Set("organization_id", orgID)
 	log.Printf("[INFO] Created NGEP scorecard rule %s", result.Entity.ID)
 
+	// Indexing gate — wait until the rule is visible in entitySearch.
+	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, result.Entity.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceNewRelicScorecardRuleRead(ctx, d, meta)
 }
 
@@ -178,7 +275,8 @@ func resourceNewRelicScorecardRuleRead(ctx context.Context, d *schema.ResourceDa
 	entityIface, err := client.Scorecards.GetEntityWithContext(ctx, d.Id())
 	if err != nil {
 		var notFound *nrErrors.NotFound
-		if errors.As(err, &notFound) || isNGEPGhostNotFound(err) {
+		// If entity not found (deleted outside Terraform), remove from state.
+		if errors.As(err, &notFound) {
 			d.SetId("")
 			return nil
 		}

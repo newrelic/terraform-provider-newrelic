@@ -30,7 +30,14 @@ resource "newrelic_scorecard_rule" "alert_coverage" {
     query    = "SELECT if(latest(alertSeverity) != 'NOT_CONFIGURED', 1, 0) AS 'score' FROM Entity WHERE type = 'APM-APPLICATION' FACET id LIMIT MAX SINCE 1 day ago"
   }
 
-  tags = ["team:platform", "purpose:observability-standards"]
+  tag {
+    key    = "team"
+    values = ["platform"]
+  }
+  tag {
+    key    = "purpose"
+    values = ["observability-standards"]
+  }
 }
 ```
 
@@ -47,8 +54,8 @@ The following arguments are supported:
   * `nrql_engine` - (Required) A nested block defining the NRQL query that produces the score. See [Nested `nrql_engine` block](#nested-nrql_engine-block) below.
   * `impact_weight` - (Optional) A positive integer weighting this rule's contribution to the overall scorecard score relative to other rules. Omit for equal weighting across all rules.
   * `progress_level` - (Optional) The `id` of a progress level defined in the parent [`newrelic_scorecard`](scorecard.html). This assigns the rule to a scoring tier so it is visually grouped under that tier in the Scorecards UI and contributes to the entity maturity profile. The value must match an `id` in the scorecard's `progress_levels` block (e.g. `"red"`, `"amber"`, `"green"`). If omitted the rule is ungrouped. See [Progress level relationship](#progress-level-relationship) below.
-  * `tags` - (Optional) A set of tags in `"key:value"` format. Order does not matter. Tags managed by New Relic (prefixed with `nr.`) are preserved automatically and must not be included here.
-  * `organization_id` - (Optional, Computed) The NGEP organization UUID. Resolved automatically from the provider credentials if omitted.
+  * `tags` - (Optional) One or more nested `tag` blocks assigning tags to this resource. Each block requires a `key` (string) and `values` (list of strings). Tags managed by New Relic (prefixed with `nr.`) are preserved automatically.
+  * `organization_id` - (Computed) The NGEP organization UUID. Resolved automatically from the provider account — customers should not supply this.
 
 ### Nested `nrql_engine` block
 

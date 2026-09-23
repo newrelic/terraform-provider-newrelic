@@ -51,8 +51,27 @@ func resourceNewRelicTeam() *schema.Resource {
 			"tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Tags in 'key:value1,value2' format.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Tags to assign to this resource. Each tag has a key and one or more values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The tag key.",
+							ValidateFunc: validation.StringIsNotEmpty,
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "The tag values.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["key"].(string))
+				},
 			},
 			// ── Hierarchy ───────────────────────────────────────────────────
 			"parent_id": {
@@ -171,12 +190,12 @@ func resourceNewRelicTeam() *schema.Resource {
 				},
 			},
 			// ── Computed / infrastructure ────────────────────────────────────
+			// organization_id is resolved automatically from the provider configuration.
+			// Customers should never supply it — it is fetched and stored as Computed.
 			"organization_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The NGEP organization UUID. Auto-fetched from the account if omitted.",
+				Description: "The NGEP organization UUID. Resolved automatically from the provider account.",
 			},
 			"membership_collection_id": {
 				Type:        schema.TypeString,
@@ -200,7 +219,8 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	orgID, err := getOrganizationID(ctx, providerConfig, d.Get("organization_id").(string))
+	// organization_id is always resolved automatically — customers never supply it.
+	orgID, err := getOrganizationID(ctx, providerConfig, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -283,7 +303,8 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	entityIface, err := client.Scorecards.GetEntityWithContext(ctx, d.Id())
 	if err != nil {
 		var notFound *nrErrors.NotFound
-		if errors.As(err, &notFound) || isNGEPGhostNotFound(err) {
+		// If entity not found (deleted outside Terraform), remove from state.
+		if errors.As(err, &notFound) {
 			d.SetId("")
 			return nil
 		}

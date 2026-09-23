@@ -77,7 +77,8 @@ func resourceNewRelicTeamsOrganizationSettingsRead(ctx context.Context, d *schem
 	entityIface, err := client.Scorecards.GetEntityWithContext(ctx, d.Id())
 	if err != nil {
 		var notFound *nrErrors.NotFound
-		if errors.As(err, &notFound) || isNGEPGhostNotFound(err) {
+		// If entity not found (deleted outside Terraform), remove from state.
+		if errors.As(err, &notFound) {
 			d.SetId("")
 			return nil
 		}

@@ -17,7 +17,10 @@ import (
 
 func TestExpandTeamTags(t *testing.T) {
 	t.Parallel()
-	raw := []interface{}{"env:dev,staging", "team:platform"}
+	raw := []interface{}{
+		map[string]interface{}{"key": "env", "values": []interface{}{"dev", "staging"}},
+		map[string]interface{}{"key": "team", "values": []interface{}{"platform"}},
+	}
 	tags := expandNGEPTags(raw)
 	require.Len(t, tags, 2)
 	assert.Equal(t, "env", tags[0].Key)
@@ -41,8 +44,10 @@ func TestFlattenTeamTags_FiltersNrSystem(t *testing.T) {
 	}
 	flat := flattenNGEPTags(tags)
 	require.Len(t, flat, 2, "nr.* tag should be filtered out")
-	assert.Equal(t, "env:dev", flat[0])
-	assert.Equal(t, "team:platform", flat[1])
+	assert.Equal(t, "env", flat[0]["key"])
+	assert.Equal(t, []string{"dev"}, flat[0]["values"])
+	assert.Equal(t, "team", flat[1]["key"])
+	assert.Equal(t, []string{"platform"}, flat[1]["values"])
 }
 
 func TestExpandTeamResources(t *testing.T) {

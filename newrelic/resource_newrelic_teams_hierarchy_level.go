@@ -7,11 +7,11 @@ package newrelic
 // Terraform therefore supports import + update but not create or delete.
 //
 // Typical workflow:
-//   1. Set parentId on newrelic_team resources to build the hierarchy.
-//   2. Discover the resulting TEAMS_HIERARCHY_LEVEL entity IDs via
-//      entitySearch (type = 'TEAMS_HIERARCHY_LEVEL') or the Teams UI.
-//   3. terraform import newrelic_teams_hierarchy_level.example <entity_id>
-//   4. Use this resource to manage the level's name going forward.
+//  1. Set parentId on newrelic_team resources to build the hierarchy.
+//  2. Discover the resulting TEAMS_HIERARCHY_LEVEL entity IDs via
+//     entitySearch (type = 'TEAMS_HIERARCHY_LEVEL') or the Teams UI.
+//  3. terraform import newrelic_teams_hierarchy_level.example <entity_id>
+//  4. Use this resource to manage the level's name going forward.
 
 import (
 	"context"
@@ -44,8 +44,27 @@ func resourceNewRelicTeamsHierarchyLevel() *schema.Resource {
 			"tags": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Tags in 'key:value1,value2' format.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Tags to assign to this resource. Each tag has a key and one or more values.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The tag key.",
+							ValidateFunc: validation.StringIsNotEmpty,
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "The tag values.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["key"].(string))
+				},
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -76,7 +95,8 @@ func resourceNewRelicTeamsHierarchyLevelRead(ctx context.Context, d *schema.Reso
 	entityIface, err := client.Scorecards.GetEntityWithContext(ctx, d.Id())
 	if err != nil {
 		var notFound *nrErrors.NotFound
-		if errors.As(err, &notFound) || isNGEPGhostNotFound(err) {
+		// If entity not found (deleted outside Terraform), remove from state.
+		if errors.As(err, &notFound) {
 			d.SetId("")
 			return nil
 		}

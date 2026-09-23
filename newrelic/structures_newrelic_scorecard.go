@@ -69,44 +69,62 @@ func expandIntListFromInterface(raw []interface{}) []int {
 	return out
 }
 
-// expandNRQLEngineCreate maps the nrql_engine block to the Create input type.
-func expandNRQLEngineCreate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineCreateInput {
+// nrqlEngineParams holds the parsed values from an nrql_engine block, shared
+// between the Create and Update expand functions to avoid duplication.
+type nrqlEngineParams struct {
+	Query        string
+	Accounts     []int
+	JoinAccounts []int
+}
+
+// extractNRQLEngineParams parses a raw nrql_engine Terraform block into the
+// shared nrqlEngineParams struct.
+//
+// nrql_engine is Required in the schema; Terraform validates its presence
+// before invoking Create/Update, so raw[0] == nil is unreachable in practice.
+func extractNRQLEngineParams(raw []interface{}) *nrqlEngineParams {
 	if len(raw) == 0 || raw[0] == nil {
 		return nil
 	}
 	m := raw[0].(map[string]interface{})
-	engine := &scorecards.EntityManagementNRQLRuleEngineCreateInput{
+	p := &nrqlEngineParams{
 		Query: m["query"].(string),
 	}
-	// accounts is TypeSet — use .(*schema.Set).List() not .([]interface{})
-	if s, ok := m["accounts"].(*schema.Set); ok {
-		engine.Accounts = expandIntListFromInterface(s.List())
+	// accounts and join_accounts are TypeList — use .([]interface{})
+	if accts, ok := m["accounts"].([]interface{}); ok {
+		p.Accounts = expandIntListFromInterface(accts)
 	}
-	// join_accounts is TypeSet — use .(*schema.Set).List() not .([]interface{})
-	if s, ok := m["join_accounts"].(*schema.Set); ok && s.Len() > 0 {
-		engine.JoinAccounts = expandIntListFromInterface(s.List())
+	if joinAccts, ok := m["join_accounts"].([]interface{}); ok && len(joinAccts) > 0 {
+		p.JoinAccounts = expandIntListFromInterface(joinAccts)
 	}
-	return engine
+	return p
+}
+
+// expandNRQLEngineCreate maps the nrql_engine block to the Create input type.
+func expandNRQLEngineCreate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineCreateInput {
+	p := extractNRQLEngineParams(raw)
+	if p == nil {
+		return nil
+	}
+	return &scorecards.EntityManagementNRQLRuleEngineCreateInput{
+		Query:        p.Query,
+		Accounts:     p.Accounts,
+		JoinAccounts: p.JoinAccounts,
+	}
 }
 
 // expandNRQLEngineUpdate maps the nrql_engine block to the Update input type.
 // The input types differ in name only; the field set is identical.
 func expandNRQLEngineUpdate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineUpdateInput {
-	if len(raw) == 0 || raw[0] == nil {
+	p := extractNRQLEngineParams(raw)
+	if p == nil {
 		return nil
 	}
-	m := raw[0].(map[string]interface{})
-	engine := &scorecards.EntityManagementNRQLRuleEngineUpdateInput{
-		Query: m["query"].(string),
+	return &scorecards.EntityManagementNRQLRuleEngineUpdateInput{
+		Query:        p.Query,
+		Accounts:     p.Accounts,
+		JoinAccounts: p.JoinAccounts,
 	}
-	// accounts is TypeSet — use .(*schema.Set).List() not .([]interface{})
-	if s, ok := m["accounts"].(*schema.Set); ok {
-		engine.Accounts = expandIntListFromInterface(s.List())
-	}
-	if s, ok := m["join_accounts"].(*schema.Set); ok && s.Len() > 0 {
-		engine.JoinAccounts = expandIntListFromInterface(s.List())
-	}
-	return engine
 }
 
 // flattenNRQLEngine converts an API NRQLRuleEngine value back to the nrql_engine Terraform block.
