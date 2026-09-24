@@ -241,6 +241,9 @@ resource_newrelic_cloud_azure_integrations.go:
 resource_newrelic_cloud_azure_integrations_test.go:
   test: true
   product_mapping: CLOUD
+resource_newrelic_cloud_azure_integrations_unit_test.go:
+  test: true
+  product_mapping: CLOUD
 resource_newrelic_cloud_azure_link_account.go:
   test: false
   product_mapping: CLOUD
