@@ -125,16 +125,18 @@ func resourceNewRelicScorecard() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "A unique identifier for this level (e.g. 'red', 'green').",
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     true,
+							Description:  "A unique identifier for this level (e.g. 'red', 'green').",
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "Display name of the level.",
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     true,
+							Description:  "Display name of the level.",
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"description": {
 							Type:        schema.TypeString,

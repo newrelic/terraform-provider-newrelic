@@ -123,14 +123,16 @@ func resourceNewRelicTeam() *schema.Resource {
 							}, false),
 						},
 						"content": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The resource content (e.g. a URL).",
+							Type:         schema.TypeString,
+							Required:     true,
+							Description:  "The resource content (e.g. a URL). Must not be empty.",
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"title": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "A human-readable title for the resource.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "A human-readable title for the resource.",
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 					},
 				},
@@ -147,9 +149,10 @@ func resourceNewRelicTeam() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user_id": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "The integer New Relic user ID. Obtainable from the newrelic_user data source.",
+							Type:         schema.TypeInt,
+							Required:     true,
+							Description:  "The integer New Relic user ID. Obtainable from the newrelic_user data source.",
+							ValidateFunc: validation.IntAtLeast(1),
 						},
 					},
 				},
