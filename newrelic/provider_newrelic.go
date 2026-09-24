@@ -208,6 +208,7 @@ func Provider() *schema.Provider {
 			"newrelic_federated_logs_setup":                     resourceNewRelicFederatedLogsSetup(),
 			"newrelic_federated_logs_partition":                 resourceNewRelicFederatedLogsPartition(),
 			"newrelic_aws_connection":                           resourceNewRelicAwsConnection(),
+			"newrelic_pathpoint_flow":                           resourceNewRelicPathpointFlow(),
 		},
 	}
 
