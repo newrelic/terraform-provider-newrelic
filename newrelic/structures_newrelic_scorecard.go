@@ -33,6 +33,17 @@ func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgre
 	return out
 }
 
+// progressLevelsCreateToRead converts CreateInput slices to the Definition type used by
+// flattenProgressLevels. The two types have identical fields so each element is a
+// direct cast. Used by Create to set state without issuing a Read round-trip.
+func progressLevelsCreateToRead(in []scorecards.EntityManagementProgressLevelDefinitionCreateInput) []scorecards.EntityManagementProgressLevelDefinition {
+	out := make([]scorecards.EntityManagementProgressLevelDefinition, len(in))
+	for i, p := range in {
+		out[i] = scorecards.EntityManagementProgressLevelDefinition(p)
+	}
+	return out
+}
+
 // flattenProgressLevels converts API ProgressLevelDefinition values back to Terraform maps.
 // The output is sorted alphabetically by "id" so that the state always has a canonical
 // order. This prevents spurious TypeList diffs when the config lists the same levels

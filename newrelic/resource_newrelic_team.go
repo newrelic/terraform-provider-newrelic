@@ -281,15 +281,29 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
+	// Set remaining state from input — no Read round-trip needed.
+	_ = d.Set("name", input.Name)
+	_ = d.Set("description", input.Description)
+	_ = d.Set("parent_id", input.ParentId)
+	if len(input.Aliases) > 0 {
+		_ = d.Set("aliases", input.Aliases)
+	}
+	if len(input.Tags) > 0 {
+		tagSlice := make([]scorecards.EntityManagementTag, len(input.Tags))
+		for i, t := range input.Tags {
+			tagSlice[i] = scorecards.EntityManagementTag(t)
+		}
+		_ = d.Set("tags", flattenNGEPTags(tagSlice))
+	}
+
 	// ── Indexing gate ─────────────────────────────────────────────────────
-	// NGEP syncs entities to the standard entitySearch index asynchronously.
-	// Wait until the team is visible before returning from Create.
+	// Wait until the team is visible in entitySearch before returning.
 	log.Printf("[INFO] Waiting for team %s to appear in entitySearch index", teamID)
 	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, teamID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicTeamRead(ctx, d, meta)
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -500,7 +514,9 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	return resourceNewRelicTeamRead(ctx, d, meta)
+	// Terraform's ResourceData already tracks all changed values; no Read
+	// round-trip is needed.
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

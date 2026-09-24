@@ -209,7 +209,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		input.Tags = expandNGEPTags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("progress_levels"); ok {
-		input.ProgressLevels = expandProgressLevels(v.(*schema.Set).List())
+		input.ProgressLevels = expandProgressLevels(v.([]interface{}))
 	}
 
 	result, err := client.Scorecards.EntityManagementCreateScorecard(input)
@@ -241,12 +241,33 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	// Indexing gate — wait until the scorecard is visible in entitySearch.
+	// Set remaining state from input — no Read call needed.
+	_ = d.Set("name", input.Name)
+	_ = d.Set("description", input.Description)
+	if len(input.Tags) > 0 {
+		tagSlice := make([]scorecards.EntityManagementTag, len(input.Tags))
+		for i, t := range input.Tags {
+			tagSlice[i] = scorecards.EntityManagementTag(t)
+		}
+		_ = d.Set("tags", flattenNGEPTags(tagSlice))
+	}
+	if len(input.ProgressLevels) > 0 {
+		_ = d.Set("progress_levels", flattenProgressLevels(
+			progressLevelsCreateToRead(input.ProgressLevels),
+		))
+	}
+	// rule_ids: reflect what was actually attached (or empty if nothing was declared)
+	if wantedRules := expandRuleIDsFromSet(d.Get("rule_ids").(*schema.Set)); len(wantedRules) > 0 {
+		_ = d.Set("rule_ids", wantedRules)
+	}
+
+	// Indexing gate — wait until the scorecard is visible in entitySearch before
+	// returning. Subsequent Read calls will find the entity immediately.
 	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, scorecardID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicScorecardRead(ctx, d, meta)
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -351,7 +372,9 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	return resourceNewRelicScorecardRead(ctx, d, meta)
+	// Terraform's ResourceData already tracks all changed values; no Read
+	// round-trip is needed.
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

@@ -257,12 +257,38 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 	_ = d.Set("organization_id", orgID)
 	log.Printf("[INFO] Created NGEP scorecard rule %s", result.Entity.ID)
 
-	// Indexing gate — wait until the rule is visible in entitySearch.
+	// Set all state from what we sent — the API is a passthrough for these fields
+	// so there is no need to issue a Read call. The indexing gate below ensures the
+	// entity is queryable before Terraform considers Create complete.
+	_ = d.Set("name", input.Name)
+	_ = d.Set("enabled", input.Enabled)
+	_ = d.Set("description", input.Description)
+	_ = d.Set("impact_weight", input.ImpactWeight)
+	_ = d.Set("progress_level", input.ProgressLevel)
+	_ = d.Set("run_interval", input.RunInterval)
+	if input.NRQLEngine != nil {
+		_ = d.Set("nrql_engine", flattenNRQLEngine(scorecards.EntityManagementNRQLRuleEngine{
+			Query:        input.NRQLEngine.Query,
+			Accounts:     input.NRQLEngine.Accounts,
+			JoinAccounts: input.NRQLEngine.JoinAccounts,
+		}))
+	}
+	// Tags: convert TagInput → Tag (identical fields) for the flatten helper.
+	if len(input.Tags) > 0 {
+		tagSlice := make([]scorecards.EntityManagementTag, len(input.Tags))
+		for i, t := range input.Tags {
+			tagSlice[i] = scorecards.EntityManagementTag(t)
+		}
+		_ = d.Set("tags", flattenNGEPTags(tagSlice))
+	}
+
+	// Indexing gate — wait until the rule is visible in entitySearch before
+	// returning. Subsequent Read calls will then find the entity immediately.
 	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, result.Entity.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceNewRelicScorecardRuleRead(ctx, d, meta)
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -350,8 +376,10 @@ func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.Resource
 	if _, err := client.Scorecards.EntityManagementUpdateScorecardRule(d.Id(), upd); err != nil {
 		return diag.FromErr(err)
 	}
-
-	return resourceNewRelicScorecardRuleRead(ctx, d, meta)
+	// Terraform's ResourceData already tracks all changed values; no Read
+	// round-trip is needed. The next plan cycle will call Read to reconcile
+	// any server-side divergence.
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
