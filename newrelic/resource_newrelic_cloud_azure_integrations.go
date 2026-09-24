@@ -7,8 +7,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
+
+// cloudAzureAutoDiscoveryPollingIntervals are the data polling intervals, in seconds,
+// that the Azure Auto Discovery integration accepts: 8 hours, 12 hours and 16 hours.
+// Auto Discovery performs an inventory sweep rather than a metric poll, so the shorter
+// intervals offered by the metric integrations do not apply to it.
+var cloudAzureAutoDiscoveryPollingIntervals = []int{28800, 43200, 57600}
 
 func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 	return &schema.Resource{
@@ -263,7 +270,7 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Azure Auto Discovery",
-				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
+				Elem:        cloudAzureAutoDiscoveryElem(),
 				MaxItems:    1,
 			},
 		},
@@ -284,6 +291,28 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 func cloudAzureIntegrationMergeResourceGroupsElem() *schema.Resource {
 	s := mergeSchemas(
 		cloudAzureIntegrationSchemaBase(),
+		cloudAzureIntegrationResourceGroupsSchema())
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// cloudAzureAutoDiscoveryElem defines the schema of elements in the "auto_discovery" Azure
+// integration. It deliberately does not reuse cloudAzureIntegrationMergeResourceGroupsElem:
+// that element's shared base is used by every other integration block, each of which
+// permits a different set of intervals, so the Auto Discovery values cannot be validated
+// there without breaking them.
+func cloudAzureAutoDiscoveryElem() *schema.Resource {
+	s := mergeSchemas(
+		map[string]*schema.Schema{
+			"metrics_polling_interval": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours) and 57600 (16 hours)",
+				ValidateFunc: validation.IntInSlice(cloudAzureAutoDiscoveryPollingIntervals),
+			},
+		},
 		cloudAzureIntegrationResourceGroupsSchema())
 
 	return &schema.Resource{
