@@ -179,6 +179,10 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "data_store") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
+  dynamic "edge_container" {
+    for_each = contains(local.on, "edge_container") ? [1] : []
+    content { metrics_polling_interval = var.metrics_polling_interval }
+  }
   dynamic "firebase_app_hosting" {
     for_each = contains(local.on, "firebase_app_hosting") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
