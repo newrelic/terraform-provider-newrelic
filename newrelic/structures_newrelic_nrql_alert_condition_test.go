@@ -663,6 +663,63 @@ func TestExpandNrqlAlertConditionInputWithPrediction(t *testing.T) {
 	require.Equal(t, expectedNrql.Terms[0].Prediction.PreferPredictionViolation, expanded.Terms[0].Prediction.PreferPredictionViolation)
 }
 
+func TestExpandNrqlAlertConditionUpdateInput_TermsClearing(t *testing.T) {
+	nrql := map[string]interface{}{
+		"query": "SELECT count(*) FROM Transaction",
+	}
+
+	r := resourceNewRelicNrqlAlertCondition()
+
+	t.Run("no term blocks configured sends an explicit empty list, not nil", func(t *testing.T) {
+		d := r.TestResourceData()
+
+		data := map[string]interface{}{
+			"nrql": []interface{}{nrql},
+			"type": "static",
+			"name": "loss of signal condition",
+		}
+		for k, v := range data {
+			require.NoError(t, d.Set(k, v))
+		}
+
+		expanded, err := expandNrqlAlertConditionUpdateInput(d)
+		require.NoError(t, err)
+
+		require.NotNil(t, expanded.Terms, "Terms must be a non-nil pointer so an explicit empty list is sent, distinguishing \"no terms configured\" from \"leave terms untouched\"")
+		require.NotNil(t, *expanded.Terms, "the slice Terms points to must be non-nil so it serializes as [] rather than null")
+		require.Len(t, *expanded.Terms, 0)
+	})
+
+	t.Run("critical term configured is carried through as a pointer to the populated list", func(t *testing.T) {
+		d := r.TestResourceData()
+
+		var criticalTerms []map[string]interface{}
+		criticalTerms = append(criticalTerms, map[string]interface{}{
+			"threshold":             1,
+			"threshold_occurrences": alerts.ThresholdOccurrences.AtLeastOnce,
+			"threshold_duration":    600,
+			"operator":              alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE,
+		})
+
+		data := map[string]interface{}{
+			"nrql":     []interface{}{nrql},
+			"type":     "static",
+			"name":     "static condition",
+			"critical": criticalTerms,
+		}
+		for k, v := range data {
+			require.NoError(t, d.Set(k, v))
+		}
+
+		expanded, err := expandNrqlAlertConditionUpdateInput(d)
+		require.NoError(t, err)
+
+		require.NotNil(t, expanded.Terms)
+		require.Len(t, *expanded.Terms, 1)
+		require.Equal(t, alerts.AlertsNRQLConditionTermsOperatorTypes.ABOVE, (*expanded.Terms)[0].Operator)
+	})
+}
+
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 	dataAccountId := 987654

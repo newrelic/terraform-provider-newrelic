@@ -8,48 +8,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// errorIfJPRegion returns an error when the provider is configured for the JP
-// region. It is used by resources whose upstream API is not (and will not be)
-// available in JP - currently the legacy REST v2 Alert Channels endpoints
-// (`newrelic_alert_channel` and `newrelic_alert_policy_channel`).
-//
-// The legacy `alerts_channels.json` REST endpoint has been deprecated globally
-// since 2024 (see https://docs.newrelic.com/docs/alerts/scale-automate/rest-api/rest-api-calls-alerts/)
-// and the Alerts platform team has confirmed it will not be provisioned on JP
-// (see internal Slack thread in #help-alerts, Jul 2026). Attempting to Create
-// these resources against JP produces an opaque "resource not found" error
-// from the API - this helper surfaces a clearer, actionable message at plan
-// time (via CustomizeDiff) instead.
-//
-// The returned error is safe to bubble up directly from CustomizeDiff.
-func errorIfJPRegion(meta interface{}, resourceName string) error {
-	providerConfig, ok := meta.(*ProviderConfig)
-	if !ok || providerConfig == nil {
-		return nil
-	}
-	if !strings.EqualFold(providerConfig.Region, "JP") {
-		return nil
-	}
-
+// unsupportedRegionError constructs a formal plan-time error directing the user
+// to the resource's documentation page for deprecation details and migration guidance.
+func unsupportedRegionError(resourceName, region string) error {
+	docSlug := strings.TrimPrefix(resourceName, "newrelic_")
 	return fmt.Errorf(
-		"%s cannot be used in the JP region: it is backed by the legacy REST v2 "+
-			"Alert Channels API, which was globally deprecated in 2024 and is not "+
-			"provisioned on JP. Migrate to the NerdGraph-based "+
-			"`newrelic_notification_destination` and `newrelic_notification_channel` "+
-			"resources (and `newrelic_workflow` in place of `newrelic_alert_policy_channel`); "+
-			"see the getting-started guide at "+
-			"https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/getting_started#add-a-notification-channel "+
-			"for a walkthrough",
-		resourceName,
+		"%s is not supported in the %s region. This resource depends on an API that "+
+			"has been deprecated and/or is not available within this region. "+
+			"For information on the deprecation status and recommended migration paths, "+
+			"refer to the resource documentation: "+
+			"https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/%s",
+		resourceName, strings.ToUpper(region), docSlug,
 	)
 }
 
-// blockJPRegionDiff returns a CustomizeDiffFunc that fails a plan when the
-// provider is configured for the JP region. Wire this into a `schema.Resource`
-// via the `CustomizeDiff` field so the error surfaces at `terraform plan`
-// time - well before any state is written or any API call is made.
-func blockJPRegionDiff(resourceName string) schema.CustomizeDiffFunc {
+// blockRegionsDiff returns a CustomizeDiffFunc that fails a plan when the provider
+// is configured for any of the specified regions. Wire this into a schema.Resource
+// via the CustomizeDiff field so the error surfaces at terraform plan time, before
+// any state is written or API call is made.
+//
+// Note: "FEDRAMP" is normalised to "GOV" in providerConfigure, so passing "GOV"
+// here covers both the GOV and FEDRAMP region aliases.
+func blockRegionsDiff(resourceName string, regions ...string) schema.CustomizeDiffFunc {
 	return func(_ context.Context, _ *schema.ResourceDiff, meta interface{}) error {
-		return errorIfJPRegion(meta, resourceName)
+		providerConfig, ok := meta.(*ProviderConfig)
+		if !ok || providerConfig == nil {
+			return nil
+		}
+		r := providerConfig.Region
+		for _, blocked := range regions {
+			if strings.EqualFold(r, blocked) {
+				return unsupportedRegionError(resourceName, r)
+			}
+		}
+		return nil
 	}
+}
+
+// blockUnsupportedRegionDiff blocks a resource at plan time for both JP and GOV.
+// Use this for resources confirmed unavailable on both regions (e.g. the legacy
+// REST v2 Alert Channels family).
+func blockUnsupportedRegionDiff(resourceName string) schema.CustomizeDiffFunc {
+	return blockRegionsDiff(resourceName, "JP", "GOV")
+}
+
+// blockGOVRegionDiff blocks a resource at plan time for the GOV region only.
+// Use this for resources confirmed unavailable on FedRAMP but still working on JP.
+func blockGOVRegionDiff(resourceName string) schema.CustomizeDiffFunc {
+	return blockRegionsDiff(resourceName, "GOV")
 }
