@@ -1,3 +1,8 @@
+<a name="v3.99.1"></a>
+## [v3.99.1] - 2026-09-24
+### Bug Fixes
+- **cloud:** allow clearing azure monitor include_tags and exclude_tags ([#3211](https://github.com/newrelic/terraform-provider-newrelic/issues/3211))
+
 <a name="v3.99.0"></a>
 ## [v3.99.0] - 2026-09-24
 ### Bug Fixes
@@ -2881,7 +2886,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.1...HEAD
+[v3.99.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.0...v3.99.1
 [v3.99.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.98.0...v3.99.0
 [v3.98.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.6...v3.98.0
 [v3.97.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.5...v3.97.6
