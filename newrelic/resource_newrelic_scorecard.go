@@ -25,7 +25,6 @@ func resourceNewRelicScorecard() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
-		CustomizeDiff: customizeScorecardDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -63,47 +62,43 @@ func resourceNewRelicScorecard() *schema.Resource {
 					return schema.HashString(m["key"].(string))
 				},
 			},
-			// progress_levels are set at create time only. The NGEP API currently
-			// rejects updates to progress levels due to a backend validation bug.
-			// Define them once when the scorecard is created.
-			//
-			// TypeList is used (not TypeSet) so ForceNew correctly propagates to
-			// the resource level when inner field values change. Reorder-without-
-			// content-change is handled by customizeScorecardDiff above.
+			// progress_levels can be set at create time or updated in-place via the
+			// entityManagementUpdateScorecard mutation. The API requires at least one
+			// level when the field is present. If omitted, the API applies org defaults
+			// and the Computed flag stores those defaults in state — no spurious diff.
 			"progress_levels": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Description: "Progress levels for this scorecard (e.g. Red/Amber/Green). " +
-					"Defined at create time — changes require resource recreation. " +
-					"Reordering blocks in config does not trigger recreation. " +
-					"If omitted, the API applies org defaults.",
+					"Can be updated in-place. If omitted, the API applies org defaults. " +
+					"At least one level must remain once levels have been explicitly set.",
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["id"].(string))
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ForceNew:     true,
 							Description:  "A unique identifier for this level (e.g. 'red', 'green').",
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"name": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ForceNew:     true,
 							Description:  "Display name of the level.",
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Description: "Description of what this level means.",
 						},
 						"hex_color_code": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ForceNew:     true,
 							Description:  "Hex colour for this level, e.g. '#FF0000'.",
 							ValidateFunc: validation.StringLenBetween(4, 9),
 						},
@@ -167,7 +162,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		input.Tags = expandNGEPTags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("progress_levels"); ok {
-		input.ProgressLevels = expandProgressLevels(v.([]interface{}))
+		input.ProgressLevels = expandProgressLevels(v.(*schema.Set).List())
 	}
 
 	result, err := client.Scorecards.EntityManagementCreateScorecard(input)
@@ -206,9 +201,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("tags", v)
 	}
 	if len(input.ProgressLevels) > 0 {
-		_ = d.Set("progress_levels", flattenProgressLevels(
-			progressLevelsCreateToRead(input.ProgressLevels),
-		))
+		_ = d.Set("progress_levels", flattenProgressLevels(progressLevelsCreateToRead(input.ProgressLevels)))
 	}
 
 	// Indexing gate: block until the entity is visible in entitySearch so that
@@ -291,6 +284,16 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 			userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
 			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
 			upd.Tags = mergeWithSystemTags(userTags, sysTags)
+		}
+		if d.HasChange("progress_levels") {
+			newLevels := expandProgressLevelsUpdate(d.Get("progress_levels").(*schema.Set).List())
+			if len(newLevels) == 0 {
+				// User removed all blocks from config — Computed means API keeps existing
+				// levels; nothing to send. This avoids the API "at least 1 level" error.
+				log.Printf("[WARN] scorecard %s: progress_levels removed from config, existing API levels preserved", d.Id())
+			} else {
+				upd.ProgressLevels = newLevels
+			}
 		}
 
 		if _, err := client.Scorecards.EntityManagementUpdateScorecard(d.Id(), upd); err != nil {

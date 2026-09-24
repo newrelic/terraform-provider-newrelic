@@ -12,48 +12,6 @@ import (
 
 // ── CustomizeDiff functions ───────────────────────────────────────────────────
 
-// customizeScorecardDiff forces resource replacement when progress_levels
-// content changes. It compares old vs new sets sorted by id — so reordering
-// blocks in config does NOT trigger replacement; only adding/removing/changing
-// level values does.
-func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !d.HasChange("progress_levels") {
-		return nil
-	}
-	oldRaw, newRaw := d.GetChange("progress_levels")
-	oldList, _ := oldRaw.([]interface{})
-	newList, _ := newRaw.([]interface{})
-	if len(oldList) != len(newList) {
-		return d.ForceNew("progress_levels")
-	}
-	type level struct{ id, name, desc, color string }
-	toLevels := func(raw []interface{}) []level {
-		out := make([]level, 0, len(raw))
-		for _, r := range raw {
-			m, _ := r.(map[string]interface{})
-			if m == nil {
-				continue
-			}
-			out = append(out, level{
-				id:    m["id"].(string),
-				name:  m["name"].(string),
-				desc:  m["description"].(string),
-				color: m["hex_color_code"].(string),
-			})
-		}
-		sort.Slice(out, func(i, j int) bool { return out[i].id < out[j].id })
-		return out
-	}
-	oldLevels := toLevels(oldList)
-	newLevels := toLevels(newList)
-	for i := range oldLevels {
-		if oldLevels[i] != newLevels[i] {
-			return d.ForceNew("progress_levels")
-		}
-	}
-	return nil
-}
-
 // customizeScorecardRuleDiff validates the nrql_engine accounts/join_accounts
 // lists for semantic correctness at plan time:
 //
@@ -132,7 +90,7 @@ func isExclusiveMembershipError(err error) bool {
 
 // ── Progress levels ───────────────────────────────────────────────────────────
 
-// expandProgressLevels converts the progress_levels Terraform list to CreateInput slice.
+// expandProgressLevels converts the progress_levels Terraform set to CreateInput slice.
 func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionCreateInput {
 	if len(raw) == 0 {
 		return nil
@@ -141,6 +99,30 @@ func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgre
 	for _, r := range raw {
 		m := r.(map[string]interface{})
 		pl := scorecards.EntityManagementProgressLevelDefinitionCreateInput{
+			ID:   m["id"].(string),
+			Name: m["name"].(string),
+		}
+		if v, ok := m["description"].(string); ok {
+			pl.Description = v
+		}
+		if v, ok := m["hex_color_code"].(string); ok {
+			pl.HexColorCode = v
+		}
+		out = append(out, pl)
+	}
+	return out
+}
+
+// expandProgressLevelsUpdate converts the progress_levels Terraform set to UpdateInput slice.
+// The UpdateInput type has identical fields to CreateInput; it differs only in name.
+func expandProgressLevelsUpdate(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionUpdateInput {
+	if len(raw) == 0 {
+		return nil
+	}
+	out := make([]scorecards.EntityManagementProgressLevelDefinitionUpdateInput, 0, len(raw))
+	for _, r := range raw {
+		m := r.(map[string]interface{})
+		pl := scorecards.EntityManagementProgressLevelDefinitionUpdateInput{
 			ID:   m["id"].(string),
 			Name: m["name"].(string),
 		}
@@ -167,12 +149,8 @@ func progressLevelsCreateToRead(in []scorecards.EntityManagementProgressLevelDef
 }
 
 // flattenProgressLevels converts API ProgressLevelDefinition values back to Terraform maps.
-// The output is sorted alphabetically by "id" so that the state always has a canonical
-// order. This prevents spurious TypeList diffs when the config lists the same levels
-// in a different order — as long as the config is also written in alphabetical-by-id order
-// the plan will show "No changes" after create/update.
+// Sorted alphabetically by id for deterministic plan output.
 func flattenProgressLevels(levels []scorecards.EntityManagementProgressLevelDefinition) []map[string]interface{} {
-	// Sort a copy so we don't mutate the caller's slice.
 	sorted := make([]scorecards.EntityManagementProgressLevelDefinition, len(levels))
 	copy(sorted, levels)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].ID < sorted[j].ID })
