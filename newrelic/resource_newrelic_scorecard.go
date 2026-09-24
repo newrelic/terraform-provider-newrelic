@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -14,10 +15,47 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
-// customizeScorecardDiff is intentionally left empty — progress_levels is now
-// a TypeSet (hashed on "id"), which makes ordering irrelevant at the schema
-// level. Terraform natively handles the ForceNew via the schema's ForceNew: true
-// flag when any set element actually changes. No manual diff override is needed.
+// customizeScorecardDiff forces resource replacement when progress_levels
+// content changes. It compares old vs new sets sorted by id — so reordering
+// blocks in config does NOT trigger replacement; only adding/removing/changing
+// level values does.
+func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if !d.HasChange("progress_levels") {
+		return nil
+	}
+	oldRaw, newRaw := d.GetChange("progress_levels")
+	oldList, _ := oldRaw.([]interface{})
+	newList, _ := newRaw.([]interface{})
+	if len(oldList) != len(newList) {
+		return d.ForceNew("progress_levels")
+	}
+	type level struct{ id, name, desc, color string }
+	toLevels := func(raw []interface{}) []level {
+		out := make([]level, 0, len(raw))
+		for _, r := range raw {
+			m, _ := r.(map[string]interface{})
+			if m == nil {
+				continue
+			}
+			out = append(out, level{
+				id:    m["id"].(string),
+				name:  m["name"].(string),
+				desc:  m["description"].(string),
+				color: m["hex_color_code"].(string),
+			})
+		}
+		sort.Slice(out, func(i, j int) bool { return out[i].id < out[j].id })
+		return out
+	}
+	oldLevels := toLevels(oldList)
+	newLevels := toLevels(newList)
+	for i := range oldLevels {
+		if oldLevels[i] != newLevels[i] {
+			return d.ForceNew("progress_levels")
+		}
+	}
+	return nil
+}
 
 func resourceNewRelicScorecard() *schema.Resource {
 	return &schema.Resource{
@@ -31,6 +69,7 @@ func resourceNewRelicScorecard() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
+		CustomizeDiff: customizeScorecardDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -72,46 +111,45 @@ func resourceNewRelicScorecard() *schema.Resource {
 			// rejects updates to progress levels due to a backend validation bug.
 			// Define them once when the scorecard is created.
 			//
-			// TypeSet (hashed on "id") makes the ordering in config irrelevant —
-			// Terraform compares by content so reordering blocks does not trigger
-			// a diff. The ForceNew flag ensures any actual content change
-			// (add, remove, or modify a level) causes resource recreation.
+			// TypeList is used (not TypeSet) so ForceNew correctly propagates to
+			// the resource level when inner field values change. Reorder-without-
+			// content-change is handled by customizeScorecardDiff above.
 			"progress_levels": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Description: "Progress levels for this scorecard (e.g. Red/Amber/Green). " +
 					"Defined at create time — changes require resource recreation. " +
+					"Reordering blocks in config does not trigger recreation. " +
 					"If omitted, the API applies org defaults.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "A unique identifier for this level (e.g. 'red', 'green').",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "Display name of the level.",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "Description of what this level means.",
 						},
 						"hex_color_code": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							ForceNew:     true,
 							Description:  "Hex colour for this level, e.g. '#FF0000'.",
 							ValidateFunc: validation.StringLenBetween(4, 9),
 						},
 					},
-				},
-				// Hash on "id" so reordering blocks in config never produces a diff.
-				Set: func(v interface{}) int {
-					m := v.(map[string]interface{})
-					return schema.HashString(m["id"].(string))
 				},
 			},
 			// rule_ids lists the rule entity GUIDs attached to this scorecard via
