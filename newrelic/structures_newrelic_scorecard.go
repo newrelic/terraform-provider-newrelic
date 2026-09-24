@@ -2,11 +2,133 @@ package newrelic
 
 import (
 	"context"
+	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
+
+// ── CustomizeDiff functions ───────────────────────────────────────────────────
+
+// customizeScorecardDiff forces resource replacement when progress_levels
+// content changes. It compares old vs new sets sorted by id — so reordering
+// blocks in config does NOT trigger replacement; only adding/removing/changing
+// level values does.
+func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if !d.HasChange("progress_levels") {
+		return nil
+	}
+	oldRaw, newRaw := d.GetChange("progress_levels")
+	oldList, _ := oldRaw.([]interface{})
+	newList, _ := newRaw.([]interface{})
+	if len(oldList) != len(newList) {
+		return d.ForceNew("progress_levels")
+	}
+	type level struct{ id, name, desc, color string }
+	toLevels := func(raw []interface{}) []level {
+		out := make([]level, 0, len(raw))
+		for _, r := range raw {
+			m, _ := r.(map[string]interface{})
+			if m == nil {
+				continue
+			}
+			out = append(out, level{
+				id:    m["id"].(string),
+				name:  m["name"].(string),
+				desc:  m["description"].(string),
+				color: m["hex_color_code"].(string),
+			})
+		}
+		sort.Slice(out, func(i, j int) bool { return out[i].id < out[j].id })
+		return out
+	}
+	oldLevels := toLevels(oldList)
+	newLevels := toLevels(newList)
+	for i := range oldLevels {
+		if oldLevels[i] != newLevels[i] {
+			return d.ForceNew("progress_levels")
+		}
+	}
+	return nil
+}
+
+// customizeScorecardRuleDiff validates the nrql_engine accounts/join_accounts
+// lists for semantic correctness at plan time:
+//
+//  1. No account ID ≤ 0 in either list.
+//  2. No duplicates within accounts.
+//  3. No duplicates within join_accounts.
+//  4. No account ID appears in both accounts AND join_accounts.
+func customizeScorecardRuleDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	rawEngine := d.Get("nrql_engine").([]interface{})
+	if len(rawEngine) == 0 || rawEngine[0] == nil {
+		return nil
+	}
+	m := rawEngine[0].(map[string]interface{})
+
+	toIntSlice := func(raw []interface{}) []int {
+		out := make([]int, 0, len(raw))
+		for _, v := range raw {
+			out = append(out, v.(int))
+		}
+		return out
+	}
+
+	accounts := toIntSlice(m["accounts"].([]interface{}))
+	joinAccounts := toIntSlice(m["join_accounts"].([]interface{}))
+
+	// 1. No account ID ≤ 0
+	for _, id := range accounts {
+		if id <= 0 {
+			return fmt.Errorf("nrql_engine.accounts: account ID %d is invalid (must be > 0)", id)
+		}
+	}
+	for _, id := range joinAccounts {
+		if id <= 0 {
+			return fmt.Errorf("nrql_engine.join_accounts: account ID %d is invalid (must be > 0)", id)
+		}
+	}
+
+	// 2. No duplicates within accounts
+	seen := make(map[int]bool, len(accounts))
+	for _, id := range accounts {
+		if seen[id] {
+			return fmt.Errorf("nrql_engine.accounts: duplicate account ID %d", id)
+		}
+		seen[id] = true
+	}
+
+	// 3. No duplicates within join_accounts
+	seenJoin := make(map[int]bool, len(joinAccounts))
+	for _, id := range joinAccounts {
+		if seenJoin[id] {
+			return fmt.Errorf("nrql_engine.join_accounts: duplicate account ID %d", id)
+		}
+		seenJoin[id] = true
+	}
+
+	// 4. No intersection between accounts and join_accounts
+	for _, id := range joinAccounts {
+		if seen[id] {
+			return fmt.Errorf("nrql_engine: account ID %d appears in both accounts and join_accounts — these lists must be disjoint", id)
+		}
+	}
+
+	return nil
+}
+
+// ── Exclusive-membership error detection ──────────────────────────────────────
+
+// isExclusiveMembershipError reports whether an error from
+// EntityManagementAddCollectionMembers indicates that one or more rules are
+// already attached to a different scorecard. The NGEP API returns two
+// different messages for this condition depending on the backend version.
+func isExclusiveMembershipError(err error) bool {
+	return strings.Contains(err.Error(), "already belongs to collection") ||
+		strings.Contains(err.Error(), "already exists in one collection")
+}
 
 // ── Progress levels ───────────────────────────────────────────────────────────
 
@@ -108,17 +230,17 @@ func extractNRQLEngineParams(raw []interface{}) *nrqlEngineParams {
 		return nil
 	}
 	m := raw[0].(map[string]interface{})
-	p := &nrqlEngineParams{
+	params := &nrqlEngineParams{
 		Query: m["query"].(string),
 	}
 	// accounts and join_accounts are TypeList — use .([]interface{})
-	if accts, ok := m["accounts"].([]interface{}); ok {
-		p.Accounts = expandIntListFromInterface(accts)
+	if accounts, ok := m["accounts"].([]interface{}); ok {
+		params.Accounts = expandIntListFromInterface(accounts)
 	}
-	if joinAccts, ok := m["join_accounts"].([]interface{}); ok && len(joinAccts) > 0 {
-		p.JoinAccounts = expandIntListFromInterface(joinAccts)
+	if joinAccounts, ok := m["join_accounts"].([]interface{}); ok && len(joinAccounts) > 0 {
+		params.JoinAccounts = expandIntListFromInterface(joinAccounts)
 	}
-	return p
+	return params
 }
 
 // expandNRQLEngineCreate maps the nrql_engine block to the Create input type.

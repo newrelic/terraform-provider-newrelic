@@ -3,7 +3,6 @@ package newrelic
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -13,70 +12,6 @@ import (
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
-
-// customizeScorecardRuleDiff validates the nrql_engine accounts/join_accounts
-// lists for semantic correctness at plan time:
-//  1. No account ID ≤ 0 in either list.
-//  2. No duplicates within accounts.
-//  3. No duplicates within join_accounts.
-//  4. No account ID appears in both accounts AND join_accounts.
-func customizeScorecardRuleDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	rawEngine := d.Get("nrql_engine").([]interface{})
-	if len(rawEngine) == 0 || rawEngine[0] == nil {
-		return nil
-	}
-	m := rawEngine[0].(map[string]interface{})
-
-	toIntSlice := func(raw []interface{}) []int {
-		out := make([]int, 0, len(raw))
-		for _, v := range raw {
-			out = append(out, v.(int))
-		}
-		return out
-	}
-
-	accounts := toIntSlice(m["accounts"].([]interface{}))
-	joinAccounts := toIntSlice(m["join_accounts"].([]interface{}))
-
-	// 1. No account ID ≤ 0
-	for _, id := range accounts {
-		if id <= 0 {
-			return fmt.Errorf("nrql_engine.accounts: account ID %d is invalid (must be > 0)", id)
-		}
-	}
-	for _, id := range joinAccounts {
-		if id <= 0 {
-			return fmt.Errorf("nrql_engine.join_accounts: account ID %d is invalid (must be > 0)", id)
-		}
-	}
-
-	// 2. No duplicates within accounts
-	seen := make(map[int]bool, len(accounts))
-	for _, id := range accounts {
-		if seen[id] {
-			return fmt.Errorf("nrql_engine.accounts: duplicate account ID %d", id)
-		}
-		seen[id] = true
-	}
-
-	// 3. No duplicates within join_accounts
-	seenJoin := make(map[int]bool, len(joinAccounts))
-	for _, id := range joinAccounts {
-		if seenJoin[id] {
-			return fmt.Errorf("nrql_engine.join_accounts: duplicate account ID %d", id)
-		}
-		seenJoin[id] = true
-	}
-
-	// 4. No intersection between accounts and join_accounts
-	for _, id := range joinAccounts {
-		if seen[id] {
-			return fmt.Errorf("nrql_engine: account ID %d appears in both accounts and join_accounts — these lists must be disjoint", id)
-		}
-	}
-
-	return nil
-}
 
 func resourceNewRelicScorecardRule() *schema.Resource {
 	return &schema.Resource{
@@ -222,7 +157,6 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	// nrql_engine is Required — use d.Get, not d.GetOk.
 	input := scorecards.EntityManagementScorecardRuleEntityCreateInput{
 		Name:       d.Get("name").(string),
 		Enabled:    d.Get("enabled").(bool),
@@ -273,17 +207,12 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 			JoinAccounts: input.NRQLEngine.JoinAccounts,
 		}))
 	}
-	// Tags: convert TagInput → Tag (identical fields) for the flatten helper.
-	if len(input.Tags) > 0 {
-		tagSlice := make([]scorecards.EntityManagementTag, len(input.Tags))
-		for i, t := range input.Tags {
-			tagSlice[i] = scorecards.EntityManagementTag(t)
-		}
-		_ = d.Set("tags", flattenNGEPTags(tagSlice))
+	if v := tagsInputToFlattenedSet(input.Tags); v != nil {
+		_ = d.Set("tags", v)
 	}
 
-	// Indexing gate — wait until the rule is visible in entitySearch before
-	// returning. Subsequent Read calls will then find the entity immediately.
+	// Indexing gate: block until the entity is visible in entitySearch so that
+	// subsequent Read calls find it immediately.
 	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, result.Entity.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}

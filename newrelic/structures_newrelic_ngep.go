@@ -37,6 +37,20 @@ func expandNGEPTags(raw []interface{}) []scorecards.EntityManagementTagInput {
 	return out
 }
 
+// tagsInputToFlattenedSet converts TagInput values to the flattened Terraform
+// representation ready for d.Set("tags", ...). Used in Create to set state
+// without a Read round-trip.
+func tagsInputToFlattenedSet(tags []scorecards.EntityManagementTagInput) interface{} {
+	if len(tags) == 0 {
+		return nil
+	}
+	ts := make([]scorecards.EntityManagementTag, len(tags))
+	for i, t := range tags {
+		ts[i] = scorecards.EntityManagementTag(t)
+	}
+	return flattenNGEPTags(ts)
+}
+
 // flattenNGEPTags converts EntityManagementTag values back to a list of
 // maps with "key" and "values" keys. Tags whose keys begin with "nr." are
 // stripped — NGEP auto-injects system tags (e.g. "nr.hierarchy.level") that

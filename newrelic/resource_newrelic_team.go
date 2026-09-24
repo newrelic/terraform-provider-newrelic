@@ -291,16 +291,12 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	if len(input.Aliases) > 0 {
 		_ = d.Set("aliases", input.Aliases)
 	}
-	if len(input.Tags) > 0 {
-		tagSlice := make([]scorecards.EntityManagementTag, len(input.Tags))
-		for i, t := range input.Tags {
-			tagSlice[i] = scorecards.EntityManagementTag(t)
-		}
-		_ = d.Set("tags", flattenNGEPTags(tagSlice))
+	if v := tagsInputToFlattenedSet(input.Tags); v != nil {
+		_ = d.Set("tags", v)
 	}
 
-	// ── Indexing gate ─────────────────────────────────────────────────────
-	// Wait until the team is visible in entitySearch before returning.
+	// Indexing gate: block until the entity is visible in entitySearch so that
+	// subsequent Read calls find it immediately.
 	log.Printf("[INFO] Waiting for team %s to appear in entitySearch index", teamID)
 	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, teamID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
@@ -435,9 +431,11 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 		if d.HasChange("description") {
 			newDesc := d.Get("description").(string)
 			if newDesc != "" {
+				// Non-empty: include in the main update mutation below.
 				upd.Description = newDesc
 			} else {
 				// Explicit clear: omitempty drops "", so use a raw call.
+				// The main mutation is still issued below for any other changed fields.
 				if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
 					return diag.Errorf("clearing description on team %s: %v", d.Id(), err)
 				}

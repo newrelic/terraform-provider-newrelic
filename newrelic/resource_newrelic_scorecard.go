@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"sort"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,48 +12,6 @@ import (
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
-
-// customizeScorecardDiff forces resource replacement when progress_levels
-// content changes. It compares old vs new sets sorted by id — so reordering
-// blocks in config does NOT trigger replacement; only adding/removing/changing
-// level values does.
-func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !d.HasChange("progress_levels") {
-		return nil
-	}
-	oldRaw, newRaw := d.GetChange("progress_levels")
-	oldList, _ := oldRaw.([]interface{})
-	newList, _ := newRaw.([]interface{})
-	if len(oldList) != len(newList) {
-		return d.ForceNew("progress_levels")
-	}
-	type level struct{ id, name, desc, color string }
-	toLevels := func(raw []interface{}) []level {
-		out := make([]level, 0, len(raw))
-		for _, r := range raw {
-			m, _ := r.(map[string]interface{})
-			if m == nil {
-				continue
-			}
-			out = append(out, level{
-				id:    m["id"].(string),
-				name:  m["name"].(string),
-				desc:  m["description"].(string),
-				color: m["hex_color_code"].(string),
-			})
-		}
-		sort.Slice(out, func(i, j int) bool { return out[i].id < out[j].id })
-		return out
-	}
-	oldLevels := toLevels(oldList)
-	newLevels := toLevels(newList)
-	for i := range oldLevels {
-		if oldLevels[i] != newLevels[i] {
-			return d.ForceNew("progress_levels")
-		}
-	}
-	return nil
-}
 
 func resourceNewRelicScorecard() *schema.Resource {
 	return &schema.Resource{
@@ -231,7 +187,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 	// Attach any declared rules immediately after create.
 	if wantedRules := expandRuleIDsFromSet(d.Get("rule_ids").(*schema.Set)); len(wantedRules) > 0 {
 		if _, err := client.Scorecards.EntityManagementAddCollectionMembers(rulesColID, wantedRules); err != nil {
-			if strings.Contains(err.Error(), "already belongs to collection") || strings.Contains(err.Error(), "already exists in one collection") {
+			if isExclusiveMembershipError(err) {
 				return diag.Errorf(
 					"cannot attach one or more rules to scorecard %s:\n\n"+
 						"  • Each scorecard rule can only belong to ONE scorecard at a time.\n"+
@@ -246,25 +202,17 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 	// Set remaining state from input — no Read call needed.
 	_ = d.Set("name", input.Name)
 	_ = d.Set("description", input.Description)
-	if len(input.Tags) > 0 {
-		tagSlice := make([]scorecards.EntityManagementTag, len(input.Tags))
-		for i, t := range input.Tags {
-			tagSlice[i] = scorecards.EntityManagementTag(t)
-		}
-		_ = d.Set("tags", flattenNGEPTags(tagSlice))
+	if v := tagsInputToFlattenedSet(input.Tags); v != nil {
+		_ = d.Set("tags", v)
 	}
 	if len(input.ProgressLevels) > 0 {
 		_ = d.Set("progress_levels", flattenProgressLevels(
 			progressLevelsCreateToRead(input.ProgressLevels),
 		))
 	}
-	// rule_ids: reflect what was actually attached (or empty if nothing was declared)
-	if wantedRules := expandRuleIDsFromSet(d.Get("rule_ids").(*schema.Set)); len(wantedRules) > 0 {
-		_ = d.Set("rule_ids", wantedRules)
-	}
 
-	// Indexing gate — wait until the scorecard is visible in entitySearch before
-	// returning. Subsequent Read calls will find the entity immediately.
+	// Indexing gate: block until the entity is visible in entitySearch so that
+	// subsequent Read calls find it immediately.
 	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, scorecardID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}
@@ -359,7 +307,7 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 		)
 		if len(toAdd) > 0 {
 			if _, err := client.Scorecards.EntityManagementAddCollectionMembers(rulesColID, toAdd); err != nil {
-				if strings.Contains(err.Error(), "already belongs to collection") {
+				if isExclusiveMembershipError(err) {
 					return diag.Errorf(
 						"attaching rules to scorecard %s: one or more rules are already attached to another scorecard — "+
 							"each rule can only belong to one scorecard at a time: %v", d.Id(), err)
