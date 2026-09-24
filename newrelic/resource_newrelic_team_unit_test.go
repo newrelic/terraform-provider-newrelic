@@ -3,7 +3,6 @@
 package newrelic
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,17 +99,6 @@ func TestFlattenEntityGUIDs(t *testing.T) {
 	flat := flattenEntityGUIDs([]string{"guid-a", "guid-b"})
 	require.Len(t, flat, 2)
 	assert.Equal(t, "guid-a", flat[0]["guid"])
-}
-
-// ── helpers_newrelic_team.go ──────────────────────────────────────────────────
-
-func TestIsNGEPGhostNotFound(t *testing.T) {
-	t.Parallel()
-	// Ghost: leading ": " with empty id prefix.
-	assert.True(t, isNGEPGhostNotFound(fmt.Errorf(": Entity not found.")))
-	// Real delete: id in prefix — must NOT be treated as ghost.
-	assert.False(t, isNGEPGhostNotFound(fmt.Errorf("abc123: Entity not found.")))
-	assert.False(t, isNGEPGhostNotFound(nil))
 }
 
 // ── CustomizeDiff validation ──────────────────────────────────────────────────

@@ -135,9 +135,13 @@ func TestFlattenProgressLevels_RoundTrip(t *testing.T) {
 	}
 	flat := flattenProgressLevels(levels)
 	require.Len(t, flat, 2)
-	assert.Equal(t, "red", flat[0]["id"])
-	assert.Equal(t, "Red", flat[0]["name"])
-	assert.Equal(t, "#FF0000", flat[0]["hex_color_code"])
+	// flattenProgressLevels sorts by id alphabetically so "green" comes before "red"
+	assert.Equal(t, "green", flat[0]["id"])
+	assert.Equal(t, "Green", flat[0]["name"])
+	assert.Equal(t, "#00CC00", flat[0]["hex_color_code"])
+	assert.Equal(t, "red", flat[1]["id"])
+	assert.Equal(t, "Red", flat[1]["name"])
+	assert.Equal(t, "#FF0000", flat[1]["hex_color_code"])
 }
 
 // ── expandRuleIDsFromSet ──────────────────────────────────────────────────────
