@@ -1,3 +1,11 @@
+<a name="v3.99.0"></a>
+## [v3.99.0] - 2026-09-24
+### Bug Fixes
+- **alerts:** send explicit empty terms when clearing nrql condition thresholds ([#3244](https://github.com/newrelic/terraform-provider-newrelic/issues/3244))
+
+### Features
+- **pathpoint:** add pathpoint resource ([#3145](https://github.com/newrelic/terraform-provider-newrelic/issues/3145))
+
 <a name="v3.98.0"></a>
 ## [v3.98.0] - 2026-09-18
 ### Features
@@ -2873,7 +2881,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.98.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.0...HEAD
+[v3.99.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.98.0...v3.99.0
 [v3.98.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.6...v3.98.0
 [v3.97.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.5...v3.97.6
 [v3.97.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.4...v3.97.5
