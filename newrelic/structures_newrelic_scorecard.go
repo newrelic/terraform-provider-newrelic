@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
@@ -33,9 +34,18 @@ func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgre
 }
 
 // flattenProgressLevels converts API ProgressLevelDefinition values back to Terraform maps.
+// The output is sorted alphabetically by "id" so that the state always has a canonical
+// order. This prevents spurious TypeList diffs when the config lists the same levels
+// in a different order — as long as the config is also written in alphabetical-by-id order
+// the plan will show "No changes" after create/update.
 func flattenProgressLevels(levels []scorecards.EntityManagementProgressLevelDefinition) []map[string]interface{} {
-	out := make([]map[string]interface{}, 0, len(levels))
-	for _, l := range levels {
+	// Sort a copy so we don't mutate the caller's slice.
+	sorted := make([]scorecards.EntityManagementProgressLevelDefinition, len(levels))
+	copy(sorted, levels)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].ID < sorted[j].ID })
+
+	out := make([]map[string]interface{}, 0, len(sorted))
+	for _, l := range sorted {
 		out = append(out, map[string]interface{}{
 			"id":             l.ID,
 			"name":           l.Name,
