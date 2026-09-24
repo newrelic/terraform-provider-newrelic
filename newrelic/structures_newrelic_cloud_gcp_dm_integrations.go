@@ -244,7 +244,7 @@ func gcpDmServices() []gcpDmService {
 				in.GcpVpcaccess = []cloud.CloudDisableAccountIntegrationInput{disableInput}
 			}},
 
-		// ── DM-only 7 services (consolidated CloudGcpGenericIntegrationInput) ──
+		// ── DM-only 8 services (consolidated CloudGcpGenericIntegrationInput) ──
 		{key: "api_gateway", slug: "gcp_api_gateway", description: "GCP API Gateway (Dimensional Metrics only).",
 			configure: genericConfigure(func(in *cloud.CloudGcpIntegrationsInput, generic []cloud.CloudGcpGenericIntegrationInput) {
 				in.GcpApiGateway = generic
@@ -293,6 +293,13 @@ func gcpDmServices() []gcpDmService {
 			}),
 			disable: func(in *cloud.CloudGcpDisableIntegrationsInput, disableInput cloud.CloudDisableAccountIntegrationInput) {
 				in.GcpFirebaseAppHosting = []cloud.CloudDisableAccountIntegrationInput{disableInput}
+			}},
+		{key: "edge_container", slug: "gcp_edge_container", description: "GCP Distributed Cloud Edge (Dimensional Metrics only; no entity synthesis).",
+			configure: genericConfigure(func(in *cloud.CloudGcpIntegrationsInput, generic []cloud.CloudGcpGenericIntegrationInput) {
+				in.GcpEdgeContainer = generic
+			}),
+			disable: func(in *cloud.CloudGcpDisableIntegrationsInput, disableInput cloud.CloudDisableAccountIntegrationInput) {
+				in.GcpEdgeContainer = []cloud.CloudDisableAccountIntegrationInput{disableInput}
 			}},
 	}
 }
