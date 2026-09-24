@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"sort"
 	"strings"
 	"time"
 
@@ -15,50 +14,10 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
-// customizeScorecardDiff forces resource replacement when progress_levels content
-// changes. It compares the old and new sets normalised by sorting on "id", so
-// simply reordering the blocks in config does NOT trigger replacement — only
-// adding, removing, or changing values does.
-func customizeScorecardDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !d.HasChange("progress_levels") {
-		return nil
-	}
-	oldRaw, newRaw := d.GetChange("progress_levels")
-	oldList, _ := oldRaw.([]interface{})
-	newList, _ := newRaw.([]interface{})
-
-	if len(oldList) != len(newList) {
-		return d.ForceNew("progress_levels")
-	}
-
-	type level struct{ id, name, desc, color string }
-	toLevels := func(raw []interface{}) []level {
-		out := make([]level, 0, len(raw))
-		for _, r := range raw {
-			m, _ := r.(map[string]interface{})
-			if m == nil {
-				continue
-			}
-			out = append(out, level{
-				id:    m["id"].(string),
-				name:  m["name"].(string),
-				desc:  m["description"].(string),
-				color: m["hex_color_code"].(string),
-			})
-		}
-		sort.Slice(out, func(i, j int) bool { return out[i].id < out[j].id })
-		return out
-	}
-
-	oldLevels := toLevels(oldList)
-	newLevels := toLevels(newList)
-	for i := range oldLevels {
-		if oldLevels[i] != newLevels[i] {
-			return d.ForceNew("progress_levels")
-		}
-	}
-	return nil // same content, different order — no replacement needed
-}
+// customizeScorecardDiff is intentionally left empty — progress_levels is now
+// a TypeSet (hashed on "id"), which makes ordering irrelevant at the schema
+// level. Terraform natively handles the ForceNew via the schema's ForceNew: true
+// flag when any set element actually changes. No manual diff override is needed.
 
 func resourceNewRelicScorecard() *schema.Resource {
 	return &schema.Resource{
@@ -72,7 +31,6 @@ func resourceNewRelicScorecard() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
 		},
-		CustomizeDiff: customizeScorecardDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -113,8 +71,13 @@ func resourceNewRelicScorecard() *schema.Resource {
 			// progress_levels are set at create time only. The NGEP API currently
 			// rejects updates to progress levels due to a backend validation bug.
 			// Define them once when the scorecard is created.
+			//
+			// TypeSet (hashed on "id") makes the ordering in config irrelevant —
+			// Terraform compares by content so reordering blocks does not trigger
+			// a diff. The ForceNew flag ensures any actual content change
+			// (add, remove, or modify a level) causes resource recreation.
 			"progress_levels": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: true,
 				Description: "Progress levels for this scorecard (e.g. Red/Amber/Green). " +
@@ -144,6 +107,11 @@ func resourceNewRelicScorecard() *schema.Resource {
 							ValidateFunc: validation.StringLenBetween(4, 9),
 						},
 					},
+				},
+				// Hash on "id" so reordering blocks in config never produces a diff.
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["id"].(string))
 				},
 			},
 			// rule_ids lists the rule entity GUIDs attached to this scorecard via
@@ -203,7 +171,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		input.Tags = expandNGEPTags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("progress_levels"); ok {
-		input.ProgressLevels = expandProgressLevels(v.([]interface{}))
+		input.ProgressLevels = expandProgressLevels(v.(*schema.Set).List())
 	}
 
 	result, err := client.Scorecards.EntityManagementCreateScorecard(input)
