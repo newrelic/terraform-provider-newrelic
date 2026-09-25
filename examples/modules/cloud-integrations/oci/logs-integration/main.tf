@@ -2,7 +2,7 @@
 resource "oci_functions_application" "logging_function_app" {
   compartment_id = var.compartment_ocid
   config = {
-    "VAULT_REGION"      = var.region
+    "VAULT_REGION"      = local.home_region
     "DEBUG_ENABLED"     = var.debug_enabled
     "NEW_RELIC_REGION"  = var.new_relic_region
     "SECRET_OCID"       = var.secret_ocid
