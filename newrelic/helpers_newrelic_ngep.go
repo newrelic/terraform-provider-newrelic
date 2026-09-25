@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
@@ -170,32 +169,30 @@ func intSetDelta(oldItems, newItems []int) (toAdd, toRemove []int) {
 
 // ── NGEP entity indexing gate ─────────────────────────────────────────────────
 
-// waitForNGEPEntityIndexed polls the standard actor.entitySearch API until the
-// entity is visible, then returns. The Teams UI performs the same poll after
-// create; without it Terraform may complete Create before the entity is
-// queryable, causing subsequent reads to appear empty.
+// waitForNGEPEntityIndexed polls entityManagement.entity until the entity is
+// visible, then returns. The Teams UI performs the same poll after create;
+// without it Terraform may complete Create before the entity is queryable,
+// causing subsequent reads to appear empty.
+//
+// This uses the scorecards.GetEntityWithContext path (entityManagement API)
+// rather than the legacy actor.entitySearch, avoiding cross-index lag.
 //
 // Blocks up to timeout. Returns a non-nil error if the entity never appears.
 func waitForNGEPEntityIndexed(
 	ctx context.Context,
-	entitiesClient *entities.Entities,
+	scClient *scorecards.Scorecards,
 	entityID string,
 	timeout time.Duration,
 ) error {
 	return resource.RetryContext(ctx, timeout, func() *resource.RetryError {
-		res, err := entitiesClient.GetEntitySearchByQueryWithContext(
-			ctx,
-			entities.EntitySearchOptions{},
-			"id IN ('"+entityID+"')",
-			[]entities.EntitySearchSortCriteria{},
-		)
+		iface, err := scClient.GetEntityWithContext(ctx, entityID)
 		if err != nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("entitySearch while waiting for %s to be indexed: %w", entityID, err))
+				fmt.Errorf("NGEP entity query while waiting for %s to be indexed: %w", entityID, err))
 		}
-		if res == nil || len(res.Results.Entities) == 0 {
+		if iface == nil || *iface == nil {
 			return resource.RetryableError(
-				fmt.Errorf("entity %s not yet visible in entitySearch — retrying", entityID))
+				fmt.Errorf("entity %s not yet visible in entityManagement — retrying", entityID))
 		}
 		return nil
 	})

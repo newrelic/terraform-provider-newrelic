@@ -227,6 +227,92 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 	return guids, nil
 }
 
+// readStaticOwnershipGUIDs returns only the GUIDs of entities that were
+// manually added to the ownership collection (i.e., NOT auto-assigned via
+// tag-based discovery rules).
+//
+// NGEP's tag-based discovery places both manually-added and tag-matched entities
+// in the same collectionElements response, both as EntityManagementGenericEntity.
+// The only way to distinguish them is by checking whether the entity has a tag
+// matching the team's name/aliases under one of the org's discovery tag keys.
+//
+// Entities whose tags match team name or alias → dynamic (excluded from state).
+// All other ownership-collection entities       → static (tracked in state).
+//
+// Terraform never shows drift for dynamic entities — they are managed by NGEP's
+// tag-based discovery outside Terraform's scope. If discovery is disabled or
+// orgSettings is nil, all entities are treated as static.
+func readStaticOwnershipGUIDs(
+	ctx context.Context,
+	scClient *scorecards.Scorecards,
+	entitiesClient *entities.Entities,
+	ownershipColID string,
+	teamName string,
+	teamAliases []string,
+	orgSettings *scorecards.EntityManagementTeamsOrganizationSettingsEntity,
+) (staticGUIDs []string, dynamicCount int, err error) {
+	allGUIDs, err := readTeamOwnedEntityGUIDs(ctx, scClient, ownershipColID)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(allGUIDs) == 0 {
+		return nil, 0, nil
+	}
+
+	// If discovery is not configured or disabled, all entities are static.
+	if orgSettings == nil || !orgSettings.Discovery.Enabled || len(orgSettings.Discovery.TagKeys) == 0 {
+		return allGUIDs, 0, nil
+	}
+
+	// Build id IN (...) filter for the batch entity search.
+	quotedGUIDs := make([]string, len(allGUIDs))
+	for i, g := range allGUIDs {
+		quotedGUIDs[i] = "'" + g + "'"
+	}
+	idFilter := "id IN (" + strings.Join(quotedGUIDs, ", ") + ")"
+
+	// Build tag value IN (...) filter using team name + aliases.
+	discoveryValues := append([]string{teamName}, teamAliases...)
+	quotedVals := make([]string, len(discoveryValues))
+	for i, v := range discoveryValues {
+		quotedVals[i] = "'" + v + "'"
+	}
+	tagValueList := "(" + strings.Join(quotedVals, ", ") + ")"
+
+	tagFragments := make([]string, len(orgSettings.Discovery.TagKeys))
+	for i, key := range orgSettings.Discovery.TagKeys {
+		tagFragments[i] = fmt.Sprintf("`tags.%s` IN %s", key, tagValueList)
+	}
+	discoveryTagFilter := "(" + strings.Join(tagFragments, " OR ") + ")"
+
+	dynamicQuery := idFilter + " AND " + discoveryTagFilter
+	dynamicResult, err := entitiesClient.GetEntitySearchByQueryWithContext(
+		ctx,
+		entities.EntitySearchOptions{},
+		dynamicQuery,
+		[]entities.EntitySearchSortCriteria{},
+	)
+	if err != nil {
+		// Non-fatal: fall back to treating all as static.
+		return allGUIDs, 0, nil
+	}
+	if dynamicResult == nil || len(dynamicResult.Results.Entities) == 0 {
+		return allGUIDs, 0, nil
+	}
+
+	dynamicCount = len(dynamicResult.Results.Entities)
+	dynamicSet := make(map[string]bool, dynamicCount)
+	for _, e := range dynamicResult.Results.Entities {
+		dynamicSet[string(e.GetGUID())] = true
+	}
+	for _, g := range allGUIDs {
+		if !dynamicSet[g] {
+			staticGUIDs = append(staticGUIDs, g)
+		}
+	}
+	return staticGUIDs, dynamicCount, nil
+}
+
 // ── Collection orchestration ──────────────────────────────────────────────────
 
 // applyTeamCollections reconciles all three of a team's collection-backed

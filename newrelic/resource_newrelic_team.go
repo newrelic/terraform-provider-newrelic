@@ -3,6 +3,7 @@ package newrelic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -280,8 +281,8 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 
 	// Indexing gate: block until the entity is visible in entitySearch so that
 	// subsequent Read calls find it immediately.
-	log.Printf("[INFO] Waiting for team %s to appear in entitySearch index", teamID)
-	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, teamID, d.Timeout(schema.TimeoutCreate)); err != nil {
+	log.Printf("[INFO] Waiting for team %s to appear in entityManagement index", teamID)
+	if err := waitForNGEPEntityIndexed(ctx, &client.Scorecards, teamID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -347,19 +348,51 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("managers", decodeManagerGUIDsToUserIDs(team.Managers, guidToUserID))
 	}
 
-	// ── Ownership collection (non-authoritative) ────────────────────────────────
-	// The ownership collection is the authoritative source for manually-added
-	// entities. Tag-discovery-placed entities DO appear in the collectionElements
-	// API response but their concrete types (e.g. EntityManagementFleetEntity)
-	// are not registered in UnmarshalEntityManagementEntityInterface, so they are
-	// silently dropped before reaching readTeamOwnedEntityGUIDs and never cause
-	// phantom drift. Any entity whose type IS known and is absent from the config
-	// will show as drift and be removed on the next apply.
-	entityGUIDs, ownerErr := readTeamOwnedEntityGUIDs(ctx, &client.Scorecards, team.Ownership.ID)
+	// ── Ownership collection — non-authoritative split ──────────────────────────
+	// NGEP adds both manually-added and tag-matched entities to the same
+	// ownership collection (both appear as EntityManagementGenericEntity). We
+	// must filter out the tag-matched ones so Terraform never flags them as
+	// drift — they are managed by NGEP's discovery rules, not Terraform.
+	//
+	// readStaticOwnershipGUIDs uses the org's discovery tag keys to run an
+	// entity search that identifies which collection members have matching tags
+	// (dynamic), then returns only the remainder (static) for state tracking.
+	orgSettings, orgErr := client.Scorecards.GetTeamsOrganizationSettings()
+	if orgErr != nil {
+		log.Printf("[WARN] Could not read TeamsOrganizationSettings for team %s: %v — treating all ownership entities as static", d.Id(), orgErr)
+	}
+
+	staticGUIDs, dynamicCount, ownerErr := readStaticOwnershipGUIDs(
+		ctx,
+		&client.Scorecards,
+		&client.Entities,
+		team.Ownership.ID,
+		team.Name,
+		team.Aliases,
+		orgSettings,
+	)
 	if ownerErr != nil {
 		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), ownerErr)
 	} else {
-		_ = d.Set("entities", flattenEntityGUIDs(entityGUIDs))
+		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
+	}
+
+	// Surface a warning when tag-auto-assigned entities exist, regardless of
+	// whether the user declared an entities block. This nudges users toward
+	// declarative control of all owned entities.
+	if dynamicCount > 0 {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("Team %q has %d tag-auto-assigned entities not tracked by Terraform", team.Name, dynamicCount),
+			Detail: fmt.Sprintf(
+				"%d entity/entities in team %q are automatically assigned via tag-based discovery "+
+					"and are intentionally not tracked in this resource's `entities` block. "+
+					"Terraform will only manage the %d entity/entities you have explicitly declared. "+
+					"If you want full declarative control, add all owned entities to the `entities` block "+
+					"and consider disabling automatic tag-based assignment via newrelic_teams_organization_settings.",
+				dynamicCount, team.Name, len(staticGUIDs),
+			),
+		}}
 	}
 
 	return nil

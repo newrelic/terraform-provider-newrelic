@@ -206,7 +206,7 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 
 	// Indexing gate: block until the entity is visible in entitySearch so that
 	// subsequent Read calls find it immediately.
-	if err := waitForNGEPEntityIndexed(ctx, &client.Entities, scorecardID, d.Timeout(schema.TimeoutCreate)); err != nil {
+	if err := waitForNGEPEntityIndexed(ctx, &client.Scorecards, scorecardID, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return diag.FromErr(err)
 	}
 
