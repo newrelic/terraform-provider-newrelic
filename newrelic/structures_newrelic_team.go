@@ -163,9 +163,9 @@ func flattenEntityGUIDs(guids []string) []map[string]interface{} {
 // readTeamMembershipMap. This avoids a second API call on every Read and enables
 // idempotent manager state storage.
 //
-// Returns nil when either argument is empty, which causes Terraform to keep
-// whatever was last written to state for the managers block (safe for import
-// and for the case where managers haven't been set yet).
+// Returns nil when either argument is empty. Callers pass the result directly
+// to d.Set("managers", ...) — a nil value sets the managers attribute to an
+// empty set (count=0), which is correct when no managers have been configured.
 func decodeManagerGUIDsToUserIDs(managerGUIDs []string, memberGUIDToUserID map[string]int) []int {
 	if len(managerGUIDs) == 0 || len(memberGUIDToUserID) == 0 {
 		return nil

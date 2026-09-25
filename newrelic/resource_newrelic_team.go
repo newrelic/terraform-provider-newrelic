@@ -349,9 +349,12 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	// ── Ownership collection (non-authoritative) ────────────────────────────────
 	// The ownership collection is the authoritative source for manually-added
-	// entities. Tag-matched entities are stored separately by NGEP and do NOT
-	// appear in this collection — no extra filtering is needed. Any entity in
-	// the collection that is absent from the config will show as drift.
+	// entities. Tag-discovery-placed entities DO appear in the collectionElements
+	// API response but their concrete types (e.g. EntityManagementFleetEntity)
+	// are not registered in UnmarshalEntityManagementEntityInterface, so they are
+	// silently dropped before reaching readTeamOwnedEntityGUIDs and never cause
+	// phantom drift. Any entity whose type IS known and is absent from the config
+	// will show as drift and be removed on the next apply.
 	entityGUIDs, ownerErr := readTeamOwnedEntityGUIDs(ctx, &client.Scorecards, team.Ownership.ID)
 	if ownerErr != nil {
 		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), ownerErr)
@@ -374,17 +377,25 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	teamFieldsChanged := d.HasChangesExcept("members", "entities", "managers")
 	if teamFieldsChanged {
 		upd := scorecards.EntityManagementTeamEntityUpdateInput{}
+		// updHasFields tracks whether upd has any non-zero fields that need
+		// to be sent to EntityManagementUpdateTeam. Fields cleared via raw
+		// calls (description="", aliases=[], tags=[], parentId=nil) do NOT
+		// populate upd — without this guard we would make a redundant API
+		// call with an empty struct ({}) when only clear operations occurred.
+		updHasFields := false
+
 		if d.HasChange("name") {
 			upd.Name = d.Get("name").(string)
+			updHasFields = true
 		}
 		if d.HasChange("description") {
 			newDesc := d.Get("description").(string)
 			if newDesc != "" {
 				// Non-empty: include in the main update mutation below.
 				upd.Description = newDesc
+				updHasFields = true
 			} else {
 				// Explicit clear: omitempty drops "", so use a raw call.
-				// The main mutation is still issued below for any other changed fields.
 				if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
 					return diag.Errorf("clearing description on team %s: %v", d.Id(), err)
 				}
@@ -396,6 +407,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 				for _, a := range newAliases {
 					upd.Aliases = append(upd.Aliases, a.(string))
 				}
+				updHasFields = true
 			} else {
 				// Explicit clear: omitempty would drop nil, so use raw call.
 				if err := clearTeamAliasesRaw(ctx, client, d.Id()); err != nil {
@@ -413,6 +425,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			if len(mergedTags) > 0 {
 				// Normal path: send user tags + preserved system tags.
 				upd.Tags = mergedTags
+				updHasFields = true
 			} else {
 				// Edge case: user clearing all tags on a team with no system tags.
 				// omitempty would silently drop an empty slice, so use a raw call.
@@ -423,23 +436,30 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 		if d.HasChange("resources") {
 			upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
+			updHasFields = true
 		}
 		if d.HasChange("parent_id") {
 			if newID := d.Get("parent_id").(string); newID != "" {
 				upd.ParentId = newID
+				updHasFields = true
 			} else {
 				// Clearing parent_id requires explicit null — the struct uses
 				// omitempty so an empty string would be silently dropped.
 				if err := clearTeamParentID(ctx, client, d.Id()); err != nil {
 					return diag.FromErr(err)
 				}
-				// parent_id is now cleared; other changed fields still need
-				// the main update call below.
+				// parent_id is now cleared via raw call; no field to add to upd.
 			}
 		}
 
-		if _, err := client.Scorecards.EntityManagementUpdateTeam(d.Id(), upd); err != nil {
-			return diag.FromErr(err)
+		// Only issue the main update call when at least one field is non-zero.
+		// When all changes were handled by raw clear calls (description, aliases,
+		// tags, parentId), upd is empty and sending {} to the API would be a
+		// wasteful no-op.
+		if updHasFields {
+			if _, err := client.Scorecards.EntityManagementUpdateTeam(d.Id(), upd); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

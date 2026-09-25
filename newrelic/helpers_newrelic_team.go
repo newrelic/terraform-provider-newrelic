@@ -190,6 +190,15 @@ func readTeamMembershipMap(ctx context.Context, client *scorecards.Scorecards, m
 
 // readTeamOwnedEntityGUIDs pages through the team's ownership collection and
 // returns the GUID of every entity it contains, regardless of entity type.
+//
+// Note: tag-discovery-placed entities (e.g. FLEET entities matching the team's
+// discovery tags) DO appear in the collectionElements API response but are
+// unmarshalled as unknown types and silently dropped by
+// UnmarshalEntityManagementEntityInterface. This means they are invisible to
+// the provider and will never show as drift — which is the desired behaviour
+// since discovery-managed membership should not be Terraform-authoritative.
+// If a new entity type is added to UnmarshalEntityManagementEntityInterface,
+// a matching case must be added here to ensure it is tracked in state.
 func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards, ownershipColID string) ([]string, error) {
 	var guids []string
 	err := pageCollectionItems(ctx, client, ownershipColID, func(item scorecards.EntityManagementEntityInterface) {
@@ -203,6 +212,12 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 		case *scorecards.EntityManagementCollectionEntity:
 			guids = append(guids, e.ID)
 		case *scorecards.EntityManagementScorecardEntity:
+			guids = append(guids, e.ID)
+		case *scorecards.EntityManagementScorecardRuleEntity:
+			guids = append(guids, e.ID)
+		case *scorecards.EntityManagementTeamsHierarchyLevelEntity:
+			guids = append(guids, e.ID)
+		case *scorecards.EntityManagementTeamsOrganizationSettingsEntity:
 			guids = append(guids, e.ID)
 		}
 	})
