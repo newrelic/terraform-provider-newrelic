@@ -3,7 +3,6 @@ package newrelic
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -141,37 +140,21 @@ func resourceNewRelicTeam() *schema.Resource {
 			// user_id is the integer NR user ID. Terraform resolves it to the
 			// EntityManagementUserEntity GUID before calling the NGEP API.
 			"members": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Description: "Set of New Relic user IDs (integers) to add as members of this team. " +
-					"These are stored in the team's auto-created membership collection. " +
-					"Managers must be a subset of members.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"user_id": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							Description:  "The integer New Relic user ID. Obtainable from the newrelic_user data source.",
-							ValidateFunc: validation.IntAtLeast(1),
-						},
-					},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Set of New Relic user IDs (integers) to add as members of this team. Managers must be a subset of members.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeInt,
+					ValidateFunc: validation.IntAtLeast(1),
 				},
 			},
-			// ── Managers ────────────────────────────────────────────────────
 			"managers": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Description: "Set of New Relic user IDs (integers) who are managers of this team. " +
-					"Every manager must also be present in the members block. " +
-					"Validated at plan time via CustomizeDiff.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"user_id": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "The integer New Relic user ID of the manager.",
-						},
-					},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Set of New Relic user IDs (integers) to designate as team managers. Each ID must also appear in members.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeInt,
+					ValidateFunc: validation.IntAtLeast(1),
 				},
 			},
 			// ── Ownership ───────────────────────────────────────────────────
@@ -364,50 +347,16 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("managers", decodeManagerGUIDsToUserIDs(team.Managers, guidToUserID))
 	}
 
-	// ── Ownership collection — non-authoritative split ───────────────────────
-	// Fetch org-level discovery settings to separate statically-managed entities
-	// from those auto-assigned via tag-based rules. Terraform only tracks the
-	// static subset in state; dynamic entities are left untouched.
-	orgSettings, orgErr := client.Scorecards.GetTeamsOrganizationSettings()
-	if orgErr != nil {
-		log.Printf("[WARN] Could not read TeamsOrganizationSettings for team %s: %v — treating all ownership entities as static", d.Id(), orgErr)
-	}
-
-	staticGUIDs, dynamicCount, ownerErr := readStaticOwnershipGUIDs(
-		ctx,
-		&client.Scorecards,
-		&client.Entities,
-		team.Ownership.ID,
-		team.Name,
-		team.Aliases,
-		orgSettings,
-	)
+	// ── Ownership collection (non-authoritative) ────────────────────────────────
+	// The ownership collection is the authoritative source for manually-added
+	// entities. Tag-matched entities are stored separately by NGEP and do NOT
+	// appear in this collection — no extra filtering is needed. Any entity in
+	// the collection that is absent from the config will show as drift.
+	entityGUIDs, ownerErr := readTeamOwnedEntityGUIDs(ctx, &client.Scorecards, team.Ownership.ID)
 	if ownerErr != nil {
 		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), ownerErr)
 	} else {
-		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
-	}
-
-	// Warn when dynamic (tag-auto-assigned) entities are present in the
-	// ownership collection and the user has declared an entities block.
-	// We do NOT show a diff for dynamic entities — they are outside Terraform's
-	// management scope. The warning nudges users to consolidate ownership under
-	// Terraform if they want full declarative control.
-	if dynamicCount > 0 && len(d.Get("entities").(*schema.Set).List()) > 0 {
-		return diag.Diagnostics{
-			{
-				Severity: diag.Warning,
-				Summary:  "Team ownership contains tag-auto-assigned entities not managed by Terraform",
-				Detail: fmt.Sprintf(
-					"%d entity/entities in team %q's ownership collection were assigned automatically "+
-						"via tag-based discovery rules and are not tracked in this resource's `entities` block. "+
-						"Terraform will only manage the %d entity/entities you have explicitly declared. "+
-						"If you want full declarative control over team ownership, add all owned entities to "+
-						"the `entities` block and disable automatic tag-based assignment for this team.",
-					dynamicCount, team.Name, len(staticGUIDs),
-				),
-			},
-		}
+		_ = d.Set("entities", flattenEntityGUIDs(entityGUIDs))
 	}
 
 	return nil

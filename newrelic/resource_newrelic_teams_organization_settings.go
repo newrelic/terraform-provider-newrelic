@@ -42,14 +42,16 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 			// discovery controls the tag-based automatic entity ownership assignment.
 			"discovery_enabled": {
 				Type:     schema.TypeBool,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				Description: "Whether tag-based automatic entity ownership assignment is enabled " +
 					"for this organisation. When true, entities with tags matching a team's name " +
 					"or aliases are automatically added to that team's ownership collection.",
 			},
 			"discovery_tag_keys": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				Description: "The tag keys used to match entities to teams when discovery is enabled. " +
 					"For example, ['team'] means any entity with tag 'team:<team-name>' is automatically " +
 					"owned by the team named '<team-name>'.",

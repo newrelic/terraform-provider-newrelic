@@ -74,12 +74,7 @@ func TestFlattenTeamResources(t *testing.T) {
 
 func TestExpandMemberUserIDsFromSet(t *testing.T) {
 	t.Parallel()
-	s := schema.NewSet(schema.HashResource(&schema.Resource{
-		Schema: map[string]*schema.Schema{"user_id": {Type: schema.TypeInt}},
-	}), []interface{}{
-		map[string]interface{}{"user_id": 123},
-		map[string]interface{}{"user_id": 456},
-	})
+	s := schema.NewSet(schema.HashSchema(&schema.Schema{Type: schema.TypeInt}), []interface{}{123, 456})
 	ids := expandUserIDsFromSet(s)
 	assert.Len(t, ids, 2)
 	assert.Contains(t, ids, 123)
@@ -90,8 +85,8 @@ func TestFlattenMemberUserIDs(t *testing.T) {
 	t.Parallel()
 	flat := flattenMemberUserIDs([]int{10, 20})
 	require.Len(t, flat, 2)
-	assert.Equal(t, 10, flat[0]["user_id"])
-	assert.Equal(t, 20, flat[1]["user_id"])
+	assert.Contains(t, flat, 10)
+	assert.Contains(t, flat, 20)
 }
 
 func TestFlattenEntityGUIDs(t *testing.T) {
@@ -120,22 +115,18 @@ func TestCustomizeDiff_ManagerNotInMembers(t *testing.T) {
 	r := resourceNewRelicTeam()
 	d := r.TestResourceData()
 	_ = d.Set("name", "test-team")
-	_ = d.Set("members", []interface{}{
-		map[string]interface{}{"user_id": 111},
-	})
-	_ = d.Set("managers", []interface{}{
-		map[string]interface{}{"user_id": 999}, // not in members
-	})
+	_ = d.Set("members", []interface{}{111})
+	_ = d.Set("managers", []interface{}{999}) // not in members
 
 	// We can't call resourceNewRelicTeamCustomizeDiff directly with ResourceData,
 	// but we can exercise the logic it uses:
 	memberIDs := make(map[int]bool)
-	for _, raw := range d.Get("members").(*schema.Set).List() {
-		memberIDs[raw.(map[string]interface{})["user_id"].(int)] = true
+	for _, v := range d.Get("members").(*schema.Set).List() {
+		memberIDs[v.(int)] = true
 	}
 	var badManagers []int
-	for _, raw := range d.Get("managers").(*schema.Set).List() {
-		uid := raw.(map[string]interface{})["user_id"].(int)
+	for _, v := range d.Get("managers").(*schema.Set).List() {
+		uid := v.(int)
 		if !memberIDs[uid] {
 			badManagers = append(badManagers, uid)
 		}
@@ -148,21 +139,16 @@ func TestCustomizeDiff_ManagerInMembers_Valid(t *testing.T) {
 	r := resourceNewRelicTeam()
 	d := r.TestResourceData()
 	_ = d.Set("name", "test-team")
-	_ = d.Set("members", []interface{}{
-		map[string]interface{}{"user_id": 111},
-		map[string]interface{}{"user_id": 222},
-	})
-	_ = d.Set("managers", []interface{}{
-		map[string]interface{}{"user_id": 111}, // present in members — valid
-	})
+	_ = d.Set("members", []interface{}{111, 222})
+	_ = d.Set("managers", []interface{}{111}) // present in members — valid
 
 	memberIDs := make(map[int]bool)
-	for _, raw := range d.Get("members").(*schema.Set).List() {
-		memberIDs[raw.(map[string]interface{})["user_id"].(int)] = true
+	for _, v := range d.Get("members").(*schema.Set).List() {
+		memberIDs[v.(int)] = true
 	}
 	var badManagers []int
-	for _, raw := range d.Get("managers").(*schema.Set).List() {
-		uid := raw.(map[string]interface{})["user_id"].(int)
+	for _, v := range d.Get("managers").(*schema.Set).List() {
+		uid := v.(int)
 		if !memberIDs[uid] {
 			badManagers = append(badManagers, uid)
 		}

@@ -70,4 +70,4 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
 
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.94.2-0.20260922063228-09fdcc6fab41
+replace github.com/newrelic/newrelic-client-go/v2 => /Users/pnandula/myWork/src/github.com/newrelic-client-go

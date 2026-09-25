@@ -28,16 +28,16 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 
 	memberIDs := make(map[int]bool)
 	if membersOk {
-		for _, raw := range membersSet.(*schema.Set).List() {
-			memberIDs[raw.(map[string]interface{})["user_id"].(int)] = true
+		for _, v := range membersSet.(*schema.Set).List() {
+			memberIDs[v.(int)] = true
 		}
 	}
 	if managersOk {
-		for _, raw := range managersSet.(*schema.Set).List() {
-			uid := raw.(map[string]interface{})["user_id"].(int)
+		for _, v := range managersSet.(*schema.Set).List() {
+			uid := v.(int)
 			if !memberIDs[uid] {
 				errs = append(errs, fmt.Sprintf(
-					"manager user_id %d is not listed in the members block — "+
+					"manager user_id %d is not in the members list — "+
 						"every manager must first be a member of the team", uid))
 			}
 		}
@@ -107,13 +107,12 @@ func expandTeamResourcesUpdate(raw []interface{}) []scorecards.EntityManagementT
 	return out
 }
 
-// expandUserIDsFromSet extracts integer user IDs from a TypeSet whose elements
-// are maps with a single "user_id" int key. Used for both the members and
-// managers blocks which have the same shape.
+// expandUserIDsFromSet extracts integer user IDs from a TypeSet of plain ints.
+// Used for both the members and managers attributes.
 func expandUserIDsFromSet(s *schema.Set) []int {
 	out := make([]int, 0, s.Len())
-	for _, raw := range s.List() {
-		out = append(out, raw.(map[string]interface{})["user_id"].(int))
+	for _, v := range s.List() {
+		out = append(out, v.(int))
 	}
 	return out
 }
@@ -143,14 +142,10 @@ func flattenTeamResources(res []scorecards.EntityManagementTeamResource) []map[s
 	return out
 }
 
-// flattenMemberUserIDs converts a []int of user IDs into the list-of-maps
-// shape that the members TypeSet expects.
-func flattenMemberUserIDs(userIDs []int) []map[string]interface{} {
-	out := make([]map[string]interface{}, 0, len(userIDs))
-	for _, id := range userIDs {
-		out = append(out, map[string]interface{}{"user_id": id})
-	}
-	return out
+// flattenMemberUserIDs returns the []int directly for the members TypeSet,
+// which now stores plain ints rather than maps.
+func flattenMemberUserIDs(userIDs []int) []int {
+	return userIDs
 }
 
 // flattenEntityGUIDs converts a []string of entity GUIDs into the list-of-maps
@@ -171,14 +166,14 @@ func flattenEntityGUIDs(guids []string) []map[string]interface{} {
 // Returns nil when either argument is empty, which causes Terraform to keep
 // whatever was last written to state for the managers block (safe for import
 // and for the case where managers haven't been set yet).
-func decodeManagerGUIDsToUserIDs(managerGUIDs []string, memberGUIDToUserID map[string]int) []map[string]interface{} {
+func decodeManagerGUIDsToUserIDs(managerGUIDs []string, memberGUIDToUserID map[string]int) []int {
 	if len(managerGUIDs) == 0 || len(memberGUIDToUserID) == 0 {
 		return nil
 	}
-	out := make([]map[string]interface{}, 0, len(managerGUIDs))
+	out := make([]int, 0, len(managerGUIDs))
 	for _, guid := range managerGUIDs {
 		if uid, ok := memberGUIDToUserID[guid]; ok {
-			out = append(out, map[string]interface{}{"user_id": uid})
+			out = append(out, uid)
 		}
 	}
 	return out

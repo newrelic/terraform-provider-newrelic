@@ -140,6 +140,7 @@ func Provider() *schema.Provider {
 			"newrelic_user":                         dataSourceNewRelicUser(),
 			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
 			"newrelic_fleet_members":                dataSourceNewRelicFleetMembers(),
+			"newrelic_teams_hierarchy_levels":       dataSourceNewRelicTeamsHierarchyLevels(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
