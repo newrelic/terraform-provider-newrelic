@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -349,20 +350,16 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// ── Ownership collection — non-authoritative split ──────────────────────────
-	// NGEP adds both manually-added and tag-matched entities to the same
-	// ownership collection (both appear as EntityManagementGenericEntity). We
-	// must filter out the tag-matched ones so Terraform never flags them as
-	// drift — they are managed by NGEP's discovery rules, not Terraform.
-	//
-	// readStaticOwnershipGUIDs uses the org's discovery tag keys to run an
-	// entity search that identifies which collection members have matching tags
-	// (dynamic), then returns only the remainder (static) for state tracking.
+	// NGEP places both manually-added and tag-matched entities in the same
+	// ownership collection. readStaticOwnershipGUIDs separates them:
+	//   - staticGUIDs  → entities tracked in state (drift shown when absent from config)
+	//   - discoveryGUIDs → entities managed by tag-based discovery (warning only, no drift)
 	orgSettings, orgErr := client.Scorecards.GetTeamsOrganizationSettings()
 	if orgErr != nil {
 		log.Printf("[WARN] Could not read TeamsOrganizationSettings for team %s: %v — treating all ownership entities as static", d.Id(), orgErr)
 	}
 
-	staticGUIDs, dynamicCount, ownerErr := readStaticOwnershipGUIDs(
+	staticGUIDs, discoveryGUIDs, ownerErr := readStaticOwnershipGUIDs(
 		ctx,
 		&client.Scorecards,
 		&client.Entities,
@@ -377,20 +374,29 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
 	}
 
-	// Surface a warning when tag-auto-assigned entities exist, regardless of
-	// whether the user declared an entities block. This nudges users toward
-	// declarative control of all owned entities.
-	if dynamicCount > 0 {
+	// Emit a warning listing every tag-auto-assigned entity GUID so the user
+	// knows exactly what NGEP is managing outside Terraform's scope.
+	if len(discoveryGUIDs) > 0 {
+		tagKeyHint := "team"
+		if orgSettings != nil && len(orgSettings.Discovery.TagKeys) > 0 {
+			tagKeyHint = strings.Join(orgSettings.Discovery.TagKeys, "/")
+		}
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
-			Summary:  fmt.Sprintf("Team %q has %d tag-auto-assigned entities not tracked by Terraform", team.Name, dynamicCount),
+			Summary: fmt.Sprintf(
+				"Team %q has %d entity/entities assigned via tag-based discovery that are not tracked by Terraform",
+				team.Name, len(discoveryGUIDs),
+			),
 			Detail: fmt.Sprintf(
-				"%d entity/entities in team %q are automatically assigned via tag-based discovery "+
-					"and are intentionally not tracked in this resource's `entities` block. "+
-					"Terraform will only manage the %d entity/entities you have explicitly declared. "+
-					"If you want full declarative control, add all owned entities to the `entities` block "+
-					"and consider disabling automatic tag-based assignment via newrelic_teams_organization_settings.",
-				dynamicCount, team.Name, len(staticGUIDs),
+				"The following entity GUIDs are automatically assigned to team %q because their "+
+					"`tags.%s` value matches the team's name or an alias. Terraform will NOT show "+
+					"drift for these entities — they are outside Terraform's management scope.\n\n"+
+					"Discovery GUIDs: %s\n\n"+
+					"To take declarative control: add them to the `entities` block and consider "+
+					"disabling automatic discovery via newrelic_teams_organization_settings.",
+				team.Name,
+				tagKeyHint,
+				strings.Join(discoveryGUIDs, "\n  "),
 			),
 		}}
 	}
