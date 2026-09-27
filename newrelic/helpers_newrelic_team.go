@@ -283,30 +283,35 @@ func readStaticOwnershipGUIDs(
 	}
 	discoveryTagFilter := "(" + strings.Join(tagFragments, " OR ") + ")"
 
-	// Query for ALL entities with matching team tags — no id IN filter.
-	// This finds tag-matched entities regardless of their NGEP entity type,
-	// including Fleet entities that never appear in the collection read.
-	allDiscoveryResult, err := entitiesClient.GetEntitySearchByQueryWithContext(
+	// Paginated discovery search — no id IN filter, finds all entities with
+	// matching team tags across the org regardless of entity type (including
+	// Fleet entities that never appear in the collection collectionElements
+	// response). Capped at maxEntitySearchPages to bound API call count.
+	allDiscoveryGUIDs, truncated, err := entitiesClient.GetAllEntitySearchGUIDsByQueryWithContext(
 		ctx,
-		entities.EntitySearchOptions{},
 		discoveryTagFilter,
-		[]entities.EntitySearchSortCriteria{},
 	)
 	if err != nil {
 		// Non-fatal: fall back to treating all collection entities as static.
 		return allGUIDs, nil, nil
 	}
-	if allDiscoveryResult == nil || len(allDiscoveryResult.Results.Entities) == 0 {
+	if len(allDiscoveryGUIDs) == 0 && !truncated {
 		// No tag-matched entities — all collection entities are static.
 		return allGUIDs, nil, nil
 	}
 
-	// Build the discovery set from the tag search results.
-	discoverySet := make(map[string]bool, len(allDiscoveryResult.Results.Entities))
-	for _, e := range allDiscoveryResult.Results.Entities {
-		guid := string(e.GetGUID())
+	// Build the discovery set. If the search was truncated, callers receive the
+	// partial list and should note the truncation in any warning they emit.
+	discoverySet := make(map[string]bool, len(allDiscoveryGUIDs))
+	for _, guid := range allDiscoveryGUIDs {
 		discoverySet[guid] = true
 		discoveryGUIDs = append(discoveryGUIDs, guid)
+	}
+	if truncated {
+		// Sentinel value appended so callers can detect truncation without an
+		// extra return variable in the existing (staticGUIDs, discoveryGUIDs)
+		// signature. Read function checks for this and appends a note.
+		discoveryGUIDs = append(discoveryGUIDs, "__truncated__")
 	}
 
 	// Static = collection entities that are NOT in the discovery set.

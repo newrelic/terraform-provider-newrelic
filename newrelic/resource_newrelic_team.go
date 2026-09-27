@@ -374,29 +374,52 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
 	}
 
-	// Emit a warning listing every tag-auto-assigned entity GUID so the user
-	// knows exactly what NGEP is managing outside Terraform's scope.
+	// Emit a warning listing tag-auto-assigned entity GUIDs so the user knows
+	// what NGEP is managing outside Terraform's scope. Strip the truncation
+	// sentinel before display and append a note if results were capped.
 	if len(discoveryGUIDs) > 0 {
 		tagKeyHint := "team"
 		if orgSettings != nil && len(orgSettings.Discovery.TagKeys) > 0 {
 			tagKeyHint = strings.Join(orgSettings.Discovery.TagKeys, "/")
 		}
+
+		truncated := false
+		displayGUIDs := make([]string, 0, len(discoveryGUIDs))
+		for _, g := range discoveryGUIDs {
+			if g == "__truncated__" {
+				truncated = true
+			} else {
+				displayGUIDs = append(displayGUIDs, g)
+			}
+		}
+
+		truncationNote := ""
+		if truncated {
+			truncationNote = fmt.Sprintf(
+				"\n\nNOTE: The discovery search was truncated at %d GUIDs (50 pages × 200 per page). "+
+					"Additional tag-matched entities exist but are not listed here. "+
+					"They are still excluded from drift detection.",
+				len(displayGUIDs),
+			)
+		}
+
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
 			Summary: fmt.Sprintf(
-				"Team %q has %d entity/entities assigned via tag-based discovery that are not tracked by Terraform",
-				team.Name, len(discoveryGUIDs),
+				"Team %q has %d+ entity/entities assigned via tag-based discovery that are not tracked by Terraform",
+				team.Name, len(displayGUIDs),
 			),
 			Detail: fmt.Sprintf(
 				"The following entity GUIDs are automatically assigned to team %q because their "+
 					"`tags.%s` value matches the team's name or an alias. Terraform will NOT show "+
 					"drift for these entities — they are outside Terraform's management scope.\n\n"+
-					"Discovery GUIDs: %s\n\n"+
+					"Discovery GUIDs:\n  %s%s\n\n"+
 					"To take declarative control: add them to the `entities` block and consider "+
 					"disabling automatic discovery via newrelic_teams_organization_settings.",
 				team.Name,
 				tagKeyHint,
-				strings.Join(discoveryGUIDs, "\n  "),
+				strings.Join(displayGUIDs, "\n  "),
+				truncationNote,
 			),
 		}}
 	}
