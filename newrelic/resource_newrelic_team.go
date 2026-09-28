@@ -390,13 +390,10 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
 	}
 
-	// Suppress all entity warnings and drift detection if the customer has NOT
-	// declared the entities attribute in their config. When Computed + absent,
-	// Terraform uses the provider's state value — no drift is shown and no
-	// warnings are needed.
-	if !isEntitiesAttributeConfigured(d) {
-		return nil
-	}
+	// Warnings below are informational — they fire whenever there are entities
+	// in the collection that Terraform should tell the user about. The Computed:true
+	// schema attribute handles drift suppression when entities is absent from
+	// config. Warnings always fire when there is something to warn about.
 
 	// Build two diagnostic warnings:
 	//  1. Tag-discovery warning — entities auto-assigned by NGEP, not tracked by Terraform
