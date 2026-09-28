@@ -93,7 +93,8 @@ func TestFlattenEntityGUIDs(t *testing.T) {
 	t.Parallel()
 	flat := flattenEntityGUIDs([]string{"guid-a", "guid-b"})
 	require.Len(t, flat, 2)
-	assert.Equal(t, "guid-a", flat[0]["guid"])
+	assert.Equal(t, "guid-a", flat[0])
+	assert.Equal(t, "guid-b", flat[1])
 }
 
 // ── CustomizeDiff validation ──────────────────────────────────────────────────
