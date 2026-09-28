@@ -161,20 +161,12 @@ func resourceNewRelicTeam() *schema.Resource {
 			},
 			// ── Ownership ───────────────────────────────────────────────────
 			"entities": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Description: "Set of entity GUIDs that this team owns. " +
-					"Added to the team's auto-created ownership collection. " +
-					"Entities from any account in the organization are accepted. " +
-					"Deleted entities are removed from the collection automatically by NGEP.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"guid": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The GUID of the entity to assign ownership to.",
-						},
-					},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Set of entity GUIDs that this team owns. Added to the team's auto-created ownership collection.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringIsNotEmpty,
 				},
 			},
 			// ── Computed / infrastructure ────────────────────────────────────

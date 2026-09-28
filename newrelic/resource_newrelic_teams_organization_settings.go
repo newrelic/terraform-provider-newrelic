@@ -155,7 +155,7 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 		tagKeys = append(tagKeys, v.(string))
 	}
 	upd := scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
-		Discovery: scorecards.EntityManagementDiscoverySettingsUpdateInput{
+		Discovery: &scorecards.EntityManagementDiscoverySettingsUpdateInput{
 			Enabled: d.Get("discovery_enabled").(bool),
 			TagKeys: tagKeys,
 		},
@@ -260,7 +260,7 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 		for _, v := range d.Get("discovery_tag_keys").([]interface{}) {
 			tagKeys = append(tagKeys, v.(string))
 		}
-		upd.Discovery = scorecards.EntityManagementDiscoverySettingsUpdateInput{
+		upd.Discovery = &scorecards.EntityManagementDiscoverySettingsUpdateInput{
 			Enabled: d.Get("discovery_enabled").(bool),
 			TagKeys: tagKeys,
 		}

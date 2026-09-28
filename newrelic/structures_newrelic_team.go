@@ -117,12 +117,11 @@ func expandUserIDsFromSet(s *schema.Set) []int {
 	return out
 }
 
-// expandEntityGUIDsFromSet extracts string GUIDs from a TypeSet whose elements
-// are maps with a single "guid" string key.
+// expandEntityGUIDsFromSet extracts entity GUIDs from a TypeSet of plain strings.
 func expandEntityGUIDsFromSet(s *schema.Set) []string {
 	out := make([]string, 0, s.Len())
-	for _, raw := range s.List() {
-		out = append(out, raw.(map[string]interface{})["guid"].(string))
+	for _, v := range s.List() {
+		out = append(out, v.(string))
 	}
 	return out
 }
@@ -148,14 +147,10 @@ func flattenMemberUserIDs(userIDs []int) []int {
 	return userIDs
 }
 
-// flattenEntityGUIDs converts a []string of entity GUIDs into the list-of-maps
-// shape that the entities TypeSet expects.
-func flattenEntityGUIDs(guids []string) []map[string]interface{} {
-	out := make([]map[string]interface{}, 0, len(guids))
-	for _, g := range guids {
-		out = append(out, map[string]interface{}{"guid": g})
-	}
-	return out
+// flattenEntityGUIDs returns the GUID slice directly for the entities TypeSet,
+// which now stores plain strings rather than maps with a "guid" key.
+func flattenEntityGUIDs(guids []string) []string {
+	return guids
 }
 
 // decodeManagerGUIDsToUserIDs converts the NGEP-encoded manager GUID list from
