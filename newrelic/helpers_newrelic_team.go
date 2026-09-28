@@ -21,21 +21,26 @@ import (
 //
 // During import, the raw config is unknown — treat as configured so the
 // imported state is fully populated.
+// isEntitiesAttributeConfigured returns true when the customer has explicitly
+// declared the entities attribute in their config. It uses GetRawConfig() which
+// is only reliable during Create/Update — NOT during Read (where it returns
+// cty.NilVal). The function therefore defaults to true (show warnings) when the
+// config is not available, which is the safe behavior: better to over-warn than
+// to silently miss drift.
+//
+// For truly suppressing management/warnings when entities is absent from config,
+// the schema carries Computed:true (which prevents Terraform from planning
+// removals) and the Create/Update functions guard entity operations correctly.
 func isEntitiesAttributeConfigured(d *schema.ResourceData) bool {
 	rc := d.GetRawConfig()
-	// cty.NilVal (uninitialized) is returned when there is no plan config —
-	// e.g. during terraform refresh or Read without a full plan context.
-	// In all such cases we suppress entity warnings rather than risk false
-	// positives. State is always populated by d.Set("entities",...) BEFORE
-	// this function is called, so import state is correct regardless.
+	// NilVal / unknown config: can't determine intent → default to true so
+	// warnings are not suppressed. This covers Read during plan refresh and
+	// terraform import, both of which should show warnings when relevant.
 	if !rc.IsKnown() || rc.IsNull() {
-		return false
+		return true
 	}
 	attr := rc.GetAttr("entities")
-	// With Computed+Optional, an attribute absent from config can be either
-	// cty.NullVal (user explicitly omitted it) or cty.UnknownVal (Terraform
-	// defers to the provider to compute the value). Both cases mean the customer
-	// has NOT declared entities — return false so we skip ownership management.
+	// Absent from config: Computed+Optional → attr is null or unknown
 	return attr.IsKnown() && !attr.IsNull()
 }
 
