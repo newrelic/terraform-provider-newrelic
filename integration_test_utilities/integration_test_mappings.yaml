@@ -79,6 +79,12 @@ data_source_newrelic_key_transaction.go:
 data_source_newrelic_key_transaction_test.go:
   test: true
   product_mapping: KEY_TRANSACTIONS
+data_source_newrelic_notebook.go:
+  test: false
+  product_mapping: DASHBOARDS
+data_source_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
 data_source_newrelic_notifications_destination.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
@@ -103,6 +109,9 @@ data_source_newrelic_synthetics_secure_credential.go:
 data_source_newrelic_synthetics_secure_credential_test.go:
   test: true
   product_mapping: SYNTHETICS
+data_source_newrelic_teams_hierarchy_levels.go:
+  test: false
+  product_mapping: NGEP
 data_source_newrelic_test_grok_pattern.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -367,12 +376,6 @@ resource_newrelic_monitor_downtime.go:
 resource_newrelic_monitor_downtime_test.go:
   test: true
   product_mapping: SYNTHETICS
-data_source_newrelic_notebook.go:
-  test: false
-  product_mapping: DASHBOARDS
-data_source_newrelic_notebook_test.go:
-  test: true
-  product_mapping: DASHBOARDS
 resource_newrelic_notebook.go:
   test: false
   product_mapping: DASHBOARDS
@@ -516,9 +519,6 @@ resource_newrelic_team_integration_test.go:
   product_mapping: NGEP
 resource_newrelic_team_unit_test.go:
   test: true
-  product_mapping: NGEP
-resource_newrelic_teams_hierarchy_level.go:
-  test: false
   product_mapping: NGEP
 resource_newrelic_teams_organization_settings.go:
   test: false
@@ -664,6 +664,9 @@ structures_newrelic_one_dashboard_raw.go:
 structures_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+structures_newrelic_org_settings.go:
+  test: false
+  product_mapping: NGEP
 structures_newrelic_scorecard.go:
   test: false
   product_mapping: NGEP
