@@ -254,6 +254,14 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 //
 // If discovery is disabled or orgSettings is nil, all collection entities are
 // treated as static and discoveryGUIDs is empty.
+// readStaticOwnershipGUIDs separates the team's ownership collection entities
+// into two groups: manually-added (staticGUIDs) and tag-discovered (discoveryGUIDs).
+//
+// declaredGUIDs must contain the entity GUIDs currently in the Terraform
+// config's entities block. These are ALWAYS treated as static regardless of
+// their tags — an explicit Terraform declaration takes precedence over
+// tag-based discovery classification. Without this, adding a discovery tag to
+// an entity that is also in the entities block would cause a perpetual diff.
 func readStaticOwnershipGUIDs(
 	ctx context.Context,
 	scClient *scorecards.Scorecards,
@@ -261,6 +269,7 @@ func readStaticOwnershipGUIDs(
 	ownershipColID string,
 	teamName string,
 	teamAliases []string,
+	declaredGUIDs []string,
 	orgSettings *scorecards.EntityManagementTeamsOrganizationSettingsEntity,
 ) (staticGUIDs []string, discoveryGUIDs []string, err error) {
 	allGUIDs, err := readTeamOwnedEntityGUIDs(ctx, scClient, ownershipColID)
@@ -271,15 +280,23 @@ func readStaticOwnershipGUIDs(
 		return nil, nil, nil
 	}
 
+	// Entities explicitly declared in the Terraform config are ALWAYS static.
+	// A Terraform declaration trumps tag-based classification — adding a
+	// discovery tag to a declared entity must not create a perpetual diff.
+	declaredSet := make(map[string]bool, len(declaredGUIDs))
+	for _, g := range declaredGUIDs {
+		declaredSet[g] = true
+	}
+
 	// If discovery is not configured or disabled, all collection entities are
-	// static — nothing to warn about.
+	// static — nothing to classify further.
 	if orgSettings == nil || !orgSettings.Discovery.Enabled || len(orgSettings.Discovery.TagKeys) == 0 {
 		return allGUIDs, nil, nil
 	}
 
 	// ── Bounded query: id IN (collection_guids) AND tags.<key> IN (name/aliases) ──
-	// This hits only the entities we already know are in the collection.
-	// Collection size is typically < 50 → single API page, no pagination needed.
+	// Hits only the entities already in the collection — O(collection_size), not
+	// O(all_org_entities). Collection is typically < 50 → single API page.
 	quotedGUIDs := make([]string, len(allGUIDs))
 	for i, g := range allGUIDs {
 		quotedGUIDs[i] = "'" + g + "'"
@@ -306,22 +323,23 @@ func readStaticOwnershipGUIDs(
 		[]entities.EntitySearchSortCriteria{},
 	)
 	if err != nil {
-		// Non-fatal: fall back to treating all collection entities as static.
-		return allGUIDs, nil, nil
-	}
-	if result == nil || len(result.Results.Entities) == 0 {
-		// None of the collection entities have a matching team tag → all static.
 		return allGUIDs, nil, nil
 	}
 
-	discoverySet := make(map[string]bool, len(result.Results.Entities))
-	for _, e := range result.Results.Entities {
-		guid := string(e.GetGUID())
-		discoverySet[guid] = true
-		discoveryGUIDs = append(discoveryGUIDs, guid)
+	discoverySet := make(map[string]bool)
+	if result != nil {
+		for _, e := range result.Results.Entities {
+			guid := string(e.GetGUID())
+			// Skip discovery classification for declared entities — they are
+			// always managed by Terraform regardless of their tags.
+			if !declaredSet[guid] {
+				discoverySet[guid] = true
+				discoveryGUIDs = append(discoveryGUIDs, guid)
+			}
+		}
 	}
 
-	// Static = collection entities that are NOT tag-matched.
+	// Static = collection entities that are either declared in config OR not tag-matched.
 	for _, g := range allGUIDs {
 		if !discoverySet[g] {
 			staticGUIDs = append(staticGUIDs, g)

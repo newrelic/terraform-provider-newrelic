@@ -352,8 +352,15 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	// ── Ownership collection — non-authoritative split ──────────────────────────
 	// NGEP places both manually-added and tag-matched entities in the same
 	// ownership collection. readStaticOwnershipGUIDs separates them:
-	//   - staticGUIDs  → entities tracked in state (drift shown when absent from config)
-	//   - discoveryGUIDs → entities managed by tag-based discovery (warning only, no drift)
+	//   - staticGUIDs  → entities tracked in state; drift shown if absent from config
+	//   - discoveryGUIDs → entities managed by NGEP tag discovery; warning only
+	//
+	// declaredGUIDs: entities the user has explicitly put in the entities block.
+	// These are ALWAYS treated as static regardless of their tags — a Terraform
+	// declaration trumps tag-based discovery classification, preventing a perpetual
+	// diff if a user adds a discovery tag to an entity they also declare explicitly.
+	declaredGUIDs := expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set))
+
 	orgSettings, orgErr := client.Scorecards.GetTeamsOrganizationSettings()
 	if orgErr != nil {
 		log.Printf("[WARN] Could not read TeamsOrganizationSettings for team %s: %v — treating all ownership entities as static", d.Id(), orgErr)
@@ -366,6 +373,7 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		team.Ownership.ID,
 		team.Name,
 		team.Aliases,
+		declaredGUIDs,
 		orgSettings,
 	)
 	if ownerErr != nil {
@@ -374,35 +382,70 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
 	}
 
-	// Emit a warning listing tag-auto-assigned entity GUIDs so the user knows
-	// what NGEP is managing outside Terraform's scope. Strip the truncation
-	// sentinel before display and append a note if results were capped.
+	// Build two diagnostic warnings:
+	//  1. Tag-discovery warning — entities auto-assigned by NGEP, not tracked by Terraform
+	//  2. Out-of-band addition warning — manually added outside Terraform; plan will remove them
+	var diags diag.Diagnostics
+
 	if len(discoveryGUIDs) > 0 {
 		tagKeyHint := "team"
 		if orgSettings != nil && len(orgSettings.Discovery.TagKeys) > 0 {
 			tagKeyHint = strings.Join(orgSettings.Discovery.TagKeys, "/")
 		}
-		return diag.Diagnostics{{
+		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary: fmt.Sprintf(
-				"Team %q has %d entity/entities in its collection assigned via tag-based discovery — not tracked by Terraform",
+				"Team %q: %d entity/entities in collection are tag-discovered — excluded from drift detection",
 				team.Name, len(discoveryGUIDs),
 			),
 			Detail: fmt.Sprintf(
-				"The following entity GUIDs are present in the team's ownership collection because "+
-					"their `tags.%s` value matches the team name or one of its aliases. "+
-					"Terraform intentionally excludes these from drift detection — they are managed "+
-					"by NGEP's tag-based discovery feature, not by this resource.\n\n"+
-					"Discovery GUIDs (from collection):\n  %s\n\n"+
-					"TIP: If you want Terraform to track and protect these entities (e.g. flag "+
-					"unexpected removal as drift), add their GUIDs to the `entities` block.",
+				"The following entity GUIDs are present in the ownership collection because "+
+					"their `tags.%s` value matches the team name or an alias. "+
+					"Terraform intentionally excludes these from drift — they are managed by "+
+					"NGEP's tag-based discovery, not by this resource.\n\n"+
+					"Discovery GUIDs:\n  %s\n\n"+
+					"TIP: To have Terraform track these (e.g. flag accidental removal as drift), "+
+					"add their GUIDs to the `entities` block.",
 				tagKeyHint,
 				strings.Join(discoveryGUIDs, "\n  "),
 			),
-		}}
+		})
 	}
 
-	return nil
+	// Identify entities that are static (manually-added) but not in the current config.
+	// These appear as - in the plan diff. Emit a contextual warning so the user
+	// understands what happened and what they can do before running apply.
+	declaredSet := make(map[string]bool, len(declaredGUIDs))
+	for _, g := range declaredGUIDs {
+		declaredSet[g] = true
+	}
+	var outOfBandGUIDs []string
+	for _, g := range staticGUIDs {
+		if !declaredSet[g] {
+			outOfBandGUIDs = append(outOfBandGUIDs, g)
+		}
+	}
+	if len(outOfBandGUIDs) > 0 {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary: fmt.Sprintf(
+				"Team %q: %d entity/entities were added to the collection outside Terraform",
+				team.Name, len(outOfBandGUIDs),
+			),
+			Detail: fmt.Sprintf(
+				"The following entity GUIDs exist in the ownership collection but are NOT "+
+					"declared in the `entities` block of this resource. The plan above shows "+
+					"them as '-' (removal) — running apply will remove them from the collection "+
+					"to restore the declared configuration.\n\n"+
+					"Out-of-band GUIDs (will be removed on apply):\n  %s\n\n"+
+					"To KEEP them: add their GUIDs to the `entities` block before applying.\n"+
+					"To REMOVE them: run terraform apply (this is what the plan will do).",
+				strings.Join(outOfBandGUIDs, "\n  "),
+			),
+		})
+	}
+
+	return diags
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
