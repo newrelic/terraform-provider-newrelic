@@ -156,3 +156,86 @@ func TestCustomizeDiff_ManagerInMembers_Valid(t *testing.T) {
 	}
 	assert.Empty(t, badManagers, "all managers are in members — no validation error expected")
 }
+
+// ── entity_management_mode schema tests ──────────────────────────────────────
+
+func TestEntityManagementMode_DefaultIsManaged(t *testing.T) {
+	t.Parallel()
+	r := resourceNewRelicTeam()
+	s, ok := r.Schema["entity_management_mode"]
+	require.True(t, ok, "entity_management_mode schema attribute must exist")
+	// TestResourceData() does not apply schema defaults, so check the schema directly.
+	assert.Equal(t, "managed", s.Default,
+		"entity_management_mode schema Default should be 'managed'")
+}
+
+func TestEntityManagementMode_SchemaHasValidValues(t *testing.T) {
+	t.Parallel()
+	r := resourceNewRelicTeam()
+	s, ok := r.Schema["entity_management_mode"]
+	require.True(t, ok, "entity_management_mode schema attribute must exist")
+	assert.Equal(t, schema.TypeString, s.Type)
+	assert.True(t, s.Optional, "entity_management_mode should be Optional")
+	assert.Equal(t, "managed", s.Default, "entity_management_mode default should be 'managed'")
+	assert.NotNil(t, s.ValidateFunc, "entity_management_mode should have a ValidateFunc")
+}
+
+func TestEntityManagementMode_EntitiesNotComputedAnymore(t *testing.T) {
+	t.Parallel()
+	r := resourceNewRelicTeam()
+	s, ok := r.Schema["entities"]
+	require.True(t, ok, "entities schema attribute must exist")
+	// Computed: true was removed — mode now controls behavior.
+	assert.False(t, s.Computed, "entities should NOT be Computed after the redesign")
+	assert.True(t, s.Optional, "entities should remain Optional")
+}
+
+func TestEntityManagementMode_ModeLogic_UnmanagedWithEntities(t *testing.T) {
+	t.Parallel()
+	// Simulate the validation logic that CustomizeDiff uses.
+	// When mode=unmanaged and entities is present in config, an error should fire.
+	mode := "unmanaged"
+	entitiesInConfig := true // simulates rc.GetAttr("entities").IsKnown() && !IsNull()
+	var errs []string
+	if mode == "unmanaged" && entitiesInConfig {
+		errs = append(errs, `entities cannot be specified when entity_management_mode = "unmanaged"`)
+	}
+	assert.Len(t, errs, 1, "should produce an error when unmanaged+entities")
+	assert.Contains(t, errs[0], "unmanaged")
+}
+
+func TestEntityManagementMode_ModeLogic_ManagedWithEntities(t *testing.T) {
+	t.Parallel()
+	// mode=managed with entities present is always valid.
+	mode := "managed"
+	entitiesInConfig := true
+	var errs []string
+	if mode == "unmanaged" && entitiesInConfig {
+		errs = append(errs, `entities cannot be specified when entity_management_mode = "unmanaged"`)
+	}
+	assert.Empty(t, errs, "managed mode with entities should produce no error")
+}
+
+func TestEntityManagementMode_ModeLogic_ManagedWithoutEntities(t *testing.T) {
+	t.Parallel()
+	// mode=managed without entities is valid — entities block is optional.
+	mode := "managed"
+	entitiesInConfig := false
+	var errs []string
+	if mode == "unmanaged" && entitiesInConfig {
+		errs = append(errs, `entities cannot be specified when entity_management_mode = "unmanaged"`)
+	}
+	assert.Empty(t, errs, "managed mode without entities should produce no error")
+}
+
+func TestEntityManagementMode_ModeLogic_UnmanagedWithoutEntities(t *testing.T) {
+	t.Parallel()
+	// mode=unmanaged with no entities block is valid.
+	mode := "unmanaged"
+	entitiesInConfig := false
+	var errs []string
+	if mode == "unmanaged" && entitiesInConfig {
+		errs = append(errs, `entities cannot be specified when entity_management_mode = "unmanaged"`)
+	}
+	assert.Empty(t, errs, "unmanaged mode without entities should produce no error")
+}

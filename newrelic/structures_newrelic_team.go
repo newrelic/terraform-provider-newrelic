@@ -53,6 +53,25 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 		}
 	}
 
+	// ── entity_management_mode vs entities consistency ───────────────────────
+	// We use GetRawConfig() here (which IS reliable in CustomizeDiff) to detect
+	// whether the entities attribute is present in the user's config.
+	mode := d.Get("entity_management_mode").(string)
+	if mode == "" {
+		mode = "managed"
+	}
+
+	rc := d.GetRawConfig()
+	if rc.IsKnown() && !rc.IsNull() {
+		entitiesAttr := rc.GetAttr("entities")
+		entitiesInConfig := entitiesAttr.IsKnown() && !entitiesAttr.IsNull()
+
+		if mode == "unmanaged" && entitiesInConfig {
+			errs = append(errs, "entities cannot be specified when entity_management_mode = \"unmanaged\" — "+
+				"in unmanaged mode, entity ownership is controlled entirely by NGEP (tags/UI), not Terraform")
+		}
+	}
+
 	if len(errs) > 0 {
 		return fmt.Errorf("%s", strings.Join(errs, "\n"))
 	}

@@ -160,14 +160,21 @@ func resourceNewRelicTeam() *schema.Resource {
 				},
 			},
 			// ── Ownership ───────────────────────────────────────────────────
-			"entities": {
-				Type:     schema.TypeSet,
+			"entity_management_mode": {
+				Type:     schema.TypeString,
 				Optional: true,
-				// Computed: when absent from config, Terraform uses the provider's
-				// computed value from state (populated by Read). This suppresses drift
-				// automatically when the attribute is not declared by the customer —
-				// Terraform will not plan removals for entities it did not manage.
-				Computed:    true,
+				Default:  "managed",
+				Description: "Controls how Terraform manages this team's entity ownership collection.\n\n" +
+					"  • `managed` (default): Terraform tracks the `entities` block and reconciles it with the " +
+					"    ownership collection. Out-of-band additions appear as drift. All entity warnings are shown.\n" +
+					"  • `unmanaged`: Terraform does not control entity ownership. The ownership collection is left " +
+					"    entirely to NGEP's tag-based discovery and/or manual UI management. No drift or warnings " +
+					"    are shown for entities, and the `entities` attribute cannot be set in this mode.",
+				ValidateFunc: validation.StringInSlice([]string{"managed", "unmanaged"}, false),
+			},
+			"entities": {
+				Type:        schema.TypeSet,
+				Optional:    true,
 				Description: "Set of entity GUIDs that this team owns. Added to the team's auto-created ownership collection.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -260,10 +267,12 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	// Old slices are nil because nothing existed before this create call.
 	//
 	// Only sync entities if the customer has explicitly declared the entities
-	// attribute in their config. If omitted, we do not touch the ownership
-	// collection — passing nil is a no-op in syncTeamOwnership.
+	// attribute in their config AND the mode is not "unmanaged".
+	// If omitted or unmanaged, we do not touch the ownership collection —
+	// passing nil is a no-op in syncTeamOwnership.
+	mode := d.Get("entity_management_mode").(string)
 	var newEntityGUIDs []string
-	if isEntitiesAttributeConfigured(d) {
+	if mode != "unmanaged" && isEntitiesAttributeConfigured(d) {
 		newEntityGUIDs = expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set))
 	}
 	if err := applyTeamCollections(ctx, client, teamID, membershipColID, ownershipColID,
@@ -272,6 +281,12 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		nil, newEntityGUIDs,
 	); err != nil {
 		return diag.FromErr(err)
+	}
+
+	// In unmanaged mode, clear entities from state — Terraform does not track
+	// the ownership collection when NGEP/UI manages it exclusively.
+	if mode == "unmanaged" {
+		_ = d.Set("entities", schema.NewSet(schema.HashString, []interface{}{}))
 	}
 
 	// Set remaining state from input — no Read round-trip needed.
@@ -355,6 +370,15 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// ── Ownership collection — non-authoritative split ──────────────────────────
+	// In unmanaged mode, skip all entity operations entirely and clear entities
+	// from state. The ownership collection is controlled by NGEP (tag discovery
+	// or manual UI); Terraform does not track or show drift for it.
+	mode := d.Get("entity_management_mode").(string)
+	if mode == "unmanaged" {
+		_ = d.Set("entities", schema.NewSet(schema.HashString, []interface{}{}))
+		return nil
+	}
+
 	// NGEP places both manually-added and tag-matched entities in the same
 	// ownership collection. readStaticOwnershipGUIDs separates them:
 	//   - staticGUIDs  → entities tracked in state; drift shown if absent from config
@@ -428,7 +452,11 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 					"  2. Add the entity GUID to the `entities` block before running apply\n\n"+
 					"Alternatively, if you prefer all entity ownership to be governed by tags "+
 					"only, omit the `entities` attribute from this resource entirely — "+
-					"Terraform will not show drift for any entities in that case.",
+					"Terraform will not show drift for any entities in that case.\n\n"+
+					"Alternatively, if you want NGEP's tag-based discovery to manage ALL entity "+
+					"ownership without any Terraform involvement, set `entity_management_mode = \"unmanaged\"` "+
+					"on this resource. In unmanaged mode, Terraform stops tracking entities entirely — "+
+					"no drift or warnings will be shown.",
 				tagKeyHint,
 				strings.Join(discoveryGUIDs, "\n  "),
 			),
@@ -480,7 +508,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	client := providerConfig.NewClient
 
 	// ── Team entity fields ─────────────────────────────────────────────────
-	teamFieldsChanged := d.HasChangesExcept("members", "entities", "managers")
+	teamFieldsChanged := d.HasChangesExcept("members", "entities", "managers", "entity_management_mode")
 	if teamFieldsChanged {
 		upd := scorecards.EntityManagementTeamEntityUpdateInput{}
 		// updHasFields tracks whether upd has any non-zero fields that need
@@ -575,10 +603,11 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	// dependency order (membership must be settled before managers are set).
 	//
 	// Entity sync is only performed when the customer has explicitly declared
-	// the entities attribute in their config. If entities is absent, we never
-	// touch the ownership collection — even if NGEP or out-of-band changes have
-	// modified it.
-	entitiesChanged := isEntitiesAttributeConfigured(d) && d.HasChange("entities")
+	// the entities attribute in their config AND the mode is not "unmanaged".
+	// If entities is absent or mode is "unmanaged", we never touch the ownership
+	// collection — even if NGEP or out-of-band changes have modified it.
+	mode := d.Get("entity_management_mode").(string)
+	entitiesChanged := mode != "unmanaged" && isEntitiesAttributeConfigured(d) && d.HasChange("entities")
 	if d.HasChange("members") || d.HasChange("managers") || entitiesChanged {
 		oldMembersRaw, newMembersRaw := d.GetChange("members")
 		_, newManagersRaw := d.GetChange("managers")
@@ -600,6 +629,16 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			newEntities,
 		); err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	// If switching to unmanaged mode, clear entities from state but DO NOT touch
+	// the collection. NGEP continues to manage what's in the collection; Terraform
+	// just stops tracking it.
+	if d.HasChange("entity_management_mode") {
+		newMode := d.Get("entity_management_mode").(string)
+		if newMode == "unmanaged" {
+			_ = d.Set("entities", schema.NewSet(schema.HashString, []interface{}{}))
 		}
 	}
 
