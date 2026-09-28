@@ -799,11 +799,11 @@ Two audit scoping modes are supported:
 
 [*Browse the OCI module source code on GitHub*](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci)
 
-#### Upgrading the OCI integration
+#### Upgrading the OCI logs integration
 
 Before upgrading, compare your module block(s) against the current reference example above, or the [`examples/modules/cloud-integrations/oci`](https://github.com/newrelic/terraform-provider-newrelic/tree/main/examples/modules/cloud-integrations/oci) directory directly. Adopt any differences: new variables, changed defaults, or a newer `?ref=`.
 
-For the logs integration, update the module `?ref=` and `image_version` together:
+Update the module `?ref=` and `image_version` together:
 
 ```hcl
 module "oci_logs_integration" {
@@ -813,7 +813,7 @@ module "oci_logs_integration" {
 }
 ```
 
-Apply `policy-setup` first if it changed too (it may contain IAM changes the data-collection module depends on), then the data-collection module:
+Apply `policy-setup` first if it changed too (it may contain IAM changes `logs-integration` depends on), then `logs-integration`:
 
 ```bash
 terraform init -upgrade
@@ -824,5 +824,3 @@ terraform apply
 `image_version` defaults to `latest`. If you've never pinned it to a specific number before, setting one for the first time is itself a configuration change and will trigger a real redeploy of the function — leaving it at `latest` and reapplying will not.
 
 To roll back, revert `?ref=` and `image_version` to the previous values and apply again. This only works if you'd already pinned a specific `image_version` — if you were on `latest`, there's no previous numbered version to revert to.
-
-> The metrics integration currently only publishes its function image under `latest`, so `image_version` pinning isn't yet available there — updating the module `?ref=` is still the way to pick up metrics-integration changes.
