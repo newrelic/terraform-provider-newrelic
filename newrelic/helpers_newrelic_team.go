@@ -186,7 +186,14 @@ func syncTeamOwnership(ctx context.Context, client *scorecards.Scorecards, owner
 
 	if len(toAdd) > 0 {
 		if _, err := client.EntityManagementAddCollectionMembers(ownershipColID, toAdd); err != nil {
-			return fmt.Errorf("adding entities to team ownership collection %s: %w", ownershipColID, err)
+			// Treat "already belongs to collection" as a no-op. This happens when
+			// switching from unmanaged→managed mode: the entity was already in the
+			// collection (from before the mode switch) but the state was cleared.
+			// The entity is already where we want it — no action needed.
+			if !strings.Contains(err.Error(), "already belongs to collection") &&
+				!strings.Contains(err.Error(), "already exists in one collection") {
+				return fmt.Errorf("adding entities to team ownership collection %s: %w", ownershipColID, err)
+			}
 		}
 	}
 	if len(toRemove) > 0 {
