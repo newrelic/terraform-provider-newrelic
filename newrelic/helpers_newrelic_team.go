@@ -227,25 +227,30 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 	return guids, nil
 }
 
-// readStaticOwnershipGUIDs returns the GUIDs of manually-added entities in the
-// ownership collection and, separately, the GUIDs of entities that are managed
-// by NGEP's tag-based discovery rules.
+// readStaticOwnershipGUIDs separates the team's ownership collection entities
+// into two groups: manually-added (staticGUIDs) and tag-discovered (discoveryGUIDs).
 //
-// NGEP places two kinds of entities in the ownership collection:
-//  1. Manually added (via Terraform or the UI) — returned in staticGUIDs.
-//  2. Auto-assigned via tag discovery — NOT in staticGUIDs, their GUIDs are
-//     returned in discoveryGUIDs so callers can surface them as warnings.
+// Design: BOUNDED search, not org-wide.
 //
-// Tag-matched entities may be returned as EntityManagementGenericEntity (APM,
-// etc.) or EntityManagementFleetEntity (Fleet entities). The Fleet type is not
-// registered in the Go-client unmarshal switch and therefore does not appear in
-// the collection read at all. To find these, we run a separate entity search
-// for ALL entities with a tag matching the team's name/aliases — that covers
-// both GenericEntity and Fleet types.
+// Both manually-added and tag-matched entities coexist in the same ownership
+// collection — there is no source/origin field per item. The only way to
+// distinguish them is by checking whether each collection entity has a tag
+// matching the team's name or an alias under the configured discovery tag keys.
 //
-// Callers use staticGUIDs to set d.Set("entities", ...) so that Terraform only
-// tracks manually-added entities and shows drift when one is added out-of-band.
-// discoveryGUIDs are used solely for the non-authoritative warning message.
+// We do this with a single, collection-bounded query:
+//   id IN (<allGUIDs from collection>) AND (tags.<key> IN (<name>, <alias1>, ...))
+//
+// This is O(collection_size), NOT O(all_org_entities). A team's collection
+// typically holds < 50 entities — this is always a single API page. Contrast
+// with an org-wide tag search which can return tens of thousands of results
+// and make hundreds of API calls on every terraform plan.
+//
+// Fleet entities (EntityManagementFleetEntity) are silently dropped by the
+// Go-client's unmarshal switch and never appear in allGUIDs. They therefore
+// never show as drift (correct — they cannot be managed via the entities block)
+// and are not listed in the warning GUIDs. This is an acceptable limitation:
+// Fleet entities are NGEP-internal, they cannot be imported into Terraform, and
+// customers cannot add them to the entities block regardless.
 //
 // If discovery is disabled or orgSettings is nil, all collection entities are
 // treated as static and discoveryGUIDs is empty.
@@ -262,14 +267,25 @@ func readStaticOwnershipGUIDs(
 	if err != nil {
 		return nil, nil, err
 	}
+	if len(allGUIDs) == 0 {
+		return nil, nil, nil
+	}
 
 	// If discovery is not configured or disabled, all collection entities are
-	// static and there are no tag-matched entities to warn about.
+	// static — nothing to warn about.
 	if orgSettings == nil || !orgSettings.Discovery.Enabled || len(orgSettings.Discovery.TagKeys) == 0 {
 		return allGUIDs, nil, nil
 	}
 
-	// Build the tag-value IN (...) clause for the team's name and all aliases.
+	// ── Bounded query: id IN (collection_guids) AND tags.<key> IN (name/aliases) ──
+	// This hits only the entities we already know are in the collection.
+	// Collection size is typically < 50 → single API page, no pagination needed.
+	quotedGUIDs := make([]string, len(allGUIDs))
+	for i, g := range allGUIDs {
+		quotedGUIDs[i] = "'" + g + "'"
+	}
+	idFilter := "id IN (" + strings.Join(quotedGUIDs, ", ") + ")"
+
 	discoveryValues := append([]string{teamName}, teamAliases...)
 	quotedVals := make([]string, len(discoveryValues))
 	for i, v := range discoveryValues {
@@ -281,40 +297,31 @@ func readStaticOwnershipGUIDs(
 	for i, key := range orgSettings.Discovery.TagKeys {
 		tagFragments[i] = fmt.Sprintf("`tags.%s` IN %s", key, tagValueList)
 	}
-	discoveryTagFilter := "(" + strings.Join(tagFragments, " OR ") + ")"
+	boundedQuery := idFilter + " AND (" + strings.Join(tagFragments, " OR ") + ")"
 
-	// Paginated discovery search — no id IN filter, finds all entities with
-	// matching team tags across the org regardless of entity type (including
-	// Fleet entities that never appear in the collection collectionElements
-	// response). Capped at maxEntitySearchPages to bound API call count.
-	allDiscoveryGUIDs, truncated, err := entitiesClient.GetAllEntitySearchGUIDsByQueryWithContext(
+	result, err := entitiesClient.GetEntitySearchByQueryWithContext(
 		ctx,
-		discoveryTagFilter,
+		entities.EntitySearchOptions{},
+		boundedQuery,
+		[]entities.EntitySearchSortCriteria{},
 	)
 	if err != nil {
 		// Non-fatal: fall back to treating all collection entities as static.
 		return allGUIDs, nil, nil
 	}
-	if len(allDiscoveryGUIDs) == 0 && !truncated {
-		// No tag-matched entities — all collection entities are static.
+	if result == nil || len(result.Results.Entities) == 0 {
+		// None of the collection entities have a matching team tag → all static.
 		return allGUIDs, nil, nil
 	}
 
-	// Build the discovery set. If the search was truncated, callers receive the
-	// partial list and should note the truncation in any warning they emit.
-	discoverySet := make(map[string]bool, len(allDiscoveryGUIDs))
-	for _, guid := range allDiscoveryGUIDs {
+	discoverySet := make(map[string]bool, len(result.Results.Entities))
+	for _, e := range result.Results.Entities {
+		guid := string(e.GetGUID())
 		discoverySet[guid] = true
 		discoveryGUIDs = append(discoveryGUIDs, guid)
 	}
-	if truncated {
-		// Sentinel value appended so callers can detect truncation without an
-		// extra return variable in the existing (staticGUIDs, discoveryGUIDs)
-		// signature. Read function checks for this and appends a note.
-		discoveryGUIDs = append(discoveryGUIDs, "__truncated__")
-	}
 
-	// Static = collection entities that are NOT in the discovery set.
+	// Static = collection entities that are NOT tag-matched.
 	for _, g := range allGUIDs {
 		if !discoverySet[g] {
 			staticGUIDs = append(staticGUIDs, g)

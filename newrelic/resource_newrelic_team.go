@@ -382,47 +382,22 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		if orgSettings != nil && len(orgSettings.Discovery.TagKeys) > 0 {
 			tagKeyHint = strings.Join(orgSettings.Discovery.TagKeys, "/")
 		}
-
-		truncated := false
-		displayGUIDs := make([]string, 0, len(discoveryGUIDs))
-		for _, g := range discoveryGUIDs {
-			if g == "__truncated__" {
-				truncated = true
-			} else {
-				displayGUIDs = append(displayGUIDs, g)
-			}
-		}
-
-		truncationNote := ""
-		if truncated {
-			truncationNote = fmt.Sprintf(
-				"\n\nNOTE: The discovery search was truncated at %d GUIDs (50 pages × 200 per page). "+
-					"Additional tag-matched entities exist but are not listed here. "+
-					"They are still excluded from drift detection.",
-				len(displayGUIDs),
-			)
-		}
-
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
 			Summary: fmt.Sprintf(
-				"Team %q has %d+ entity/entities assigned via tag-based discovery — not tracked by Terraform",
-				team.Name, len(displayGUIDs),
+				"Team %q has %d entity/entities in its collection assigned via tag-based discovery — not tracked by Terraform",
+				team.Name, len(discoveryGUIDs),
 			),
 			Detail: fmt.Sprintf(
-				"The following entity GUIDs are automatically assigned to team %q because their "+
-					"`tags.%s` tag value matches the team name or one of its aliases. "+
+				"The following entity GUIDs are present in the team's ownership collection because "+
+					"their `tags.%s` value matches the team name or one of its aliases. "+
 					"Terraform intentionally excludes these from drift detection — they are managed "+
 					"by NGEP's tag-based discovery feature, not by this resource.\n\n"+
-					"Discovery GUIDs:\n  %s%s\n\n"+
+					"Discovery GUIDs (from collection):\n  %s\n\n"+
 					"TIP: If you want Terraform to track and protect these entities (e.g. flag "+
-					"unexpected removal), add their GUIDs to the `entities` block. They will then "+
-					"be managed declaratively alongside your manually-assigned entities and any "+
-					"out-of-band changes will appear as drift.",
-				team.Name,
+					"unexpected removal as drift), add their GUIDs to the `entities` block.",
 				tagKeyHint,
-				strings.Join(displayGUIDs, "\n  "),
-				truncationNote,
+				strings.Join(discoveryGUIDs, "\n  "),
 			),
 		}}
 	}
