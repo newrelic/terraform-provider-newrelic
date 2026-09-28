@@ -23,13 +23,20 @@ import (
 // imported state is fully populated.
 func isEntitiesAttributeConfigured(d *schema.ResourceData) bool {
 	rc := d.GetRawConfig()
-	// rc is unknown/null during import — treat entities as configured so that
-	// the import path fully populates state (including the entities collection).
+	// cty.NilVal (uninitialized) is returned when there is no plan config —
+	// e.g. during terraform refresh or Read without a full plan context.
+	// In all such cases we suppress entity warnings rather than risk false
+	// positives. State is always populated by d.Set("entities",...) BEFORE
+	// this function is called, so import state is correct regardless.
 	if !rc.IsKnown() || rc.IsNull() {
-		return true
+		return false
 	}
 	attr := rc.GetAttr("entities")
-	return !attr.IsNull()
+	// With Computed+Optional, an attribute absent from config can be either
+	// cty.NullVal (user explicitly omitted it) or cty.UnknownVal (Terraform
+	// defers to the provider to compute the value). Both cases mean the customer
+	// has NOT declared entities — return false so we skip ownership management.
+	return attr.IsKnown() && !attr.IsNull()
 }
 
 // ── User ID ↔ NGEP GUID resolution ───────────────────────────────────────────
