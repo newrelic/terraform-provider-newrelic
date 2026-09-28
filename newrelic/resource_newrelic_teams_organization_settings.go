@@ -3,11 +3,15 @@ package newrelic
 // resource_newrelic_teams_organization_settings manages the singleton
 // TEAMS_ORGANIZATION_SETTINGS entity for the authenticated organisation.
 //
-// This entity is auto-created by NGEP when Teams is first used; there is
-// exactly one per organisation. Terraform cannot create or delete it — use
-// terraform import to bring the existing entity under management.
+// There is exactly one of these per organisation — NGEP auto-creates it when
+// Teams is first used. Terraform does not create or delete the underlying
+// entity; the resource block always references the pre-existing singleton.
 //
-//	terraform import newrelic_teams_organization_settings.this <entity_id>
+// On first `terraform apply` (without a prior import), Terraform will
+// automatically locate the singleton, apply the declared configuration
+// values, and emit a warning stating that the existing org settings have
+// been overridden. This is the same result as a `terraform import` followed
+// by `terraform apply`, so import is optional but still supported.
 //
 // Key capabilities managed here:
 //   - discovery.enabled    — toggles tag-based automatic entity ownership
@@ -117,16 +121,90 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 	}
 }
 
-// Create is not supported — this entity is a singleton created by NGEP.
-func resourceNewRelicTeamsOrgSettingsCreate(_ context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
-	return diag.Diagnostics{{
-		Severity: diag.Error,
-		Summary:  "newrelic_teams_organization_settings does not support create",
-		Detail: "The Teams organisation settings entity is a singleton created automatically by New Relic. " +
-			"Use 'terraform import newrelic_teams_organization_settings.<name> <entity_id>' to bring it " +
-			"under Terraform management. The entity ID can be obtained with: " +
-			"data.newrelic_teams_hierarchy_levels (or via the NerdGraph entitySearch for type='TEAMS_ORGANIZATION_SETTINGS').",
-	}}
+// resourceNewRelicTeamsOrgSettingsCreate locates the pre-existing singleton,
+// applies all declared configuration values, and emits a warning so the
+// operator knows that existing org settings have been overridden.
+//
+// There is no true "create" — the underlying entity always exists. This
+// function applies the same update mutation as Update, but unconditionally
+// sends every field (HasChange is meaningless on a brand-new resource).
+// After this call the resource behaves identically to an imported resource.
+func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*ProviderConfig).NewClient
+
+	// Locate the singleton entity.
+	existing, err := client.Scorecards.GetTeamsOrganizationSettingsWithContext(ctx)
+	if err != nil {
+		return diag.Errorf("could not locate Teams organisation settings entity: %v", err)
+	}
+	if existing == nil {
+		return diag.Errorf(
+			"Teams organisation settings entity not found — ensure the Teams feature is " +
+				"enabled for this New Relic organisation before managing it with Terraform.",
+		)
+	}
+
+	d.SetId(existing.ID)
+	log.Printf("[INFO] Found Teams organisation settings singleton %s — applying declared configuration", existing.ID)
+
+	// Build the full update input from config. Do NOT use HasChange here —
+	// on a new resource every field is "new" but HasChange may return false
+	// because there is no prior state to compare against.
+	tagKeys := make([]string, 0)
+	for _, v := range d.Get("discovery_tag_keys").([]interface{}) {
+		tagKeys = append(tagKeys, v.(string))
+	}
+	upd := scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
+		Discovery: scorecards.EntityManagementDiscoverySettingsUpdateInput{
+			Enabled: d.Get("discovery_enabled").(bool),
+			TagKeys: tagKeys,
+		},
+		SyncGroups: expandSyncGroupsUpdate(
+			d.Get("sync_groups_enabled").(bool),
+			d.Get("sync_group_rules").([]interface{}),
+		),
+	}
+
+	rawLevels := d.Get("hierarchy_levels").([]interface{})
+	if len(rawLevels) > 0 {
+		levelIDs := make([]string, 0, len(rawLevels))
+		for _, r := range rawLevels {
+			levelIDs = append(levelIDs, r.(map[string]interface{})["id"].(string))
+		}
+		upd.HierarchyLevelOrder = levelIDs
+	}
+
+	if _, err := client.Scorecards.EntityManagementUpdateTeamsOrganizationSettings(d.Id(), upd); err != nil {
+		return diag.Errorf("applying org settings configuration: %v", err)
+	}
+
+	// Rename hierarchy levels if names differ from current.
+	for _, r := range rawLevels {
+		m := r.(map[string]interface{})
+		id, name := m["id"].(string), m["name"].(string)
+		if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(
+			id,
+			scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: name},
+		); err != nil {
+			return diag.Errorf("renaming hierarchy level %s: %v", id, err)
+		}
+	}
+
+	// Read back the live state so Terraform tracks what was applied.
+	diags := resourceNewRelicTeamsOrgSettingsRead(ctx, d, meta)
+
+	// Prepend the singleton-override warning so it appears prominently.
+	return append(diag.Diagnostics{{
+		Severity: diag.Warning,
+		Summary:  "newrelic_teams_organisation_settings: existing singleton overridden",
+		Detail: "This resource manages a pre-existing singleton entity that exists in every " +
+			"New Relic organisation — it was not created by Terraform. Your declared configuration " +
+			"values have been applied and have overridden the previous org-level Teams settings " +
+			"(discovery, sync groups, hierarchy level order).\n\n" +
+			"This is the expected behaviour. Future runs of terraform plan will show any " +
+			"drift between the live settings and your configuration. If you prefer an explicit " +
+			"workflow, use terraform import before the first apply.",
+	}}, diags...)
 }
 
 func resourceNewRelicTeamsOrgSettingsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
