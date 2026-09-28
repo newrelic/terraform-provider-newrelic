@@ -5,10 +5,32 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
+
+// ── Config-presence helpers ───────────────────────────────────────────────────
+
+// isEntitiesAttributeConfigured returns true when the customer has explicitly
+// declared the entities attribute in their config — either as an empty set
+// (entities = []) or with values (entities = ["guid1", ...]). Returns false
+// when the attribute is entirely absent from the config, in which case
+// Terraform should not manage the ownership collection.
+//
+// During import, the raw config is unknown — treat as configured so the
+// imported state is fully populated.
+func isEntitiesAttributeConfigured(d *schema.ResourceData) bool {
+	rc := d.GetRawConfig()
+	// rc is unknown/null during import — treat entities as configured so that
+	// the import path fully populates state (including the entities collection).
+	if !rc.IsKnown() || rc.IsNull() {
+		return true
+	}
+	attr := rc.GetAttr("entities")
+	return !attr.IsNull()
+}
 
 // ── User ID ↔ NGEP GUID resolution ───────────────────────────────────────────
 
@@ -238,7 +260,8 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 // matching the team's name or an alias under the configured discovery tag keys.
 //
 // We do this with a single, collection-bounded query:
-//   id IN (<allGUIDs from collection>) AND (tags.<key> IN (<name>, <alias1>, ...))
+//
+//	id IN (<allGUIDs from collection>) AND (tags.<key> IN (<name>, <alias1>, ...))
 //
 // This is O(collection_size), NOT O(all_org_entities). A team's collection
 // typically holds < 50 entities — this is always a single API page. Contrast
@@ -362,6 +385,11 @@ func readStaticOwnershipGUIDs(
 // whole list, so there is no meaningful old/new delta for them). They must
 // be applied after membership is reconciled because NGEP validates that every
 // manager is already a collection member.
+//
+// Call order: (1) syncTeamMembership → (2) syncTeamManagers → (3) syncTeamOwnership.
+// Steps 1→2 are dependency-ordered: NGEP rejects a manager assignment unless
+// the user is already a collection member, so membership MUST be committed
+// before managers are set. Step 3 (ownership) is independent of the other two.
 func applyTeamCollections(
 	ctx context.Context,
 	client *nr.NewRelic,

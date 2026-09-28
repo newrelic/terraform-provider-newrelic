@@ -161,8 +161,13 @@ func resourceNewRelicTeam() *schema.Resource {
 			},
 			// ── Ownership ───────────────────────────────────────────────────
 			"entities": {
-				Type:        schema.TypeSet,
-				Optional:    true,
+				Type:     schema.TypeSet,
+				Optional: true,
+				// Computed: when absent from config, Terraform uses the provider's
+				// computed value from state (populated by Read). This suppresses drift
+				// automatically when the attribute is not declared by the customer —
+				// Terraform will not plan removals for entities it did not manage.
+				Computed:    true,
 				Description: "Set of entity GUIDs that this team owns. Added to the team's auto-created ownership collection.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -253,10 +258,18 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	// (the backing collections are auto-created by NGEP on team creation).
 	// applyTeamCollections handles all three in the correct dependency order.
 	// Old slices are nil because nothing existed before this create call.
+	//
+	// Only sync entities if the customer has explicitly declared the entities
+	// attribute in their config. If omitted, we do not touch the ownership
+	// collection — passing nil is a no-op in syncTeamOwnership.
+	var newEntityGUIDs []string
+	if isEntitiesAttributeConfigured(d) {
+		newEntityGUIDs = expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set))
+	}
 	if err := applyTeamCollections(ctx, client, teamID, membershipColID, ownershipColID,
 		nil, expandUserIDsFromSet(d.Get("members").(*schema.Set)),
 		expandUserIDsFromSet(d.Get("managers").(*schema.Set)),
-		nil, expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set)),
+		nil, newEntityGUIDs,
 	); err != nil {
 		return diag.FromErr(err)
 	}
@@ -371,7 +384,18 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	if ownerErr != nil {
 		log.Printf("[WARN] Could not read ownership collection for team %s: %v", d.Id(), ownerErr)
 	} else {
+		// Always update state so the Computed value stays fresh. When entities is
+		// not declared in config (Computed path), this prevents spurious drift by
+		// keeping state in sync with what NGEP currently holds.
 		_ = d.Set("entities", flattenEntityGUIDs(staticGUIDs))
+	}
+
+	// Suppress all entity warnings and drift detection if the customer has NOT
+	// declared the entities attribute in their config. When Computed + absent,
+	// Terraform uses the provider's state value — no drift is shown and no
+	// warnings are needed.
+	if !isEntitiesAttributeConfigured(d) {
+		return nil
 	}
 
 	// Build two diagnostic warnings:
@@ -397,7 +421,17 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 					"NGEP's tag-based discovery, not by this resource.\n\n"+
 					"Discovery GUIDs:\n  %s\n\n"+
 					"TIP: To have Terraform track these (e.g. flag accidental removal as drift), "+
-					"add their GUIDs to the `entities` block.",
+					"add their GUIDs to the `entities` block.\n\n"+
+					"IMPORTANT — Tag lifecycle behaviour: Removing a discovery tag from an "+
+					"entity does not automatically remove it from the team's collection; NGEP "+
+					"reclassifies it as manually-managed instead. Similarly, if the entity is "+
+					"removed from the collection while retaining its tag, NGEP may re-add it.\n\n"+
+					"To take full declarative control of such an entity:\n"+
+					"  1. Remove the team tag from the entity (so NGEP stops managing it)\n"+
+					"  2. Add the entity GUID to the `entities` block before running apply\n\n"+
+					"Alternatively, if you prefer all entity ownership to be governed by tags "+
+					"only, omit the `entities` attribute from this resource entirely — "+
+					"Terraform will not show drift for any entities in that case.",
 				tagKeyHint,
 				strings.Join(discoveryGUIDs, "\n  "),
 			),
@@ -542,18 +576,31 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	// Reconcile members, managers, and owned entities whenever any of them
 	// change. All three are handled by applyTeamCollections in the correct
 	// dependency order (membership must be settled before managers are set).
-	if d.HasChange("members") || d.HasChange("managers") || d.HasChange("entities") {
+	//
+	// Entity sync is only performed when the customer has explicitly declared
+	// the entities attribute in their config. If entities is absent, we never
+	// touch the ownership collection — even if NGEP or out-of-band changes have
+	// modified it.
+	entitiesChanged := isEntitiesAttributeConfigured(d) && d.HasChange("entities")
+	if d.HasChange("members") || d.HasChange("managers") || entitiesChanged {
 		oldMembersRaw, newMembersRaw := d.GetChange("members")
 		_, newManagersRaw := d.GetChange("managers")
-		oldEntitiesRaw, newEntitiesRaw := d.GetChange("entities")
+
+		var oldEntities, newEntities []string
+		if entitiesChanged {
+			oldEntitiesRaw, newEntitiesRaw := d.GetChange("entities")
+			oldEntities = expandEntityGUIDsFromSet(oldEntitiesRaw.(*schema.Set))
+			newEntities = expandEntityGUIDsFromSet(newEntitiesRaw.(*schema.Set))
+		}
+
 		if err := applyTeamCollections(ctx, client, d.Id(),
 			d.Get("membership_collection_id").(string),
 			d.Get("ownership_collection_id").(string),
 			expandUserIDsFromSet(oldMembersRaw.(*schema.Set)),
 			expandUserIDsFromSet(newMembersRaw.(*schema.Set)),
 			expandUserIDsFromSet(newManagersRaw.(*schema.Set)),
-			expandEntityGUIDsFromSet(oldEntitiesRaw.(*schema.Set)),
-			expandEntityGUIDsFromSet(newEntitiesRaw.(*schema.Set)),
+			oldEntities,
+			newEntities,
 		); err != nil {
 			return diag.FromErr(err)
 		}
