@@ -406,16 +406,19 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
 			Summary: fmt.Sprintf(
-				"Team %q has %d+ entity/entities assigned via tag-based discovery that are not tracked by Terraform",
+				"Team %q has %d+ entity/entities assigned via tag-based discovery — not tracked by Terraform",
 				team.Name, len(displayGUIDs),
 			),
 			Detail: fmt.Sprintf(
 				"The following entity GUIDs are automatically assigned to team %q because their "+
-					"`tags.%s` value matches the team's name or an alias. Terraform will NOT show "+
-					"drift for these entities — they are outside Terraform's management scope.\n\n"+
+					"`tags.%s` tag value matches the team name or one of its aliases. "+
+					"Terraform intentionally excludes these from drift detection — they are managed "+
+					"by NGEP's tag-based discovery feature, not by this resource.\n\n"+
 					"Discovery GUIDs:\n  %s%s\n\n"+
-					"To take declarative control: add them to the `entities` block and consider "+
-					"disabling automatic discovery via newrelic_teams_organization_settings.",
+					"TIP: If you want Terraform to track and protect these entities (e.g. flag "+
+					"unexpected removal), add their GUIDs to the `entities` block. They will then "+
+					"be managed declaratively alongside your manually-assigned entities and any "+
+					"out-of-band changes will appear as drift.",
 				team.Name,
 				tagKeyHint,
 				strings.Join(displayGUIDs, "\n  "),
