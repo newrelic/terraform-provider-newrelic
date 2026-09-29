@@ -173,8 +173,13 @@ func resourceNewRelicTeam() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"managed", "unmanaged"}, false),
 			},
 			"entities": {
-				Type:        schema.TypeSet,
-				Optional:    true,
+				Type:     schema.TypeSet,
+				Optional: true,
+				// Computed: true is required so CustomizeDiff.SetNew can suppress the
+				// entities diff during entity_management_mode transitions. It also means
+				// that when entities is absent from config (unmanaged mode), Terraform
+				// uses the provider's computed value rather than planning a removal.
+				Computed:    true,
 				Description: "Set of entity GUIDs that this team owns. Added to the team's auto-created ownership collection.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,

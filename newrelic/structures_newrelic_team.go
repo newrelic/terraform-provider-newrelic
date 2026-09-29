@@ -75,6 +75,28 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 	if len(errs) > 0 {
 		return fmt.Errorf("%s", strings.Join(errs, "\n"))
 	}
+
+	// ── Suppress entity diff during mode transitions ──────────────────────────
+	// Read() uses d.Get("entity_management_mode") from prior STATE, not the
+	// current config. During the transition plan, Read still runs under the old
+	// mode, producing entity diffs that belong to the pre-transition mode (e.g.,
+	// drift warnings when moving managed→unmanaged, or missing warnings when
+	// moving unmanaged→managed). These diffs are incorrect for the transition
+	// apply and confuse the customer.
+	//
+	// Fix: if mode is transitioning, override the planned new entities value
+	// with the old state value (no diff). The transition apply ONLY records the
+	// mode change in state. On the very next plan — now with the correct mode in
+	// state — Read runs under the right mode and entity behaviour is fully correct.
+	oldMode, newMode := d.GetChange("entity_management_mode")
+	if oldMode.(string) != "" && oldMode.(string) != newMode.(string) {
+		// Suppress entity diff: new planned value = current state value (no change)
+		oldEntities, _ := d.GetChange("entities")
+		if err := d.SetNew("entities", oldEntities.(*schema.Set).List()); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

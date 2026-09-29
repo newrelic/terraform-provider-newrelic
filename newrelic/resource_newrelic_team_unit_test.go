@@ -180,13 +180,14 @@ func TestEntityManagementMode_SchemaHasValidValues(t *testing.T) {
 	assert.NotNil(t, s.ValidateFunc, "entity_management_mode should have a ValidateFunc")
 }
 
-func TestEntityManagementMode_EntitiesNotComputedAnymore(t *testing.T) {
+func TestEntityManagementMode_EntitiesIsComputedForSetNew(t *testing.T) {
 	t.Parallel()
 	r := resourceNewRelicTeam()
 	s, ok := r.Schema["entities"]
 	require.True(t, ok, "entities schema attribute must exist")
-	// Computed: true was removed — mode now controls behavior.
-	assert.False(t, s.Computed, "entities should NOT be Computed after the redesign")
+	// Computed: true is required so CustomizeDiff can call SetNew to suppress
+	// entity diffs during entity_management_mode transitions.
+	assert.True(t, s.Computed, "entities must be Computed to allow SetNew in CustomizeDiff")
 	assert.True(t, s.Optional, "entities should remain Optional")
 }
 
