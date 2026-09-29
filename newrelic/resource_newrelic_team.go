@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
+	newrelic "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
@@ -504,6 +505,63 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
+// buildTeamEntityUpdateInput constructs the update mutation input and performs
+// raw-call field clears (description, aliases, tags, parent_id) when needed.
+// Returns the input and whether the mutation should be sent. Extracted from
+// resourceNewRelicTeamUpdate to keep cyclomatic complexity manageable.
+func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, client *newrelic.NewRelic) (scorecards.EntityManagementTeamEntityUpdateInput, bool, diag.Diagnostics) {
+	upd := scorecards.EntityManagementTeamEntityUpdateInput{}
+	has := false
+
+	if d.HasChange("name") {
+		upd.Name = d.Get("name").(string)
+		has = true
+	}
+	if d.HasChange("description") {
+		if v := d.Get("description").(string); v != "" {
+			upd.Description = v
+			has = true
+		} else if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
+			return upd, false, diag.Errorf("clearing description on team %s: %v", d.Id(), err)
+		}
+	}
+	if d.HasChange("aliases") {
+		if al := d.Get("aliases").(*schema.Set).List(); len(al) > 0 {
+			for _, a := range al {
+				upd.Aliases = append(upd.Aliases, a.(string))
+			}
+			has = true
+		} else if err := clearTeamAliasesRaw(ctx, client, d.Id()); err != nil {
+			return upd, false, diag.Errorf("clearing aliases on team %s: %v", d.Id(), err)
+		}
+	}
+	if d.HasChange("tags") {
+		merged := mergeWithSystemTags(
+			expandNGEPTags(d.Get("tags").(*schema.Set).List()),
+			fetchEntitySystemTags(ctx, &client.Scorecards, d.Id()),
+		)
+		if len(merged) > 0 {
+			upd.Tags = merged
+			has = true
+		} else if err := clearTeamTagsRaw(ctx, client, d.Id()); err != nil {
+			return upd, false, diag.Errorf("clearing tags on team %s: %v", d.Id(), err)
+		}
+	}
+	if d.HasChange("resources") {
+		upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
+		has = true
+	}
+	if d.HasChange("parent_id") {
+		if v := d.Get("parent_id").(string); v != "" {
+			upd.ParentId = v
+			has = true
+		} else if err := clearTeamParentID(ctx, client, d.Id()); err != nil {
+			return upd, false, diag.FromErr(err)
+		}
+	}
+	return upd, has, nil
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Update
 // ──────────────────────────────────────────────────────────────────────────────
@@ -513,89 +571,12 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	client := providerConfig.NewClient
 
 	// ── Team entity fields ─────────────────────────────────────────────────
-	teamFieldsChanged := d.HasChangesExcept("members", "entities", "managers", "entity_management_mode")
-	if teamFieldsChanged {
-		upd := scorecards.EntityManagementTeamEntityUpdateInput{}
-		// updHasFields tracks whether upd has any non-zero fields that need
-		// to be sent to EntityManagementUpdateTeam. Fields cleared via raw
-		// calls (description="", aliases=[], tags=[], parentId=nil) do NOT
-		// populate upd — without this guard we would make a redundant API
-		// call with an empty struct ({}) when only clear operations occurred.
-		updHasFields := false
-
-		if d.HasChange("name") {
-			upd.Name = d.Get("name").(string)
-			updHasFields = true
+	if d.HasChangesExcept("members", "entities", "managers", "entity_management_mode") {
+		upd, needsCall, diags := buildTeamEntityUpdateInput(ctx, d, client)
+		if diags != nil {
+			return diags
 		}
-		if d.HasChange("description") {
-			newDesc := d.Get("description").(string)
-			if newDesc != "" {
-				// Non-empty: include in the main update mutation below.
-				upd.Description = newDesc
-				updHasFields = true
-			} else {
-				// Explicit clear: omitempty drops "", so use a raw call.
-				if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
-					return diag.Errorf("clearing description on team %s: %v", d.Id(), err)
-				}
-			}
-		}
-		if d.HasChange("aliases") {
-			newAliases := d.Get("aliases").(*schema.Set).List()
-			if len(newAliases) > 0 {
-				for _, a := range newAliases {
-					upd.Aliases = append(upd.Aliases, a.(string))
-				}
-				updHasFields = true
-			} else {
-				// Explicit clear: omitempty would drop nil, so use raw call.
-				if err := clearTeamAliasesRaw(ctx, client, d.Id()); err != nil {
-					return diag.Errorf("clearing aliases on team %s: %v", d.Id(), err)
-				}
-			}
-		}
-		if d.HasChange("tags") {
-			userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
-			// Always merge with current system tags (e.g. nr.hierarchy.level) —
-			// NGEP rejects any update that would remove tags prefixed with "nr.".
-			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
-			mergedTags := mergeWithSystemTags(userTags, sysTags)
-
-			if len(mergedTags) > 0 {
-				// Normal path: send user tags + preserved system tags.
-				upd.Tags = mergedTags
-				updHasFields = true
-			} else {
-				// Edge case: user clearing all tags on a team with no system tags.
-				// omitempty would silently drop an empty slice, so use a raw call.
-				if err := clearTeamTagsRaw(ctx, client, d.Id()); err != nil {
-					return diag.Errorf("clearing tags on team %s: %v", d.Id(), err)
-				}
-			}
-		}
-		if d.HasChange("resources") {
-			upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
-			updHasFields = true
-		}
-		if d.HasChange("parent_id") {
-			if newID := d.Get("parent_id").(string); newID != "" {
-				upd.ParentId = newID
-				updHasFields = true
-			} else {
-				// Clearing parent_id requires explicit null — the struct uses
-				// omitempty so an empty string would be silently dropped.
-				if err := clearTeamParentID(ctx, client, d.Id()); err != nil {
-					return diag.FromErr(err)
-				}
-				// parent_id is now cleared via raw call; no field to add to upd.
-			}
-		}
-
-		// Only issue the main update call when at least one field is non-zero.
-		// When all changes were handled by raw clear calls (description, aliases,
-		// tags, parentId), upd is empty and sending {} to the API would be a
-		// wasteful no-op.
-		if updHasFields {
+		if needsCall {
 			if _, err := client.Scorecards.EntityManagementUpdateTeam(d.Id(), upd); err != nil {
 				return diag.FromErr(err)
 			}
