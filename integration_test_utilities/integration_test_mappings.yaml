@@ -124,12 +124,6 @@ data_source_newrelic_user_management.go:
 data_source_newrelic_user_management_test.go:
   test: true
   product_mapping: AUTH
-helpers_newrelic_ngep.go:
-  test: false
-  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
-helpers_newrelic_team.go:
-  test: false
-  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
