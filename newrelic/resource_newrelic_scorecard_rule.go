@@ -137,7 +137,7 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 			"organization_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The NGEP organization UUID. Resolved automatically from the provider account.",
+				Description: "The organization UUID. Resolved automatically from the provider account.",
 			},
 		},
 	}

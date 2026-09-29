@@ -11,7 +11,7 @@ import (
 // dataSourceNewRelicTeamsHierarchyLevels lists all Teams hierarchy level
 // entities in the org so that users can reference their IDs without having
 // to look them up manually. Hierarchy levels are created automatically by
-// NGEP when parentId relationships are established between Team resources.
+// the entityManagement API when parentId relationships are established between Team resources.
 func dataSourceNewRelicTeamsHierarchyLevels() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceNewRelicTeamsHierarchyLevelsRead,
@@ -25,7 +25,7 @@ func dataSourceNewRelicTeamsHierarchyLevels() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "NGEP GUID of this level. Use as the id when importing newrelic_teams_hierarchy_level.",
+							Description: "GUID of this hierarchy level entity. Use as the id when importing newrelic_teams_hierarchy_level.",
 						},
 						"name": {
 							Type:        schema.TypeString,

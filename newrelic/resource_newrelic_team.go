@@ -78,7 +78,7 @@ func resourceNewRelicTeam() *schema.Resource {
 			"parent_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "NGEP GUID of the parent team. Cannot be set to the team's own GUID.",
+				Description: "Entity management GUID of the parent team. Cannot be set to the team's own GUID.",
 			},
 			// ── Resources (links / docs) ─────────────────────────────────────
 			"resources": {
@@ -168,7 +168,7 @@ func resourceNewRelicTeam() *schema.Resource {
 					"  • `managed` (default): Terraform tracks the `entities` block and reconciles it with the " +
 					"    ownership collection. Out-of-band additions appear as drift. All entity warnings are shown.\n" +
 					"  • `unmanaged`: Terraform does not control entity ownership. The ownership collection is left " +
-					"    entirely to NGEP's tag-based discovery and/or manual UI management. No drift or warnings " +
+					"    entirely to tag-based discovery and/or manual UI management. No drift or warnings " +
 					"    are shown for entities, and the `entities` attribute cannot be set in this mode.",
 				ValidateFunc: validation.StringInSlice([]string{"managed", "unmanaged"}, false),
 			},
@@ -192,17 +192,17 @@ func resourceNewRelicTeam() *schema.Resource {
 			"organization_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The NGEP organization UUID. Resolved automatically from the provider account.",
+				Description: "The organization UUID. Resolved automatically from the provider account.",
 			},
 			"membership_collection_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "GUID of the auto-created membership collection. Read-only.",
+				Description: "GUID of the auto-created team membership collection. Read-only.",
 			},
 			"ownership_collection_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "GUID of the auto-created ownership collection. Read-only.",
+				Description: "GUID of the auto-created team ownership collection. Read-only.",
 			},
 		},
 	}
@@ -444,21 +444,21 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 				"The following entity GUIDs are present in the ownership collection because "+
 					"their `tags.%s` value matches the team name or an alias. "+
 					"Terraform intentionally excludes these from drift — they are managed by "+
-					"NGEP's tag-based discovery, not by this resource.\n\n"+
+					"tag-based discovery, not by this resource.\n\n"+
 					"Discovery GUIDs:\n  %s\n\n"+
 					"TIP: To have Terraform track these (e.g. flag accidental removal as drift), "+
 					"add their GUIDs to the `entities` block.\n\n"+
 					"IMPORTANT — Tag lifecycle behaviour: Removing a discovery tag from an "+
-					"entity does not automatically remove it from the team's collection; NGEP "+
-					"reclassifies it as manually-managed instead. Similarly, if the entity is "+
-					"removed from the collection while retaining its tag, NGEP may re-add it.\n\n"+
+					"entity does not automatically remove it from the team's collection; the "+
+					"platform reclassifies it as manually-managed instead. Similarly, if the entity is "+
+					"removed from the collection while retaining its tag, the platform may re-add it.\n\n"+
 					"To take full declarative control of such an entity:\n"+
-					"  1. Remove the team tag from the entity (so NGEP stops managing it)\n"+
+					"  1. Remove the team tag from the entity (so tag-based discovery stops managing it)\n"+
 					"  2. Add the entity GUID to the `entities` block before running apply\n\n"+
 					"Alternatively, if you prefer all entity ownership to be governed by tags "+
 					"only, omit the `entities` attribute from this resource entirely — "+
 					"Terraform will not show drift for any entities in that case.\n\n"+
-					"Alternatively, if you want NGEP's tag-based discovery to manage ALL entity "+
+					"Alternatively, if you want tag-based discovery to manage ALL entity "+
 					"ownership without any Terraform involvement, set `entity_management_mode = \"unmanaged\"` "+
 					"on this resource. In unmanaged mode, Terraform stops tracking entities entirely — "+
 					"no drift or warnings will be shown.",

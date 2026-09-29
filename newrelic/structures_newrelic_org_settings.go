@@ -24,11 +24,23 @@ func flattenSyncGroupRules(rules []scorecards.EntityManagementSyncGroupRule) []m
 func expandSyncGroupsUpdate(enabled bool, rawRules []interface{}) scorecards.EntityManagementSyncGroupsSettingsUpdateInput {
 	rules := make([]scorecards.EntityManagementSyncGroupRuleUpdateInput, 0, len(rawRules))
 	for _, rr := range rawRules {
-		rm := rr.(map[string]interface{})
-		rawConds := rm["conditions"].([]interface{})
+		if rr == nil {
+			continue
+		}
+		rm, ok := rr.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		rawConds, _ := rm["conditions"].([]interface{})
 		conds := make([]scorecards.EntityManagementSyncGroupRuleConditionUpdateInput, 0, len(rawConds))
 		for _, rc := range rawConds {
-			cm := rc.(map[string]interface{})
+			if rc == nil {
+				continue
+			}
+			cm, ok := rc.(map[string]interface{})
+			if !ok {
+				continue
+			}
 			conds = append(conds, scorecards.EntityManagementSyncGroupRuleConditionUpdateInput{
 				Type:  scorecards.EntityManagementSyncGroupRuleConditionType(cm["type"].(string)),
 				Value: cm["value"].(string),

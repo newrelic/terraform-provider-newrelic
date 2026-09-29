@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || SERVICE_ARCHITECTURE_INTELLIGENCE
 
 // Integration tests for newrelic_team. These tests call the live NGEP API and
 // require the standard NR integration test environment variables plus an

@@ -68,7 +68,7 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 
 		if mode == "unmanaged" && entitiesInConfig {
 			errs = append(errs, "entities cannot be specified when entity_management_mode = \"unmanaged\" — "+
-				"in unmanaged mode, entity ownership is controlled entirely by NGEP (tags/UI), not Terraform")
+				"in unmanaged mode, entity ownership is controlled entirely by tag-based discovery and/or the Teams UI, not Terraform")
 		}
 	}
 

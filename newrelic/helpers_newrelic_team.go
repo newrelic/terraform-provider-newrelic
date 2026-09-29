@@ -16,21 +16,17 @@ import (
 // isEntitiesAttributeConfigured returns true when the customer has explicitly
 // declared the entities attribute in their config — either as an empty set
 // (entities = []) or with values (entities = ["guid1", ...]). Returns false
-// when the attribute is entirely absent from the config, in which case
-// Terraform should not manage the ownership collection.
+// when the attribute is entirely absent from the config.
 //
-// During import, the raw config is unknown — treat as configured so the
-// imported state is fully populated.
-// isEntitiesAttributeConfigured returns true when the customer has explicitly
-// declared the entities attribute in their config. It uses GetRawConfig() which
-// is only reliable during Create/Update — NOT during Read (where it returns
-// cty.NilVal). The function therefore defaults to true (show warnings) when the
-// config is not available, which is the safe behavior: better to over-warn than
-// to silently miss drift.
+// Uses GetRawConfig() which is only reliable during Create/Update — NOT during
+// Read (where it returns cty.NilVal). The function defaults to true when the
+// config is unavailable so that warnings are not suppressed; this covers both
+// plan-refresh Reads and terraform import. Better to over-warn than silently
+// miss drift.
 //
-// For truly suppressing management/warnings when entities is absent from config,
-// the schema carries Computed:true (which prevents Terraform from planning
-// removals) and the Create/Update functions guard entity operations correctly.
+// For drift suppression when entities is absent from config, the schema carries
+// Computed:true (which prevents Terraform from planning removals) and the
+// Create/Update functions guard entity operations with this function.
 func isEntitiesAttributeConfigured(d *schema.ResourceData) bool {
 	rc := d.GetRawConfig()
 	// NilVal / unknown config: can't determine intent → default to true so
@@ -294,16 +290,14 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 // Fleet entities are NGEP-internal, they cannot be imported into Terraform, and
 // customers cannot add them to the entities block regardless.
 //
-// If discovery is disabled or orgSettings is nil, all collection entities are
-// treated as static and discoveryGUIDs is empty.
-// readStaticOwnershipGUIDs separates the team's ownership collection entities
-// into two groups: manually-added (staticGUIDs) and tag-discovered (discoveryGUIDs).
-//
 // declaredGUIDs must contain the entity GUIDs currently in the Terraform
 // config's entities block. These are ALWAYS treated as static regardless of
 // their tags — an explicit Terraform declaration takes precedence over
 // tag-based discovery classification. Without this, adding a discovery tag to
 // an entity that is also in the entities block would cause a perpetual diff.
+//
+// If discovery is disabled or orgSettings is nil, all collection entities are
+// treated as static and discoveryGUIDs is empty.
 func readStaticOwnershipGUIDs(
 	ctx context.Context,
 	scClient *scorecards.Scorecards,

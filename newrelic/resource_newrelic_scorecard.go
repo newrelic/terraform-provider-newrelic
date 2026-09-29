@@ -121,14 +121,14 @@ func resourceNewRelicScorecard() *schema.Resource {
 			"organization_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The NGEP organization UUID. Resolved automatically from the provider account.",
+				Description: "The organization UUID. Resolved automatically from the provider account.",
 			},
 			// Computed: the auto-created rules collection ID, exposed so callers
 			// can reference it if needed.
 			"rules_collection_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "GUID of the auto-created rules collection. Read-only.",
+				Description: "GUID of the auto-created scorecard rules collection. Read-only.",
 			},
 		},
 	}

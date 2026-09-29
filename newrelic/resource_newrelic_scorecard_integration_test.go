@@ -1,4 +1,4 @@
-//go:build integration
+//go:build integration || SERVICE_ARCHITECTURE_INTELLIGENCE
 
 package newrelic
 

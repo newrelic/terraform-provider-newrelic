@@ -3,7 +3,7 @@ package newrelic
 // resource_newrelic_teams_organization_settings manages the singleton
 // TEAMS_ORGANIZATION_SETTINGS entity for the authenticated organisation.
 //
-// There is exactly one of these per organisation — NGEP auto-creates it when
+// There is exactly one of these per organisation — it is auto-created when
 // Teams is first used. Terraform does not create or delete the underlying
 // entity; the resource block always references the pre-existing singleton.
 //
@@ -66,7 +66,7 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 						"id": {
 							Type:         schema.TypeString,
 							Required:     true,
-							Description:  "NGEP GUID of the hierarchy level entity. Obtain from the newrelic_teams_hierarchy_levels data source.",
+							Description:  "GUID of the hierarchy level entity. Obtain from the newrelic_teams_hierarchy_levels data source.",
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"name": {
@@ -178,13 +178,28 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 		return diag.Errorf("applying org settings configuration: %v", err)
 	}
 
-	// Rename hierarchy levels if names differ from current.
+	// Rename hierarchy levels only when the declared name differs from the
+	// current API name. Fetching each level before renaming avoids unnecessary
+	// API mutations when the names are already correct (e.g. on re-apply after
+	// an interrupted run or a no-op import).
 	for _, r := range rawLevels {
 		m := r.(map[string]interface{})
-		id, name := m["id"].(string), m["name"].(string)
+		id, wantName := m["id"].(string), m["name"].(string)
+
+		currentName := ""
+		levelIface, levelErr := client.Scorecards.GetEntityWithContext(ctx, id)
+		if levelErr == nil && levelIface != nil && *levelIface != nil {
+			if level, ok := (*levelIface).(*scorecards.EntityManagementTeamsHierarchyLevelEntity); ok {
+				currentName = level.Name
+			}
+		}
+
+		if currentName == wantName {
+			continue
+		}
 		if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(
 			id,
-			scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: name},
+			scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: wantName},
 		); err != nil {
 			return diag.Errorf("renaming hierarchy level %s: %v", id, err)
 		}

@@ -111,7 +111,7 @@ data_source_newrelic_synthetics_secure_credential_test.go:
   product_mapping: SYNTHETICS
 data_source_newrelic_teams_hierarchy_levels.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 data_source_newrelic_test_grok_pattern.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -124,6 +124,12 @@ data_source_newrelic_user_management.go:
 data_source_newrelic_user_management_test.go:
   test: true
   product_mapping: AUTH
+helpers_newrelic_ngep.go:
+  test: false
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
+helpers_newrelic_team.go:
+  test: false
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_account_management.go:
   test: false
   product_mapping: AUTH
@@ -438,19 +444,19 @@ resource_newrelic_one_dashboard_test.go:
   product_mapping: DASHBOARDS
 resource_newrelic_pipeline_cloud_rule.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_pipeline_cloud_rule_test.go:
   test: true
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_scorecard.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_scorecard_integration_test.go:
   test: true
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_scorecard_rule.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS
@@ -513,16 +519,16 @@ resource_newrelic_synthetics_step_monitor_test.go:
   product_mapping: SYNTHETICS
 resource_newrelic_team.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_team_integration_test.go:
   test: true
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_team_unit_test.go:
   test: true
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_teams_organization_settings.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_user_management.go:
   test: false
   product_mapping: AUTH
@@ -624,7 +630,7 @@ structures_newrelic_monitor_downtime.go:
   product_mapping: SYNTHETICS
 structures_newrelic_ngep.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 structures_newrelic_notebook.go:
   test: false
   product_mapping: DASHBOARDS
@@ -666,13 +672,13 @@ structures_newrelic_one_dashboard_test.go:
   product_mapping: DASHBOARDS
 structures_newrelic_org_settings.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 structures_newrelic_scorecard.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 structures_newrelic_scorecard_test.go:
   test: true
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 structures_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS
@@ -705,7 +711,7 @@ structures_newrelic_synthetics_step_monitor.go:
   product_mapping: SYNTHETICS
 structures_newrelic_team.go:
   test: false
-  product_mapping: NGEP
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 structures_newrelic_workflow.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
