@@ -3,10 +3,11 @@ module github.com/newrelic/terraform-provider-newrelic/v3
 go 1.26.0
 
 require (
+	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/newrelic/go-agent/v3 v3.30.0
-	github.com/newrelic/newrelic-client-go/v2 v2.94.1
+	github.com/newrelic/go-agent/v3 v3.45.0
+	github.com/newrelic/newrelic-client-go/v2 v2.95.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	gopkg.in/yaml.v3 v3.0.1
@@ -20,10 +21,10 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.4.8 // indirect
