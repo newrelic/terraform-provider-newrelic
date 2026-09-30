@@ -32,6 +32,12 @@ locals {
   time_out_in_seconds           = 300
   image_url                     = "${var.region}.ocir.io/idptojlonu4e/newrelic-logs-integration/oci-log-forwarder:${var.image_version}"
 
+  # The tenancy's root compartment shares its OCID with the tenancy itself, but OCI's
+  # Identity service can't return it from GetCompartment (data.oci_identity_compartment) --
+  # only GetTenancy can. Detect that case so we read the name from the right data source.
+  is_root_compartment = var.compartment_ocid == var.tenancy_ocid
+  compartment_name    = local.is_root_compartment ? data.oci_identity_tenancy.current_tenancy.name : data.oci_identity_compartment.current_compartment[0].name
+
   user_api_key = base64decode(data.oci_secrets_secretbundle.user_api_key.secret_bundle_content[0].content)
   newrelic_graphql_endpoint = {
     US = "https://api.newrelic.com/graphql"
