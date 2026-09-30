@@ -471,3 +471,10 @@ func clearTeamTagsRaw(ctx context.Context, client *nr.NewRelic, teamID string) e
 func clearTeamParentID(ctx context.Context, client *nr.NewRelic, teamID string) error {
 	return patchTeamField(ctx, client, teamID, "parentId", nil)
 }
+
+// clearTeamResourcesRaw sends an explicit empty list to clear all team resources.
+// The generated EntityManagementTeamEntityUpdateInput.Resources has omitempty, so
+// an empty Go slice would be silently dropped — this raw call bypasses that.
+func clearTeamResourcesRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
+	return patchTeamField(ctx, client, teamID, "resources", []interface{}{})
+}

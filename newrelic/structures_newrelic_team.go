@@ -76,23 +76,18 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 		return fmt.Errorf("%s", strings.Join(errs, "\n"))
 	}
 
-	// ── Suppress entity diff during mode transitions ──────────────────────────
-	// Read() uses d.Get("entity_management_mode") from prior STATE, not the
-	// current config. During the transition plan, Read still runs under the old
-	// mode, producing entity diffs that belong to the pre-transition mode (e.g.,
-	// drift warnings when moving managed→unmanaged, or missing warnings when
-	// moving unmanaged→managed). These diffs are incorrect for the transition
-	// apply and confuse the customer.
+	// ── Suppress / align entity diff during mode transitions ─────────────────
+	// When transitioning to "unmanaged", plan entities as [] so the plan agrees
+	// with what Update will do (clear entities from state tracking). Without
+	// this, Terraform Core rejects Update's d.Set("entities", []) because the
+	// plan committed to the old value via an implicit "no change".
 	//
-	// Fix: if mode is transitioning, override the planned new entities value
-	// with the old state value (no diff). The transition apply ONLY records the
-	// mode change in state. On the very next plan — now with the correct mode in
-	// state — Read runs under the right mode and entity behaviour is fully correct.
+	// When transitioning FROM "unmanaged" to "managed", no suppression is needed:
+	// Read (running under the old unmanaged mode) returns [] for entities, and
+	// the config carries the desired entities — the diff is correct as-is.
 	oldMode, newMode := d.GetChange("entity_management_mode")
-	if oldMode.(string) != "" && oldMode.(string) != newMode.(string) {
-		// Suppress entity diff: new planned value = current state value (no change)
-		oldEntities, _ := d.GetChange("entities")
-		if err := d.SetNew("entities", oldEntities.(*schema.Set).List()); err != nil {
+	if oldMode.(string) != "" && newMode.(string) == "unmanaged" {
+		if err := d.SetNew("entities", []interface{}{}); err != nil {
 			return err
 		}
 	}

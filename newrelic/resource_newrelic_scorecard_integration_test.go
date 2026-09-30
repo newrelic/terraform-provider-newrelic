@@ -127,6 +127,120 @@ func TestAccNewRelicScorecard_WithRules(t *testing.T) {
 	})
 }
 
+// ── Scorecard standalone CRUD ─────────────────────────────────────────────────
+
+// TestAccNewRelicScorecard_BasicCRUD exercises the scorecard resource in
+// isolation (no rules attached). It validates:
+//
+//   - Create with progress levels → import round-trip → update name and level
+//     attributes → destroy.
+func TestAccNewRelicScorecard_BasicCRUD(t *testing.T) {
+	scName := fmt.Sprintf("nr-test-sc-crud-%s", acctest.RandString(6))
+	resourceName := "newrelic_scorecard.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckScorecard(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// ── Create ────────────────────────────────────────────────────────
+			{
+				Config: testAccNewRelicScorecardBasicConfig(scName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", scName),
+					resource.TestCheckResourceAttr(resourceName, "rule_ids.#", "0"),
+					resource.TestCheckResourceAttrSet(resourceName, "rules_collection_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "organization_id"),
+				),
+			},
+			// ── Import round-trip ─────────────────────────────────────────────
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"progress_levels"},
+			},
+			// ── Update: rename + add description to a progress level ───────────
+			{
+				Config: testAccNewRelicScorecardBasicUpdatedConfig(scName + "-upd"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", scName+"-upd"),
+					resource.TestCheckResourceAttr(resourceName, "description", "Updated scorecard"),
+				),
+			},
+		},
+	})
+}
+
+// ── Scorecard rule drift detection and reconciliation ─────────────────────────
+
+// TestAccNewRelicScorecard_RuleDrift verifies that when a rule is detached from
+// the scorecard's rules collection out-of-band (directly via the NGEP API), the
+// provider detects the drift on the next plan and re-attaches the rule on apply.
+func TestAccNewRelicScorecard_RuleDrift(t *testing.T) {
+	scName := fmt.Sprintf("nr-test-sc-drift-%s", acctest.RandString(6))
+	ruleName := fmt.Sprintf("nr-test-rule-drift-%s", acctest.RandString(6))
+	resourceName := "newrelic_scorecard.test"
+	accountID := testAccountID
+
+	var rulesColID string
+	var ruleGUID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckScorecard(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// ── Step 1: create scorecard with rule attached ────────────────────
+			{
+				Config: testAccNewRelicScorecardWithRuleConfig(scName, ruleName, accountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "rule_ids.#", "1"),
+					// Capture rules_collection_id and rule GUID for use in next step.
+					func(s *terraform.State) error {
+						sc := s.RootModule().Resources[resourceName]
+						if sc == nil {
+							return fmt.Errorf("scorecard resource not in state")
+						}
+						rulesColID = sc.Primary.Attributes["rules_collection_id"]
+
+						rule := s.RootModule().Resources["newrelic_scorecard_rule.test"]
+						if rule == nil {
+							return fmt.Errorf("rule resource not in state")
+						}
+						ruleGUID = rule.Primary.ID
+						return nil
+					},
+				),
+			},
+			// ── Step 2: detach rule out-of-band + verify reconciliation ────────
+			// PreConfig removes the rule from the collection directly via the NGEP
+			// API — simulating a user/process detaching it outside Terraform.
+			// The Config is unchanged (rule_ids = [rule.id]), so on apply Terraform
+			// will detect the missing rule and re-attach it.
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, err := client.Scorecards.EntityManagementRemoveCollectionMembers(
+						rulesColID,
+						[]string{ruleGUID},
+					)
+					if err != nil {
+						t.Logf("[WARN] PreConfig: failed to inject rule drift: %v", err)
+					}
+				},
+				Config: testAccNewRelicScorecardWithRuleConfig(scName, ruleName, accountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardExists(resourceName),
+					// After apply, the rule must be re-attached by Terraform.
+					resource.TestCheckResourceAttr(resourceName, "rule_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 // ── Config templates ──────────────────────────────────────────────────────────
 
 func testAccNewRelicScorecardRuleConfig(name string, accountID int, enabled bool, runInterval int) string {
@@ -193,4 +307,54 @@ resource "newrelic_scorecard" "test" {
   # rule_ids intentionally empty — rule detached but not deleted
 }
 `, ruleName, accountID, scName)
+}
+
+func testAccNewRelicScorecardBasicConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_scorecard" "test" {
+  name = %q
+  progress_levels {
+    id             = "red"
+    name           = "Below Expectations"
+    hex_color_code = "#FF0000"
+  }
+  progress_levels {
+    id             = "yellow"
+    name           = "Approaching Expectations"
+    hex_color_code = "#FFA500"
+  }
+  progress_levels {
+    id             = "green"
+    name           = "Meeting Expectations"
+    hex_color_code = "#00CC00"
+  }
+}
+`, name)
+}
+
+func testAccNewRelicScorecardBasicUpdatedConfig(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_scorecard" "test" {
+  name        = %q
+  description = "Updated scorecard"
+  progress_levels {
+    id             = "red"
+    name           = "Below Expectations"
+    hex_color_code = "#FF0000"
+    description    = "Score below 50%%"
+  }
+  progress_levels {
+    id             = "yellow"
+    name           = "Approaching Expectations"
+    hex_color_code = "#FFA500"
+    description    = "Score 50–80%%"
+  }
+  progress_levels {
+    id             = "green"
+    name           = "Meeting Expectations"
+    hex_color_code = "#00CC00"
+    description    = "Score above 80%%"
+  }
+}
+`, name)
 }

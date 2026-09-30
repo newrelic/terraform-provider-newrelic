@@ -380,6 +380,14 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	// from state. The ownership collection is controlled by NGEP (tag discovery
 	// or manual UI); Terraform does not track or show drift for it.
 	mode := d.Get("entity_management_mode").(string)
+	// entity_management_mode is never stored by the API — it is Terraform-only
+	// state. On terraform import, d.Get() returns "" (the zero value). Default
+	// to "managed" so the imported state matches the schema Default and the
+	// ImportStateVerify round-trip passes.
+	if mode == "" {
+		mode = "managed"
+		_ = d.Set("entity_management_mode", "managed")
+	}
 	if mode == "unmanaged" {
 		_ = d.Set("entities", schema.NewSet(schema.HashString, []interface{}{}))
 		return nil
@@ -548,8 +556,12 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 		}
 	}
 	if d.HasChange("resources") {
-		upd.Resources = expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
-		has = true
+		if raw := d.Get("resources").([]interface{}); len(raw) > 0 {
+			upd.Resources = expandTeamResourcesUpdate(raw)
+			has = true
+		} else if err := clearTeamResourcesRaw(ctx, client, d.Id()); err != nil {
+			return upd, false, diag.Errorf("clearing resources on team %s: %v", d.Id(), err)
+		}
 	}
 	if d.HasChange("parent_id") {
 		if v := d.Get("parent_id").(string); v != "" {
