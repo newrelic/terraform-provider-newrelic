@@ -39,16 +39,11 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 				Optional:    true,
 				Description: "A description of the rule.",
 			},
-			// enabled uses schema.TypeBool which the Terraform SDK validates strictly:
-			// only true/false/1/0/yes/no are accepted; any other value produces a
-			// schema validation error before Create/Update is invoked.
 			"enabled": {
 				Type:        schema.TypeBool,
 				Required:    true,
-				Description: "Whether this rule is active. Disabled rules are not evaluated.",
+				Description: "Whether this rule is active. Set to false to pause evaluation without deleting the rule.",
 			},
-			// nrql_engine is required — it is the rule's evaluation query.
-			// Use runInterval + enabled (not schedule which is deprecated).
 			"nrql_engine": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -78,27 +73,18 @@ func resourceNewRelicScorecardRule() *schema.Resource {
 					},
 				},
 			},
-			// TODO: Confirm the valid upper bound for impact_weight with the Scorecards
-			// team — currently accepts any non-negative integer. Update the ValidateFunc
-			// and the resource documentation once the valid range is confirmed.
 			"impact_weight": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Description:  "Weight of this rule's impact on the overall scorecard score.",
+				Description:  "Relative weight of this rule's contribution to the overall scorecard score. Must be a non-negative integer. Omit for equal weighting across all rules.",
 				ValidateFunc: validation.IntAtLeast(0),
 			},
-			// progress_level references an ID defined in the parent scorecard's
-			// progress_levels. The value must match a progress_levels.id in the
-			// scorecard this rule is attached to. Leave empty for no level association.
 			"progress_level": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The progress level ID from the parent scorecard this rule maps to (e.g. 'red'). Must match a progress_levels.id defined on the scorecard.",
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			// run_interval controls how often the rule is evaluated (minutes).
-			// The API accepts only 60, 360, 720, or 1440 minutes.
-			// Do NOT use the deprecated 'schedule' field.
 			"run_interval": {
 				Type:     schema.TypeInt,
 				Optional: true,

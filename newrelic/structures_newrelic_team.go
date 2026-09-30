@@ -97,48 +97,68 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 
 // ── Expand helpers (Terraform state → API input) ──────────────────────────────
 
-// expandTeamResources converts the resources Terraform list to CreateInput.
+// teamResourceFields holds the parsed fields from a single resources block.
+// Shared by the Create and Update expand functions to avoid duplicating the
+// extraction logic.
+type teamResourceFields struct {
+	resourceType string
+	content      string
+	title        string
+}
+
+// extractTeamResourceFields parses one element of the resources TypeList into
+// a teamResourceFields struct. Returns nil if the element is not a valid map.
+func extractTeamResourceFields(raw interface{}) *teamResourceFields {
+	m, ok := raw.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	f := &teamResourceFields{
+		resourceType: m["type"].(string),
+		content:      m["content"].(string),
+	}
+	if title, ok := m["title"].(string); ok {
+		f.title = title
+	}
+	return f
+}
+
+// expandTeamResources converts the resources Terraform list to a CreateInput slice.
 func expandTeamResources(raw []interface{}) []scorecards.EntityManagementTeamResourceCreateInput {
 	if len(raw) == 0 {
 		return nil
 	}
 	out := make([]scorecards.EntityManagementTeamResourceCreateInput, 0, len(raw))
 	for _, r := range raw {
-		m, ok := r.(map[string]interface{})
-		if !ok {
+		f := extractTeamResourceFields(r)
+		if f == nil {
 			continue
 		}
-		res := scorecards.EntityManagementTeamResourceCreateInput{
-			Type:    m["type"].(string),
-			Content: m["content"].(string),
-		}
-		if title, ok := m["title"].(string); ok && title != "" {
-			res.Title = title
-		}
-		out = append(out, res)
+		out = append(out, scorecards.EntityManagementTeamResourceCreateInput{
+			Type:    f.resourceType,
+			Content: f.content,
+			Title:   f.title,
+		})
 	}
 	return out
 }
 
-// expandTeamResourcesUpdate converts the resources Terraform list to UpdateInput.
+// expandTeamResourcesUpdate converts the resources Terraform list to an UpdateInput slice.
 func expandTeamResourcesUpdate(raw []interface{}) []scorecards.EntityManagementTeamResourceUpdateInput {
 	if len(raw) == 0 {
 		return nil
 	}
 	out := make([]scorecards.EntityManagementTeamResourceUpdateInput, 0, len(raw))
 	for _, r := range raw {
-		m, ok := r.(map[string]interface{})
-		if !ok {
+		f := extractTeamResourceFields(r)
+		if f == nil {
 			continue
 		}
-		res := scorecards.EntityManagementTeamResourceUpdateInput{
-			Type:    m["type"].(string),
-			Content: m["content"].(string),
-		}
-		if title, ok := m["title"].(string); ok && title != "" {
-			res.Title = title
-		}
-		out = append(out, res)
+		out = append(out, scorecards.EntityManagementTeamResourceUpdateInput{
+			Type:    f.resourceType,
+			Content: f.content,
+			Title:   f.title,
+		})
 	}
 	return out
 }
@@ -177,26 +197,23 @@ func flattenTeamResources(res []scorecards.EntityManagementTeamResource) []map[s
 	return out
 }
 
-// flattenMemberUserIDs returns the []int directly for the members TypeSet,
-// which now stores plain ints rather than maps.
+// flattenMemberUserIDs returns the integer user ID slice for use with d.Set("members", ...).
 func flattenMemberUserIDs(userIDs []int) []int {
 	return userIDs
 }
 
-// flattenEntityGUIDs returns the GUID slice directly for the entities TypeSet,
-// which now stores plain strings rather than maps with a "guid" key.
+// flattenEntityGUIDs returns the GUID string slice for use with d.Set("entities", ...).
 func flattenEntityGUIDs(guids []string) []string {
 	return guids
 }
 
-// decodeManagerGUIDsToUserIDs converts the NGEP-encoded manager GUID list from
-// the TeamEntity back to integer userIDs using the GUID→userID map produced by
-// readTeamMembershipMap. This avoids a second API call on every Read and enables
-// idempotent manager state storage.
+// decodeManagerGUIDsToUserIDs converts the NGEP manager GUID list from the
+// TeamEntity back to integer user IDs using the GUID→userID map built by
+// readTeamMembershipMap. This avoids a second API call on every Read and keeps
+// the manager state idempotent.
 //
-// Returns nil when either argument is empty. Callers pass the result directly
-// to d.Set("managers", ...) — a nil value sets the managers attribute to an
-// empty set (count=0), which is correct when no managers have been configured.
+// Returns nil when either argument is empty; d.Set("managers", nil) sets the
+// attribute to an empty set, which is correct when no managers are configured.
 func decodeManagerGUIDsToUserIDs(managerGUIDs []string, memberGUIDToUserID map[string]int) []int {
 	if len(managerGUIDs) == 0 || len(memberGUIDToUserID) == 0 {
 		return nil

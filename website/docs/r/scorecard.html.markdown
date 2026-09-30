@@ -12,11 +12,9 @@ Use this resource to create, update, and delete [New Relic Scorecards](https://d
 
 Scorecards let you define and track engineering quality standards across your organization by grouping rules that evaluate NRQL-based checks against your entities.
 
--> **NOTE:** Rules are managed as separate [`newrelic_scorecard_rule`](scorecard_rule.html) resources. Use `rule_ids` to attach them. Each rule can only belong to **one scorecard at a time** — the API rejects attaching a rule that is already in another scorecard's collection.
+-> **NOTE:** Rules are managed as separate [`newrelic_scorecard_rule`](scorecard_rule.html) resources and attached via the `rule_ids` attribute. **Each rule can only belong to one scorecard at a time** — attaching a rule that is already assigned to another scorecard produces an error. Remove it from its current scorecard first.
 
--> **NOTE:** `progress_levels` are set at create time only. Adding, removing, or changing the *content* of a level requires resource recreation. **Reordering** the `progress_levels` blocks in your configuration does not require recreation — only content changes do. If omitted, the organization's default progress levels are applied.
-
--> **NOTE:** To assign a rule to a specific tier, set `progress_level` on the [`newrelic_scorecard_rule`](scorecard_rule.html) to match one of the `id` values in the `progress_levels` block below (e.g. `progress_level = "red"`). See [Progress Level Relationship](scorecard_rule.html#progress-level-relationship) for a full example.
+-> **NOTE:** To assign a rule to a specific progress tier, set `progress_level` on the [`newrelic_scorecard_rule`](scorecard_rule.html) to match one of the `id` values in this scorecard's `progress_levels` block (e.g. `progress_level = "red"`). See [Progress Level Relationship](scorecard_rule.html#progress-level-relationship) for a full example.
 
 ## Example Usage
 
@@ -35,11 +33,12 @@ resource "newrelic_scorecard_rule" "alert_coverage" {
 resource "newrelic_scorecard" "engineering" {
   name        = "Engineering Quality"
   description = "Tracks key observability standards across all APM services"
-  tag {
+
+  tags {
     key    = "team"
     values = ["platform"]
   }
-  tag {
+  tags {
     key    = "env"
     values = ["production"]
   }
@@ -69,45 +68,44 @@ resource "newrelic_scorecard" "engineering" {
 }
 ```
 
-See additional [examples](#additional-examples).
+See additional [examples](#additional-examples) below.
 
 ## Argument Reference
 
-The following arguments are supported:
-
-  * `name` - (Required) The name of the scorecard. Must not be empty.
-  * `description` - (Optional) A description of the scorecard's purpose. Can be cleared by setting to an empty string `""`.
-  * `tags` - (Optional) One or more nested `tag` blocks assigning tags to this resource. Each block requires a `key` (string) and `values` (list of strings). Tags managed by New Relic (prefixed with `nr.`) are preserved automatically.
-  * `progress_levels` - (Optional) One or more nested blocks defining the scorecard's scoring tiers. Adding, removing, or changing level values requires resource recreation; reordering existing blocks does not. See [Nested `progress_levels` blocks](#nested-progress_levels-blocks) below.
-  * `rule_ids` - (Optional) A set of `newrelic_scorecard_rule` entity GUIDs to attach to this scorecard. Each rule can only belong to one scorecard — removing a GUID detaches the rule (without deleting it) so it can be re-attached elsewhere.
-  * `organization_id` - (Computed) The NGEP organization UUID. Resolved automatically from the provider account — customers should not supply this.
+* `name` - (Required) The name of the scorecard. Must not be empty.
+* `description` - (Optional) A description of the scorecard's purpose.
+* `tags` - (Optional) One or more `tags` blocks assigning key-value metadata to this scorecard. Tags prefixed with `nr.` are managed by New Relic and are preserved automatically during updates. Each block supports:
+  * `key` - (Required) The tag key.
+  * `values` - (Required) One or more tag values.
+* `progress_levels` - (Optional, Computed) One or more blocks defining the scorecard's scoring tiers (e.g. Red / Amber / Green). Progress levels can be added, updated, or removed in-place without recreating the scorecard. If omitted, the organization's default levels are applied and stored in state. See [Nested `progress_levels` blocks](#nested-progress_levels-blocks) below.
+* `rule_ids` - (Optional) A set of `newrelic_scorecard_rule` entity GUIDs to attach to this scorecard. Removing a GUID detaches the rule without deleting it, making it available to attach to another scorecard.
 
 ### Nested `progress_levels` blocks
 
-Each `progress_levels` block defines one scoring tier. The `id` values are also used by `newrelic_scorecard_rule.progress_level` to assign rules to tiers.
+Each `progress_levels` block defines one scoring tier. The `id` value is referenced by `newrelic_scorecard_rule.progress_level` to visually group rules under that tier in the UI.
 
-  * `id` - (Required) A machine identifier for this tier, referenced by rule's `progress_level` (e.g. `"red"`, `"amber"`, `"green"`). Changing this value requires resource recreation.
-  * `name` - (Required) The display label shown in the New Relic UI (e.g. `"Needs Work"`). Changing this value requires resource recreation.
-  * `description` - (Optional) A short description of what this tier means. Changing this value requires resource recreation.
-  * `hex_color_code` - (Optional) Hex color code for the tier indicator badge, e.g. `"#FF0000"`. Must be 4–9 characters. Changing this value requires resource recreation.
+* `id` - (Required) A short identifier for this tier, used by rule's `progress_level` field (e.g. `"red"`, `"amber"`, `"green"`).
+* `name` - (Required) The display label shown in the New Relic UI (e.g. `"Needs Work"`).
+* `description` - (Optional) A short description of what this tier represents.
+* `hex_color_code` - (Optional) Hex color code for the tier indicator badge, e.g. `"#FF4444"`. Must be 4–9 characters.
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all arguments above, the following computed attributes are exported:
 
-  * `id` - The entity GUID of the scorecard.
-  * `rules_collection_id` - The GUID of the auto-created rules collection. This collection is managed by the provider via `rule_ids` and should not be modified directly.
+* `id` - The entity GUID of the scorecard.
+* `organization_id` - The organization UUID, resolved automatically from the provider account.
+* `rules_collection_id` - The GUID of the auto-created rules collection. Managed by the provider via `rule_ids`; do not modify directly.
 
 ## Additional Examples
 
 ### Scorecard with no custom progress levels
 
-When `progress_levels` is omitted the organization's default levels are applied automatically.
+When `progress_levels` is omitted, the organization's default levels are applied and stored in state automatically.
 
 ```hcl
 resource "newrelic_scorecard" "minimal" {
-  name = "Service Health Check"
-
+  name     = "Service Health"
   rule_ids = [newrelic_scorecard_rule.alert_coverage.id]
 }
 ```
@@ -115,9 +113,10 @@ resource "newrelic_scorecard" "minimal" {
 ### Attaching multiple rules
 
 ```hcl
-resource "newrelic_scorecard" "platform" {
+resource "newrelic_scorecard" "platform_standards" {
   name = "Platform Standards"
-  tag {
+
+  tags {
     key    = "team"
     values = ["platform"]
   }
@@ -127,6 +126,35 @@ resource "newrelic_scorecard" "platform" {
     newrelic_scorecard_rule.latency_threshold.id,
     newrelic_scorecard_rule.error_rate.id,
   ]
+}
+```
+
+### Updating progress levels in place
+
+Progress levels can be changed without recreating the scorecard.
+
+```hcl
+resource "newrelic_scorecard" "engineering" {
+  name = "Engineering Standards"
+
+  progress_levels {
+    id             = "bronze"
+    name           = "Bronze"
+    description    = "Baseline requirements met"
+    hex_color_code = "#CD7F32"
+  }
+  progress_levels {
+    id             = "silver"
+    name           = "Silver"
+    description    = "Strong operational posture"
+    hex_color_code = "#C0C0C0"
+  }
+  progress_levels {
+    id             = "gold"
+    name           = "Gold"
+    description    = "Exemplary reliability and observability"
+    hex_color_code = "#FFD700"
+  }
 }
 ```
 

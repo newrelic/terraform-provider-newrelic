@@ -90,56 +90,72 @@ func isExclusiveMembershipError(err error) bool {
 
 // ── Progress levels ───────────────────────────────────────────────────────────
 
-// expandProgressLevels converts the progress_levels Terraform set to CreateInput slice.
+// progressLevelFields holds the parsed values from a single progress_levels block.
+// Shared by the Create and Update expand functions to avoid duplicating extraction logic.
+type progressLevelFields struct {
+	id           string
+	name         string
+	description  string
+	hexColorCode string
+}
+
+// extractProgressLevelFields parses one element of the progress_levels TypeSet
+// into a progressLevelFields struct.
+func extractProgressLevelFields(raw interface{}) progressLevelFields {
+	m := raw.(map[string]interface{})
+	f := progressLevelFields{
+		id:   m["id"].(string),
+		name: m["name"].(string),
+	}
+	if v, ok := m["description"].(string); ok {
+		f.description = v
+	}
+	if v, ok := m["hex_color_code"].(string); ok {
+		f.hexColorCode = v
+	}
+	return f
+}
+
+// expandProgressLevels converts the progress_levels Terraform set to a CreateInput slice.
 func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionCreateInput {
 	if len(raw) == 0 {
 		return nil
 	}
 	out := make([]scorecards.EntityManagementProgressLevelDefinitionCreateInput, 0, len(raw))
 	for _, r := range raw {
-		m := r.(map[string]interface{})
-		pl := scorecards.EntityManagementProgressLevelDefinitionCreateInput{
-			ID:   m["id"].(string),
-			Name: m["name"].(string),
-		}
-		if v, ok := m["description"].(string); ok {
-			pl.Description = v
-		}
-		if v, ok := m["hex_color_code"].(string); ok {
-			pl.HexColorCode = v
-		}
-		out = append(out, pl)
+		f := extractProgressLevelFields(r)
+		out = append(out, scorecards.EntityManagementProgressLevelDefinitionCreateInput{
+			ID:           f.id,
+			Name:         f.name,
+			Description:  f.description,
+			HexColorCode: f.hexColorCode,
+		})
 	}
 	return out
 }
 
-// expandProgressLevelsUpdate converts the progress_levels Terraform set to UpdateInput slice.
-// The UpdateInput type has identical fields to CreateInput; it differs only in name.
+// expandProgressLevelsUpdate converts the progress_levels Terraform set to an UpdateInput slice.
+// The Update and Create input types have identical fields; they differ in generated name only.
 func expandProgressLevelsUpdate(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionUpdateInput {
 	if len(raw) == 0 {
 		return nil
 	}
 	out := make([]scorecards.EntityManagementProgressLevelDefinitionUpdateInput, 0, len(raw))
 	for _, r := range raw {
-		m := r.(map[string]interface{})
-		pl := scorecards.EntityManagementProgressLevelDefinitionUpdateInput{
-			ID:   m["id"].(string),
-			Name: m["name"].(string),
-		}
-		if v, ok := m["description"].(string); ok {
-			pl.Description = v
-		}
-		if v, ok := m["hex_color_code"].(string); ok {
-			pl.HexColorCode = v
-		}
-		out = append(out, pl)
+		f := extractProgressLevelFields(r)
+		out = append(out, scorecards.EntityManagementProgressLevelDefinitionUpdateInput{
+			ID:           f.id,
+			Name:         f.name,
+			Description:  f.description,
+			HexColorCode: f.hexColorCode,
+		})
 	}
 	return out
 }
 
-// progressLevelsCreateToRead converts CreateInput slices to the Definition type used by
-// flattenProgressLevels. The two types have identical fields so each element is a
-// direct cast. Used by Create to set state without issuing a Read round-trip.
+// progressLevelsCreateToRead converts a CreateInput slice to the Definition type used by
+// flattenProgressLevels. The two types have identical fields so each element is a direct
+// cast. Used by Create to populate state without issuing a Read round-trip.
 func progressLevelsCreateToRead(in []scorecards.EntityManagementProgressLevelDefinitionCreateInput) []scorecards.EntityManagementProgressLevelDefinition {
 	out := make([]scorecards.EntityManagementProgressLevelDefinition, len(in))
 	for i, p := range in {

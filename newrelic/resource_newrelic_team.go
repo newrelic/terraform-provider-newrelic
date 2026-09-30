@@ -519,16 +519,16 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 // resourceNewRelicTeamUpdate to keep cyclomatic complexity manageable.
 func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, client *newrelic.NewRelic) (scorecards.EntityManagementTeamEntityUpdateInput, bool, diag.Diagnostics) {
 	upd := scorecards.EntityManagementTeamEntityUpdateInput{}
-	has := false
+	hasPendingChange := false
 
 	if d.HasChange("name") {
 		upd.Name = d.Get("name").(string)
-		has = true
+		hasPendingChange = true
 	}
 	if d.HasChange("description") {
 		if v := d.Get("description").(string); v != "" {
 			upd.Description = v
-			has = true
+			hasPendingChange = true
 		} else if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
 			return upd, false, diag.Errorf("clearing description on team %s: %v", d.Id(), err)
 		}
@@ -538,7 +538,7 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 			for _, a := range al {
 				upd.Aliases = append(upd.Aliases, a.(string))
 			}
-			has = true
+			hasPendingChange = true
 		} else if err := clearTeamAliasesRaw(ctx, client, d.Id()); err != nil {
 			return upd, false, diag.Errorf("clearing aliases on team %s: %v", d.Id(), err)
 		}
@@ -550,7 +550,7 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 		)
 		if len(merged) > 0 {
 			upd.Tags = merged
-			has = true
+			hasPendingChange = true
 		} else if err := clearTeamTagsRaw(ctx, client, d.Id()); err != nil {
 			return upd, false, diag.Errorf("clearing tags on team %s: %v", d.Id(), err)
 		}
@@ -558,7 +558,7 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 	if d.HasChange("resources") {
 		if raw := d.Get("resources").([]interface{}); len(raw) > 0 {
 			upd.Resources = expandTeamResourcesUpdate(raw)
-			has = true
+			hasPendingChange = true
 		} else if err := clearTeamResourcesRaw(ctx, client, d.Id()); err != nil {
 			return upd, false, diag.Errorf("clearing resources on team %s: %v", d.Id(), err)
 		}
@@ -566,12 +566,12 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 	if d.HasChange("parent_id") {
 		if v := d.Get("parent_id").(string); v != "" {
 			upd.ParentId = v
-			has = true
+			hasPendingChange = true
 		} else if err := clearTeamParentID(ctx, client, d.Id()); err != nil {
 			return upd, false, diag.FromErr(err)
 		}
 	}
-	return upd, has, nil
+	return upd, hasPendingChange, nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
