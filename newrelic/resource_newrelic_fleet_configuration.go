@@ -2,6 +2,7 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
@@ -69,6 +70,24 @@ func resourceNewRelicFleetConfiguration() *schema.Resource {
 				Required:    true,
 				Description: "The configuration content (YAML or JSON). Use file() to load from a file. Each change to this field creates a new immutable version on the API.",
 			},
+			"configuration_type": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"legacy_config"},
+				ValidateFunc: validation.StringInSlice([]string{
+					"AgentConfig",
+				}, false),
+				Description: "The configuration type. Currently only \"AgentConfig\" is supported, and it is the default - a fleet configuration can no longer be created with a null configuration type through this field. Use legacy_config = true instead to create a legacy configuration. This is an interim restriction pending further product guidance and may change. Cannot be changed after creation.",
+			},
+			"legacy_config": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"configuration_type"},
+				Description:   "Set to true to create a legacy configuration with no configuration type (null), instead of the default \"AgentConfig\". Mutually exclusive with configuration_type. Cannot be changed after creation.",
+			},
 			"organization_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -116,6 +135,14 @@ func resourceNewRelicFleetConfigurationCustomizeDiff(_ context.Context, d *schem
 	}
 	if managedEntityType == "KUBERNETESCLUSTER" && hasOS {
 		return fmt.Errorf("operating_system must not be set when managed_entity_type is KUBERNETESCLUSTER")
+	}
+
+	agentType := d.Get("agent_type").(string)
+	if v, ok := d.GetOk("configuration_type"); ok && fleetConfigurationMustStayLegacy(agentType, managedEntityType) {
+		return fmt.Errorf(
+			"agent_type %q / managed_entity_type %q must use a legacy configuration; omit configuration_type or set legacy_config = true (got configuration_type = %q)",
+			agentType, managedEntityType, v.(string),
+		)
 	}
 
 	if d.HasChange("configuration_content") {
@@ -172,6 +199,10 @@ func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schem
 	if entity.OperatingSystem.Type != "" {
 		_ = d.Set("operating_system", string(entity.OperatingSystem.Type))
 	}
+	if entity.ConfigurationType != "" {
+		_ = d.Set("configuration_type", entity.ConfigurationType)
+	}
+	_ = d.Set("legacy_config", entity.ConfigurationType == "")
 	if entity.Scope.ID != "" {
 		_ = d.Set("organization_id", entity.Scope.ID)
 	}
@@ -188,12 +219,29 @@ func resourceNewRelicFleetConfigurationCreate(ctx context.Context, d *schema.Res
 	}
 
 	content := d.Get("configuration_content").(string)
-	entityMeta := fleetConfigBuildEntityMeta(
+	agentType := d.Get("agent_type").(string)
+	managedEntityType := d.Get("managed_entity_type").(string)
+
+	// Resolve the configuration_type to send: defaults to "AgentConfig" unless legacy_config is
+	// true, or the agent/managed-entity type is forced legacy regardless of user input.
+	// CustomizeDiff already rejects an explicit configuration_type on a forced-legacy type.
+	configurationType := d.Get("configuration_type").(string)
+	if d.Get("legacy_config").(bool) || fleetConfigurationMustStayLegacy(agentType, managedEntityType) {
+		configurationType = ""
+	} else if configurationType == "" {
+		configurationType = "AgentConfig"
+	}
+
+	entityMeta, err := fleetConfigBuildEntityMeta(
 		d.Get("name").(string),
-		d.Get("agent_type").(string),
-		d.Get("managed_entity_type").(string),
+		agentType,
+		managedEntityType,
 		d.Get("operating_system").(string),
+		configurationType,
 	)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to build entity header: %w", err))
+	}
 
 	result, err := providerConfig.NewClient.FleetControl.FleetControlCreateConfiguration(
 		[]byte(content),
@@ -211,6 +259,8 @@ func resourceNewRelicFleetConfigurationCreate(ctx context.Context, d *schema.Res
 	d.SetId(result.ConfigurationEntityGUID)
 	_ = d.Set("configuration_id", result.ConfigurationEntityGUID)
 	_ = d.Set("organization_id", organizationID)
+	_ = d.Set("configuration_type", configurationType)
+	_ = d.Set("legacy_config", configurationType == "")
 
 	log.Printf("[DEBUG] Created fleet configuration: %s", result.ConfigurationEntityGUID)
 
@@ -456,16 +506,35 @@ func isFleetNotFoundError(err error) bool {
 	return strings.Contains(msg, "not found") || strings.Contains(msg, "resource not found")
 }
 
+// fleetConfigEntityHeader is the entity metadata sent to the Blob Service via the
+// Newrelic-Entity custom header when creating a fleet configuration.
+type fleetConfigEntityHeader struct {
+	Name              string                            `json:"name"`
+	AgentType         string                            `json:"agentType"`
+	ManagedEntityType string                            `json:"managedEntityType"`
+	OperatingSystem   *fleetConfigOperatingSystemHeader `json:"operatingSystem,omitempty"`
+	ConfigurationType string                            `json:"configurationType,omitempty"`
+}
+
+type fleetConfigOperatingSystemHeader struct {
+	Type string `json:"type"`
+}
+
 // fleetConfigBuildEntityMeta builds the JSON string for the Newrelic-Entity header.
-func fleetConfigBuildEntityMeta(name, agentType, managedEntityType, operatingSystem string) string {
-	if operatingSystem != "" {
-		return fmt.Sprintf(
-			`{"name": "%s", "agentType": "%s", "managedEntityType": "%s", "operatingSystem": {"type": "%s"}}`,
-			name, agentType, managedEntityType, operatingSystem,
-		)
+func fleetConfigBuildEntityMeta(name, agentType, managedEntityType, operatingSystem, configurationType string) (string, error) {
+	header := fleetConfigEntityHeader{
+		Name:              name,
+		AgentType:         agentType,
+		ManagedEntityType: managedEntityType,
+		ConfigurationType: configurationType,
 	}
-	return fmt.Sprintf(
-		`{"name": "%s", "agentType": "%s", "managedEntityType": "%s"}`,
-		name, agentType, managedEntityType,
-	)
+	if operatingSystem != "" {
+		header.OperatingSystem = &fleetConfigOperatingSystemHeader{Type: operatingSystem}
+	}
+
+	b, err := json.Marshal(header)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
