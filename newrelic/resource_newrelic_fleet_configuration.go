@@ -199,9 +199,11 @@ func resourceNewRelicFleetConfigurationImportState(ctx context.Context, d *schem
 	if entity.OperatingSystem.Type != "" {
 		_ = d.Set("operating_system", string(entity.OperatingSystem.Type))
 	}
-	if entity.ConfigurationType != "" {
-		_ = d.Set("configuration_type", entity.ConfigurationType)
-	}
+	// Set unconditionally (even when empty) to match Create, which also always sets it -
+	// configuration_type is Optional+Computed, and leaving it untouched here for a legacy
+	// (empty) config would make it read back as absent post-import instead of "", failing
+	// ImportStateVerify against the "" the Create step already put in state.
+	_ = d.Set("configuration_type", entity.ConfigurationType)
 	_ = d.Set("legacy_config", entity.ConfigurationType == "")
 	if entity.Scope.ID != "" {
 		_ = d.Set("organization_id", entity.Scope.ID)
