@@ -1,3 +1,14 @@
+<a name="v3.100.0"></a>
+## [v3.100.0] - 2026-09-30
+### Bug Fixes
+- **oci:** derive home region for vault secret lookup ([#3248](https://github.com/newrelic/terraform-provider-newrelic/issues/3248))
+
+### Documentation Updates
+- **oci:** default metrics_tier to basic and link dashboard setup docs ([#3250](https://github.com/newrelic/terraform-provider-newrelic/issues/3250))
+
+### Features
+- **cloud:** add edge_container service to newrelic_cloud_gcp_dm_integrations ([#3245](https://github.com/newrelic/terraform-provider-newrelic/issues/3245))
+
 <a name="v3.99.3"></a>
 ## [v3.99.3] - 2026-09-25
 ### Documentation Updates
@@ -2897,7 +2908,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.0...HEAD
+[v3.100.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.3...v3.100.0
 [v3.99.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.2...v3.99.3
 [v3.99.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.1...v3.99.2
 [v3.99.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.0...v3.99.1
