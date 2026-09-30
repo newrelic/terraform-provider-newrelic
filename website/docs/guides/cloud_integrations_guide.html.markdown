@@ -659,7 +659,7 @@ module "oci_logs_integration" {
   batch_time_in_sec     = 60   # max wait time in seconds before sending batch (default 60)
 
   # forwarder self-monitoring metrics (Optional)
-  metrics_tier = "none" # "none" (default), "basic", or "advanced"
+  metrics_tier = "basic" # "none", "basic" (default), or "advanced"
 }
 ```
 
@@ -678,7 +678,7 @@ Key variables:
   - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
   - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
   - `image_version`: Docker image version for the logging function (defaults to "latest").
-  - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (default, no custom metrics), `basic` (core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest, so they're opt-in.
+  - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (no custom metrics), `basic` (default, core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest. For more details on setting up a dashboard, refer to [OCI Log Forwarder Observability](https://docs.newrelic.com/docs/logs/forward-logs/oci-log-forwarder-observability/).
 - connector hub configuration (`connector_hub_details`): A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
   * `display_name` (string) : name of the connector hub - must have prefix `newrelic-logs`
   * `description` (string) (optional): connector hub description
