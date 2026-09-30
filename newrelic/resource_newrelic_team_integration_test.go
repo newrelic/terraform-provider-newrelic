@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
 // testEntityGUID is a stable APM application GUID in account 3806526 used
@@ -318,6 +319,205 @@ func TestAccNewRelicTeam_EntityDrift(t *testing.T) {
 	})
 }
 
+// ── 7. Entity removal drift ───────────────────────────────────────────────────
+
+// TestAccNewRelicTeam_EntityRemovalDrift verifies the mirror image of the entity
+// addition drift test: when an entity is *removed* from the ownership collection
+// out-of-band, the provider detects that the declared entity is missing and
+// re-adds it on the next apply.
+//
+// Uses one team as the owned entity of another to avoid ownership-collection
+// conflicts with other parallel tests that also use testEntityGUID.
+func TestAccNewRelicTeam_EntityRemovalDrift(t *testing.T) {
+	ownerName := fmt.Sprintf("tf-acc-team-rmown-%s", acctest.RandString(6))
+	ownedName := fmt.Sprintf("tf-acc-team-rmwnd-%s", acctest.RandString(6))
+	ownerResource := "newrelic_team.owner"
+
+	var ownershipColID string
+	var ownedTeamID string
+
+	// Run serially — entity ownership changes share state that could conflict
+	// with other parallel tests if the same entity GUID is used twice.
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckTeam(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicTeamDestroy(ownerResource),
+		Steps: []resource.TestStep{
+			// ── Step 1: owner team declares entity ownership over owned team ───────
+			{
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+					func(s *terraform.State) error {
+						ownerRS := s.RootModule().Resources[ownerResource]
+						ownershipColID = ownerRS.Primary.Attributes["ownership_collection_id"]
+						ownedRS := s.RootModule().Resources["newrelic_team.owned"]
+						if ownedRS == nil {
+							return fmt.Errorf("newrelic_team.owned not found in state")
+						}
+						ownedTeamID = ownedRS.Primary.ID
+						return nil
+					},
+				),
+			},
+			// ── Step 2: remove entity from collection out-of-band + reconcile ────
+			// PreConfig removes the owned team's GUID from the owner's collection,
+			// simulating a user or external process detaching it manually. The config
+			// still declares entities = [owned.id], so Terraform must re-add it.
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, err := client.Scorecards.EntityManagementRemoveCollectionMembers(
+						ownershipColID,
+						[]string{ownedTeamID},
+					)
+					if err != nil {
+						t.Logf("[WARN] PreConfig: failed to remove entity from collection: %v", err)
+					}
+				},
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					// After apply, Terraform must have re-added the entity.
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+// ── 8. Core team field drift ──────────────────────────────────────────────────
+
+// TestAccNewRelicTeam_CoreFieldDrift verifies that out-of-band changes to core
+// team attributes — description and aliases — are detected by the Read function
+// and reconciled on the next apply.
+func TestAccNewRelicTeam_CoreFieldDrift(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-team-coredft-%s", acctest.RandString(6))
+	resourceName := "newrelic_team.test"
+
+	var teamID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckTeam(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicTeamDestroy(resourceName),
+		Steps: []resource.TestStep{
+			// ── Step 1: create team with description and alias ────────────────────
+			{
+				Config: testAccNewRelicTeamConfigWithDescriptionAndAlias(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "description", "Core field drift test"),
+					resource.TestCheckResourceAttr(resourceName, "aliases.#", "1"),
+					func(s *terraform.State) error {
+						teamID = s.RootModule().Resources[resourceName].Primary.ID
+						return nil
+					},
+				),
+			},
+			// ── Step 2: change description out-of-band + reconcile ────────────────
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, err := client.Scorecards.EntityManagementUpdateTeam(teamID,
+						scorecards.EntityManagementTeamEntityUpdateInput{
+							Description: "description changed out-of-band",
+						})
+					if err != nil {
+						t.Logf("[WARN] PreConfig: failed to drift description: %v", err)
+					}
+				},
+				Config: testAccNewRelicTeamConfigWithDescriptionAndAlias(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(resourceName),
+					// Terraform must have restored the declared description.
+					resource.TestCheckResourceAttr(resourceName, "description", "Core field drift test"),
+				),
+			},
+		},
+	})
+}
+
+// ── 9. Mode transition with interleaved entity drift ─────────────────────────
+
+// TestAccNewRelicTeam_ModeTransitionWithDrift combines the mode transition
+// lifecycle with an entity drift injection. It verifies:
+//
+//  1. Managed mode: entity declared, drift detected and removed on apply.
+//  2. Switch to unmanaged: collection left intact, entities cleared from state.
+//  3. Switch back to managed: entity re-tracked from declared config.
+func TestAccNewRelicTeam_ModeTransitionWithDrift(t *testing.T) {
+	ownerName := fmt.Sprintf("tf-acc-team-mtdft-%s", acctest.RandString(6))
+	ownedName := fmt.Sprintf("tf-acc-team-mtdwn-%s", acctest.RandString(6))
+	ownerResource := "newrelic_team.owner"
+
+	var ownershipColID string
+	var ownedTeamID string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckTeam(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicTeamDestroy(ownerResource),
+		Steps: []resource.TestStep{
+			// ── Step 1: managed mode — declare entity ownership ───────────────────
+			{
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entity_management_mode", "managed"),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+					func(s *terraform.State) error {
+						ownerRS := s.RootModule().Resources[ownerResource]
+						ownershipColID = ownerRS.Primary.Attributes["ownership_collection_id"]
+						ownedRS := s.RootModule().Resources["newrelic_team.owned"]
+						if ownedRS == nil {
+							return fmt.Errorf("newrelic_team.owned not in state")
+						}
+						ownedTeamID = ownedRS.Primary.ID
+						return nil
+					},
+				),
+			},
+			// ── Step 2: inject drift + reconcile while still in managed mode ──────
+			// Remove the owned entity from the collection — Terraform must re-add it.
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, err := client.Scorecards.EntityManagementRemoveCollectionMembers(
+						ownershipColID, []string{ownedTeamID})
+					if err != nil {
+						t.Logf("[WARN] PreConfig: entity removal: %v", err)
+					}
+				},
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+			// ── Step 3: switch to unmanaged ────────────────────────────────────────
+			// Entities cleared from state; collection left intact.
+			{
+				Config: testAccNewRelicTeamConfigOwnerUnmanaged(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entity_management_mode", "unmanaged"),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "0"),
+				),
+			},
+			// ── Step 4: switch back to managed + re-declare entity ─────────────────
+			{
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entity_management_mode", "managed"),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 // ── Check helpers ──────────────────────────────────────────────────────────────
 
 func testAccCheckNewRelicTeamExists(resourceName string) resource.TestCheckFunc {
@@ -498,4 +698,48 @@ resource "newrelic_team" "test" {
   entities               = []
 }
 `, name)
+}
+
+// testAccNewRelicTeamConfigOwnerOwned creates two teams: "owned" and "owner",
+// where "owner" declares managed entity ownership over "owned". Used by entity
+// removal drift and mode-transition-with-drift tests.
+func testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "owned" {
+  name = %q
+}
+
+resource "newrelic_team" "owner" {
+  name                   = %q
+  entity_management_mode = "managed"
+  entities               = [newrelic_team.owned.id]
+}
+`, ownedName, ownerName)
+}
+
+// testAccNewRelicTeamConfigOwnerUnmanaged switches "owner" to unmanaged mode
+// while keeping "owned" alive. Used in mode-transition-with-drift step 3.
+func testAccNewRelicTeamConfigOwnerUnmanaged(ownerName, ownedName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "owned" {
+  name = %q
+}
+
+resource "newrelic_team" "owner" {
+  name                   = %q
+  entity_management_mode = "unmanaged"
+}
+`, ownedName, ownerName)
+}
+
+// testAccNewRelicTeamConfigWithDescriptionAndAlias creates a team with a
+// description and alias, used by the core field drift test.
+func testAccNewRelicTeamConfigWithDescriptionAndAlias(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "test" {
+  name        = %q
+  description = "Core field drift test"
+  aliases     = ["%s-alias"]
+}
+`, name, name)
 }

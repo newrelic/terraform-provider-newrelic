@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
 // ── acceptance test helpers ───────────────────────────────────────────────────
@@ -241,6 +242,127 @@ func TestAccNewRelicScorecard_RuleDrift(t *testing.T) {
 	})
 }
 
+// ── Scorecard extra-rule drift ────────────────────────────────────────────────
+
+// TestAccNewRelicScorecard_ExtraRuleDrift verifies the + direction of rule drift:
+// when an extra rule is injected into the scorecard's rules collection out-of-band,
+// the provider detects it on the next plan and removes it on apply, restoring
+// the collection to exactly the rules declared in rule_ids.
+func TestAccNewRelicScorecard_ExtraRuleDrift(t *testing.T) {
+	scName := fmt.Sprintf("nr-test-sc-xtra-%s", acctest.RandString(6))
+	rule1Name := fmt.Sprintf("nr-test-rule-xtra1-%s", acctest.RandString(6))
+	rule2Name := fmt.Sprintf("nr-test-rule-xtra2-%s", acctest.RandString(6))
+	resourceName := "newrelic_scorecard.test"
+	accountID := testAccountID
+
+	var rulesColID string
+	var extraRuleID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckScorecard(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// ── Step 1: create scorecard with one rule; create extra rule separately
+			// The extra rule is a managed resource but NOT in rule_ids.
+			{
+				Config: testAccNewRelicScorecardExtraRuleDriftConfig(scName, rule1Name, rule2Name, accountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "rule_ids.#", "1"),
+					func(s *terraform.State) error {
+						sc := s.RootModule().Resources[resourceName]
+						if sc == nil {
+							return fmt.Errorf("scorecard not in state")
+						}
+						rulesColID = sc.Primary.Attributes["rules_collection_id"]
+						extra := s.RootModule().Resources["newrelic_scorecard_rule.extra"]
+						if extra == nil {
+							return fmt.Errorf("extra rule not in state")
+						}
+						extraRuleID = extra.Primary.ID
+						return nil
+					},
+				),
+			},
+			// ── Step 2: inject extra rule out-of-band + verify removal on apply ───
+			// PreConfig attaches rule2 directly to the collection. Config still
+			// declares only rule1 in rule_ids. Terraform must detect and remove rule2.
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, err := client.Scorecards.EntityManagementAddCollectionMembers(
+						rulesColID,
+						[]string{extraRuleID},
+					)
+					if err != nil {
+						t.Logf("[WARN] PreConfig: failed to inject extra rule: %v", err)
+					}
+				},
+				Config: testAccNewRelicScorecardExtraRuleDriftConfig(scName, rule1Name, rule2Name, accountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardExists(resourceName),
+					// After apply, only the declared rule must remain.
+					resource.TestCheckResourceAttr(resourceName, "rule_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+// ── Scorecard rule attribute drift ────────────────────────────────────────────
+
+// TestAccNewRelicScorecardRule_AttributeDrift verifies that an out-of-band
+// attribute change on a rule — specifically disabling it via the API — is
+// detected on the next plan and corrected on apply.
+func TestAccNewRelicScorecardRule_AttributeDrift(t *testing.T) {
+	rName := fmt.Sprintf("nr-test-rule-attdft-%s", acctest.RandString(6))
+	resourceName := "newrelic_scorecard_rule.test"
+	accountID := testAccountID
+
+	var ruleID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheckScorecard(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			// ── Step 1: create rule with enabled = true ───────────────────────────
+			{
+				Config: testAccNewRelicScorecardRuleConfig(rName, accountID, true, 1440),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardRuleExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					func(s *terraform.State) error {
+						ruleID = s.RootModule().Resources[resourceName].Primary.ID
+						return nil
+					},
+				),
+			},
+			// ── Step 2: disable rule out-of-band + verify re-enable on apply ──────
+			// The UpdateScorecardRule input requires Description always be sent
+			// (no omitempty). Since this test rule has no description, "" is correct.
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, err := client.Scorecards.EntityManagementUpdateScorecardRule(ruleID,
+						scorecards.EntityManagementScorecardRuleEntityUpdateInput{
+							Enabled:     false,
+							Description: "",
+						})
+					if err != nil {
+						t.Logf("[WARN] PreConfig: failed to disable rule: %v", err)
+					}
+				},
+				Config: testAccNewRelicScorecardRuleConfig(rName, accountID, true, 1440),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicScorecardRuleExists(resourceName),
+					// After apply, Terraform must have re-enabled the rule.
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
 // ── Config templates ──────────────────────────────────────────────────────────
 
 func testAccNewRelicScorecardRuleConfig(name string, accountID int, enabled bool, runInterval int) string {
@@ -357,4 +479,35 @@ resource "newrelic_scorecard" "test" {
   }
 }
 `, name)
+}
+
+// testAccNewRelicScorecardExtraRuleDriftConfig creates one scorecard with rule1
+// attached (via rule_ids) and rule2 as an independent rule not attached to any
+// scorecard. Used by TestAccNewRelicScorecard_ExtraRuleDrift.
+func testAccNewRelicScorecardExtraRuleDriftConfig(scName, rule1Name, rule2Name string, accountID int) string {
+	nrqlQuery := "SELECT if(latest(alertSeverity) != 'NOT_CONFIGURED', 1, 0) AS 'score' FROM Entity WHERE type = 'APM-APPLICATION' FACET id LIMIT MAX SINCE 1 day ago"
+	return fmt.Sprintf(`
+resource "newrelic_scorecard_rule" "attached" {
+  name    = %q
+  enabled = true
+  nrql_engine {
+    accounts = [%d]
+    query    = %q
+  }
+}
+
+resource "newrelic_scorecard_rule" "extra" {
+  name    = %q
+  enabled = true
+  nrql_engine {
+    accounts = [%d]
+    query    = %q
+  }
+}
+
+resource "newrelic_scorecard" "test" {
+  name     = %q
+  rule_ids = [newrelic_scorecard_rule.attached.id]
+}
+`, rule1Name, accountID, nrqlQuery, rule2Name, accountID, nrqlQuery, scName)
 }
