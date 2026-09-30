@@ -164,6 +164,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "main" {
   firebase_vertex_ai { metrics_polling_interval = var.metrics_polling_interval } # metrics only
   managed_kafka { metrics_polling_interval = var.metrics_polling_interval }
   memory_store { metrics_polling_interval = var.metrics_polling_interval }
+  edge_container { metrics_polling_interval = var.metrics_polling_interval } # metrics only, no entity support
 }
 
 # ── Outputs ────────────────────────────────────────────────────────────────────
