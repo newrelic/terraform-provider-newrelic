@@ -319,7 +319,58 @@ func TestAccNewRelicTeam_EntityDrift(t *testing.T) {
 	})
 }
 
-// ── 7. Entity removal drift ───────────────────────────────────────────────────
+// ── 7. Entities absent from config — collection and state untouched ───────────
+
+// TestAccNewRelicTeam_EntitiesAbsentPreservesCollection verifies the Computed:true
+// carry-forward guarantee: when the entities block is omitted entirely from an
+// update config (not even entities = []), Terraform must not plan a removal,
+// must not touch the ownership collection, and the entities must remain in state.
+//
+// This is the key property that made the old isEntitiesAttributeConfigured guard
+// redundant: d.HasChange("entities") returns false for absent blocks because the
+// planned value equals the prior state value, so the sync is never triggered.
+func TestAccNewRelicTeam_EntitiesAbsentPreservesCollection(t *testing.T) {
+	ownerName := fmt.Sprintf("tf-acc-team-noent-%s", acctest.RandString(6))
+	ownedName := fmt.Sprintf("tf-acc-team-noewn-%s", acctest.RandString(6))
+	ownerResource := "newrelic_team.owner"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckTeam(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicTeamDestroy(ownerResource),
+		Steps: []resource.TestStep{
+			// ── Step 1: create owner with entities declared ────────────────────
+			{
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+			// ── Step 2: update config that omits entities block entirely ───────
+			// The entities block is absent (not even entities = []). With
+			// Computed:true, Terraform plans no change for entities, so
+			// d.HasChange("entities") = false in Update and the collection is
+			// never touched. Entities must remain in state at count 1.
+			{
+				Config: testAccNewRelicTeamConfigOwnerNoEntitiesBlock(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					// Entities must persist — the absent block is a no-op, not a clear.
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+			// ── Step 3: idempotency ────────────────────────────────────────────
+			// A second apply with the same config must produce an empty plan.
+			{
+				Config:   testAccNewRelicTeamConfigOwnerNoEntitiesBlock(ownerName, ownedName),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+// ── 8. Entity removal drift ───────────────────────────────────────────────────
 
 // TestAccNewRelicTeam_EntityRemovalDrift verifies the mirror image of the entity
 // addition drift test: when an entity is *removed* from the ownership collection
@@ -728,6 +779,24 @@ resource "newrelic_team" "owned" {
 resource "newrelic_team" "owner" {
   name                   = %q
   entity_management_mode = "unmanaged"
+}
+`, ownedName, ownerName)
+}
+
+// testAccNewRelicTeamConfigOwnerNoEntitiesBlock creates the same two-team
+// setup as testAccNewRelicTeamConfigOwnerOwned but with the entities block
+// absent from "owner" entirely (not even entities = []). Used by the
+// EntitiesAbsentPreservesCollection test to verify the Computed carry-forward.
+func testAccNewRelicTeamConfigOwnerNoEntitiesBlock(ownerName, ownedName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "owned" {
+  name = %q
+}
+
+resource "newrelic_team" "owner" {
+  name                   = %q
+  entity_management_mode = "managed"
+  # entities block intentionally omitted — must not clear the collection
 }
 `, ownedName, ownerName)
 }
