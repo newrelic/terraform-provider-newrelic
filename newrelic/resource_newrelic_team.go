@@ -267,18 +267,22 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("ownership_collection_id", ownershipColID)
 
 	// ── Sync collections ───────────────────────────────────────────────────
-	// Membership, managers, and entities all require the team to exist first
-	// (the backing collections are auto-created by NGEP on team creation).
-	// applyTeamCollections handles all three in the correct dependency order.
+	// Membership, managers, and entities all need the team to exist first
+	// (collections are auto-created by NGEP on team creation).
+	// applyTeamCollections orchestrates all three in the right dependency order.
 	// Old slices are nil because nothing existed before this create call.
 	//
-	// Only sync entities if the customer has explicitly declared the entities
-	// attribute in their config AND the mode is not "unmanaged".
-	// If omitted or unmanaged, we do not touch the ownership collection —
-	// passing nil is a no-op in syncTeamOwnership.
+	// In unmanaged mode we skip entity sync — the collection is left to
+	// tag-based discovery and/or the Teams UI.
+	// In managed mode we sync whatever the entities block declares. If it is
+	// absent from config, d.Get returns an empty set and the sync is a no-op.
+	// If a declared GUID is already in the collection (e.g. a tag-discovered
+	// entity the user is now taking declarative control of), NGEP returns
+	// "already belongs to collection" which syncTeamOwnership treats as success
+	// and the GUID is saved to state.
 	mode := d.Get("entity_management_mode").(string)
 	var newEntityGUIDs []string
-	if mode != "unmanaged" && isEntitiesAttributeConfigured(d) {
+	if mode != "unmanaged" {
 		newEntityGUIDs = expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set))
 	}
 	if err := applyTeamCollections(ctx, client, teamID, membershipColID, ownershipColID,
@@ -452,25 +456,19 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 			Detail: fmt.Sprintf(
 				"The following entity GUIDs are present in the ownership collection because "+
 					"their `tags.%s` value matches the team name or an alias. "+
-					"Terraform intentionally excludes these from drift — they are managed by "+
+					"Terraform excludes these from drift — they are currently managed by "+
 					"tag-based discovery, not by this resource.\n\n"+
 					"Discovery GUIDs:\n  %s\n\n"+
-					"TIP: To have Terraform track these (e.g. flag accidental removal as drift), "+
-					"add their GUIDs to the `entities` block.\n\n"+
-					"IMPORTANT — Tag lifecycle behaviour: Removing a discovery tag from an "+
-					"entity does not automatically remove it from the team's collection; the "+
-					"platform reclassifies it as manually-managed instead. Similarly, if the entity is "+
-					"removed from the collection while retaining its tag, the platform may re-add it.\n\n"+
-					"To take full declarative control of such an entity:\n"+
-					"  1. Remove the team tag from the entity (so tag-based discovery stops managing it)\n"+
-					"  2. Add the entity GUID to the `entities` block before running apply\n\n"+
-					"Alternatively, if you prefer all entity ownership to be governed by tags "+
-					"only, omit the `entities` attribute from this resource entirely — "+
-					"Terraform will not show drift for any entities in that case.\n\n"+
-					"Alternatively, if you want tag-based discovery to manage ALL entity "+
-					"ownership without any Terraform involvement, set `entity_management_mode = \"unmanaged\"` "+
-					"on this resource. In unmanaged mode, Terraform stops tracking entities entirely — "+
-					"no drift or warnings will be shown.",
+					"To take Terraform control of one of these entities (recommended):\n"+
+					"  1. Add its GUID to the `entities` block and run apply.\n"+
+					"     The provider treats the NGEP 'already in collection' response as success\n"+
+					"     and begins tracking it — no manual collection changes needed.\n"+
+					"  2. Optionally, remove the team tag from the entity afterwards so that\n"+
+					"     tag-based discovery no longer manages it. This is cleaner but not required.\n\n"+
+					"To keep ALL ownership governed by tag-based discovery only:\n"+
+					"  Omit the `entities` block entirely — Terraform will not show drift.\n\n"+
+					"To disable entity tracking and warnings completely:\n"+
+					"  Set `entity_management_mode = \"unmanaged\"` on this resource.",
 				tagKeyHint,
 				strings.Join(discoveryGUIDs, "\n  "),
 			),
@@ -597,15 +595,19 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 
 	// ── Collections ────────────────────────────────────────────────────────
 	// Reconcile members, managers, and owned entities whenever any of them
-	// change. All three are handled by applyTeamCollections in the correct
-	// dependency order (membership must be settled before managers are set).
+	// change. applyTeamCollections handles all three in the correct dependency
+	// order (membership must be committed before managers are set).
 	//
-	// Entity sync is only performed when the customer has explicitly declared
-	// the entities attribute in their config AND the mode is not "unmanaged".
-	// If entities is absent or mode is "unmanaged", we never touch the ownership
-	// collection — even if NGEP or out-of-band changes have modified it.
+	// Entity sync fires when entities changed AND the mode is not "unmanaged".
+	// When entities is absent from config, Computed:true means the planned
+	// value equals the prior state value, so d.HasChange returns false and the
+	// collection is never touched — no extra guard needed.
+	// When entities is present and a declared GUID is already in the collection
+	// (e.g. a tag-discovered entity being taken into declarative control),
+	// syncTeamOwnership treats the "already belongs" response as success and
+	// the GUID is saved to state.
 	mode := d.Get("entity_management_mode").(string)
-	entitiesChanged := mode != "unmanaged" && isEntitiesAttributeConfigured(d) && d.HasChange("entities")
+	entitiesChanged := mode != "unmanaged" && d.HasChange("entities")
 	if d.HasChange("members") || d.HasChange("managers") || entitiesChanged {
 		oldMembersRaw, newMembersRaw := d.GetChange("members")
 		_, newManagersRaw := d.GetChange("managers")

@@ -5,40 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
-
-// ── Config-presence helpers ───────────────────────────────────────────────────
-
-// isEntitiesAttributeConfigured returns true when the customer has explicitly
-// declared the entities attribute in their config — either as an empty set
-// (entities = []) or with values (entities = ["guid1", ...]). Returns false
-// when the attribute is entirely absent from the config.
-//
-// Uses GetRawConfig() which is only reliable during Create/Update — NOT during
-// Read (where it returns cty.NilVal). The function defaults to true when the
-// config is unavailable so that warnings are not suppressed; this covers both
-// plan-refresh Reads and terraform import. Better to over-warn than silently
-// miss drift.
-//
-// For drift suppression when entities is absent from config, the schema carries
-// Computed:true (which prevents Terraform from planning removals) and the
-// Create/Update functions guard entity operations with this function.
-func isEntitiesAttributeConfigured(d *schema.ResourceData) bool {
-	rc := d.GetRawConfig()
-	// NilVal / unknown config: can't determine intent → default to true so
-	// warnings are not suppressed. This covers Read during plan refresh and
-	// terraform import, both of which should show warnings when relevant.
-	if !rc.IsKnown() || rc.IsNull() {
-		return true
-	}
-	attr := rc.GetAttr("entities")
-	// Absent from config: Computed+Optional → attr is null or unknown
-	return attr.IsKnown() && !attr.IsNull()
-}
 
 // ── User ID ↔ NGEP GUID resolution ───────────────────────────────────────────
 
@@ -177,19 +147,27 @@ func syncTeamManagers(ctx context.Context, client *nr.NewRelic, teamID string, m
 
 // syncTeamOwnership reconciles the team's ownership collection using only the
 // delta between old and new entity GUIDs.
+//
+// "Already belongs to collection" from NGEP is treated as success — it means
+// the entity is already in the right place, so the GUID is saved to state as
+// if the add call succeeded. This covers several valid scenarios:
+//   - Switching from unmanaged → managed: the entity stayed in the collection
+//     during the unmanaged phase and is now being re-declared.
+//   - Adding a tag-discovered entity to the entities block: the entity is already
+//     in the collection (placed there by discovery) but the user now wants
+//     Terraform to track it. The provider records it in state and from that
+//     point treats it as a statically-managed entity.
 func syncTeamOwnership(ctx context.Context, client *scorecards.Scorecards, ownershipColID string, oldGUIDs, newGUIDs []string) error {
 	toAdd, toRemove := stringSetDelta(oldGUIDs, newGUIDs)
 
 	if len(toAdd) > 0 {
 		if _, err := client.EntityManagementAddCollectionMembers(ownershipColID, toAdd); err != nil {
-			// Treat "already belongs to collection" as a no-op. This happens when
-			// switching from unmanaged→managed mode: the entity was already in the
-			// collection (from before the mode switch) but the state was cleared.
-			// The entity is already where we want it — no action needed.
 			if !strings.Contains(err.Error(), "already belongs to collection") &&
 				!strings.Contains(err.Error(), "already exists in one collection") {
 				return fmt.Errorf("adding entities to team ownership collection %s: %w", ownershipColID, err)
 			}
+			// "Already belongs" = entity is in the collection, which is the desired
+			// end state. The GUID will be written to state by the caller.
 		}
 	}
 	if len(toRemove) > 0 {
