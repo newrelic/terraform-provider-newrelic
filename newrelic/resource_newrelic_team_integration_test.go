@@ -14,10 +14,13 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
+	entpkg "github.com/newrelic/newrelic-client-go/v2/pkg/entities"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
 )
 
@@ -319,7 +322,172 @@ func TestAccNewRelicTeam_EntityDrift(t *testing.T) {
 	})
 }
 
-// ── 7. Entities absent from config — collection and state untouched ───────────
+// ── 7. Full entity lifecycle — all three entity types in one scenario ─────────
+
+// TestAccNewRelicTeam_FullEntityLifecycle is the comprehensive scenario test.
+// It walks through the full customer journey with three distinct entity types
+// in a single team's ownership collection, validating each behaviour in sequence:
+//
+//  Phase 1 — Declare one entity (secondary team) in entities block.
+//  Phase 2 — Inject testEntityGUID out-of-band (no tag) → static drift →
+//             apply removes it; entities.# = 1.
+//  Phase 3 — Tag testEntityGUID with team name; inject into collection again →
+//             classified as discovery → apply does NOT remove it (warning only);
+//             entities.# = 1.
+//  Phase 4 — User takes declarative control: add testEntityGUID to entities block →
+//             "already belongs" treated as success → entities.# = 2.
+//  Phase 5 — Switch to unmanaged → entities.# = 0 in state; collection untouched.
+//  Phase 6 — Switch back to managed with secondary only → "already belongs"
+//             handles secondary still in collection → entities.# = 1.
+//  Phase 7 — PlanOnly idempotency check (plan must be empty).
+func TestAccNewRelicTeam_FullEntityLifecycle(t *testing.T) {
+	primaryName := fmt.Sprintf("tf-acc-team-full-%s", acctest.RandString(6))
+	secondaryName := fmt.Sprintf("tf-acc-team-fwnd-%s", acctest.RandString(6))
+	primaryResource := "newrelic_team.primary"
+
+	var ownershipColID string
+	var primaryTeamName string
+
+	// Remove the discovery tag from testEntityGUID after the test so we don't
+	// pollute the test entity's tags for other runs.
+	t.Cleanup(func() {
+		if testAccProvider.Meta() == nil {
+			return
+		}
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		_ = client.Entities.DeleteTags(common.EntityGUID(testEntityGUID), []string{"team"})
+	})
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckTeam(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicTeamDestroy(primaryResource),
+		Steps: []resource.TestStep{
+
+			// ── Phase 1: create team, declare secondary team as owned entity ───────
+			{
+				Config: testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(primaryResource),
+					resource.TestCheckResourceAttr(primaryResource, "entity_management_mode", "managed"),
+					resource.TestCheckResourceAttr(primaryResource, "entities.#", "1"),
+					func(s *terraform.State) error {
+						rs := s.RootModule().Resources[primaryResource]
+						ownershipColID = rs.Primary.Attributes["ownership_collection_id"]
+						primaryTeamName = rs.Primary.Attributes["name"]
+						return nil
+					},
+				),
+			},
+
+			// ── Phase 2: out-of-band manual addition (no team tag) ────────────────
+			// testEntityGUID has no "team" tag → classified as static out-of-band.
+			// The plan shows it as a removal; apply removes it from the collection.
+			// entities.# stays at 1 (only secondary).
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					if _, err := client.Scorecards.EntityManagementAddCollectionMembers(
+						ownershipColID, []string{testEntityGUID}); err != nil {
+						t.Logf("[WARN] Phase 2 inject out-of-band: %v", err)
+					}
+				},
+				Config: testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(primaryResource),
+					// Out-of-band entity was removed; only declared entity remains.
+					resource.TestCheckResourceAttr(primaryResource, "entities.#", "1"),
+				),
+			},
+
+			// ── Phase 3: tag-discovered entity in collection (not in entities block)
+			// Tag testEntityGUID with "team: <name>" then inject into collection.
+			// The Read function classifies it as discovery → excluded from state →
+			// plan shows NO diff for it → apply does NOT remove it → it stays in
+			// the collection. A discovery warning is emitted instead.
+			// entities.# = 1 (only secondary; discovery entity excluded from state).
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					// Set the discovery tag on testEntityGUID using the correct API type.
+					// TaggingTagInput has lowercase json tags that match the NerdGraph mutation.
+					if _, err := client.Entities.TaggingAddTagsToEntity(
+						common.EntityGUID(testEntityGUID),
+						[]entpkg.TaggingTagInput{{Key: "team", Values: []string{primaryTeamName}}},
+					); err != nil {
+						t.Fatalf("Phase 3: failed to set discovery tag on testEntityGUID: %v", err)
+					}
+					// Wait for the entity search index to pick up the new tag before
+					// adding to the collection, otherwise the bounded query in
+					// readStaticOwnershipGUIDs won't classify it as discovery.
+					time.Sleep(4 * time.Second)
+					// Add testEntityGUID to the collection (simulating NGEP auto-discovery).
+					if _, err := client.Scorecards.EntityManagementAddCollectionMembers(
+						ownershipColID, []string{testEntityGUID}); err != nil {
+						t.Logf("[WARN] Phase 3 inject discovery entity: %v", err)
+					}
+				},
+				Config: testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(primaryResource),
+					// testEntityGUID is discovery: not in state, not removed on apply.
+					resource.TestCheckResourceAttr(primaryResource, "entities.#", "1"),
+				),
+			},
+
+			// ── Phase 4: user takes declarative control of the discovery entity ───
+			// testEntityGUID is in the collection (from Phase 3). Adding it to the
+			// entities block while it's already in the collection exercises the
+			// "already belongs = success" path in syncTeamOwnership. The GUID is
+			// written to state; subsequent plans show no diff.
+			{
+				Config: testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(primaryResource),
+					// Both secondary and testEntityGUID now tracked in state.
+					resource.TestCheckResourceAttr(primaryResource, "entities.#", "2"),
+				),
+			},
+
+			// ── Phase 5: switch to unmanaged ──────────────────────────────────────
+			// entities cleared from state; collection left intact (both entities
+			// remain in the collection unmodified).
+			{
+				Config: testAccNewRelicTeamFullLifecycleUnmanagedConfig(primaryName, secondaryName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(primaryResource),
+					resource.TestCheckResourceAttr(primaryResource, "entity_management_mode", "unmanaged"),
+					resource.TestCheckResourceAttr(primaryResource, "entities.#", "0"),
+				),
+			},
+
+			// ── Phase 6: switch back to managed, declare only secondary ───────────
+			// secondary.id is still in the collection (was never removed). The plan
+			// shows entities: [] → [secondary.id]; apply calls AddCollectionMembers
+			// which returns "already belongs" — treated as success. entities.# = 1.
+			// testEntityGUID remains in collection and is classified as discovery
+			// (still has the "team" tag) → discovery warning emitted, no diff.
+			{
+				Config: testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(primaryResource),
+					resource.TestCheckResourceAttr(primaryResource, "entity_management_mode", "managed"),
+					resource.TestCheckResourceAttr(primaryResource, "entities.#", "1"),
+				),
+			},
+
+			// ── Phase 7: PlanOnly idempotency ──────────────────────────────────────
+			// secondary is declared and in collection; testEntityGUID is discovery.
+			// Plan must be empty.
+			{
+				Config:   testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName, false),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+// ── 8. Entities absent from config — collection and state untouched ───────────
 
 // TestAccNewRelicTeam_EntitiesAbsentPreservesCollection verifies the Computed:true
 // carry-forward guarantee: when the entities block is omitted entirely from an
@@ -781,6 +949,43 @@ resource "newrelic_team" "owner" {
   entity_management_mode = "unmanaged"
 }
 `, ownedName, ownerName)
+}
+
+// testAccNewRelicTeamFullLifecycleConfig generates the config for the
+// FullEntityLifecycle test. When includeTestEntity is true, testEntityGUID is
+// added to the entities block alongside the secondary team, exercising the
+// "already belongs = success" path in syncTeamOwnership.
+func testAccNewRelicTeamFullLifecycleConfig(primaryName, secondaryName string, includeTestEntity bool) string {
+	entities := `  entities = [newrelic_team.secondary.id]`
+	if includeTestEntity {
+		entities = fmt.Sprintf("  entities = [newrelic_team.secondary.id, %q]", testEntityGUID)
+	}
+	return fmt.Sprintf(`
+resource "newrelic_team" "secondary" {
+  name = %q
+}
+
+resource "newrelic_team" "primary" {
+  name                   = %q
+  entity_management_mode = "managed"
+%s
+}
+`, secondaryName, primaryName, entities)
+}
+
+// testAccNewRelicTeamFullLifecycleUnmanagedConfig is the Phase 5 config:
+// primary in unmanaged mode (entities block absent/blocked).
+func testAccNewRelicTeamFullLifecycleUnmanagedConfig(primaryName, secondaryName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "secondary" {
+  name = %q
+}
+
+resource "newrelic_team" "primary" {
+  name                   = %q
+  entity_management_mode = "unmanaged"
+}
+`, secondaryName, primaryName)
 }
 
 // testAccNewRelicTeamConfigOwnerNoEntitiesBlock creates the same two-team
