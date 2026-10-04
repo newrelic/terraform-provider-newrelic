@@ -387,6 +387,17 @@ func TestAccNewRelicTeam_FullEntityLifecycle(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					// Pre-cleanup: remove testEntityGUID from any stale collection it
+					// might belong to from a previous (possibly interrupted) test run.
+					// Without this, AddCollectionMembers silently no-ops on "already
+					// belongs" and testEntityGUID never lands in primary's collection,
+					// causing a phantom non-empty plan in Phase 4.
+					if results, err := client.Scorecards.GetCollectionsContainingEntity(testEntityGUID); err == nil && results != nil {
+						for _, r := range *results {
+							_, _ = client.Scorecards.EntityManagementRemoveCollectionMembers(
+								r.Collection.ID, []string{testEntityGUID})
+						}
+					}
 					if _, err := client.Scorecards.EntityManagementAddCollectionMembers(
 						ownershipColID, []string{testEntityGUID}); err != nil {
 						t.Logf("[WARN] Phase 2 inject out-of-band: %v", err)
@@ -503,49 +514,58 @@ func TestAccNewRelicTeam_FullEntityLifecycle(t *testing.T) {
 func TestAccNewRelicTeam_DriftAfterUnmanagedTransition(t *testing.T) {
 	ownerName := fmt.Sprintf("tf-acc-team-udtrans-%s", acctest.RandString(6))
 	ownedName := fmt.Sprintf("tf-acc-team-udtrand-%s", acctest.RandString(6))
+	extraName := fmt.Sprintf("tf-acc-team-udtextr-%s", acctest.RandString(6))
 	ownerResource := "newrelic_team.owner"
 
 	var ownershipColID string
+	var extraTeamID string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckTeam(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicTeamDestroy(ownerResource),
 		Steps: []resource.TestStep{
-			// Step 1: managed + entity declared
+			// Step 1: managed + entity declared. Create an "extra" team used
+			// as the out-of-band entity — avoids testEntityGUID conflicts with
+			// parallel tests or adjacent serial tests.
 			{
-				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Config: testAccNewRelicTeamDriftTransitionConfig(ownerName, ownedName, extraName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicTeamExists(ownerResource),
 					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
 					func(s *terraform.State) error {
 						ownershipColID = s.RootModule().Resources[ownerResource].Primary.Attributes["ownership_collection_id"]
+						extraRS := s.RootModule().Resources["newrelic_team.extra"]
+						if extraRS == nil {
+							return fmt.Errorf("newrelic_team.extra not in state")
+						}
+						extraTeamID = extraRS.Primary.ID
 						return nil
 					},
 				),
 			},
-			// Step 2: switch to unmanaged; inject testEntityGUID into collection
-			// (simulating a user/process adding it while Terraform isn't tracking entities)
+			// Step 2: switch to unmanaged; inject extra team GUID out-of-band
+			// (simulating a user adding it to the collection during the unmanaged phase)
 			{
 				PreConfig: func() {
 					client := testAccProvider.Meta().(*ProviderConfig).NewClient
 					if _, err := client.Scorecards.EntityManagementAddCollectionMembers(
-						ownershipColID, []string{testEntityGUID}); err != nil {
+						ownershipColID, []string{extraTeamID}); err != nil {
 						t.Logf("[WARN] Step 2 inject: %v", err)
 					}
 				},
-				Config: testAccNewRelicTeamConfigOwnerUnmanaged(ownerName, ownedName),
+				Config: testAccNewRelicTeamDriftTransitionUnmanagedConfig(ownerName, ownedName, extraName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(ownerResource, "entity_management_mode", "unmanaged"),
 					resource.TestCheckResourceAttr(ownerResource, "entities.#", "0"),
 				),
 			},
 			// Step 3: back to managed, declare only the owned team entity.
-			// testEntityGUID was added during unmanaged → drift IS surfaced:
+			// extraTeamID was added during unmanaged → drift IS surfaced:
 			// post-apply Read finds it as a static out-of-band addition and the
 			// idempotency plan shows it as a pending removal (non-empty plan).
 			{
-				Config:             testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Config:             testAccNewRelicTeamDriftTransitionConfig(ownerName, ownedName, extraName),
 				ExpectNonEmptyPlan: true, // drift IS correctly detected
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicTeamExists(ownerResource),
@@ -553,10 +573,10 @@ func TestAccNewRelicTeam_DriftAfterUnmanagedTransition(t *testing.T) {
 					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
 				),
 			},
-			// Step 4: apply again — reconciles the drift by removing testEntityGUID.
+			// Step 4: apply again to reconcile — removes extraTeamID from collection.
 			// Plan must be empty after this apply.
 			{
-				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Config: testAccNewRelicTeamDriftTransitionConfig(ownerName, ownedName, extraName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicTeamExists(ownerResource),
 					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
@@ -1065,6 +1085,45 @@ resource "newrelic_team" "primary" {
   entity_management_mode = "unmanaged"
 }
 `, secondaryName, primaryName)
+}
+
+// testAccNewRelicTeamDriftTransitionConfig is used by DriftAfterUnmanagedTransition.
+// Creates three teams: owner (managed, owns ownedTeam), owned, and extra (no ownership).
+func testAccNewRelicTeamDriftTransitionConfig(ownerName, ownedName, extraName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "owned" {
+  name = %q
+}
+
+resource "newrelic_team" "extra" {
+  name = %q
+}
+
+resource "newrelic_team" "owner" {
+  name                   = %q
+  entity_management_mode = "managed"
+  entities               = [newrelic_team.owned.id]
+}
+`, ownedName, extraName, ownerName)
+}
+
+// testAccNewRelicTeamDriftTransitionUnmanagedConfig is step 2 of
+// DriftAfterUnmanagedTransition — owner switches to unmanaged mode.
+func testAccNewRelicTeamDriftTransitionUnmanagedConfig(ownerName, ownedName, extraName string) string {
+	return fmt.Sprintf(`
+resource "newrelic_team" "owned" {
+  name = %q
+}
+
+resource "newrelic_team" "extra" {
+  name = %q
+}
+
+resource "newrelic_team" "owner" {
+  name                   = %q
+  entity_management_mode = "unmanaged"
+}
+`, ownedName, extraName, ownerName)
 }
 
 // testAccNewRelicTeamConfigOwnerNoEntitiesBlock creates the same two-team
