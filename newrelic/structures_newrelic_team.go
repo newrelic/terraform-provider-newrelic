@@ -95,6 +95,38 @@ func resourceNewRelicTeamCustomizeDiff(_ context.Context, d *schema.ResourceDiff
 	return nil
 }
 
+// ── Config-aware warning helper ───────────────────────────────────────────────
+
+// declaredSetFromConfig returns the set of entity GUIDs the user has declared
+// in their Terraform config. It reads d.GetRawConfig() so that the out-of-band
+// warning is suppressed the moment the user adds an entity to their entities
+// block — even before they run apply — preventing a confusing "one extra
+// warning" on the apply that should clear the drift.
+//
+// Falls back to stateGUIDs when the raw config is unavailable (e.g., during
+// terraform import or terraform refresh without plan context).
+func declaredSetFromConfig(d *schema.ResourceData, stateGUIDs []string) map[string]bool {
+	rc := d.GetRawConfig()
+	if rc.IsKnown() && !rc.IsNull() {
+		attr := rc.GetAttr("entities")
+		if attr.IsKnown() && !attr.IsNull() {
+			result := make(map[string]bool)
+			for it := attr.ElementIterator(); it.Next(); {
+				_, v := it.Element()
+				if v.IsKnown() && !v.IsNull() {
+					result[v.AsString()] = true
+				}
+			}
+			return result
+		}
+	}
+	result := make(map[string]bool, len(stateGUIDs))
+	for _, g := range stateGUIDs {
+		result[g] = true
+	}
+	return result
+}
+
 // ── Expand helpers (Terraform state → API input) ──────────────────────────────
 
 // teamResourceFields holds the parsed fields from a single resources block.

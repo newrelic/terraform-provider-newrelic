@@ -487,7 +487,86 @@ func TestAccNewRelicTeam_FullEntityLifecycle(t *testing.T) {
 	})
 }
 
-// ── 8. Entities absent from config — collection and state untouched ───────────
+// ── 8. Drift detection after unmanaged→managed transition ─────────────────────
+
+// TestAccNewRelicTeam_DriftAfterUnmanagedTransition specifically validates the
+// user concern: when an entity is added to the ownership collection DURING an
+// unmanaged phase, switching back to managed mode must surface that entity as
+// drift (not silently accept it). Steps:
+//
+//  1. managed + owned entity declared.
+//  2. Switch to unmanaged; inject testEntityGUID out-of-band during this phase.
+//  3. Switch back to managed (only declaring owned entity). Because testEntityGUID
+//     is now in the collection, the post-apply Read classifies it as a static
+//     out-of-band addition — the idempotency plan is non-empty (drift IS surfaced).
+//  4. Apply again to reconcile: testEntityGUID is removed, plan is empty.
+func TestAccNewRelicTeam_DriftAfterUnmanagedTransition(t *testing.T) {
+	ownerName := fmt.Sprintf("tf-acc-team-udtrans-%s", acctest.RandString(6))
+	ownedName := fmt.Sprintf("tf-acc-team-udtrand-%s", acctest.RandString(6))
+	ownerResource := "newrelic_team.owner"
+
+	var ownershipColID string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckTeam(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicTeamDestroy(ownerResource),
+		Steps: []resource.TestStep{
+			// Step 1: managed + entity declared
+			{
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+					func(s *terraform.State) error {
+						ownershipColID = s.RootModule().Resources[ownerResource].Primary.Attributes["ownership_collection_id"]
+						return nil
+					},
+				),
+			},
+			// Step 2: switch to unmanaged; inject testEntityGUID into collection
+			// (simulating a user/process adding it while Terraform isn't tracking entities)
+			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					if _, err := client.Scorecards.EntityManagementAddCollectionMembers(
+						ownershipColID, []string{testEntityGUID}); err != nil {
+						t.Logf("[WARN] Step 2 inject: %v", err)
+					}
+				},
+				Config: testAccNewRelicTeamConfigOwnerUnmanaged(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(ownerResource, "entity_management_mode", "unmanaged"),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "0"),
+				),
+			},
+			// Step 3: back to managed, declare only the owned team entity.
+			// testEntityGUID was added during unmanaged → drift IS surfaced:
+			// post-apply Read finds it as a static out-of-band addition and the
+			// idempotency plan shows it as a pending removal (non-empty plan).
+			{
+				Config:             testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				ExpectNonEmptyPlan: true, // drift IS correctly detected
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entity_management_mode", "managed"),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+			// Step 4: apply again — reconciles the drift by removing testEntityGUID.
+			// Plan must be empty after this apply.
+			{
+				Config: testAccNewRelicTeamConfigOwnerOwned(ownerName, ownedName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicTeamExists(ownerResource),
+					resource.TestCheckResourceAttr(ownerResource, "entities.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+// ── 10. Entities absent from config — collection and state untouched ──────────
 
 // TestAccNewRelicTeam_EntitiesAbsentPreservesCollection verifies the Computed:true
 // carry-forward guarantee: when the entities block is omitted entirely from an

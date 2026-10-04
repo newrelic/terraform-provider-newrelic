@@ -205,6 +205,17 @@ func resourceNewRelicTeam() *schema.Resource {
 				Computed:    true,
 				Description: "GUID of the auto-created team ownership collection. Read-only.",
 			},
+			// hierarchy_level_id is set automatically by the platform based on the
+			// team's position in the organisational hierarchy (determined by parent_id).
+			// It matches one of the level GUIDs in newrelic_teams_organization_settings
+			// hierarchy_levels. Cannot be set directly.
+			"hierarchy_level_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "GUID of the hierarchy level this team is assigned to. Set automatically " +
+					"by the platform based on the team's parentId chain. Matches a level GUID " +
+					"from the newrelic_teams_organization_settings hierarchy_levels list.",
+			},
 		},
 	}
 }
@@ -354,6 +365,7 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	_ = d.Set("organization_id", team.Scope.ID)
 	_ = d.Set("membership_collection_id", team.Membership.ID)
 	_ = d.Set("ownership_collection_id", team.Ownership.ID)
+	_ = d.Set("hierarchy_level_id", team.HierarchyLevelId)
 	_ = d.Set("resources", flattenTeamResources(team.Resources))
 	_ = d.Set("tags", flattenNGEPTags(team.Tags))
 
@@ -475,16 +487,14 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		})
 	}
 
-	// Identify entities that are static (manually-added) but not in the current config.
-	// These appear as - in the plan diff. Emit a contextual warning so the user
-	// understands what happened and what they can do before running apply.
-	declaredSet := make(map[string]bool, len(declaredGUIDs))
-	for _, g := range declaredGUIDs {
-		declaredSet[g] = true
-	}
+	// Identify static entities in the collection that are not in the user's config.
+	// Use the config-declared set (not the state-declared set) so the warning is
+	// suppressed as soon as the user adds the entity to their entities block —
+	// even on the apply that clears the drift, not just on the following plan.
+	configSet := declaredSetFromConfig(d, declaredGUIDs)
 	var outOfBandGUIDs []string
 	for _, g := range staticGUIDs {
-		if !declaredSet[g] {
+		if !configSet[g] {
 			outOfBandGUIDs = append(outOfBandGUIDs, g)
 		}
 	}
