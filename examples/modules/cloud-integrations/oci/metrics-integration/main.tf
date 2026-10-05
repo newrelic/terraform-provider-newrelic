@@ -18,14 +18,52 @@ resource "oci_functions_application" "metrics_function_app" {
   ]
 }
 
+resource "oci_artifacts_container_repository" "metrics_function_repo" {
+  compartment_id = var.compartment_ocid
+  display_name   = local.function_image_repository
+  is_public      = false
+  freeform_tags  = local.freeform_tags
+}
+
+resource "oci_identity_auth_token" "registry_push" {
+  count       = local.create_registry_token ? 1 : 0
+  provider    = oci.home_provider
+  user_id     = var.user_ocid
+  description = "New Relic metrics module: pushes the function image to ${local.function_image_repository} in ${var.region}"
+}
+
+# Copies the image over the registry HTTP API, so the machine running Terraform needs no Docker.
+# Runs again whenever var.function_image resolves to a new digest.
+resource "null_resource" "mirror_function_image" {
+  triggers = {
+    source_digest = local.function_image_digest
+    destination   = local.function_image
+  }
+
+  provisioner "local-exec" {
+    command = "python3 ${path.module}/image_mirror.py copy"
+    environment = {
+      SOURCE_IMAGE    = var.function_image
+      SOURCE_DIGEST   = local.function_image_digest
+      DEST_REGISTRY   = local.ocir_host
+      DEST_REPOSITORY = "${local.ocir_namespace}/${local.function_image_repository}"
+      DEST_TAG        = data.external.function_image.result.tag
+      DEST_USERNAME   = local.registry_username
+      DEST_PASSWORD   = local.registry_password
+    }
+  }
+}
+
 resource "oci_functions_function" "metrics_function" {
   application_id = oci_functions_application.metrics_function_app.id
-  depends_on     = [oci_functions_application.metrics_function_app]
+  depends_on     = [oci_functions_application.metrics_function_app, null_resource.mirror_function_image]
   display_name   = "newrelic-${var.nr_prefix}-${var.region}-metrics-function-${local.terraform_suffix}"
   memory_in_mbs  = "128"
   defined_tags   = {}
   freeform_tags  = local.freeform_tags
-  image          = "${var.region}.ocir.io/${var.image_bucket}/newrelic-metrics-integration/oci-metrics-forwarder:${var.image_version}"
+  image          = local.function_image
+  # Set explicitly: the function stays on the digest it was created with until this changes.
+  image_digest = local.function_image_digest
 }
 
 resource "oci_sch_service_connector" "service_connector" {
