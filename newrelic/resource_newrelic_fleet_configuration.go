@@ -441,7 +441,7 @@ func resourceNewRelicFleetConfigurationDelete(ctx context.Context, d *schema.Res
 }
 
 // isFleetNotFoundError detects "not found" responses across the various error
-// types the fleet control SDK returns. The blob-service REST endpoint wraps
+// types the fleet-control SDK returns. The blob-service REST endpoint wraps
 // 404s as fmt.Errorf("resource not found") instead of *nrErrors.NotFound; the
 // NerdGraph entity query returns *http.GraphQLErrorResponse with errorClass
 // NOT_FOUND. We need a single check that catches both.

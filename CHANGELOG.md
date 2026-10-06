@@ -1,3 +1,59 @@
+<a name="v3.100.1"></a>
+## [v3.100.1] - 2026-09-30
+### Bug Fixes
+- **pathpoint:** update pathpoint documentation ([#3251](https://github.com/newrelic/terraform-provider-newrelic/issues/3251))
+
+<a name="v3.100.0"></a>
+## [v3.100.0] - 2026-09-30
+### Bug Fixes
+- **oci:** derive home region for vault secret lookup ([#3248](https://github.com/newrelic/terraform-provider-newrelic/issues/3248))
+
+### Documentation Updates
+- **oci:** default metrics_tier to basic and link dashboard setup docs ([#3250](https://github.com/newrelic/terraform-provider-newrelic/issues/3250))
+
+### Features
+- **cloud:** add edge_container service to newrelic_cloud_gcp_dm_integrations ([#3245](https://github.com/newrelic/terraform-provider-newrelic/issues/3245))
+
+<a name="v3.99.3"></a>
+## [v3.99.3] - 2026-09-25
+### Documentation Updates
+- **oci:** document audit log ingestion via _Audit and _Audit_Include_Subcompartment (NR-605224) ([#3172](https://github.com/newrelic/terraform-provider-newrelic/issues/3172))
+- **oci:** improve cloud integrations guide examples and troubleshooting (logging) ([#3243](https://github.com/newrelic/terraform-provider-newrelic/issues/3243))
+
+<a name="v3.99.2"></a>
+## [v3.99.2] - 2026-09-25
+### Bug Fixes
+- **oci:** add forwarder observability metrics tier and tenancy/compartment name attributes ([#3230](https://github.com/newrelic/terraform-provider-newrelic/issues/3230))
+
+<a name="v3.99.1"></a>
+## [v3.99.1] - 2026-09-24
+### Bug Fixes
+- **cloud:** allow clearing azure monitor include_tags and exclude_tags ([#3211](https://github.com/newrelic/terraform-provider-newrelic/issues/3211))
+
+<a name="v3.99.0"></a>
+## [v3.99.0] - 2026-09-24
+### Bug Fixes
+- **alerts:** send explicit empty terms when clearing nrql condition thresholds ([#3244](https://github.com/newrelic/terraform-provider-newrelic/issues/3244))
+
+### Features
+- **pathpoint:** add pathpoint resource ([#3145](https://github.com/newrelic/terraform-provider-newrelic/issues/3145))
+
+<a name="v3.98.0"></a>
+## [v3.98.0] - 2026-09-18
+### Features
+- **notebooks:** add newrelic_notebook resource ([#3196](https://github.com/newrelic/terraform-provider-newrelic/issues/3196))
+
+<a name="v3.97.6"></a>
+## [v3.97.6] - 2026-09-18
+### Bug Fixes
+- **deps:** bump newrelic-client-go to v2.94.1 ([#3231](https://github.com/newrelic/terraform-provider-newrelic/issues/3231))
+- **oci:** changes for resource name resolution ([#3209](https://github.com/newrelic/terraform-provider-newrelic/issues/3209))
+
+<a name="v3.97.5"></a>
+## [v3.97.5] - 2026-09-10
+### Bug Fixes
+- **azure:** don't drop monitor enabled when set to false ([#3204](https://github.com/newrelic/terraform-provider-newrelic/issues/3204))
+
 <a name="v3.97.4"></a>
 ## [v3.97.4] - 2026-09-09
 ### Bug Fixes
@@ -2857,7 +2913,16 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.1...HEAD
+[v3.100.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.0...v3.100.1
+[v3.100.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.3...v3.100.0
+[v3.99.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.2...v3.99.3
+[v3.99.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.1...v3.99.2
+[v3.99.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.99.0...v3.99.1
+[v3.99.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.98.0...v3.99.0
+[v3.98.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.6...v3.98.0
+[v3.97.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.5...v3.97.6
+[v3.97.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.4...v3.97.5
 [v3.97.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.3...v3.97.4
 [v3.97.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.2...v3.97.3
 [v3.97.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.97.1...v3.97.2

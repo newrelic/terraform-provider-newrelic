@@ -241,6 +241,9 @@ resource_newrelic_cloud_azure_integrations.go:
 resource_newrelic_cloud_azure_integrations_test.go:
   test: true
   product_mapping: CLOUD
+resource_newrelic_cloud_azure_integrations_unit_test.go:
+  test: true
+  product_mapping: CLOUD
 resource_newrelic_cloud_azure_link_account.go:
   test: false
   product_mapping: CLOUD
@@ -367,6 +370,18 @@ resource_newrelic_monitor_downtime.go:
 resource_newrelic_monitor_downtime_test.go:
   test: true
   product_mapping: SYNTHETICS
+data_source_newrelic_notebook.go:
+  test: false
+  product_mapping: DASHBOARDS
+data_source_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
+resource_newrelic_notebook.go:
+  test: false
+  product_mapping: DASHBOARDS
+resource_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
 resource_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
@@ -511,6 +526,12 @@ resource_newrelic_workload.go:
 resource_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
+resource_newrelic_pathpoint_flow.go:
+  test: false
+  product_mapping: PATHPOINT
+resource_newrelic_pathpoint_flow_test.go:
+  test: true
+  product_mapping: PATHPOINT
 structures_newrelic_alert_channel.go:
   test: false
   product_mapping: ALERTS_DEPRECATED
@@ -586,6 +607,12 @@ structures_newrelic_infra_alert_condition_test.go:
 structures_newrelic_monitor_downtime.go:
   test: false
   product_mapping: SYNTHETICS
+structures_newrelic_notebook.go:
+  test: false
+  product_mapping: DASHBOARDS
+structures_newrelic_notebook_test.go:
+  test: true
+  product_mapping: DASHBOARDS
 structures_newrelic_notifications_channel.go:
   test: false
   product_mapping: WORKFLOW_INTEGRATIONS
@@ -661,3 +688,9 @@ structures_newrelic_workload.go:
 structures_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
+structures_newrelic_pathpoint.go:
+  test: false
+  product_mapping: PATHPOINT
+structures_newrelic_pathpoint_test.go:
+  test: true
+  product_mapping: PATHPOINT
