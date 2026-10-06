@@ -377,6 +377,11 @@ func readStaticOwnershipGUIDs(
 // be applied after membership is reconciled because NGEP validates that every
 // manager is already a collection member.
 //
+// oldManagers is the prior state. The managers mutation is skipped when both
+// oldManagers and newManagers are empty — this avoids a redundant raw
+// patchTeamField call on every Create without managers and on every Update
+// where only members or entities changed while managers stayed empty.
+//
 // Call order: (1) syncTeamMembership → (2) syncTeamManagers → (3) syncTeamOwnership.
 // Steps 1→2 are dependency-ordered: NGEP rejects a manager assignment unless
 // the user is already a collection member, so membership MUST be committed
@@ -386,14 +391,17 @@ func applyTeamCollections(
 	client *nr.NewRelic,
 	teamID, membershipColID, ownershipColID string,
 	oldMembers, newMembers []int,
-	newManagers []int,
+	oldManagers, newManagers []int,
 	oldEntities, newEntities []string,
 ) error {
 	if err := syncTeamMembership(ctx, client, membershipColID, oldMembers, newMembers); err != nil {
 		return err
 	}
-	if err := syncTeamManagers(ctx, client, teamID, newManagers); err != nil {
-		return err
+	// Skip if both old and new manager lists are empty — nothing to set or clear.
+	if len(oldManagers) > 0 || len(newManagers) > 0 {
+		if err := syncTeamManagers(ctx, client, teamID, newManagers); err != nil {
+			return err
+		}
 	}
 	if err := syncTeamOwnership(ctx, &client.Scorecards, ownershipColID, oldEntities, newEntities); err != nil {
 		return err

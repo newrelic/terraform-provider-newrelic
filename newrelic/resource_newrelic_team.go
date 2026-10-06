@@ -298,7 +298,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 	if err := applyTeamCollections(ctx, client, teamID, membershipColID, ownershipColID,
 		nil, expandUserIDsFromSet(d.Get("members").(*schema.Set)),
-		expandUserIDsFromSet(d.Get("managers").(*schema.Set)),
+		nil, expandUserIDsFromSet(d.Get("managers").(*schema.Set)), // oldManagers=nil: fresh create
 		nil, newEntityGUIDs,
 	); err != nil {
 		return diag.FromErr(err)
@@ -620,7 +620,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	entitiesChanged := mode != "unmanaged" && d.HasChange("entities")
 	if d.HasChange("members") || d.HasChange("managers") || entitiesChanged {
 		oldMembersRaw, newMembersRaw := d.GetChange("members")
-		_, newManagersRaw := d.GetChange("managers")
+		oldManagersRaw, newManagersRaw := d.GetChange("managers")
 
 		var oldEntities, newEntities []string
 		if entitiesChanged {
@@ -634,6 +634,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 			d.Get("ownership_collection_id").(string),
 			expandUserIDsFromSet(oldMembersRaw.(*schema.Set)),
 			expandUserIDsFromSet(newMembersRaw.(*schema.Set)),
+			expandUserIDsFromSet(oldManagersRaw.(*schema.Set)),
 			expandUserIDsFromSet(newManagersRaw.(*schema.Set)),
 			oldEntities,
 			newEntities,
