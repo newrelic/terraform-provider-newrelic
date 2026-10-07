@@ -526,6 +526,9 @@ resource_newrelic_team_unit_test.go:
 resource_newrelic_teams_organization_settings.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
+resource_newrelic_teams_organization_settings_test.go:
+  test: true
+  product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_user_management.go:
   test: false
   product_mapping: AUTH
