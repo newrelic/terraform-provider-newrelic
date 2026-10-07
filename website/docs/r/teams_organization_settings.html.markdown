@@ -66,7 +66,7 @@ See additional [examples](#additional-examples) below.
 ### Discovery
 
   * `discovery_enabled` - (Optional, Computed) Whether tag-based entity discovery is enabled. When `true`, entities whose tags match a team's name or an alias are automatically assigned to that team.
-  * `discovery_tag_keys` - (Optional, Computed) Tag keys used for automatic entity discovery (e.g. `["team"]`). An entity is auto-assigned to a team when one of these tag keys has a value equal to the team's name or an alias.
+  * `discovery_tag_keys` - (Optional, Computed) Tag keys used for automatic entity discovery (e.g. `["team"]`). An entity is auto-assigned to a team when one of these tag keys has a value equal to the team's name or an alias. Must contain at least one key when declared — the API rejects an empty list.
 
 ### Hierarchy Levels
 
@@ -77,7 +77,7 @@ See additional [examples](#additional-examples) below.
 ### Sync Groups
 
   * `sync_groups_enabled` - (Optional, Computed) Whether automatic team creation from IdP groups is enabled.
-  * `sync_group_rules` - (Optional) Rules controlling which IdP groups automatically create teams. Each rule has:
+  * `sync_group_rules` - (Optional, Computed) At most one rule controlling which IdP groups automatically create teams. Omitting this block preserves existing rules in state. The NGEP API currently enforces a single rule per organisation. Each rule has:
     * `conditions` - (Required) One or more conditions that a group name must satisfy. All conditions within a rule must match (AND logic). Each condition has:
       * `type` - (Required) The match type: `STARTS_WITH`, `ENDS_WITH`, or `CONTAINS`.
       * `value` - (Required) The string to match against the IdP group name.
