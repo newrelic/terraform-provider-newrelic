@@ -29,7 +29,7 @@ resource "newrelic_events_to_metrics_rule" "foo" {
 
 The following arguments are supported:
 
-  * `account_id` - (Required) Account with the event and where the metrics will be put.
+  * `account_id` - (Optional) The account ID where the Events to Metrics rule will be created. If omitted, the provider's configured account ID is used. We recommend setting this explicitly so the target account is always clear, especially in multi-account setups.
   * `name` - (Required) The name of the rule. This must be unique within an account.
   * `nrql` - (Required) Explains how to create metrics from events.
   * `description` - (Optional) Provides additional information about the rule.
@@ -39,6 +39,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+  * `account_id` - The account ID the rule belongs to. Set to the provider account ID if not specified in the configuration.
   * `rule_id` - The id, uniquely identifying the rule.
 
 ## Import

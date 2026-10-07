@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/eventstometrics"
 )
@@ -25,10 +26,11 @@ func resourceNewRelicEventsToMetricsRule() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Account with the event and where the metrics will be put.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "Account with the event and where the metrics will be put. Defaults to the account ID specified in the provider configuration if not set.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -66,9 +68,11 @@ func resourceNewRelicEventsToMetricsRuleCreate(ctx context.Context, d *schema.Re
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
+	accountID := selectAccountID(providerConfig, d)
+
 	createInput := []eventstometrics.EventsToMetricsCreateRuleInput{
 		{
-			AccountID:   d.Get("account_id").(int),
+			AccountID:   accountID,
 			Description: d.Get("description").(string),
 			Name:        d.Get("name").(string),
 			NRQL:        d.Get("nrql").(string),
