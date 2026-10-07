@@ -76,6 +76,36 @@ output "latest_version_number" {
 }
 ```
 
+### Setting a Configuration Type Explicitly
+
+`configuration_type` defaults to `"AgentConfig"`, so this is equivalent to the basic example above — but you can assert it explicitly:
+
+```hcl
+resource "newrelic_fleet_configuration" "infra" {
+  name                  = "Production Infrastructure Config"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_type    = "AgentConfig"
+  configuration_content = file("${path.module}/configs/infra.yaml")
+}
+```
+
+### Creating a Legacy Configuration
+
+To opt out of the `"AgentConfig"` default and create a legacy configuration (null configuration type), set `legacy_config = true` instead of setting `configuration_type`:
+
+```hcl
+resource "newrelic_fleet_configuration" "infra_legacy" {
+  name                  = "Legacy Infrastructure Config"
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  legacy_config         = true
+  configuration_content = file("${path.module}/configs/infra.yaml")
+}
+```
+
 ### Accessing a Previous Version via the Data Source
 
 Use `version_entity_ids` to reference an older version with the data source:
@@ -104,6 +134,8 @@ The following arguments are supported:
 * `managed_entity_type` - (Required, ForceNew) The type of entities this configuration manages. Valid values: `HOST`, `KUBERNETESCLUSTER`. **Cannot be changed after creation.**
 * `operating_system` - (Optional, ForceNew) The operating system this configuration targets. Valid values: `LINUX`, `WINDOWS`. Applicable to `HOST` configurations only — must not be set when `managed_entity_type` is `KUBERNETESCLUSTER`. **Cannot be changed after creation.**
 * `configuration_content` - (Required) The YAML or JSON content for this configuration. Use `file()` to load content from a file. Each change to this field creates a new immutable version on the API; the resource ID remains constant.
+* `configuration_type` - (Optional, ForceNew, Computed) The configuration type. Currently only `AgentConfig` is a supported value, and it is the default — a fleet configuration can no longer be created with a null configuration type through this argument. Use `legacy_config = true` instead to create a legacy configuration. Mutually exclusive with `legacy_config`. This is an interim restriction pending further product guidance and may change. **Cannot be changed after creation.**
+* `legacy_config` - (Optional, ForceNew) Set to `true` to create a legacy configuration with no configuration type (null), instead of the `"AgentConfig"` default. Mutually exclusive with `configuration_type`. **Cannot be changed after creation.**
 * `organization_id` - (Optional, ForceNew) The organization ID. Auto-fetched from the account when not provided. **Cannot be changed after creation.**
 
 ## Attributes Reference

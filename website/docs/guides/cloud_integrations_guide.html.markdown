@@ -251,7 +251,7 @@ The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrati
 | `Virtual Machines`     | `VPC Access`              |                          |
 | `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only, metrics only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
 | `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only, metrics only)* | `Istio` *(DM only, metrics only)* |
-| `API Gateway` *(DM only)* | `Kubernetes Engine` *(metrics only)* (supports 1m polling) |                  |
+| `API Gateway` *(DM only)* | `Kubernetes Engine` *(metrics only)* (supports 1m polling) | `Distributed Cloud Edge` *(DM only, metrics only)* |
 
 -> **NOTE:** Services marked *(supports 1m polling)* support a `metrics_polling_interval` as low as **60 seconds**. 1-minute polling for these services is in **Limited Preview (LP)** and available only for: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `kubernetes`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(DM only)* are only available in the Dimensional Metrics integration. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
 
@@ -659,7 +659,7 @@ module "oci_logs_integration" {
   batch_time_in_sec     = 60   # max wait time in seconds before sending batch (default 60)
 
   # forwarder self-monitoring metrics (Optional)
-  metrics_tier = "none" # "none" (default), "basic", or "advanced"
+  metrics_tier = "basic" # "none", "basic" (default), or "advanced"
 }
 ```
 
@@ -678,7 +678,7 @@ Key variables:
   - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
   - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
   - `image_version`: Docker image version for the logging function (defaults to "latest").
-  - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (default, no custom metrics), `basic` (core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest, so they're opt-in.
+  - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (no custom metrics), `basic` (default, core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest. For more details on setting up a dashboard, refer to [OCI Log Forwarder Observability](https://docs.newrelic.com/docs/logs/forward-logs/oci-log-forwarder-observability/).
 - connector hub configuration (`connector_hub_details`): A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
   * `display_name` (string) : name of the connector hub - must have prefix `newrelic-logs`
   * `description` (string) (optional): connector hub description
