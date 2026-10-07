@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 func resourceNewRelicScorecard() *schema.Resource {
@@ -148,18 +148,18 @@ func resourceNewRelicScorecardCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	input := scorecards.EntityManagementScorecardEntityCreateInput{
+	input := servicearchintelligence.EntityManagementScorecardEntityCreateInput{
 		Name: d.Get("name").(string),
-		Scope: scorecards.EntityManagementScopedReferenceInput{
+		Scope: servicearchintelligence.EntityManagementScopedReferenceInput{
 			ID:   orgID,
-			Type: scorecards.EntityManagementEntityScopeTypes.ORGANIZATION,
+			Type: servicearchintelligence.EntityManagementEntityScopeTypes.ORGANIZATION,
 		},
 	}
 	if v, ok := d.GetOk("description"); ok {
 		input.Description = v.(string)
 	}
 	if v, ok := d.GetOk("tags"); ok {
-		input.Tags = expandNGEPTags(v.(*schema.Set).List())
+		input.Tags = expandSAITags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("progress_levels"); ok {
 		input.ProgressLevels = expandProgressLevels(v.(*schema.Set).List())
@@ -235,7 +235,7 @@ func resourceNewRelicScorecardRead(ctx context.Context, d *schema.ResourceData, 
 		return nil
 	}
 
-	sc, ok := (*entityIface).(*scorecards.EntityManagementScorecardEntity)
+	sc, ok := (*entityIface).(*servicearchintelligence.EntityManagementScorecardEntity)
 	if !ok {
 		return diag.Errorf("entity %s is not a ScorecardEntity", d.Id())
 	}
@@ -243,7 +243,7 @@ func resourceNewRelicScorecardRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", sc.Name)
 	_ = d.Set("description", sc.Description)
 	_ = d.Set("organization_id", sc.Scope.ID)
-	_ = d.Set("tags", flattenNGEPTags(sc.Tags))
+	_ = d.Set("tags", flattenSAITags(sc.Tags))
 	_ = d.Set("rules_collection_id", sc.Rules.ID)
 
 	_ = d.Set("progress_levels", flattenProgressLevels(sc.ProgressLevels))
@@ -267,7 +267,7 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 	client := meta.(*ProviderConfig).NewClient
 
 	if d.HasChangesExcept("rule_ids") {
-		upd := scorecards.EntityManagementScorecardEntityUpdateInput{}
+		upd := servicearchintelligence.EntityManagementScorecardEntityUpdateInput{}
 
 		// Always include description — it has no omitempty in the API input type,
 		// so guarding behind HasChange would send "" and clear it on any tag/name update.
@@ -277,7 +277,7 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 			upd.Name = d.Get("name").(string)
 		}
 		if d.HasChange("tags") {
-			userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
+			userTags := expandSAITags(d.Get("tags").(*schema.Set).List())
 			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
 			upd.Tags = mergeWithSystemTags(userTags, sysTags)
 		}

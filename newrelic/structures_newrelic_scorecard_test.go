@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── expandIntListFromInterface ────────────────────────────────────────────────
@@ -80,7 +80,7 @@ func TestExpandNRQLEngineUpdate_MatchesCreateShape(t *testing.T) {
 
 func TestFlattenNRQLEngine_RoundTrip(t *testing.T) {
 	t.Parallel()
-	engine := scorecards.EntityManagementNRQLRuleEngine{
+	engine := servicearchintelligence.EntityManagementNRQLRuleEngine{
 		Query:        "SELECT if(1=1, 1, 0) AS 'score' FROM Transaction FACET id",
 		Accounts:     []int{10, 20},
 		JoinAccounts: []int{30},
@@ -94,7 +94,7 @@ func TestFlattenNRQLEngine_RoundTrip(t *testing.T) {
 
 func TestFlattenNRQLEngine_EmptyJoinAccounts(t *testing.T) {
 	t.Parallel()
-	engine := scorecards.EntityManagementNRQLRuleEngine{
+	engine := servicearchintelligence.EntityManagementNRQLRuleEngine{
 		Query:    "SELECT if(1=1, 1, 0) AS 'score' FROM Transaction FACET id",
 		Accounts: []int{1},
 	}
@@ -129,7 +129,7 @@ func TestExpandProgressLevels_Empty(t *testing.T) {
 
 func TestFlattenProgressLevels_RoundTrip(t *testing.T) {
 	t.Parallel()
-	levels := []scorecards.EntityManagementProgressLevelDefinition{
+	levels := []servicearchintelligence.EntityManagementProgressLevelDefinition{
 		{ID: "red", Name: "Red", Description: "Needs work", HexColorCode: "#FF0000"},
 		{ID: "green", Name: "Green", Description: "Good", HexColorCode: "#00CC00"},
 	}

@@ -7,7 +7,7 @@ import (
 
 	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── User ID ↔ NGEP GUID resolution ───────────────────────────────────────────
@@ -122,14 +122,16 @@ func syncTeamMembership(ctx context.Context, client *nr.NewRelic, membershipColI
 }
 
 // syncTeamManagers resolves the declared manager user IDs to NGEP GUIDs and
-// calls entityManagementUpdateTeam with the full desired managers list.
-// An empty slice explicitly clears all current managers.
+// sends the full desired managers list via EntityManagementUpdateTeam.
+// An empty managerUserIDs slice sends Managers: &[]string{} which explicitly
+// clears all managers — the pointer field ensures the JSON encoder includes
+// the empty array rather than omitting it.
 func syncTeamManagers(ctx context.Context, client *nr.NewRelic, teamID string, managerUserIDs []int) error {
 	if len(managerUserIDs) == 0 {
-		// Managers has omitempty in TeamEntityUpdateInput, so sending an empty
-		// []string{} via the typed struct would be silently dropped by the JSON
-		// encoder. Use a raw mutation to guarantee the explicit empty list is sent.
-		return patchTeamField(ctx, client, teamID, "managers", []interface{}{})
+		empty := []string{}
+		_, err := client.Scorecards.EntityManagementUpdateTeam(teamID,
+			servicearchintelligence.EntityManagementTeamEntityUpdateInput{Managers: &empty})
+		return err
 	}
 
 	guids, err := lookupUserNGEPGUIDs(ctx, &client.Entities, managerUserIDs)
@@ -141,7 +143,7 @@ func syncTeamManagers(ctx context.Context, client *nr.NewRelic, teamID string, m
 		managerGUIDs = append(managerGUIDs, g)
 	}
 	_, err = client.Scorecards.EntityManagementUpdateTeam(teamID,
-		scorecards.EntityManagementTeamEntityUpdateInput{Managers: managerGUIDs})
+		servicearchintelligence.EntityManagementTeamEntityUpdateInput{Managers: &managerGUIDs})
 	return err
 }
 
@@ -157,7 +159,7 @@ func syncTeamManagers(ctx context.Context, client *nr.NewRelic, teamID string, m
 //     in the collection (placed there by discovery) but the user now wants
 //     Terraform to track it. The provider records it in state and from that
 //     point treats it as a statically-managed entity.
-func syncTeamOwnership(ctx context.Context, client *scorecards.Scorecards, ownershipColID string, oldGUIDs, newGUIDs []string) error {
+func syncTeamOwnership(ctx context.Context, client *servicearchintelligence.Scorecards, ownershipColID string, oldGUIDs, newGUIDs []string) error {
 	toAdd, toRemove := stringSetDelta(oldGUIDs, newGUIDs)
 
 	if len(toAdd) > 0 {
@@ -190,10 +192,10 @@ func syncTeamOwnership(ctx context.Context, client *scorecards.Scorecards, owner
 // This dual-purpose map is used both to populate the members block in state
 // and to decode the team's manager GUIDs back to integer userIDs for
 // idempotent round-tripping (avoiding a second API call for managers).
-func readTeamMembershipMap(ctx context.Context, client *scorecards.Scorecards, membershipColID string) (map[string]int, error) {
+func readTeamMembershipMap(ctx context.Context, client *servicearchintelligence.Scorecards, membershipColID string) (map[string]int, error) {
 	guidToUserID := make(map[string]int)
-	err := pageCollectionItems(ctx, client, membershipColID, func(item scorecards.EntityManagementEntityInterface) {
-		if u, ok := item.(*scorecards.EntityManagementUserEntity); ok {
+	err := pageCollectionItems(ctx, client, membershipColID, func(item servicearchintelligence.EntityManagementEntityInterface) {
+		if u, ok := item.(*servicearchintelligence.EntityManagementUserEntity); ok {
 			guidToUserID[u.ID] = u.UserID
 		}
 	})
@@ -210,29 +212,35 @@ func readTeamMembershipMap(ctx context.Context, client *scorecards.Scorecards, m
 // discovery tags) DO appear in the collectionElements API response but are
 // unmarshalled as unknown types and silently dropped by
 // UnmarshalEntityManagementEntityInterface. This means they are invisible to
-// the provider and will never show as drift — which is the desired behaviour
-// since discovery-managed membership should not be Terraform-authoritative.
-// If a new entity type is added to UnmarshalEntityManagementEntityInterface,
-// a matching case must be added here to ensure it is tracked in state.
-func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards, ownershipColID string) ([]string, error) {
+// readTeamOwnedEntityGUIDs returns the GUID of every entity in the team's
+// ownership collection, regardless of entity type.
+//
+// It uses pageCollectionItems which goes through UnmarshalEntityManagementEntityInterface.
+// That function now includes a fallback case: any __typename not in the explicit
+// switch is decoded as EntityManagementGenericEntity (ID + tags extracted), so
+// future NGEP entity types are handled automatically without code changes here.
+func readTeamOwnedEntityGUIDs(ctx context.Context, client *servicearchintelligence.Scorecards, ownershipColID string) ([]string, error) {
 	var guids []string
-	err := pageCollectionItems(ctx, client, ownershipColID, func(item scorecards.EntityManagementEntityInterface) {
+	err := pageCollectionItems(ctx, client, ownershipColID, func(item servicearchintelligence.EntityManagementEntityInterface) {
+		// All entity types now handled: known types via the switch in UnmarshalEntityManagementEntityInterface;
+		// unknown future types via the GenericEntity fallback added to that same function.
+		// We extract the ID from the common interface method GetID() via type-switch on the concrete pointer.
 		switch e := item.(type) {
-		case *scorecards.EntityManagementGenericEntity:
+		case *servicearchintelligence.EntityManagementGenericEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementUserEntity:
+		case *servicearchintelligence.EntityManagementUserEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementTeamEntity:
+		case *servicearchintelligence.EntityManagementTeamEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementCollectionEntity:
+		case *servicearchintelligence.EntityManagementCollectionEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementScorecardEntity:
+		case *servicearchintelligence.EntityManagementScorecardEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementScorecardRuleEntity:
+		case *servicearchintelligence.EntityManagementScorecardRuleEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementTeamsHierarchyLevelEntity:
+		case *servicearchintelligence.EntityManagementTeamsHierarchyLevelEntity:
 			guids = append(guids, e.ID)
-		case *scorecards.EntityManagementTeamsOrganizationSettingsEntity:
+		case *servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity:
 			guids = append(guids, e.ID)
 		}
 	})
@@ -278,13 +286,13 @@ func readTeamOwnedEntityGUIDs(ctx context.Context, client *scorecards.Scorecards
 // treated as static and discoveryGUIDs is empty.
 func readStaticOwnershipGUIDs(
 	ctx context.Context,
-	scClient *scorecards.Scorecards,
+	scClient *servicearchintelligence.Scorecards,
 	entitiesClient *entities.Entities,
 	ownershipColID string,
 	teamName string,
 	teamAliases []string,
 	declaredGUIDs []string,
-	orgSettings *scorecards.EntityManagementTeamsOrganizationSettingsEntity,
+	orgSettings *servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity,
 ) (staticGUIDs []string, discoveryGUIDs []string, err error) {
 	allGUIDs, err := readTeamOwnedEntityGUIDs(ctx, scClient, ownershipColID)
 	if err != nil {
@@ -378,9 +386,9 @@ func readStaticOwnershipGUIDs(
 // manager is already a collection member.
 //
 // oldManagers is the prior state. The managers mutation is skipped when both
-// oldManagers and newManagers are empty — this avoids a redundant raw
-// patchTeamField call on every Create without managers and on every Update
-// where only members or entities changed while managers stayed empty.
+// oldManagers and newManagers are empty — this avoids a redundant API call
+// on every Create without managers and on every Update where only members or
+// entities changed while managers stayed empty.
 //
 // Call order: (1) syncTeamMembership → (2) syncTeamManagers → (3) syncTeamOwnership.
 // Steps 1→2 are dependency-ordered: NGEP rejects a manager assignment unless
@@ -407,60 +415,4 @@ func applyTeamCollections(
 		return err
 	}
 	return nil
-}
-
-// ── Miscellaneous team helpers ────────────────────────────────────────────────
-
-// patchTeamField issues a raw entityManagementUpdateTeam call that sets a
-// single field to an explicit value, bypassing Go struct omitempty rules.
-//
-// Use this when the generated TeamEntityUpdateInput drops the field via
-// omitempty but the user intends an explicit clear (e.g. description → "",
-// aliases → [], tags → [], parentId → nil).
-//
-//	patchTeamField(ctx, client, id, "description", "")
-//	patchTeamField(ctx, client, id, "aliases",     []interface{}{})
-//	patchTeamField(ctx, client, id, "tags",        []interface{}{})
-//	patchTeamField(ctx, client, id, "parentId",    nil)
-func patchTeamField(ctx context.Context, client *nr.NewRelic, teamID, field string, value interface{}) error {
-	const q = `mutation($id: ID!, $teamEntity: EntityManagementTeamEntityUpdateInput!) {
-  entityManagementUpdateTeam(id: $id, teamEntity: $teamEntity) {
-    entity { id }
-  }
-}`
-	_, err := client.NerdGraph.QueryWithContext(ctx, q, map[string]interface{}{
-		"id":         teamID,
-		"teamEntity": map[string]interface{}{field: value},
-	})
-	return err
-}
-
-// Convenience wrappers around patchTeamField for the four fields that require
-// explicit clearing. Each wrapper name makes the call-site self-documenting.
-
-// clearTeamDescriptionRaw sends an explicit empty string to clear the team description field.
-func clearTeamDescriptionRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	return patchTeamField(ctx, client, teamID, "description", "")
-}
-
-// clearTeamAliasesRaw sends an explicit empty list to clear all team aliases.
-func clearTeamAliasesRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	return patchTeamField(ctx, client, teamID, "aliases", []interface{}{})
-}
-
-// clearTeamTagsRaw sends an explicit empty list to clear all user-managed team tags.
-func clearTeamTagsRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	return patchTeamField(ctx, client, teamID, "tags", []interface{}{})
-}
-
-// clearTeamParentID sends an explicit null to remove the team's parent association.
-func clearTeamParentID(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	return patchTeamField(ctx, client, teamID, "parentId", nil)
-}
-
-// clearTeamResourcesRaw sends an explicit empty list to clear all team resources.
-// The generated EntityManagementTeamEntityUpdateInput.Resources has omitempty, so
-// an empty Go slice would be silently dropped — this raw call bypasses that.
-func clearTeamResourcesRaw(ctx context.Context, client *nr.NewRelic, teamID string) error {
-	return patchTeamField(ctx, client, teamID, "resources", []interface{}{})
 }

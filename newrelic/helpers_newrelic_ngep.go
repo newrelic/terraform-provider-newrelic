@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── Tag helpers ───────────────────────────────────────────────────────────────
@@ -26,15 +26,15 @@ import (
 // Pass the current entity tags from a prior Read; the function returns the
 // merged list safe to send in any entityManagement*Update mutation.
 func mergeWithSystemTags(
-	userTags []scorecards.EntityManagementTagInput,
-	currentEntityTags []scorecards.EntityManagementTag,
-) []scorecards.EntityManagementTagInput {
-	out := make([]scorecards.EntityManagementTagInput, 0, len(userTags))
+	userTags []servicearchintelligence.EntityManagementTagInput,
+	currentEntityTags []servicearchintelligence.EntityManagementTag,
+) []servicearchintelligence.EntityManagementTagInput {
+	out := make([]servicearchintelligence.EntityManagementTagInput, 0, len(userTags))
 	out = append(out, userTags...)
 
 	for _, t := range currentEntityTags {
 		if strings.HasPrefix(t.Key, "nr.") {
-			out = append(out, scorecards.EntityManagementTagInput(t))
+			out = append(out, servicearchintelligence.EntityManagementTagInput(t))
 		}
 	}
 	return out
@@ -49,18 +49,18 @@ func mergeWithSystemTags(
 // implement a common interface for Tags. If the entity type is not one of
 // the known types, returns nil — meaning no system tags to preserve, which
 // is safe (the caller will send only the user-provided tags).
-func fetchEntitySystemTags(ctx context.Context, client *scorecards.Scorecards, entityID string) []scorecards.EntityManagementTag {
+func fetchEntitySystemTags(ctx context.Context, client *servicearchintelligence.Scorecards, entityID string) []servicearchintelligence.EntityManagementTag {
 	iface, err := client.GetEntityWithContext(ctx, entityID)
 	if err != nil || iface == nil {
 		return nil
 	}
-	var tags []scorecards.EntityManagementTag
+	var tags []servicearchintelligence.EntityManagementTag
 	switch e := (*iface).(type) {
-	case *scorecards.EntityManagementTeamEntity:
+	case *servicearchintelligence.EntityManagementTeamEntity:
 		tags = e.Tags
-	case *scorecards.EntityManagementScorecardEntity:
+	case *servicearchintelligence.EntityManagementScorecardEntity:
 		tags = e.Tags
-	case *scorecards.EntityManagementScorecardRuleEntity:
+	case *servicearchintelligence.EntityManagementScorecardRuleEntity:
 		tags = e.Tags
 	default:
 		return nil
@@ -69,8 +69,8 @@ func fetchEntitySystemTags(ctx context.Context, client *scorecards.Scorecards, e
 }
 
 // filterSystemTags returns only tags whose keys begin with "nr." (system-managed tags).
-func filterSystemTags(tags []scorecards.EntityManagementTag) []scorecards.EntityManagementTag {
-	var out []scorecards.EntityManagementTag
+func filterSystemTags(tags []servicearchintelligence.EntityManagementTag) []servicearchintelligence.EntityManagementTag {
+	var out []servicearchintelligence.EntityManagementTag
 	for _, t := range tags {
 		if strings.HasPrefix(t.Key, "nr.") {
 			out = append(out, t)
@@ -87,9 +87,9 @@ func filterSystemTags(tags []scorecards.EntityManagementTag) []scorecards.Entity
 // retry/paging loop so individual readers don't duplicate it.
 func pageCollectionItems(
 	_ context.Context,
-	client *scorecards.Scorecards,
+	client *servicearchintelligence.Scorecards,
 	colID string,
-	visit func(item scorecards.EntityManagementEntityInterface),
+	visit func(item servicearchintelligence.EntityManagementEntityInterface),
 ) error {
 	if colID == "" {
 		return nil
@@ -97,8 +97,8 @@ func pageCollectionItems(
 	cursor := ""
 	for {
 		result, err := client.GetCollectionElements(cursor,
-			scorecards.EntityManagementCollectionElementsFilter{
-				CollectionID: scorecards.EntityManagementCollectionIdFilterArgument{Eq: colID},
+			servicearchintelligence.EntityManagementCollectionElementsFilter{
+				CollectionID: servicearchintelligence.EntityManagementCollectionIdFilterArgument{Eq: colID},
 			}, 100)
 		if err != nil {
 			return err
@@ -180,7 +180,7 @@ func intSetDelta(oldItems, newItems []int) (toAdd, toRemove []int) {
 // Blocks up to timeout. Returns a non-nil error if the entity never appears.
 func waitForNGEPEntityIndexed(
 	ctx context.Context,
-	scClient *scorecards.Scorecards,
+	scClient *servicearchintelligence.Scorecards,
 	entityID string,
 	timeout time.Duration,
 ) error {

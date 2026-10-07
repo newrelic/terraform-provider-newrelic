@@ -13,8 +13,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	newrelic "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
+
+// teamResourceTypeValues returns the list of valid resource type strings by
+// reading the canonical enum from the go-client. This keeps the ValidateFunc
+// in sync with the API definition without maintaining a separate hardcoded list.
+func teamResourceTypeValues() []string {
+	t := servicearchintelligence.EntityManagementTeamResourceTypes
+	return []string{
+		string(t.ATLASSIAN_CONFLUENCE), string(t.ATLASSIAN_JIRA), string(t.ATLASSIAN_JIRA_SCORECARDS),
+		string(t.BASECAMP), string(t.BLAMELESS), string(t.EMAIL), string(t.FACEBOOK_WORKPLACE),
+		string(t.GITHUB), string(t.GITLAB), string(t.GOOGLE_CHAT), string(t.GOOGLE_CLOUD_PLATFORM),
+		string(t.GOOGLE_DRIVE), string(t.MICROSOFT_AZURE), string(t.MICROSOFT_SHAREPOINT),
+		string(t.MICROSOFT_TEAMS), string(t.OPSGENIE), string(t.OTHER_CONTACT), string(t.OTHER_LINK),
+		string(t.PAGERDUTY), string(t.ROCKET_CHAT), string(t.SERVICENOW), string(t.SKYPE),
+		string(t.SLACK), string(t.ZENDESK),
+	}
+}
 
 func resourceNewRelicTeam() *schema.Resource {
 	return &schema.Resource{
@@ -91,38 +107,10 @@ func resourceNewRelicTeam() *schema.Resource {
 						"type": {
 							Type:     schema.TypeString,
 							Required: true,
-							Description: "The resource type. Must be one of: ATLASSIAN_CONFLUENCE, ATLASSIAN_JIRA, " +
-								"ATLASSIAN_JIRA_SCORECARDS, BASECAMP, BLAMELESS, EMAIL, FACEBOOK_WORKPLACE, " +
-								"GITHUB, GITLAB, GOOGLE_CHAT, GOOGLE_CLOUD_PLATFORM, GOOGLE_DRIVE, " +
-								"MICROSOFT_AZURE, MICROSOFT_SHAREPOINT, MICROSOFT_TEAMS, OPSGENIE, " +
-								"OTHER_CONTACT, OTHER_LINK, PAGERDUTY, ROCKET_CHAT, SERVICENOW, " +
-								"SKYPE, SLACK, ZENDESK.",
-							ValidateFunc: validation.StringInSlice([]string{
-								"ATLASSIAN_CONFLUENCE",
-								"ATLASSIAN_JIRA",
-								"ATLASSIAN_JIRA_SCORECARDS",
-								"BASECAMP",
-								"BLAMELESS",
-								"EMAIL",
-								"FACEBOOK_WORKPLACE",
-								"GITHUB",
-								"GITLAB",
-								"GOOGLE_CHAT",
-								"GOOGLE_CLOUD_PLATFORM",
-								"GOOGLE_DRIVE",
-								"MICROSOFT_AZURE",
-								"MICROSOFT_SHAREPOINT",
-								"MICROSOFT_TEAMS",
-								"OPSGENIE",
-								"OTHER_CONTACT",
-								"OTHER_LINK",
-								"PAGERDUTY",
-								"ROCKET_CHAT",
-								"SERVICENOW",
-								"SKYPE",
-								"SLACK",
-								"ZENDESK",
-							}, false),
+							// Valid values are sourced from EntityManagementTeamResourceTypes in the
+							// go-client so this ValidateFunc stays in sync with the API automatically.
+							Description:  "The resource type. See EntityManagementTeamResourceTypes in the go-client for the full set of accepted values.",
+							ValidateFunc: validation.StringInSlice(teamResourceTypeValues(), false),
 						},
 						"content": {
 							Type:         schema.TypeString,
@@ -235,11 +223,11 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// ── Build create input ────────────────────────────────────────────────
-	input := scorecards.EntityManagementTeamEntityCreateInput{
+	input := servicearchintelligence.EntityManagementTeamEntityCreateInput{
 		Name: d.Get("name").(string),
-		Scope: scorecards.EntityManagementScopedReferenceInput{
+		Scope: servicearchintelligence.EntityManagementScopedReferenceInput{
 			ID:   orgID,
-			Type: scorecards.EntityManagementEntityScopeTypes.ORGANIZATION,
+			Type: servicearchintelligence.EntityManagementEntityScopeTypes.ORGANIZATION,
 		},
 	}
 	if v, ok := d.GetOk("description"); ok {
@@ -251,7 +239,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 	if v, ok := d.GetOk("tags"); ok {
-		input.Tags = expandNGEPTags(v.(*schema.Set).List())
+		input.Tags = expandSAITags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("resources"); ok {
 		input.Resources = expandTeamResources(v.([]interface{}))
@@ -293,7 +281,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 	// and the GUID is saved to state.
 	mode := d.Get("entity_management_mode").(string)
 	var newEntityGUIDs []string
-	if mode != "unmanaged" {
+	if mode == "managed" {
 		newEntityGUIDs = expandEntityGUIDsFromSet(d.Get("entities").(*schema.Set))
 	}
 	if err := applyTeamCollections(ctx, client, teamID, membershipColID, ownershipColID,
@@ -354,7 +342,7 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 		return nil
 	}
 
-	team, ok := (*entityIface).(*scorecards.EntityManagementTeamEntity)
+	team, ok := (*entityIface).(*servicearchintelligence.EntityManagementTeamEntity)
 	if !ok {
 		return diag.Errorf("entity %s is not a TeamEntity", d.Id())
 	}
@@ -367,7 +355,7 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	_ = d.Set("ownership_collection_id", team.Ownership.ID)
 	_ = d.Set("hierarchy_level_id", team.HierarchyLevelId)
 	_ = d.Set("resources", flattenTeamResources(team.Resources))
-	_ = d.Set("tags", flattenNGEPTags(team.Tags))
+	_ = d.Set("tags", flattenSAITags(team.Tags))
 
 	// aliases: the entity read path has an eventual-consistency lag — the API
 	// may return nil for a freshly created team even though aliases were
@@ -521,12 +509,16 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-// buildTeamEntityUpdateInput constructs the update mutation input and performs
-// raw-call field clears (description, aliases, tags, parent_id) when needed.
-// Returns the input and whether the mutation should be sent. Extracted from
-// resourceNewRelicTeamUpdate to keep cyclomatic complexity manageable.
-func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, client *newrelic.NewRelic) (scorecards.EntityManagementTeamEntityUpdateInput, bool, diag.Diagnostics) {
-	upd := scorecards.EntityManagementTeamEntityUpdateInput{}
+// buildTeamEntityUpdateInput assembles the team update mutation payload from
+// ResourceData changes. It uses the pointer fields on EntityManagementTeamEntityUpdateInput
+// so that:
+//   - nil  → field omitted from JSON → API leaves the attribute unchanged
+//   - pointer to zero value → field sent → API clears the attribute
+//
+// This eliminates any need for raw NerdGraph mutations; all API communication
+// goes through the go-client's EntityManagementUpdateTeam method.
+func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, client *newrelic.NewRelic) (servicearchintelligence.EntityManagementTeamEntityUpdateInput, bool, diag.Diagnostics) {
+	upd := servicearchintelligence.EntityManagementTeamEntityUpdateInput{}
 	hasPendingChange := false
 
 	if d.HasChange("name") {
@@ -534,50 +526,35 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 		hasPendingChange = true
 	}
 	if d.HasChange("description") {
-		if v := d.Get("description").(string); v != "" {
-			upd.Description = v
-			hasPendingChange = true
-		} else if err := clearTeamDescriptionRaw(ctx, client, d.Id()); err != nil {
-			return upd, false, diag.Errorf("clearing description on team %s: %v", d.Id(), err)
-		}
+		v := d.Get("description").(string) // "" clears, non-empty sets
+		upd.Description = &v
+		hasPendingChange = true
 	}
 	if d.HasChange("aliases") {
-		if al := d.Get("aliases").(*schema.Set).List(); len(al) > 0 {
-			for _, a := range al {
-				upd.Aliases = append(upd.Aliases, a.(string))
-			}
-			hasPendingChange = true
-		} else if err := clearTeamAliasesRaw(ctx, client, d.Id()); err != nil {
-			return upd, false, diag.Errorf("clearing aliases on team %s: %v", d.Id(), err)
+		aliases := make([]string, 0)
+		for _, a := range d.Get("aliases").(*schema.Set).List() {
+			aliases = append(aliases, a.(string))
 		}
+		upd.Aliases = &aliases // empty slice clears, non-empty sets
+		hasPendingChange = true
 	}
 	if d.HasChange("tags") {
 		merged := mergeWithSystemTags(
-			expandNGEPTags(d.Get("tags").(*schema.Set).List()),
+			expandSAITags(d.Get("tags").(*schema.Set).List()),
 			fetchEntitySystemTags(ctx, &client.Scorecards, d.Id()),
 		)
-		if len(merged) > 0 {
-			upd.Tags = merged
-			hasPendingChange = true
-		} else if err := clearTeamTagsRaw(ctx, client, d.Id()); err != nil {
-			return upd, false, diag.Errorf("clearing tags on team %s: %v", d.Id(), err)
-		}
+		upd.Tags = &merged // empty slice clears, non-empty sets
+		hasPendingChange = true
 	}
 	if d.HasChange("resources") {
-		if raw := d.Get("resources").([]interface{}); len(raw) > 0 {
-			upd.Resources = expandTeamResourcesUpdate(raw)
-			hasPendingChange = true
-		} else if err := clearTeamResourcesRaw(ctx, client, d.Id()); err != nil {
-			return upd, false, diag.Errorf("clearing resources on team %s: %v", d.Id(), err)
-		}
+		resources := expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
+		upd.Resources = &resources // empty slice clears, non-empty sets
+		hasPendingChange = true
 	}
 	if d.HasChange("parent_id") {
-		if v := d.Get("parent_id").(string); v != "" {
-			upd.ParentId = v
-			hasPendingChange = true
-		} else if err := clearTeamParentID(ctx, client, d.Id()); err != nil {
-			return upd, false, diag.FromErr(err)
-		}
+		v := d.Get("parent_id").(string) // "" clears, non-empty sets
+		upd.ParentId = &v
+		hasPendingChange = true
 	}
 	return upd, hasPendingChange, nil
 }
@@ -617,7 +594,7 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	// syncTeamOwnership treats the "already belongs" response as success and
 	// the GUID is saved to state.
 	mode := d.Get("entity_management_mode").(string)
-	entitiesChanged := mode != "unmanaged" && d.HasChange("entities")
+	entitiesChanged := mode == "managed" && d.HasChange("entities")
 	if d.HasChange("members") || d.HasChange("managers") || entitiesChanged {
 		oldMembersRaw, newMembersRaw := d.GetChange("members")
 		oldManagersRaw, newManagersRaw := d.GetChange("managers")

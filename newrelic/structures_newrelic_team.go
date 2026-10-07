@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── CustomizeDiff ─────────────────────────────────────────────────────────────
@@ -129,67 +129,41 @@ func declaredSetFromConfig(d *schema.ResourceData, stateGUIDs []string) map[stri
 
 // ── Expand helpers (Terraform state → API input) ──────────────────────────────
 
-// teamResourceFields holds the parsed fields from a single resources block.
-// Shared by the Create and Update expand functions to avoid duplicating the
-// extraction logic.
-type teamResourceFields struct {
-	resourceType string
-	content      string
-	title        string
-}
-
-// extractTeamResourceFields parses one element of the resources TypeList into
-// a teamResourceFields struct. Returns nil if the element is not a valid map.
-func extractTeamResourceFields(raw interface{}) *teamResourceFields {
-	m, ok := raw.(map[string]interface{})
-	if !ok {
-		return nil
-	}
-	f := &teamResourceFields{
-		resourceType: m["type"].(string),
-		content:      m["content"].(string),
-	}
-	if title, ok := m["title"].(string); ok {
-		f.title = title
-	}
-	return f
-}
-
 // expandTeamResources converts the resources Terraform list to a CreateInput slice.
-func expandTeamResources(raw []interface{}) []scorecards.EntityManagementTeamResourceCreateInput {
+func expandTeamResources(raw []interface{}) []servicearchintelligence.EntityManagementTeamResourceCreateInput {
 	if len(raw) == 0 {
 		return nil
 	}
-	out := make([]scorecards.EntityManagementTeamResourceCreateInput, 0, len(raw))
+	out := make([]servicearchintelligence.EntityManagementTeamResourceCreateInput, 0, len(raw))
 	for _, r := range raw {
-		f := extractTeamResourceFields(r)
-		if f == nil {
+		m, ok := r.(map[string]interface{})
+		if !ok {
 			continue
 		}
-		out = append(out, scorecards.EntityManagementTeamResourceCreateInput{
-			Type:    f.resourceType,
-			Content: f.content,
-			Title:   f.title,
+		out = append(out, servicearchintelligence.EntityManagementTeamResourceCreateInput{
+			Type:    m["type"].(string),
+			Content: m["content"].(string),
+			Title:   m["title"].(string),
 		})
 	}
 	return out
 }
 
 // expandTeamResourcesUpdate converts the resources Terraform list to an UpdateInput slice.
-func expandTeamResourcesUpdate(raw []interface{}) []scorecards.EntityManagementTeamResourceUpdateInput {
+func expandTeamResourcesUpdate(raw []interface{}) []servicearchintelligence.EntityManagementTeamResourceUpdateInput {
 	if len(raw) == 0 {
 		return nil
 	}
-	out := make([]scorecards.EntityManagementTeamResourceUpdateInput, 0, len(raw))
+	out := make([]servicearchintelligence.EntityManagementTeamResourceUpdateInput, 0, len(raw))
 	for _, r := range raw {
-		f := extractTeamResourceFields(r)
-		if f == nil {
+		m, ok := r.(map[string]interface{})
+		if !ok {
 			continue
 		}
-		out = append(out, scorecards.EntityManagementTeamResourceUpdateInput{
-			Type:    f.resourceType,
-			Content: f.content,
-			Title:   f.title,
+		out = append(out, servicearchintelligence.EntityManagementTeamResourceUpdateInput{
+			Type:    m["type"].(string),
+			Content: m["content"].(string),
+			Title:   m["title"].(string),
 		})
 	}
 	return out
@@ -217,7 +191,7 @@ func expandEntityGUIDsFromSet(s *schema.Set) []string {
 // ── Flatten helpers (API response → Terraform state) ─────────────────────────
 
 // flattenTeamResources converts API TeamResource values back to Terraform maps.
-func flattenTeamResources(res []scorecards.EntityManagementTeamResource) []map[string]interface{} {
+func flattenTeamResources(res []servicearchintelligence.EntityManagementTeamResource) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(res))
 	for _, r := range res {
 		out = append(out, map[string]interface{}{

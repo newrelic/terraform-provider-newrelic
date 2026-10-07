@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	nrErrors "github.com/newrelic/newrelic-client-go/v2/pkg/errors"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 func resourceNewRelicScorecardRule() *schema.Resource {
@@ -143,13 +143,13 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	input := scorecards.EntityManagementScorecardRuleEntityCreateInput{
+	input := servicearchintelligence.EntityManagementScorecardRuleEntityCreateInput{
 		Name:       d.Get("name").(string),
 		Enabled:    d.Get("enabled").(bool),
 		NRQLEngine: expandNRQLEngineCreate(d.Get("nrql_engine").([]interface{})),
-		Scope: scorecards.EntityManagementScopedReferenceInput{
+		Scope: servicearchintelligence.EntityManagementScopedReferenceInput{
 			ID:   orgID,
-			Type: scorecards.EntityManagementEntityScopeTypes.ORGANIZATION,
+			Type: servicearchintelligence.EntityManagementEntityScopeTypes.ORGANIZATION,
 		},
 	}
 	if v, ok := d.GetOk("description"); ok {
@@ -165,7 +165,7 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 		input.RunInterval = v.(int)
 	}
 	if v, ok := d.GetOk("tags"); ok {
-		input.Tags = expandNGEPTags(v.(*schema.Set).List())
+		input.Tags = expandSAITags(v.(*schema.Set).List())
 	}
 
 	result, err := client.Scorecards.EntityManagementCreateScorecardRule(input)
@@ -187,7 +187,7 @@ func resourceNewRelicScorecardRuleCreate(ctx context.Context, d *schema.Resource
 	_ = d.Set("progress_level", input.ProgressLevel)
 	_ = d.Set("run_interval", input.RunInterval)
 	if input.NRQLEngine != nil {
-		_ = d.Set("nrql_engine", flattenNRQLEngine(scorecards.EntityManagementNRQLRuleEngine{
+		_ = d.Set("nrql_engine", flattenNRQLEngine(servicearchintelligence.EntityManagementNRQLRuleEngine{
 			Query:        input.NRQLEngine.Query,
 			Accounts:     input.NRQLEngine.Accounts,
 			JoinAccounts: input.NRQLEngine.JoinAccounts,
@@ -228,7 +228,7 @@ func resourceNewRelicScorecardRuleRead(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 
-	rule, ok := (*entityIface).(*scorecards.EntityManagementScorecardRuleEntity)
+	rule, ok := (*entityIface).(*servicearchintelligence.EntityManagementScorecardRuleEntity)
 	if !ok {
 		return diag.Errorf("entity %s is not a ScorecardRuleEntity", d.Id())
 	}
@@ -236,7 +236,7 @@ func resourceNewRelicScorecardRuleRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("name", rule.Name)
 	_ = d.Set("description", rule.Description)
 	_ = d.Set("enabled", rule.Enabled)
-	_ = d.Set("tags", flattenNGEPTags(rule.Tags))
+	_ = d.Set("tags", flattenSAITags(rule.Tags))
 	_ = d.Set("organization_id", rule.Scope.ID)
 
 	// Always set these optional int/string fields so that clearing them (setting
@@ -258,7 +258,7 @@ func resourceNewRelicScorecardRuleRead(ctx context.Context, d *schema.ResourceDa
 func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	upd := scorecards.EntityManagementScorecardRuleEntityUpdateInput{}
+	upd := servicearchintelligence.EntityManagementScorecardRuleEntityUpdateInput{}
 
 	// Always include enabled and description — they have no omitempty in the API
 	// input type, so guarding behind HasChange would send the zero value (false/"")
@@ -283,7 +283,7 @@ func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.Resource
 		upd.RunInterval = d.Get("run_interval").(int)
 	}
 	if d.HasChange("tags") {
-		userTags := expandNGEPTags(d.Get("tags").(*schema.Set).List())
+		userTags := expandSAITags(d.Get("tags").(*schema.Set).List())
 		sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
 		upd.Tags = mergeWithSystemTags(userTags, sysTags)
 	}

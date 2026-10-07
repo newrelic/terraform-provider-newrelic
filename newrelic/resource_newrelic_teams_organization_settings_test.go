@@ -19,7 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -32,7 +32,7 @@ func testAccPreCheckOrgSettings(t *testing.T) {
 // captureAndRestoreOrgSettings saves the current org settings at test start and
 // schedules a Cleanup that restores them, ensuring the org is left in its
 // original state regardless of what the test does.
-func captureAndRestoreOrgSettings(t *testing.T) *scorecards.EntityManagementTeamsOrganizationSettingsEntity {
+func captureAndRestoreOrgSettings(t *testing.T) *servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity {
 	t.Helper()
 	if testAccProvider.Meta() == nil {
 		return nil
@@ -52,24 +52,24 @@ func captureAndRestoreOrgSettings(t *testing.T) *scorecards.EntityManagementTeam
 		if tagKeys == nil {
 			tagKeys = []string{}
 		}
-		rules := make([]scorecards.EntityManagementSyncGroupRuleUpdateInput, 0, len(original.SyncGroups.Rules))
+		rules := make([]servicearchintelligence.EntityManagementSyncGroupRuleUpdateInput, 0, len(original.SyncGroups.Rules))
 		for _, r := range original.SyncGroups.Rules {
-			conds := make([]scorecards.EntityManagementSyncGroupRuleConditionUpdateInput, 0, len(r.Conditions))
+			conds := make([]servicearchintelligence.EntityManagementSyncGroupRuleConditionUpdateInput, 0, len(r.Conditions))
 			for _, c := range r.Conditions {
-				conds = append(conds, scorecards.EntityManagementSyncGroupRuleConditionUpdateInput{
+				conds = append(conds, servicearchintelligence.EntityManagementSyncGroupRuleConditionUpdateInput{
 					Type:  c.Type,
 					Value: c.Value,
 				})
 			}
-			rules = append(rules, scorecards.EntityManagementSyncGroupRuleUpdateInput{Conditions: conds})
+			rules = append(rules, servicearchintelligence.EntityManagementSyncGroupRuleUpdateInput{Conditions: conds})
 		}
 		_, _ = c.Scorecards.EntityManagementUpdateTeamsOrganizationSettings(original.ID,
-			scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
-				Discovery: &scorecards.EntityManagementDiscoverySettingsUpdateInput{
+			servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
+				Discovery: &servicearchintelligence.EntityManagementDiscoverySettingsUpdateInput{
 					Enabled: original.Discovery.Enabled,
 					TagKeys: tagKeys,
 				},
-				SyncGroups: scorecards.EntityManagementSyncGroupsSettingsUpdateInput{
+				SyncGroups: servicearchintelligence.EntityManagementSyncGroupsSettingsUpdateInput{
 					Enabled: original.SyncGroups.Enabled,
 					Rules:   rules,
 				},
@@ -89,7 +89,7 @@ func TestAccNewRelicTeamsOrgSettings_Discovery(t *testing.T) {
 	resourceName := "newrelic_teams_organization_settings.org"
 
 	var settingsID string
-	var original *scorecards.EntityManagementTeamsOrganizationSettingsEntity
+	var original *servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -144,8 +144,8 @@ func TestAccNewRelicTeamsOrgSettings_Discovery(t *testing.T) {
 					client := testAccProvider.Meta().(*ProviderConfig).NewClient
 					_, _ = client.Scorecards.EntityManagementUpdateTeamsOrganizationSettings(
 						settingsID,
-						scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
-							Discovery: &scorecards.EntityManagementDiscoverySettingsUpdateInput{
+						servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
+							Discovery: &servicearchintelligence.EntityManagementDiscoverySettingsUpdateInput{
 								Enabled: false, // flip out-of-band
 								TagKeys: []string{"team", "teamId"},
 							},
@@ -182,7 +182,7 @@ func TestAccNewRelicTeamsOrgSettings_SyncGroupRules(t *testing.T) {
 	resourceName := "newrelic_teams_organization_settings.org"
 
 	var settingsID string
-	var original *scorecards.EntityManagementTeamsOrganizationSettingsEntity
+	var original *servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -242,12 +242,12 @@ func TestAccNewRelicTeamsOrgSettings_SyncGroupRules(t *testing.T) {
 					client := testAccProvider.Meta().(*ProviderConfig).NewClient
 					_, _ = client.Scorecards.EntityManagementUpdateTeamsOrganizationSettings(
 						settingsID,
-						scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
-							SyncGroups: scorecards.EntityManagementSyncGroupsSettingsUpdateInput{
+						servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
+							SyncGroups: servicearchintelligence.EntityManagementSyncGroupsSettingsUpdateInput{
 								Enabled: true,
-								Rules: []scorecards.EntityManagementSyncGroupRuleUpdateInput{
+								Rules: []servicearchintelligence.EntityManagementSyncGroupRuleUpdateInput{
 									// Out-of-band: change condition value
-									{Conditions: []scorecards.EntityManagementSyncGroupRuleConditionUpdateInput{
+									{Conditions: []servicearchintelligence.EntityManagementSyncGroupRuleConditionUpdateInput{
 										{Type: "CONTAINS", Value: "out-of-band-drift"},
 									}},
 								},

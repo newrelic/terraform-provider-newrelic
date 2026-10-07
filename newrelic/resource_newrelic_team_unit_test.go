@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── structures_newrelic_team.go ───────────────────────────────────────────────
@@ -20,7 +20,7 @@ func TestExpandTeamTags(t *testing.T) {
 		map[string]interface{}{"key": "env", "values": []interface{}{"dev", "staging"}},
 		map[string]interface{}{"key": "team", "values": []interface{}{"platform"}},
 	}
-	tags := expandNGEPTags(raw)
+	tags := expandSAITags(raw)
 	require.Len(t, tags, 2)
 	assert.Equal(t, "env", tags[0].Key)
 	assert.ElementsMatch(t, []string{"dev", "staging"}, tags[0].Values)
@@ -29,19 +29,19 @@ func TestExpandTeamTags(t *testing.T) {
 
 func TestExpandTeamTagsEmpty(t *testing.T) {
 	t.Parallel()
-	assert.Nil(t, expandNGEPTags(nil))
-	assert.Nil(t, expandNGEPTags([]interface{}{}))
+	assert.Nil(t, expandSAITags(nil))
+	assert.Nil(t, expandSAITags([]interface{}{}))
 }
 
 func TestFlattenTeamTags_FiltersNrSystem(t *testing.T) {
 	t.Parallel()
 	// nr.* tags (auto-injected by NGEP) must be stripped from state.
-	tags := []scorecards.EntityManagementTag{
+	tags := []servicearchintelligence.EntityManagementTag{
 		{Key: "env", Values: []string{"dev"}},
 		{Key: "nr.hierarchy.level", Values: []string{"Level 2"}},
 		{Key: "team", Values: []string{"platform"}},
 	}
-	flat := flattenNGEPTags(tags)
+	flat := flattenSAITags(tags)
 	require.Len(t, flat, 2, "nr.* tag should be filtered out")
 	assert.Equal(t, "env", flat[0]["key"])
 	assert.Equal(t, []string{"dev"}, flat[0]["values"])
@@ -63,7 +63,7 @@ func TestExpandTeamResources(t *testing.T) {
 
 func TestFlattenTeamResources(t *testing.T) {
 	t.Parallel()
-	res := []scorecards.EntityManagementTeamResource{
+	res := []servicearchintelligence.EntityManagementTeamResource{
 		{Type: "link", Content: "https://example.com", Title: "Docs"},
 	}
 	flat := flattenTeamResources(res)

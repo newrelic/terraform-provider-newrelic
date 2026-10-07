@@ -27,7 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
@@ -176,7 +176,7 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 	d.SetId(existing.ID)
 	log.Printf("[INFO] Found Teams organisation settings singleton %s — applying declared configuration", existing.ID)
 
-	upd := scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{}
+	upd := servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{}
 	updHasFields := false
 
 	// Discovery — send only when at least one discovery attribute is declared.
@@ -185,7 +185,7 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 		for _, v := range d.Get("discovery_tag_keys").(*schema.Set).List() {
 			tagKeys = append(tagKeys, v.(string))
 		}
-		upd.Discovery = &scorecards.EntityManagementDiscoverySettingsUpdateInput{
+		upd.Discovery = &servicearchintelligence.EntityManagementDiscoverySettingsUpdateInput{
 			Enabled: d.Get("discovery_enabled").(bool),
 			TagKeys: tagKeys,
 		}
@@ -227,7 +227,7 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 			currentName := ""
 			levelIface, levelErr := client.Scorecards.GetEntityWithContext(ctx, id)
 			if levelErr == nil && levelIface != nil && *levelIface != nil {
-				if level, ok := (*levelIface).(*scorecards.EntityManagementTeamsHierarchyLevelEntity); ok {
+				if level, ok := (*levelIface).(*servicearchintelligence.EntityManagementTeamsHierarchyLevelEntity); ok {
 					currentName = level.Name
 				}
 			}
@@ -237,7 +237,7 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 			}
 			if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(
 				id,
-				scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: wantName},
+				servicearchintelligence.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: wantName},
 			); err != nil {
 				return diag.Errorf("renaming hierarchy level %s: %v", id, err)
 			}
@@ -271,7 +271,7 @@ func resourceNewRelicTeamsOrgSettingsRead(ctx context.Context, d *schema.Resourc
 		return nil
 	}
 
-	settings, ok := (*entityIface).(*scorecards.EntityManagementTeamsOrganizationSettingsEntity)
+	settings, ok := (*entityIface).(*servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity)
 	if !ok {
 		return diag.Errorf("entity %s is not a TeamsOrganizationSettingsEntity", d.Id())
 	}
@@ -288,7 +288,7 @@ func resourceNewRelicTeamsOrgSettingsRead(ctx context.Context, d *schema.Resourc
 		if err != nil || levelIface == nil || *levelIface == nil {
 			continue
 		}
-		if level, ok := (*levelIface).(*scorecards.EntityManagementTeamsHierarchyLevelEntity); ok {
+		if level, ok := (*levelIface).(*servicearchintelligence.EntityManagementTeamsHierarchyLevelEntity); ok {
 			levels = append(levels, map[string]interface{}{
 				"id":   level.ID,
 				"name": level.Name,
@@ -304,7 +304,7 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating NGEP teams organisation settings %s", d.Id())
 
-	upd := scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{}
+	upd := servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{}
 	updHasFields := false
 
 	if d.HasChange("discovery_enabled") || d.HasChange("discovery_tag_keys") {
@@ -312,7 +312,7 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 		for _, v := range d.Get("discovery_tag_keys").(*schema.Set).List() {
 			tagKeys = append(tagKeys, v.(string))
 		}
-		upd.Discovery = &scorecards.EntityManagementDiscoverySettingsUpdateInput{
+		upd.Discovery = &servicearchintelligence.EntityManagementDiscoverySettingsUpdateInput{
 			Enabled: d.Get("discovery_enabled").(bool),
 			TagKeys: tagKeys,
 		}
@@ -356,7 +356,7 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 			id, name := m["id"].(string), m["name"].(string)
 			if oldName, exists := oldMap[id]; !exists || oldName != name {
 				if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(id,
-					scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: name},
+					servicearchintelligence.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: name},
 				); err != nil {
 					return diag.Errorf("renaming hierarchy level %s: %v", id, err)
 				}

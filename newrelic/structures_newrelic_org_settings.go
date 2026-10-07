@@ -1,10 +1,10 @@
 package newrelic
 
-import "github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+import "github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 
 // flattenSyncGroupRules converts API SyncGroupRule values to the Terraform list
 // shape used by the sync_group_rules attribute.
-func flattenSyncGroupRules(rules []scorecards.EntityManagementSyncGroupRule) []map[string]interface{} {
+func flattenSyncGroupRules(rules []servicearchintelligence.EntityManagementSyncGroupRule) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(rules))
 	for _, rule := range rules {
 		conds := make([]map[string]interface{}, 0, len(rule.Conditions))
@@ -21,8 +21,8 @@ func flattenSyncGroupRules(rules []scorecards.EntityManagementSyncGroupRule) []m
 
 // expandSyncGroupsUpdate converts the Terraform sync_group_rules list and
 // sync_groups_enabled bool into the API update input type.
-func expandSyncGroupsUpdate(enabled bool, rawRules []interface{}) scorecards.EntityManagementSyncGroupsSettingsUpdateInput {
-	rules := make([]scorecards.EntityManagementSyncGroupRuleUpdateInput, 0, len(rawRules))
+func expandSyncGroupsUpdate(enabled bool, rawRules []interface{}) servicearchintelligence.EntityManagementSyncGroupsSettingsUpdateInput {
+	rules := make([]servicearchintelligence.EntityManagementSyncGroupRuleUpdateInput, 0, len(rawRules))
 	for _, rr := range rawRules {
 		if rr == nil {
 			continue
@@ -32,7 +32,7 @@ func expandSyncGroupsUpdate(enabled bool, rawRules []interface{}) scorecards.Ent
 			continue
 		}
 		rawConds, _ := rm["conditions"].([]interface{})
-		conds := make([]scorecards.EntityManagementSyncGroupRuleConditionUpdateInput, 0, len(rawConds))
+		conds := make([]servicearchintelligence.EntityManagementSyncGroupRuleConditionUpdateInput, 0, len(rawConds))
 		for _, rc := range rawConds {
 			if rc == nil {
 				continue
@@ -41,14 +41,14 @@ func expandSyncGroupsUpdate(enabled bool, rawRules []interface{}) scorecards.Ent
 			if !ok {
 				continue
 			}
-			conds = append(conds, scorecards.EntityManagementSyncGroupRuleConditionUpdateInput{
-				Type:  scorecards.EntityManagementSyncGroupRuleConditionType(cm["type"].(string)),
+			conds = append(conds, servicearchintelligence.EntityManagementSyncGroupRuleConditionUpdateInput{
+				Type:  servicearchintelligence.EntityManagementSyncGroupRuleConditionType(cm["type"].(string)),
 				Value: cm["value"].(string),
 			})
 		}
-		rules = append(rules, scorecards.EntityManagementSyncGroupRuleUpdateInput{Conditions: conds})
+		rules = append(rules, servicearchintelligence.EntityManagementSyncGroupRuleUpdateInput{Conditions: conds})
 	}
-	return scorecards.EntityManagementSyncGroupsSettingsUpdateInput{
+	return servicearchintelligence.EntityManagementSyncGroupsSettingsUpdateInput{
 		Enabled: enabled,
 		Rules:   rules,
 	}

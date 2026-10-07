@@ -7,19 +7,19 @@ package newrelic
 import (
 	"strings"
 
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── Tags ──────────────────────────────────────────────────────────────────────
 
-// expandNGEPTags converts a Terraform list of tag blocks (each with a "key"
+// expandSAITags converts a Terraform list of tag blocks (each with a "key"
 // string and "values" []string) into EntityManagementTagInput values accepted
 // by any entityManagement mutation.
-func expandNGEPTags(raw []interface{}) []scorecards.EntityManagementTagInput {
+func expandSAITags(raw []interface{}) []servicearchintelligence.EntityManagementTagInput {
 	if len(raw) == 0 {
 		return nil
 	}
-	out := make([]scorecards.EntityManagementTagInput, 0, len(raw))
+	out := make([]servicearchintelligence.EntityManagementTagInput, 0, len(raw))
 	for _, r := range raw {
 		m := r.(map[string]interface{})
 		key := m["key"].(string)
@@ -31,7 +31,7 @@ func expandNGEPTags(raw []interface{}) []scorecards.EntityManagementTagInput {
 			}
 		}
 		if len(vals) > 0 {
-			out = append(out, scorecards.EntityManagementTagInput{Key: key, Values: vals})
+			out = append(out, servicearchintelligence.EntityManagementTagInput{Key: key, Values: vals})
 		}
 	}
 	return out
@@ -40,22 +40,22 @@ func expandNGEPTags(raw []interface{}) []scorecards.EntityManagementTagInput {
 // tagsInputToFlattenedSet converts TagInput values to the flattened Terraform
 // representation ready for d.Set("tags", ...). Used in Create to set state
 // without a Read round-trip.
-func tagsInputToFlattenedSet(tags []scorecards.EntityManagementTagInput) interface{} {
+func tagsInputToFlattenedSet(tags []servicearchintelligence.EntityManagementTagInput) interface{} {
 	if len(tags) == 0 {
 		return nil
 	}
-	ts := make([]scorecards.EntityManagementTag, len(tags))
+	ts := make([]servicearchintelligence.EntityManagementTag, len(tags))
 	for i, t := range tags {
-		ts[i] = scorecards.EntityManagementTag(t)
+		ts[i] = servicearchintelligence.EntityManagementTag(t)
 	}
-	return flattenNGEPTags(ts)
+	return flattenSAITags(ts)
 }
 
-// flattenNGEPTags converts EntityManagementTag values back to a list of
+// flattenSAITags converts EntityManagementTag values back to a list of
 // maps with "key" and "values" keys. Tags whose keys begin with "nr." are
 // stripped — NGEP auto-injects system tags (e.g. "nr.hierarchy.level") that
 // must not appear in Terraform state and trigger spurious plan diffs.
-func flattenNGEPTags(tags []scorecards.EntityManagementTag) []map[string]interface{} {
+func flattenSAITags(tags []servicearchintelligence.EntityManagementTag) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, len(tags))
 	for _, t := range tags {
 		if strings.HasPrefix(t.Key, "nr.") {

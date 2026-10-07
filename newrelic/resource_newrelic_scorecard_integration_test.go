@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── acceptance test helpers ───────────────────────────────────────────────────
@@ -344,7 +344,7 @@ func TestAccNewRelicScorecardRule_AttributeDrift(t *testing.T) {
 				PreConfig: func() {
 					client := testAccProvider.Meta().(*ProviderConfig).NewClient
 					_, err := client.Scorecards.EntityManagementUpdateScorecardRule(ruleID,
-						scorecards.EntityManagementScorecardRuleEntityUpdateInput{
+						servicearchintelligence.EntityManagementScorecardRuleEntityUpdateInput{
 							Enabled:     false,
 							Description: "",
 						})

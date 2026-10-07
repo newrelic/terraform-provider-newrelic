@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // ── CustomizeDiff functions ───────────────────────────────────────────────────
@@ -117,14 +117,14 @@ func extractProgressLevelFields(raw interface{}) progressLevelFields {
 }
 
 // expandProgressLevels converts the progress_levels Terraform set to a CreateInput slice.
-func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionCreateInput {
+func expandProgressLevels(raw []interface{}) []servicearchintelligence.EntityManagementProgressLevelDefinitionCreateInput {
 	if len(raw) == 0 {
 		return nil
 	}
-	out := make([]scorecards.EntityManagementProgressLevelDefinitionCreateInput, 0, len(raw))
+	out := make([]servicearchintelligence.EntityManagementProgressLevelDefinitionCreateInput, 0, len(raw))
 	for _, r := range raw {
 		f := extractProgressLevelFields(r)
-		out = append(out, scorecards.EntityManagementProgressLevelDefinitionCreateInput{
+		out = append(out, servicearchintelligence.EntityManagementProgressLevelDefinitionCreateInput{
 			ID:           f.id,
 			Name:         f.name,
 			Description:  f.description,
@@ -136,14 +136,14 @@ func expandProgressLevels(raw []interface{}) []scorecards.EntityManagementProgre
 
 // expandProgressLevelsUpdate converts the progress_levels Terraform set to an UpdateInput slice.
 // The Update and Create input types have identical fields; they differ in generated name only.
-func expandProgressLevelsUpdate(raw []interface{}) []scorecards.EntityManagementProgressLevelDefinitionUpdateInput {
+func expandProgressLevelsUpdate(raw []interface{}) []servicearchintelligence.EntityManagementProgressLevelDefinitionUpdateInput {
 	if len(raw) == 0 {
 		return nil
 	}
-	out := make([]scorecards.EntityManagementProgressLevelDefinitionUpdateInput, 0, len(raw))
+	out := make([]servicearchintelligence.EntityManagementProgressLevelDefinitionUpdateInput, 0, len(raw))
 	for _, r := range raw {
 		f := extractProgressLevelFields(r)
-		out = append(out, scorecards.EntityManagementProgressLevelDefinitionUpdateInput{
+		out = append(out, servicearchintelligence.EntityManagementProgressLevelDefinitionUpdateInput{
 			ID:           f.id,
 			Name:         f.name,
 			Description:  f.description,
@@ -156,18 +156,18 @@ func expandProgressLevelsUpdate(raw []interface{}) []scorecards.EntityManagement
 // progressLevelsCreateToRead converts a CreateInput slice to the Definition type used by
 // flattenProgressLevels. The two types have identical fields so each element is a direct
 // cast. Used by Create to populate state without issuing a Read round-trip.
-func progressLevelsCreateToRead(in []scorecards.EntityManagementProgressLevelDefinitionCreateInput) []scorecards.EntityManagementProgressLevelDefinition {
-	out := make([]scorecards.EntityManagementProgressLevelDefinition, len(in))
+func progressLevelsCreateToRead(in []servicearchintelligence.EntityManagementProgressLevelDefinitionCreateInput) []servicearchintelligence.EntityManagementProgressLevelDefinition {
+	out := make([]servicearchintelligence.EntityManagementProgressLevelDefinition, len(in))
 	for i, p := range in {
-		out[i] = scorecards.EntityManagementProgressLevelDefinition(p)
+		out[i] = servicearchintelligence.EntityManagementProgressLevelDefinition(p)
 	}
 	return out
 }
 
 // flattenProgressLevels converts API ProgressLevelDefinition values back to Terraform maps.
 // Sorted alphabetically by id for deterministic plan output.
-func flattenProgressLevels(levels []scorecards.EntityManagementProgressLevelDefinition) []map[string]interface{} {
-	sorted := make([]scorecards.EntityManagementProgressLevelDefinition, len(levels))
+func flattenProgressLevels(levels []servicearchintelligence.EntityManagementProgressLevelDefinition) []map[string]interface{} {
+	sorted := make([]servicearchintelligence.EntityManagementProgressLevelDefinition, len(levels))
 	copy(sorted, levels)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].ID < sorted[j].ID })
 
@@ -238,12 +238,12 @@ func extractNRQLEngineParams(raw []interface{}) *nrqlEngineParams {
 }
 
 // expandNRQLEngineCreate maps the nrql_engine block to the Create input type.
-func expandNRQLEngineCreate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineCreateInput {
+func expandNRQLEngineCreate(raw []interface{}) *servicearchintelligence.EntityManagementNRQLRuleEngineCreateInput {
 	p := extractNRQLEngineParams(raw)
 	if p == nil {
 		return nil
 	}
-	return &scorecards.EntityManagementNRQLRuleEngineCreateInput{
+	return &servicearchintelligence.EntityManagementNRQLRuleEngineCreateInput{
 		Query:        p.Query,
 		Accounts:     p.Accounts,
 		JoinAccounts: p.JoinAccounts,
@@ -252,12 +252,12 @@ func expandNRQLEngineCreate(raw []interface{}) *scorecards.EntityManagementNRQLR
 
 // expandNRQLEngineUpdate maps the nrql_engine block to the Update input type.
 // The input types differ in name only; the field set is identical.
-func expandNRQLEngineUpdate(raw []interface{}) *scorecards.EntityManagementNRQLRuleEngineUpdateInput {
+func expandNRQLEngineUpdate(raw []interface{}) *servicearchintelligence.EntityManagementNRQLRuleEngineUpdateInput {
 	p := extractNRQLEngineParams(raw)
 	if p == nil {
 		return nil
 	}
-	return &scorecards.EntityManagementNRQLRuleEngineUpdateInput{
+	return &servicearchintelligence.EntityManagementNRQLRuleEngineUpdateInput{
 		Query:        p.Query,
 		Accounts:     p.Accounts,
 		JoinAccounts: p.JoinAccounts,
@@ -265,7 +265,7 @@ func expandNRQLEngineUpdate(raw []interface{}) *scorecards.EntityManagementNRQLR
 }
 
 // flattenNRQLEngine converts an API NRQLRuleEngine value back to the nrql_engine Terraform block.
-func flattenNRQLEngine(engine scorecards.EntityManagementNRQLRuleEngine) []map[string]interface{} {
+func flattenNRQLEngine(engine servicearchintelligence.EntityManagementNRQLRuleEngine) []map[string]interface{} {
 	accounts := make([]int, len(engine.Accounts))
 	copy(accounts, engine.Accounts)
 
@@ -283,13 +283,13 @@ func flattenNRQLEngine(engine scorecards.EntityManagementNRQLRuleEngine) []map[s
 
 // readScorecardRuleGUIDs pages through the scorecard's rules collection and
 // returns the GUID of every ScorecardRule entity in it.
-func readScorecardRuleGUIDs(ctx context.Context, client *scorecards.Scorecards, rulesColID string) ([]string, error) {
+func readScorecardRuleGUIDs(ctx context.Context, client *servicearchintelligence.Scorecards, rulesColID string) ([]string, error) {
 	if rulesColID == "" {
 		return nil, nil
 	}
 	var guids []string
-	err := pageCollectionItems(ctx, client, rulesColID, func(item scorecards.EntityManagementEntityInterface) {
-		if r, ok := item.(*scorecards.EntityManagementScorecardRuleEntity); ok {
+	err := pageCollectionItems(ctx, client, rulesColID, func(item servicearchintelligence.EntityManagementEntityInterface) {
+		if r, ok := item.(*servicearchintelligence.EntityManagementScorecardRuleEntity); ok {
 			guids = append(guids, r.ID)
 		}
 	})

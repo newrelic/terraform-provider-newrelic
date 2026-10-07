@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/common"
 	entpkg "github.com/newrelic/newrelic-client-go/v2/pkg/entities"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // testEntityGUID is a stable APM application GUID in account 3806526 used
@@ -328,18 +328,18 @@ func TestAccNewRelicTeam_EntityDrift(t *testing.T) {
 // It walks through the full customer journey with three distinct entity types
 // in a single team's ownership collection, validating each behaviour in sequence:
 //
-//  Phase 1 — Declare one entity (secondary team) in entities block.
-//  Phase 2 — Inject testEntityGUID out-of-band (no tag) → static drift →
-//             apply removes it; entities.# = 1.
-//  Phase 3 — Tag testEntityGUID with team name; inject into collection again →
-//             classified as discovery → apply does NOT remove it (warning only);
-//             entities.# = 1.
-//  Phase 4 — User takes declarative control: add testEntityGUID to entities block →
-//             "already belongs" treated as success → entities.# = 2.
-//  Phase 5 — Switch to unmanaged → entities.# = 0 in state; collection untouched.
-//  Phase 6 — Switch back to managed with secondary only → "already belongs"
-//             handles secondary still in collection → entities.# = 1.
-//  Phase 7 — PlanOnly idempotency check (plan must be empty).
+//	Phase 1 — Declare one entity (secondary team) in entities block.
+//	Phase 2 — Inject testEntityGUID out-of-band (no tag) → static drift →
+//	           apply removes it; entities.# = 1.
+//	Phase 3 — Tag testEntityGUID with team name; inject into collection again →
+//	           classified as discovery → apply does NOT remove it (warning only);
+//	           entities.# = 1.
+//	Phase 4 — User takes declarative control: add testEntityGUID to entities block →
+//	           "already belongs" treated as success → entities.# = 2.
+//	Phase 5 — Switch to unmanaged → entities.# = 0 in state; collection untouched.
+//	Phase 6 — Switch back to managed with secondary only → "already belongs"
+//	           handles secondary still in collection → entities.# = 1.
+//	Phase 7 — PlanOnly idempotency check (plan must be empty).
 func TestAccNewRelicTeam_FullEntityLifecycle(t *testing.T) {
 	primaryName := fmt.Sprintf("tf-acc-team-full-%s", acctest.RandString(6))
 	secondaryName := fmt.Sprintf("tf-acc-team-fwnd-%s", acctest.RandString(6))
@@ -746,8 +746,8 @@ func TestAccNewRelicTeam_CoreFieldDrift(t *testing.T) {
 				PreConfig: func() {
 					client := testAccProvider.Meta().(*ProviderConfig).NewClient
 					_, err := client.Scorecards.EntityManagementUpdateTeam(teamID,
-						scorecards.EntityManagementTeamEntityUpdateInput{
-							Description: "description changed out-of-band",
+						servicearchintelligence.EntityManagementTeamEntityUpdateInput{
+							Description: func() *string { s := "description changed out-of-band"; return &s }(),
 						})
 					if err != nil {
 						t.Logf("[WARN] PreConfig: failed to drift description: %v", err)

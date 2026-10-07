@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/newrelic/newrelic-client-go/v2/pkg/scorecards"
+	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
 // dataSourceNewRelicTeamsHierarchyLevels lists all Teams hierarchy level
@@ -50,7 +50,7 @@ func dataSourceNewRelicTeamsHierarchyLevelsRead(ctx context.Context, d *schema.R
 	var levels []map[string]interface{}
 	if searchResult != nil {
 		for _, e := range searchResult.Entities {
-			if level, ok := e.(*scorecards.EntityManagementTeamsHierarchyLevelEntity); ok {
+			if level, ok := e.(*servicearchintelligence.EntityManagementTeamsHierarchyLevelEntity); ok {
 				levels = append(levels, map[string]interface{}{
 					"id":   level.ID,
 					"name": level.Name,
