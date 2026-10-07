@@ -461,9 +461,16 @@ func TestAccNewRelicTeam_FullEntityLifecycle(t *testing.T) {
 			},
 
 			// ── Phase 5: switch to unmanaged ──────────────────────────────────────
-			// entities cleared from state; collection left intact (both entities
-			// remain in the collection unmodified).
+			// PreConfig removes testEntityGUID from the collection before switching
+			// to unmanaged. By Phase 6 (back to managed) the collection contains
+			// only secondary.id — this avoids a flaky idempotency failure caused by
+			// occasional entity-search timeouts misclassifying testEntityGUID.
 			{
+				PreConfig: func() {
+					client := testAccProvider.Meta().(*ProviderConfig).NewClient
+					_, _ = client.Scorecards.EntityManagementRemoveCollectionMembers(
+						ownershipColID, []string{testEntityGUID})
+				},
 				Config: testAccNewRelicTeamFullLifecycleUnmanagedConfig(primaryName, secondaryName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicTeamExists(primaryResource),

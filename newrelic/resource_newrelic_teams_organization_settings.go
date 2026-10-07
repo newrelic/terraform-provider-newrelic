@@ -14,8 +14,8 @@ package newrelic
 // by `terraform apply`, so import is optional but still supported.
 //
 // Key capabilities managed here:
-//   - discovery.enabled    — toggles tag-based automatic entity ownership
-//   - discovery.tag_keys   — the tag keys used for auto-assignment (e.g. ["team"])
+//   - discovery_enabled    — toggles tag-based automatic entity ownership
+//   - discovery_tag_keys   — the tag keys used for auto-assignment (e.g. ["team"])
 //   - hierarchy_levels     — ordered list of hierarchy level entities (id + name)
 //   - sync_groups_enabled  — toggles automatic team creation from IdP groups
 //   - sync_group_rules     — rules controlling which IdP groups create teams
@@ -47,13 +47,20 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 				Description: "Whether tag-based entity discovery is enabled. When true, entities with a " +
 					"matching tag are automatically assigned to teams.",
 			},
+			// TypeSet (not TypeList) so that ordering differences between the
+			// provider's declared list and the API's returned order do not produce
+			// phantom diffs. Discovery tag keys are semantically unordered.
+			// MinItems: 1 — the NGEP API rejects an empty tagKeys array in the
+			// discovery update input. Always provide at least one key.
 			"discovery_tag_keys": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
 				Description: "Tag keys used for entity discovery (e.g. [\"team\"]). Entities with these tags " +
-					"are auto-assigned to the team whose name or alias matches the tag value.",
-				Elem: &schema.Schema{Type: schema.TypeString},
+					"are auto-assigned to the team whose name or alias matches the tag value. " +
+					"Must contain at least one key when declared.",
+				MinItems: 1,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"hierarchy_levels": {
 				Type:     schema.TypeList,
@@ -84,11 +91,18 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 				Computed:    true,
 				Description: "Whether automatic team creation from IdP groups is enabled.",
 			},
+			// Computed:true so that when sync_group_rules is absent from config,
+			// Terraform carries the prior state forward (no phantom removal of rules).
+			// To explicitly clear all rules, declare sync_group_rules = [] (empty block).
+			// MaxItems: 1 — the NGEP API currently enforces a single rule per organisation.
 			"sync_group_rules": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
+				MaxItems: 1,
 				Description: "Rules that control which IdP groups automatically create teams. Each rule " +
-					"specifies one or more match conditions.",
+					"specifies one or more match conditions. Omitting this block preserves existing rules; " +
+					"set to [] to remove all rules. The NGEP API currently allows at most one rule.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"conditions": {
@@ -121,18 +135,33 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 	}
 }
 
-// resourceNewRelicTeamsOrgSettingsCreate locates the pre-existing singleton,
-// applies all declared configuration values, and emits a warning so the
-// operator knows that existing org settings have been overridden.
+// orgSettingsAttrInConfig returns true when the given attribute is explicitly
+// declared in the user's Terraform config. Used by Create to skip fields the
+// user did not intend to configure, so that pre-existing org settings are not
+// accidentally overridden.
 //
-// There is no true "create" — the underlying entity always exists. This
-// function applies the same update mutation as Update, but unconditionally
-// sends every field (HasChange is meaningless on a brand-new resource).
-// After this call the resource behaves identically to an imported resource.
+// Falls back to true when the raw config is unavailable (e.g. terraform import)
+// to preserve the old behavior of sending all fields.
+func orgSettingsAttrInConfig(d *schema.ResourceData, key string) bool {
+	rc := d.GetRawConfig()
+	if !rc.IsKnown() || rc.IsNull() {
+		return true
+	}
+	attr := rc.GetAttr(key)
+	return attr.IsKnown() && !attr.IsNull()
+}
+
+// resourceNewRelicTeamsOrgSettingsCreate locates the pre-existing singleton,
+// applies only the configuration attributes that are explicitly declared in the
+// user's config, and emits a warning so the operator knows existing settings
+// have been overridden.
+//
+// Only declared fields are sent — this prevents accidentally resetting sync
+// group rules, hierarchy levels, or discovery settings that the user has not
+// included in their Terraform configuration.
 func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	// Locate the singleton entity.
 	existing, err := client.Scorecards.GetTeamsOrganizationSettingsWithContext(ctx)
 	if err != nil {
 		return diag.Errorf("could not locate Teams organisation settings entity: %v", err)
@@ -147,68 +176,76 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 	d.SetId(existing.ID)
 	log.Printf("[INFO] Found Teams organisation settings singleton %s — applying declared configuration", existing.ID)
 
-	// Build the full update input from config. Do NOT use HasChange here —
-	// on a new resource every field is "new" but HasChange may return false
-	// because there is no prior state to compare against.
-	tagKeys := make([]string, 0)
-	for _, v := range d.Get("discovery_tag_keys").([]interface{}) {
-		tagKeys = append(tagKeys, v.(string))
-	}
-	upd := scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{
-		Discovery: &scorecards.EntityManagementDiscoverySettingsUpdateInput{
+	upd := scorecards.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{}
+	updHasFields := false
+
+	// Discovery — send only when at least one discovery attribute is declared.
+	if orgSettingsAttrInConfig(d, "discovery_enabled") || orgSettingsAttrInConfig(d, "discovery_tag_keys") {
+		tagKeys := make([]string, 0)
+		for _, v := range d.Get("discovery_tag_keys").(*schema.Set).List() {
+			tagKeys = append(tagKeys, v.(string))
+		}
+		upd.Discovery = &scorecards.EntityManagementDiscoverySettingsUpdateInput{
 			Enabled: d.Get("discovery_enabled").(bool),
 			TagKeys: tagKeys,
-		},
-		SyncGroups: expandSyncGroupsUpdate(
-			d.Get("sync_groups_enabled").(bool),
-			d.Get("sync_group_rules").([]interface{}),
-		),
+		}
+		updHasFields = true
 	}
 
+	// Hierarchy levels — send only when hierarchy_levels is declared.
 	rawLevels := d.Get("hierarchy_levels").([]interface{})
-	if len(rawLevels) > 0 {
+	if orgSettingsAttrInConfig(d, "hierarchy_levels") && len(rawLevels) > 0 {
 		levelIDs := make([]string, 0, len(rawLevels))
 		for _, r := range rawLevels {
 			levelIDs = append(levelIDs, r.(map[string]interface{})["id"].(string))
 		}
 		upd.HierarchyLevelOrder = levelIDs
+		updHasFields = true
 	}
 
-	if _, err := client.Scorecards.EntityManagementUpdateTeamsOrganizationSettings(d.Id(), upd); err != nil {
-		return diag.Errorf("applying org settings configuration: %v", err)
+	// Sync groups — send only when at least one sync attribute is declared.
+	if orgSettingsAttrInConfig(d, "sync_groups_enabled") || orgSettingsAttrInConfig(d, "sync_group_rules") {
+		upd.SyncGroups = expandSyncGroupsUpdate(
+			d.Get("sync_groups_enabled").(bool),
+			d.Get("sync_group_rules").([]interface{}),
+		)
+		updHasFields = true
 	}
 
-	// Rename hierarchy levels only when the declared name differs from the
-	// current API name. Fetching each level before renaming avoids unnecessary
-	// API mutations when the names are already correct (e.g. on re-apply after
-	// an interrupted run or a no-op import).
-	for _, r := range rawLevels {
-		m := r.(map[string]interface{})
-		id, wantName := m["id"].(string), m["name"].(string)
+	if updHasFields {
+		if _, err := client.Scorecards.EntityManagementUpdateTeamsOrganizationSettings(d.Id(), upd); err != nil {
+			return diag.Errorf("applying org settings configuration: %v", err)
+		}
+	}
 
-		currentName := ""
-		levelIface, levelErr := client.Scorecards.GetEntityWithContext(ctx, id)
-		if levelErr == nil && levelIface != nil && *levelIface != nil {
-			if level, ok := (*levelIface).(*scorecards.EntityManagementTeamsHierarchyLevelEntity); ok {
-				currentName = level.Name
+	// Rename hierarchy levels where the declared name differs from the current name.
+	if orgSettingsAttrInConfig(d, "hierarchy_levels") {
+		for _, r := range rawLevels {
+			m := r.(map[string]interface{})
+			id, wantName := m["id"].(string), m["name"].(string)
+
+			currentName := ""
+			levelIface, levelErr := client.Scorecards.GetEntityWithContext(ctx, id)
+			if levelErr == nil && levelIface != nil && *levelIface != nil {
+				if level, ok := (*levelIface).(*scorecards.EntityManagementTeamsHierarchyLevelEntity); ok {
+					currentName = level.Name
+				}
+			}
+
+			if currentName == wantName {
+				continue
+			}
+			if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(
+				id,
+				scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: wantName},
+			); err != nil {
+				return diag.Errorf("renaming hierarchy level %s: %v", id, err)
 			}
 		}
-
-		if currentName == wantName {
-			continue
-		}
-		if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(
-			id,
-			scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: wantName},
-		); err != nil {
-			return diag.Errorf("renaming hierarchy level %s: %v", id, err)
-		}
 	}
 
-	// Read back the live state so Terraform tracks what was applied.
 	diags := resourceNewRelicTeamsOrgSettingsRead(ctx, d, meta)
 
-	// Prepend the singleton-override warning so it appears prominently.
 	return append(diag.Diagnostics{{
 		Severity: diag.Warning,
 		Summary:  "newrelic_teams_organisation_settings: existing singleton overridden",
@@ -272,7 +309,7 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 
 	if d.HasChange("discovery_enabled") || d.HasChange("discovery_tag_keys") {
 		tagKeys := make([]string, 0)
-		for _, v := range d.Get("discovery_tag_keys").([]interface{}) {
+		for _, v := range d.Get("discovery_tag_keys").(*schema.Set).List() {
 			tagKeys = append(tagKeys, v.(string))
 		}
 		upd.Discovery = &scorecards.EntityManagementDiscoverySettingsUpdateInput{
@@ -286,8 +323,7 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 		rawLevels := d.Get("hierarchy_levels").([]interface{})
 		levelIDs := make([]string, 0, len(rawLevels))
 		for _, r := range rawLevels {
-			m := r.(map[string]interface{})
-			levelIDs = append(levelIDs, m["id"].(string))
+			levelIDs = append(levelIDs, r.(map[string]interface{})["id"].(string))
 		}
 		upd.HierarchyLevelOrder = levelIDs
 		updHasFields = true
@@ -319,10 +355,9 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 			m := r.(map[string]interface{})
 			id, name := m["id"].(string), m["name"].(string)
 			if oldName, exists := oldMap[id]; !exists || oldName != name {
-				renameInput := scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{
-					Name: name,
-				}
-				if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(id, renameInput); err != nil {
+				if _, err := client.Scorecards.EntityManagementUpdateTeamsHierarchyLevel(id,
+					scorecards.EntityManagementTeamsHierarchyLevelEntityUpdateInput{Name: name},
+				); err != nil {
 					return diag.Errorf("renaming hierarchy level %s: %v", id, err)
 				}
 			}
