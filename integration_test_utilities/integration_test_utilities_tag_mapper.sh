@@ -41,20 +41,20 @@ check_and_install_yq() {
 
 check_and_install_yq
 
-
 product_mappings=""
 
-files=$({
+raw_files=$({
         git diff origin/main...HEAD --name-only
         git diff --name-only
-} | sort -u | grep '^newrelic/' || true)
+})
+files=$(echo "$raw_files" | sort -u | grep '^newrelic/' || true)
 if [ -z "$files" ]; then
         echo "NONE"
 else
         echo "$files" | while read -r file; do
 
                 filename=$(echo "$file" | sed 's|^newrelic/||')
-                mapping=$(yq eval ".\"$filename\".product_mapping" "integration_test_utilities/integration_test_mappings.yaml")
+                mapping=$(yq eval "."$filename".product_mapping" "integration_test_utilities/integration_test_mappings.yaml")
 
                 if [ "$mapping" = "null" ] || [ -z "$mapping" ]; then
                         continue
@@ -71,9 +71,12 @@ else
         done
 fi
 
+echo $raw_files
+
 # as a final override (in a scenario where the git diff command does show changes or even if it does not)
 # we will check if the current branch is main, and if so, compel the script to run all integration tests.
-if [ "$(git branch --show-current)" = "main" ]; then
+# similarly, force all integration tests to be run
+if [ "$(git branch --show-current)" = "main" ] || (echo "$raw_files" | grep -E "^(tools/)?go\.(mod|sum)$" >/dev/null); then
         # the tag integration is present against all integration tests
         echo "-tags=integration"
 fi
