@@ -8,11 +8,21 @@ data "oci_identity_region_subscriptions" "subscriptions" {
 
 data "oci_secrets_secretbundle" "user_api_key" {
   secret_id = var.user_api_secret_ocid
-  provider = oci.home
+  provider  = oci.home
 }
 
-data "oci_identity_tenancy" "current_tenancy" {
-  tenancy_id = var.tenancy_ocid
+# Resolved on every plan, so re-applying notices when the tag points at a new image.
+data "external" "function_image" {
+  program = ["python3", "${path.module}/image_mirror.py", "resolve"]
+  query = {
+    source_image = var.function_image
+    platform     = "linux/amd64"
+  }
+}
+
+data "oci_identity_user" "registry_user" {
+  count   = var.registry_username == "" ? 1 : 0
+  user_id = var.user_ocid
 }
 
 # Human-readable name (not OCID) for the compartment this stack deploys into, so multiple
