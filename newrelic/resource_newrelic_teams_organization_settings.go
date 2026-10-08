@@ -62,12 +62,18 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 				MinItems: 1,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			// hierarchy_levels is TypeList because the order of entries matters:
+			// the NGEP API requires HierarchyLevelOrder to be sorted root-to-leaf
+			// matching the team parent_id chain depth. TypeSet would scramble the
+			// order via hash iteration and cause the API to reject the payload.
+			// Phantom ordering diffs are prevented by the Read function, which
+			// only includes declared levels in state.
 			"hierarchy_levels": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
-				Description: "Ordered list of organisation hierarchy levels. The order here defines the visual " +
-					"order in the Teams UI. Use the newrelic_teams_hierarchy_levels data source to obtain level IDs.",
+				Description: "Ordered list of organisation hierarchy levels to manage (root first, " +
+					"leaf last). Use the newrelic_teams_hierarchy_levels data source to obtain level GUIDs.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -79,7 +85,7 @@ func resourceNewRelicTeamsOrganizationSettings() *schema.Resource {
 						"name": {
 							Type:         schema.TypeString,
 							Required:     true,
-							Description:  "Display name of this hierarchy level (e.g. 'Division', 'Squad'). Renaming here updates the entity directly.",
+							Description:  "Display name of this hierarchy level (e.g. 'Division', 'Squad'). Renaming here updates the entity in the API.",
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 					},
@@ -193,13 +199,17 @@ func resourceNewRelicTeamsOrgSettingsCreate(ctx context.Context, d *schema.Resou
 	}
 
 	// Hierarchy levels — send only when hierarchy_levels is declared.
+	// Always include ALL existing levels in the order: declared levels first
+	// (in config order), then any remaining existing levels appended.
+	// The NGEP API rejects a partial HierarchyLevelOrder that omits any
+	// existing hierarchy level entity.
 	rawLevels := d.Get("hierarchy_levels").([]interface{})
 	if orgSettingsAttrInConfig(d, "hierarchy_levels") && len(rawLevels) > 0 {
-		levelIDs := make([]string, 0, len(rawLevels))
+		declaredIDs := make([]string, 0, len(rawLevels))
 		for _, r := range rawLevels {
-			levelIDs = append(levelIDs, r.(map[string]interface{})["id"].(string))
+			declaredIDs = append(declaredIDs, r.(map[string]interface{})["id"].(string))
 		}
-		upd.HierarchyLevelOrder = levelIDs
+		upd.HierarchyLevelOrder = completeHierarchyLevelOrder(declaredIDs, existing.HierarchyLevelOrder)
 		updHasFields = true
 	}
 
@@ -282,8 +292,35 @@ func resourceNewRelicTeamsOrgSettingsRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("sync_group_rules", flattenSyncGroupRules(settings.SyncGroups.Rules))
 
 	// Hierarchy levels: read each level entity to get its current name.
+	// Determine which hierarchy level IDs to reflect in state.
+	//
+	// We use the IDs already in state (or config on first apply) as the
+	// authoritative filter. This prevents undeclared levels — created by other
+	// tools or earlier Terraform runs — from appearing in state and producing a
+	// phantom "remove" diff on every plan.
+	//
+	// completeHierarchyLevelOrder in Create/Update always sends ALL org-level
+	// IDs to the API, so undeclared levels are preserved without being tracked.
+	//
+	// Import path: prior state is empty, so we fall back to all API levels so
+	// the operator can see everything and adopt levels into config as needed.
+	stateRaw := d.Get("hierarchy_levels").([]interface{})
+	stateIDs := make(map[string]bool, len(stateRaw))
+	for _, item := range stateRaw {
+		if m, ok := item.(map[string]interface{}); ok {
+			if id, ok := m["id"].(string); ok && id != "" {
+				stateIDs[id] = true
+			}
+		}
+	}
+
 	levels := make([]map[string]interface{}, 0, len(settings.HierarchyLevelOrder))
 	for _, levelID := range settings.HierarchyLevelOrder {
+		// When stateIDs is non-empty (steady-state plan/update), skip any level
+		// not already tracked. When empty (import), include all levels.
+		if len(stateIDs) > 0 && !stateIDs[levelID] {
+			continue
+		}
 		levelIface, err := client.Scorecards.GetEntityWithContext(ctx, levelID)
 		if err != nil || levelIface == nil || *levelIface == nil {
 			continue
@@ -304,6 +341,16 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 	client := meta.(*ProviderConfig).NewClient
 	log.Printf("[INFO] Updating NGEP teams organisation settings %s", d.Id())
 
+	// Fetch the current org settings upfront so Update has the full
+	// HierarchyLevelOrder from the API. This is needed by
+	// completeHierarchyLevelOrder to append any undeclared levels — we cannot
+	// rely on state because Read only stores declared levels.
+	currentSettings, settingsErr := client.Scorecards.GetTeamsOrganizationSettingsWithContext(ctx)
+	var currentHierarchyOrder []string
+	if settingsErr == nil && currentSettings != nil {
+		currentHierarchyOrder = currentSettings.HierarchyLevelOrder
+	}
+
 	upd := servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntityUpdateInput{}
 	updHasFields := false
 
@@ -320,12 +367,15 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("hierarchy_levels") {
-		rawLevels := d.Get("hierarchy_levels").([]interface{})
-		levelIDs := make([]string, 0, len(rawLevels))
-		for _, r := range rawLevels {
-			levelIDs = append(levelIDs, r.(map[string]interface{})["id"].(string))
+		_, newVal := d.GetChange("hierarchy_levels")
+		declaredIDs := make([]string, 0)
+		for _, r := range newVal.([]interface{}) {
+			declaredIDs = append(declaredIDs, r.(map[string]interface{})["id"].(string))
 		}
-		upd.HierarchyLevelOrder = levelIDs
+		// Always send the complete order using the live API list as the
+		// authoritative source of existing levels, not state (which only
+		// contains declared levels since the Read fix).
+		upd.HierarchyLevelOrder = completeHierarchyLevelOrder(declaredIDs, currentHierarchyOrder)
 		updHasFields = true
 	}
 
@@ -365,6 +415,32 @@ func resourceNewRelicTeamsOrgSettingsUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	return resourceNewRelicTeamsOrgSettingsRead(ctx, d, meta)
+}
+
+// completeHierarchyLevelOrder builds a HierarchyLevelOrder slice that satisfies
+// the NGEP API requirement: every existing hierarchy level in the organisation
+// must be included in the order. Callers provide the levels the user explicitly
+// declared (in the order they want) and the current full order from the API.
+//
+// The returned list is: [declared IDs in config order] + [any existing IDs not
+// in the declared set, preserving their current relative order].
+//
+// This prevents the "Hierarchy levels are managed automatically, manual changes
+// are not allowed" API error that occurs when HierarchyLevelOrder omits one or
+// more existing hierarchy level entities.
+func completeHierarchyLevelOrder(declaredIDs []string, existingOrder []string) []string {
+	declared := make(map[string]bool, len(declaredIDs))
+	for _, id := range declaredIDs {
+		declared[id] = true
+	}
+	result := make([]string, 0, len(existingOrder))
+	result = append(result, declaredIDs...)
+	for _, id := range existingOrder {
+		if !declared[id] {
+			result = append(result, id)
+		}
+	}
+	return result
 }
 
 // Delete only removes from state — the singleton entity cannot be destroyed.
