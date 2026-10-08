@@ -128,6 +128,7 @@ func Provider() *schema.Provider {
 			"newrelic_authentication_domain":        dataSourceNewRelicAuthenticationDomain(),
 			"newrelic_cloud_account":                dataSourceNewRelicCloudAccount(),
 			"newrelic_entity":                       dataSourceNewRelicEntity(),
+			"newrelic_notebook":                     dataSourceNewRelicNotebook(),
 			"newrelic_group":                        dataSourceNewRelicGroup(),
 			"newrelic_key_transaction":              dataSourceNewRelicKeyTransaction(),
 			"newrelic_notification_destination":     dataSourceNewRelicNotificationDestination(),
@@ -182,6 +183,7 @@ func Provider() *schema.Provider {
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
 			"newrelic_obfuscation_rule":                         resourceNewRelicObfuscationRule(),
+			"newrelic_notebook":                                 resourceNewRelicNotebook(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
@@ -206,6 +208,7 @@ func Provider() *schema.Provider {
 			"newrelic_federated_logs_setup":                     resourceNewRelicFederatedLogsSetup(),
 			"newrelic_federated_logs_partition":                 resourceNewRelicFederatedLogsPartition(),
 			"newrelic_aws_connection":                           resourceNewRelicAwsConnection(),
+			"newrelic_pathpoint_flow":                           resourceNewRelicPathpointFlow(),
 		},
 	}
 
