@@ -16,7 +16,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
-
 func resourceNewRelicTeam() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicTeamCreate,
