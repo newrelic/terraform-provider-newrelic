@@ -279,7 +279,7 @@ func resourceNewRelicScorecardUpdate(ctx context.Context, d *schema.ResourceData
 		if d.HasChange("tags") {
 			userTags := expandSAITags(d.Get("tags").(*schema.Set).List())
 			sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
-			upd.Tags = mergeWithSystemTags(userTags, sysTags)
+			merged := mergeWithSystemTags(userTags, sysTags); upd.Tags = &merged
 		}
 		if d.HasChange("progress_levels") {
 			newLevels := expandProgressLevelsUpdate(d.Get("progress_levels").(*schema.Set).List())

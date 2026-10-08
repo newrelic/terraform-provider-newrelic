@@ -510,53 +510,46 @@ func resourceNewRelicTeamRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 // buildTeamEntityUpdateInput assembles the team update mutation payload from
-// ResourceData changes. It uses the pointer fields on EntityManagementTeamEntityUpdateInput
-// so that:
-//   - nil  → field omitted from JSON → API leaves the attribute unchanged
-//   - pointer to zero value → field sent → API clears the attribute
+// ResourceData changes. Pointer fields on EntityManagementTeamEntityUpdateInput:
+//   - nil                → field omitted → API leaves the attribute unchanged
+//   - pointer to ""/ []  → field sent → API clears the attribute
 //
-// This eliminates any need for raw NerdGraph mutations; all API communication
-// goes through the go-client's EntityManagementUpdateTeam method.
-func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, client *newrelic.NewRelic) (servicearchintelligence.EntityManagementTeamEntityUpdateInput, bool, diag.Diagnostics) {
+// Only attributes that d.HasChange() reports as changed are populated;
+// unchanged attributes stay nil and are omitted from the JSON payload,
+// matching the update pattern used throughout this provider.
+func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, client *newrelic.NewRelic) (servicearchintelligence.EntityManagementTeamEntityUpdateInput, diag.Diagnostics) {
 	upd := servicearchintelligence.EntityManagementTeamEntityUpdateInput{}
-	hasPendingChange := false
 
 	if d.HasChange("name") {
 		upd.Name = d.Get("name").(string)
-		hasPendingChange = true
 	}
 	if d.HasChange("description") {
-		v := d.Get("description").(string) // "" clears, non-empty sets
+		v := d.Get("description").(string)
 		upd.Description = &v
-		hasPendingChange = true
 	}
 	if d.HasChange("aliases") {
 		aliases := make([]string, 0)
 		for _, a := range d.Get("aliases").(*schema.Set).List() {
 			aliases = append(aliases, a.(string))
 		}
-		upd.Aliases = &aliases // empty slice clears, non-empty sets
-		hasPendingChange = true
+		upd.Aliases = &aliases
 	}
 	if d.HasChange("tags") {
 		merged := mergeWithSystemTags(
 			expandSAITags(d.Get("tags").(*schema.Set).List()),
 			fetchEntitySystemTags(ctx, &client.Scorecards, d.Id()),
 		)
-		upd.Tags = &merged // empty slice clears, non-empty sets
-		hasPendingChange = true
+		upd.Tags = &merged
 	}
 	if d.HasChange("resources") {
 		resources := expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
-		upd.Resources = &resources // empty slice clears, non-empty sets
-		hasPendingChange = true
+		upd.Resources = &resources
 	}
 	if d.HasChange("parent_id") {
-		v := d.Get("parent_id").(string) // "" clears, non-empty sets
+		v := d.Get("parent_id").(string)
 		upd.ParentId = &v
-		hasPendingChange = true
 	}
-	return upd, hasPendingChange, nil
+	return upd, nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -568,15 +561,17 @@ func resourceNewRelicTeamUpdate(ctx context.Context, d *schema.ResourceData, met
 	client := providerConfig.NewClient
 
 	// ── Team entity fields ─────────────────────────────────────────────────
+	// Only invoke the mutation when a relevant field actually changed.
+	// buildTeamEntityUpdateInput populates only changed fields (pointer
+	// semantics: nil = no change, ptr-to-zero = clear); unchanged fields
+	// are omitted from the JSON payload and the API leaves them intact.
 	if d.HasChangesExcept("members", "entities", "managers", "entity_management_mode") {
-		upd, needsCall, diags := buildTeamEntityUpdateInput(ctx, d, client)
+		upd, diags := buildTeamEntityUpdateInput(ctx, d, client)
 		if diags != nil {
 			return diags
 		}
-		if needsCall {
-			if _, err := client.Scorecards.EntityManagementUpdateTeam(d.Id(), upd); err != nil {
-				return diag.FromErr(err)
-			}
+		if _, err := client.Scorecards.EntityManagementUpdateTeam(d.Id(), upd); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

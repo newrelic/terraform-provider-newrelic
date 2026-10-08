@@ -270,17 +270,7 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 	}
 }
 
-func cloudAzureIntegrationSchemaBase(autoDiscovery ...bool) map[string]*schema.Schema {
-	if len(autoDiscovery) == 1 {
-		return map[string]*schema.Schema{
-			"metrics_polling_interval": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The data polling interval in seconds",
-			},
-		}
-	}
-
+func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"metrics_polling_interval": {
 			Type:        schema.TypeInt,

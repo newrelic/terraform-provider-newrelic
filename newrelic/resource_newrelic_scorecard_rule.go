@@ -285,7 +285,7 @@ func resourceNewRelicScorecardRuleUpdate(ctx context.Context, d *schema.Resource
 	if d.HasChange("tags") {
 		userTags := expandSAITags(d.Get("tags").(*schema.Set).List())
 		sysTags := fetchEntitySystemTags(ctx, &client.Scorecards, d.Id())
-		upd.Tags = mergeWithSystemTags(userTags, sysTags)
+		merged := mergeWithSystemTags(userTags, sysTags); upd.Tags = &merged
 	}
 
 	if _, err := client.Scorecards.EntityManagementUpdateScorecardRule(d.Id(), upd); err != nil {
