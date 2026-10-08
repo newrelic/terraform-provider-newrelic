@@ -26,7 +26,7 @@ resource "newrelic_teams_organization_settings" "org" {
   discovery_enabled  = true
   discovery_tag_keys = ["team", "teamId"]
 
-  # Ordered hierarchy levels — the order here controls the Teams UI display
+  # Hierarchy levels to rename — order in config does not matter
   hierarchy_levels {
     id   = data.newrelic_teams_hierarchy_levels.all.levels[0].id
     name = "Division"
@@ -70,14 +70,16 @@ See additional [examples](#additional-examples) below.
 
 ### Hierarchy Levels
 
-  * `hierarchy_levels` - (Optional, Computed) Ordered list of organisation hierarchy levels. The order controls the visual display in the Teams UI. Use the [`newrelic_teams_hierarchy_levels`](../d/teams_hierarchy_levels.html) data source to obtain level GUIDs. Each block supports:
+  * `hierarchy_levels` - (Optional, Computed) Set of organisation hierarchy levels to manage. **Order in config does not matter** — the platform controls depth ordering automatically based on the `parent_id` chain of your teams, and rejects any attempt to change it via Terraform. Use these blocks to rename existing levels; the IDs are fixed. Use the [`newrelic_teams_hierarchy_levels`](../d/teams_hierarchy_levels.html) data source to obtain level GUIDs. Each block supports:
     * `id` - (Required) The entity GUID of the hierarchy level. Obtain from the `newrelic_teams_hierarchy_levels` data source or from the `hierarchy_level_id` attribute on a `newrelic_team` resource.
-    * `name` - (Required) The display name of this level (e.g. `"Division"`, `"Squad"`). Changing this renames the level entity directly in the API.
+    * `name` - (Required) The display name of this level (e.g. `"Division"`, `"Squad"`). Changing this renames the level entity in the API.
+
+-> **NOTE:** When a `hierarchy_levels` block is absent from your configuration, Terraform carries the current state forward (the attribute is `Computed`) and no diff is surfaced for undeclared levels. Levels that exist in the organisation but are not declared in `hierarchy_levels` are preserved in the API but not tracked in state.
 
 ### Sync Groups
 
   * `sync_groups_enabled` - (Optional, Computed) Whether automatic team creation from IdP groups is enabled.
-  * `sync_group_rules` - (Optional, Computed) At most one rule controlling which IdP groups automatically create teams. Omitting this block preserves existing rules in state. The NGEP API currently enforces a single rule per organisation. Each rule has:
+  * `sync_group_rules` - (Optional, Computed) At most one rule controlling which IdP groups automatically create teams. Omitting this block preserves existing rules in state (Computed). The NGEP API currently enforces a single rule per organisation. To deactivate existing rules without removing them, set `sync_groups_enabled = false`; rules are preserved in state and reactivated if `sync_groups_enabled` is later set back to `true`. Each rule has:
     * `conditions` - (Required) One or more conditions that a group name must satisfy. All conditions within a rule must match (AND logic). Each condition has:
       * `type` - (Required) The match type: `STARTS_WITH`, `ENDS_WITH`, or `CONTAINS`.
       * `value` - (Required) The string to match against the IdP group name.
