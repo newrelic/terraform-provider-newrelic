@@ -140,6 +140,7 @@ func Provider() *schema.Provider {
 			"newrelic_user":                         dataSourceNewRelicUser(),
 			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
 			"newrelic_fleet_members":                dataSourceNewRelicFleetMembers(),
+			"newrelic_teams_hierarchy_levels":       dataSourceNewRelicTeamsHierarchyLevels(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -209,6 +210,10 @@ func Provider() *schema.Provider {
 			"newrelic_federated_logs_partition":                 resourceNewRelicFederatedLogsPartition(),
 			"newrelic_aws_connection":                           resourceNewRelicAwsConnection(),
 			"newrelic_pathpoint_flow":                           resourceNewRelicPathpointFlow(),
+			"newrelic_team":                                     resourceNewRelicTeam(),
+			"newrelic_scorecard":                                resourceNewRelicScorecard(),
+			"newrelic_scorecard_rule":                           resourceNewRelicScorecardRule(),
+			"newrelic_teams_organization_settings":              resourceNewRelicTeamsOrganizationSettings(),
 		},
 	}
 
