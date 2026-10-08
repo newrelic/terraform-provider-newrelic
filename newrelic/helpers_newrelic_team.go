@@ -215,33 +215,17 @@ func readTeamMembershipMap(ctx context.Context, client *servicearchintelligence.
 // readTeamOwnedEntityGUIDs returns the GUID of every entity in the team's
 // ownership collection, regardless of entity type.
 //
-// It uses pageCollectionItems which goes through UnmarshalEntityManagementEntityInterface.
-// That function now includes a fallback case: any __typename not in the explicit
-// switch is decoded as EntityManagementGenericEntity (ID + tags extracted), so
-// future NGEP entity types are handled automatically without code changes here.
+// It calls item.GetID() on each element, which is defined on the
+// EntityManagementEntityInterface. Every registered NGEP entity type
+// implements GetID(), and the GenericEntity fallback in
+// UnmarshalEntityManagementEntityInterface ensures that any future entity
+// type not yet in the switch also returns a non-nil GetID(). No type
+// switch is needed — this function is unconditionally future-proof.
 func readTeamOwnedEntityGUIDs(ctx context.Context, client *servicearchintelligence.Scorecards, ownershipColID string) ([]string, error) {
 	var guids []string
 	err := pageCollectionItems(ctx, client, ownershipColID, func(item servicearchintelligence.EntityManagementEntityInterface) {
-		// All entity types now handled: known types via the switch in UnmarshalEntityManagementEntityInterface;
-		// unknown future types via the GenericEntity fallback added to that same function.
-		// We extract the ID from the common interface method GetID() via type-switch on the concrete pointer.
-		switch e := item.(type) {
-		case *servicearchintelligence.EntityManagementGenericEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementUserEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementTeamEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementCollectionEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementScorecardEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementScorecardRuleEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementTeamsHierarchyLevelEntity:
-			guids = append(guids, e.ID)
-		case *servicearchintelligence.EntityManagementTeamsOrganizationSettingsEntity:
-			guids = append(guids, e.ID)
+		if id := item.GetID(); id != "" {
+			guids = append(guids, id)
 		}
 	})
 	if err != nil {
