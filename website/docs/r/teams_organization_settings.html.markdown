@@ -10,9 +10,9 @@ description: |-
 
 Use this resource to manage the organisation-level settings that control how New Relic Teams works across your organisation:
 
-- **Entity discovery** — automatically assign entities to teams based on tag values.
-- **Hierarchy levels** — define and rename the ordered tiers shown in the Teams UI.
-- **Sync group rules** — automatically create teams from IdP groups that match name patterns.
+- **Entity discovery**: Automatically assigns entities to teams based on tag values.
+- **Hierarchy levels**: Define and rename the ordered tiers shown in the Teams UI.
+- **Sync group rules**: Automatically creates teams from IdP groups that match name patterns.
 
 -> **NOTE:** There is exactly one `TEAMS_ORGANIZATION_SETTINGS` entity per New Relic organisation. This resource is **import-optional** — if you apply it without importing first, the provider automatically locates the singleton, applies your configuration, and emits a warning stating that the existing settings have been overridden. `terraform import` is supported for an explicit workflow.
 

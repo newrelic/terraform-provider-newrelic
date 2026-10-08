@@ -161,3 +161,19 @@ Scorecards can be imported using the entity GUID:
 ```bash
 $ terraform import newrelic_scorecard.example <guid>
 ```
+
+To find a scorecard's GUID, use `terraform state show` after applying, or query NerdGraph:
+
+```graphql
+{
+  actor {
+    entityManagement {
+      entitySearch(query: "type = 'SCORECARD' AND name = 'Your Scorecard Name'") {
+        entities { id name }
+      }
+    }
+  }
+}
+```
+
+-> **NOTE:** Scorecards are NGEP entities and are not returned by the `newrelic_entity` data source. Use the NerdGraph query above or `terraform state show newrelic_scorecard.example` to retrieve the GUID.

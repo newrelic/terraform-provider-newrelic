@@ -16,21 +16,6 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/servicearchintelligence"
 )
 
-// teamResourceTypeValues returns the list of valid resource type strings by
-// reading the canonical enum from the go-client. This keeps the ValidateFunc
-// in sync with the API definition without maintaining a separate hardcoded list.
-func teamResourceTypeValues() []string {
-	t := servicearchintelligence.EntityManagementTeamResourceTypes
-	return []string{
-		string(t.ATLASSIAN_CONFLUENCE), string(t.ATLASSIAN_JIRA), string(t.ATLASSIAN_JIRA_SCORECARDS),
-		string(t.BASECAMP), string(t.BLAMELESS), string(t.EMAIL), string(t.FACEBOOK_WORKPLACE),
-		string(t.GITHUB), string(t.GITLAB), string(t.GOOGLE_CHAT), string(t.GOOGLE_CLOUD_PLATFORM),
-		string(t.GOOGLE_DRIVE), string(t.MICROSOFT_AZURE), string(t.MICROSOFT_SHAREPOINT),
-		string(t.MICROSOFT_TEAMS), string(t.OPSGENIE), string(t.OTHER_CONTACT), string(t.OTHER_LINK),
-		string(t.PAGERDUTY), string(t.ROCKET_CHAT), string(t.SERVICENOW), string(t.SKYPE),
-		string(t.SLACK), string(t.ZENDESK),
-	}
-}
 
 func resourceNewRelicTeam() *schema.Resource {
 	return &schema.Resource{
@@ -98,30 +83,37 @@ func resourceNewRelicTeam() *schema.Resource {
 				Description: "Entity management GUID of the parent team. Cannot be set to the team's own GUID.",
 			},
 			// ── Resources (links / docs) ─────────────────────────────────────
+			// resources is a TypeSet (not TypeList) because order is not meaningful —
+			// the API stores them as an unordered collection and returns them in
+			// arbitrary order, which would cause phantom ordering diffs with TypeList.
+			// The set hash is based on type+content, the natural unique key.
 			"resources": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Supplemental resources (e.g. runbooks, wikis). Each item requires type and content.",
+				Type:     schema.TypeSet,
+				Optional: true,
+				Description: "Supplemental resource links attached to this team (e.g. runbooks, chat channels, on-call schedules). " +
+					"These are displayed in the team's Settings page in the New Relic UI under Contacts or Links, " +
+					"automatically categorised by type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
-							// Valid values are sourced from EntityManagementTeamResourceTypes in the
-							// go-client so this ValidateFunc stays in sync with the API automatically.
-							Description:  "The resource type. See EntityManagementTeamResourceTypes in the go-client for the full set of accepted values.",
-							ValidateFunc: validation.StringInSlice(teamResourceTypeValues(), false),
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Resource category. Valid values are defined in TeamResourceTypeValues() in the go-client and stay in sync with the API automatically.",
+							// ValidateFunc delegates to the go-client's TeamResourceTypeValues() so that
+							// adding a new resource type to the go-client automatically makes it valid
+							// in the provider without any code change here.
+							ValidateFunc: validation.StringInSlice(servicearchintelligence.TeamResourceTypeValues(), false),
 						},
 						"content": {
 							Type:         schema.TypeString,
 							Required:     true,
-							Description:  "The resource content (e.g. a URL). Must not be empty.",
+							Description:  "The URL or contact address for this resource.",
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"title": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Description:  "A human-readable title for the resource.",
+							Description:  "A short label shown in the UI for this resource.",
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 					},
@@ -242,7 +234,7 @@ func resourceNewRelicTeamCreate(ctx context.Context, d *schema.ResourceData, met
 		input.Tags = expandSAITags(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("resources"); ok {
-		input.Resources = expandTeamResources(v.([]interface{}))
+		input.Resources = expandTeamResources(v.(*schema.Set).List())
 	}
 	if v, ok := d.GetOk("parent_id"); ok {
 		input.ParentId = v.(string)
@@ -542,7 +534,7 @@ func buildTeamEntityUpdateInput(ctx context.Context, d *schema.ResourceData, cli
 		upd.Tags = &merged
 	}
 	if d.HasChange("resources") {
-		resources := expandTeamResourcesUpdate(d.Get("resources").([]interface{}))
+		resources := expandTeamResourcesUpdate(d.Get("resources").(*schema.Set).List())
 		upd.Resources = &resources
 	}
 	if d.HasChange("parent_id") {

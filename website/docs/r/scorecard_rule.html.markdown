@@ -173,3 +173,19 @@ Scorecard rules can be imported using the entity GUID:
 ```bash
 $ terraform import newrelic_scorecard_rule.example <guid>
 ```
+
+To find a rule's GUID, use `terraform state show` after applying, or query NerdGraph:
+
+```graphql
+{
+  actor {
+    entityManagement {
+      entitySearch(query: "type = 'SCORECARD_RULE' AND name = 'Your Rule Name'") {
+        entities { id name }
+      }
+    }
+  }
+}
+```
+
+-> **NOTE:** Scorecard rules are NGEP entities and are not returned by the `newrelic_entity` data source. Use the NerdGraph query above or `terraform state show newrelic_scorecard_rule.example` to retrieve the GUID.
