@@ -551,6 +551,7 @@ module "oci_metrics_integration" {
   region           = "iad"
   fingerprint      = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
   private_key      = "USER_PVT_KEY"
+  user_ocid        = "ocid1.user.oc1..ccccccccexampleuser"
 
   # New Relic account configuration
   newrelic_account_id   = "1234567"
@@ -567,9 +568,8 @@ module "oci_metrics_integration" {
   ingest_api_secret_ocid = "ocid1.vaultsecret.oc1..dddddddigingestsecret" # or module.oci_policy_setup.ingest_vault_ocid
   user_api_secret_ocid   = "ocid1.vaultsecret.oc1..eeeeeeeeusersecret123" # or module.oci_policy_setup.user_vault_ocid
 
-  # Docker image configuration (optional)
-  image_version = "latest"
-  image_bucket  = "idptojlonu4e"
+  # Function image (optional); copied into a private Container Registry repository in your tenancy
+  function_image = "docker.io/newrelic/beyond-oci-metric-function:latest"
 
   connector_hubs_data = "[{\"compartments\":[{\"compartment_id\":\"ocid1.tenancy.oc1..aaaaaaaaexampletenancy\",\"namespaces\":[\"oci_faas\"]}],\"description\":\"[DO NOT DELETE] New Relic Metrics Connector Hub\",\"name\":\"newrelic-metrics-connector-hub-us-ashburn\"}]"
 }
@@ -605,7 +605,9 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 * `ingest_api_secret_ocid` / `user_api_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
 * `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (`US`, `EU`, or `JP`).
 * `region` – OCI region key (short code) where resources for this module are created (for example: `iad`, `phx`, `fra`). Provide ONLY the region key, not the full region identifier (so use `iad` instead of `us-ashburn-1`).
-* `image_version` / `image_bucket` – Docker image configuration for the New Relic function (optional, defaults to latest version).
+* `function_image` (Optional) – Public image for the metrics function, by default `docker.io/newrelic/beyond-oci-metric-function:latest`. The module creates a private Container Registry repository in `compartment_ocid`, copies the linux/amd64 image into it over the registry API (no Docker needed; `python3` must be on the PATH), and runs the function from that copy. On every plan the module checks which image the tag points at, so re-applying picks up a new image and updates the function in place. Pin a version tag to control upgrades.
+* `user_ocid` – OCID of the user Terraform authenticates as. The module creates a Container Registry auth token for this user to push the image. OCI allows two auth tokens per user.
+* `registry_auth_token` / `registry_username` (Optional) – Use an existing auth token instead of creating one, and override the registry username (without the tenancy namespace). Users in a non-default identity domain must set `registry_username` to `<domain_name>/<username>`.
 
 #### Example: Logs integration module
 

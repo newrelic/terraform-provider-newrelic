@@ -120,6 +120,7 @@ resource "oci_identity_policy" "nr_common_policy" {
   statements = [
     "Allow dynamic-group ${local.dynamic_group_name} to use fn-function in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to use fn-invocation in tenancy",
+    "Allow service faas to read repos in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to read secret-bundles in tenancy where any { target.secret.id = '${local.ingest_key_secret_ocid}', target.secret.id = '${local.user_key_secret_ocid}' }",
     "Allow dynamic-group ${local.dynamic_group_name} to inspect dns-family in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to inspect goldengate-family in tenancy",

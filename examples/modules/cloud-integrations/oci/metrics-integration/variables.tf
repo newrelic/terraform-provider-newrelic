@@ -68,16 +68,28 @@ variable "fingerprint" {
   description = "The fingerprint of the public key. Get this from OCI Console -> User Settings -> API Keys"
 }
 
-variable "image_version" {
-  type = string
-  description = "The version of the Docker image for the New Relic function for the region."
-  default = "latest"
+variable "user_ocid" {
+  type        = string
+  description = "OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image."
 }
 
-variable "image_bucket" {
-  type = string
-  description = "The name of the bucket where the Docker image for the New Relic function is stored."
-  default = "idptojlonu4e"
+variable "function_image" {
+  type        = string
+  default     = "docker.io/newrelic/beyond-oci-metric-function:latest"
+  description = "Public image for the metrics function. The module copies it into a private Container Registry repository in your tenancy and runs the function from there. Re-applying picks up a new image pushed under the same tag."
+}
+
+variable "registry_username" {
+  type        = string
+  default     = ""
+  description = "Container Registry username, without the tenancy namespace. Leave empty to use the name of user_ocid. Set it for users in a non-default identity domain (<domain_name>/<username>)."
+}
+
+variable "registry_auth_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid (OCI allows two auth tokens per user)."
 }
 
 variable "newrelic_account_id" {
