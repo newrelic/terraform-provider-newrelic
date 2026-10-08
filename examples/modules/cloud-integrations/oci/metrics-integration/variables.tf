@@ -75,7 +75,7 @@ variable "user_ocid" {
 
 variable "function_image" {
   type        = string
-  default     = "docker.io/newrelic/oci-metrics-forwarder:latest"
+  default     = "docker.io/newrelic/beyond-oci-metric-function:latest"
   description = "Public image for the metrics function. The module copies it into a private Container Registry repository in your tenancy and runs the function from there. Re-applying picks up a new image pushed under the same tag."
 }
 
