@@ -709,6 +709,14 @@ Example object structure:
 ]
 ```
 
+#### Image hosting and versioning
+
+The log-forwarder function image is published to Docker Hub (`docker.io/newrelic/oci-log-forwarder`). At `apply` time, the module copies it into a private Container Registry repository in your own tenancy and runs the Function from that copy — your tenancy never pulls directly from Docker Hub at runtime, only during `apply`.
+
+This means **the machine running `apply` needs outbound network access to Docker Hub** (`registry-1.docker.io` and `auth.docker.io`), in addition to the OCI API endpoints the module already requires. If your environment restricts outbound internet access, allow-list those hosts before applying.
+
+**Versioning:** `function_image` defaults to the `:latest` tag. Re-applying checks what image that tag currently points to and copies the new one if it's changed, so you'll pick up new releases automatically on your next `apply` without any action. To control exactly when you upgrade instead, pin `function_image` to a specific version tag (e.g. `docker.io/newrelic/oci-log-forwarder:1.42`) — the module will then only ever copy that pinned version, and upgrading becomes a deliberate change to that variable followed by `apply`.
+
 #### OCI Audit Logs (Optional)
 
 To ingest OCI audit logs, add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the two OCI-reserved literals below. For reference, see the [Oracle tutorial on centralizing OCI logs](https://docs.oracle.com/en/learn/centralize-oci-tenancies-logs/index.html).
