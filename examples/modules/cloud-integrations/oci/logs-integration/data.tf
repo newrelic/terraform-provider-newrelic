@@ -11,10 +11,6 @@ data "oci_secrets_secretbundle" "user_api_key" {
   provider = oci.home
 }
 
-data "oci_identity_tenancy" "current_tenancy" {
-  tenancy_id = var.tenancy_ocid
-}
-
 # Human-readable name (not OCID) for the compartment this stack deploys into, so multiple
 # forwarders reporting into one New Relic account can be told apart in dashboards.
 #
