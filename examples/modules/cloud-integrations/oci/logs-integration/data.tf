@@ -25,6 +25,15 @@ data "oci_identity_user" "registry_user" {
   user_id = var.user_ocid
 }
 
+# Only fetched when we're about to create a token (see oci_identity_auth_token.registry_push's
+# precondition) -- OCI caps auth tokens at 2 per user, and creating a 3rd fails with a raw API
+# error. Checking the existing count lets us fail with a clear message instead.
+data "oci_identity_auth_tokens" "existing" {
+  count    = local.create_registry_token ? 1 : 0
+  user_id  = var.user_ocid
+  provider = oci.home
+}
+
 # Human-readable name (not OCID) for the compartment this stack deploys into, so multiple
 # forwarders reporting into one New Relic account can be told apart in dashboards.
 #
