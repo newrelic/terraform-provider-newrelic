@@ -617,7 +617,8 @@ module "oci_logs_integration" {
   tenancy_ocid     = "ocid1.tenancy.oc1..***"
   compartment_ocid = "ocid1.compartment.oc1..bbbbbbbbexamplecmp" # or module.oci_policy_setup.compartment_ocid
   region           = "us-ashburn-1"
-  
+  user_ocid        = "ocid1.user.oc1..ccccccccexampleuser"
+
   # New Relic account configuration
   newrelic_account_id = "123456789"
   provider_account_id = "123456" # or module.oci_policy_setup.provider_account_id
@@ -630,7 +631,7 @@ module "oci_logs_integration" {
   function_subnet_id = "ocid1.subnet.oc1.iad.aaaaaaaa***"   # ignored when create_vcn = true
   
   # function application environment variables configuration
-  image_version        = "latest" # latest image version for the logging function
+  function_image       = "docker.io/newrelic/oci-log-forwarder:latest" # copied into a private Container Registry repository in your tenancy
   debug_enabled        = "FALSE"
   new_relic_region     = "US" # or "EU" or "JP"
   secret_ocid          = module.oci_policy_setup.ingest_vault_ocid
@@ -677,7 +678,9 @@ Key variables:
   - `new_relic_region`: The New Relic region (`US`, `EU`, or `JP`).
   - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
   - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
-  - `image_version`: Docker image version for the logging function (defaults to "latest").
+  - `function_image` (Optional): Public image for the log-forwarder function, by default `docker.io/newrelic/oci-log-forwarder:latest`. The module creates a private Container Registry repository in `compartment_ocid`, copies the linux/amd64 image into it over the registry API (no Docker needed; `python3` must be on the PATH), and runs the function from that copy. On every plan the module checks which image the tag points at, so re-applying picks up a new image and updates the function in place. Pin a version tag to control upgrades.
+  - `user_ocid`: OCID of the user Terraform authenticates as. The module creates a Container Registry auth token for this user to push the image. OCI allows two auth tokens per user.
+  - `registry_auth_token` / `registry_username` (Optional): Use an existing auth token instead of creating one, and override the registry username (without the tenancy namespace). Users in a non-default identity domain must set `registry_username` to `<domain_name>/<username>`.
   - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (no custom metrics), `basic` (default, core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest. For more details on setting up a dashboard, refer to [OCI Log Forwarder Observability](https://docs.newrelic.com/docs/logs/forward-logs/oci-log-forwarder-observability/).
 - connector hub configuration (`connector_hub_details`): A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
   * `display_name` (string) : name of the connector hub - must have prefix `newrelic-logs`
@@ -705,6 +708,14 @@ Example object structure:
   }
 ]
 ```
+
+#### Image hosting and versioning
+
+The log-forwarder function image is published to Docker Hub (`docker.io/newrelic/oci-log-forwarder`). At `apply` time, the module copies it into a private Container Registry repository in your own tenancy and runs the Function from that copy — your tenancy never pulls directly from Docker Hub at runtime, only during `apply`.
+
+This means **the machine running `apply` needs outbound network access to Docker Hub** (`registry-1.docker.io` and `auth.docker.io`), in addition to the OCI API endpoints the module already requires. If your environment restricts outbound internet access, allow-list those hosts before applying.
+
+**Versioning:** `function_image` defaults to the `:latest` tag. Re-applying checks what image that tag currently points to and copies the new one if it's changed, so you'll pick up new releases automatically on your next `apply` without any action. To control exactly when you upgrade instead, pin `function_image` to a specific version tag (e.g. `docker.io/newrelic/oci-log-forwarder:1.42`) — the module will then only ever copy that pinned version, and upgrading becomes a deliberate change to that variable followed by `apply`.
 
 #### OCI Audit Logs (Optional)
 
