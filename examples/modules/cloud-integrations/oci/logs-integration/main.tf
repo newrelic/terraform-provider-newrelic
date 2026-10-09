@@ -29,6 +29,13 @@ resource "oci_identity_auth_token" "registry_push" {
   provider    = oci.home
   user_id     = var.user_ocid
   description = "New Relic logs module: pushes the function image to ${local.function_image_repository} in ${var.region}"
+
+  lifecycle {
+    precondition {
+      condition     = length(data.oci_identity_auth_tokens.existing[0].tokens) < 2
+      error_message = "This user already has 2 OCI auth tokens, the platform maximum. Supply an existing token via registry_auth_token instead of leaving it blank, so Terraform doesn't try to create a third one."
+    }
+  }
 }
 
 # Copies the image over the registry HTTP API, so the machine running Terraform needs no Docker.
