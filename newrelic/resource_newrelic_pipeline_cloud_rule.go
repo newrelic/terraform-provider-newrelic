@@ -35,14 +35,54 @@ func resourceNewRelicPipelineCloudRule() *schema.Resource {
 				Description: "The name of the rule. This must be unique within an account.",
 			},
 			"nrql": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The NRQL query that defines which data will be processed by this pipeline cloud rule.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The NRQL query that defines which data will be processed by this pipeline cloud rule. Mutually exclusive with `ottl_transform`; exactly one must be set.",
+				AtLeastOneOf: []string{"nrql", "ottl_transform"},
+				ConflictsWith: []string{"ottl_transform"},
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Provides additional information about the rule.",
+			},
+			"ottl_transform": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				Computed:      true,
+				MaxItems:      1,
+				Description:   "OTTL transformation statements for non-NRQL pipeline cloud rules. Mutually exclusive with `nrql`; exactly one must be set.",
+				ConflictsWith: []string{"nrql"},
+				AtLeastOneOf:  []string{"nrql", "ottl_transform"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"log_statements": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "OTTL statements applied to log data.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"event_statements": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "OTTL statements applied to event data.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"metric_statements": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "OTTL statements applied to metric data.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"trace_statements": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "OTTL statements applied to trace data.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
 			},
 			//"entity_version": {
 			//	Type:     schema.TypeInt,
@@ -57,14 +97,21 @@ func resourceNewRelicPipelineCloudRuleCreate(ctx context.Context, d *schema.Reso
 	client := providerConfig.NewClient
 
 	accountID := selectAccountID(providerConfig, d)
-
 	description := d.Get("description").(string)
-	nrql := d.Get("nrql")
 	name := d.Get("name").(string)
+	nrqlStr := d.Get("nrql").(string)
 
+	if nrqlStr == "" {
+		// OTTL rule creation requires backend support not yet available. Once the
+		// ep-next-gen-api schema change lands, this guard will be removed and
+		// ottl_transform will be wired into the create input.
+		return diag.Errorf("nrql is required for pipeline cloud rules; OTTL rule creation is not yet supported by this resource")
+	}
+
+	nrqlVal := nrdb.NRQL(nrqlStr)
 	createInput := pipelinecontrol.EntityManagementPipelineCloudRuleEntityCreateInput{
 		Description: description,
-		NRQL:        nrdb.NRQL(nrql.(string)),
+		NRQL:        nrqlVal,
 		Name:        name,
 		Scope: pipelinecontrol.EntityManagementScopedReferenceInput{
 			Type: pipelinecontrol.EntityManagementEntityScopeTypes.ACCOUNT,
@@ -129,8 +176,16 @@ func resourceNewRelicPipelineCloudRuleRead(ctx context.Context, d *schema.Resour
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("nrql", entity.NRQL); err != nil {
-			return diag.FromErr(err)
+		if entity.NRQL != nil {
+			if err := d.Set("nrql", string(*entity.NRQL)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if entity.OttlTransform != nil {
+			if err := d.Set("ottl_transform", flattenPipelineCloudRuleOttlTransform(entity.OttlTransform)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		//if err := d.Set("entity_version", entity.Metadata.Version); err != nil {
@@ -148,13 +203,15 @@ func resourceNewRelicPipelineCloudRuleUpdate(ctx context.Context, d *schema.Reso
 	client := providerConfig.NewClient
 
 	description := d.Get("description").(string)
-	nrql := d.Get("nrql")
 	name := d.Get("name").(string)
 
 	updateInput := pipelinecontrol.EntityManagementPipelineCloudRuleEntityUpdateInput{
 		Description: description,
-		NRQL:        nrdb.NRQL(nrql.(string)),
 		Name:        name,
+	}
+
+	if nrqlStr := d.Get("nrql").(string); nrqlStr != "" {
+		updateInput.NRQL = nrdb.NRQL(nrqlStr)
 	}
 
 	ruleID := d.Id()
@@ -198,4 +255,16 @@ func resourceNewRelicPipelineCloudRuleDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(fmt.Errorf("error in deleting entity with ruleID %s", ruleID))
 	}
 	return nil
+}
+
+func flattenPipelineCloudRuleOttlTransform(t *pipelinecontrol.EntityManagementPipelineCloudRuleEntityOttlTransform) []map[string]interface{} {
+	if t == nil {
+		return nil
+	}
+	return []map[string]interface{}{{
+		"log_statements":    t.LogStatements,
+		"event_statements":  t.EventStatements,
+		"metric_statements": t.MetricStatements,
+		"trace_statements":  t.TraceStatements,
+	}}
 }
