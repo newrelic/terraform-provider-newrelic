@@ -1,3 +1,8 @@
+<a name="v3.100.5"></a>
+## [v3.100.5] - 2026-10-12
+### Bug Fixes
+- **federatedlogs:** add lifecycle status for federated logs ([#3223](https://github.com/newrelic/terraform-provider-newrelic/issues/3223))
+
 <a name="v3.100.4"></a>
 ## [v3.100.4] - 2026-10-08
 ### Bug Fixes
@@ -2928,7 +2933,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.5...HEAD
+[v3.100.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.4...v3.100.5
 [v3.100.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.3...v3.100.4
 [v3.100.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.2...v3.100.3
 [v3.100.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.1...v3.100.2
