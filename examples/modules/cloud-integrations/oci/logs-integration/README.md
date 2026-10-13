@@ -9,7 +9,7 @@ A complete New Relic + OCI integration via Terraform composes four modules plus 
 | Order | Component | What it provisions | Required? |
 |-------|-----------|--------------------|-----------|
 | 1 | [`wif-setup`](../wif-setup) | OAuth apps, IAM, identity propagation trust — the auth foundation | Yes |
-| 2 | [`policy-setup`](../policy-setup) | IAM policies + (optionally) Vault secrets for NR keys | Yes |
+| 2 | [`policy-setup`](../policy-setup) | IAM policies — including the `inspect` grants entity synthesis needs to resolve names for DNS, GoldenGate, Network Firewall, Integration, and Cloud Events — + (optionally) Vault secrets for NR keys | Yes |
 | 3 | [`newrelic_cloud_oci_link_account`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_link_account) | Registers the OCI tenancy with New Relic | Yes |
 | 4a | [`metrics-integration`](../metrics-integration) | Service Connector Hub + Function for metrics shipping | Optional (need metrics) |
 | 4b | `logs-integration` (this module) | Service Connector Hub + Function for logs shipping | Optional (need logs) |
