@@ -14,12 +14,32 @@ Use this resource to create and manage a New Relic Pipeline Cloud Rule.
 
 ## Example Usage
 
+### NRQL-based rule
+
 ```hcl
-resource "newrelic_pipeline_cloud_rule" "foo" {
+resource "newrelic_pipeline_cloud_rule" "nrql_example" {
   account_id  = 1000100
-  name        = "Test Pipeline Cloud Rule"
-  description = "This rule deletes all DEBUG logs from the dev environment."
+  name        = "Drop debug logs"
+  description = "Drops all DEBUG logs from the dev environment."
   nrql        = "DELETE FROM Log WHERE logLevel = 'DEBUG' AND environment = 'dev'"
+}
+```
+
+### OTTL-based rule
+
+~> **NOTE:** OTTL rule creation requires backend support that is currently being rolled out. This example shows the intended configuration once the feature is fully available.
+
+```hcl
+resource "newrelic_pipeline_cloud_rule" "ottl_example" {
+  account_id  = 1000100
+  name        = "Redact PII from logs"
+  description = "Uses OTTL to redact email addresses from log bodies."
+
+  ottl_transform {
+    log_statements = [
+      "replace_pattern(body, \"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}\", \"[REDACTED]\")",
+    ]
+  }
 }
 ```
 
@@ -29,8 +49,18 @@ The following arguments are supported:
 
 *   `account_id` - (Optional) The account ID where the Pipeline Cloud Rule will be created.
 *   `name` - (Required) The name of the rule. This must be unique within an account.
-*   `nrql` - (Required) The NRQL query that defines the data to be processed by this Pipeline Cloud Rule.
 *   `description` - (Optional) Additional information about the rule.
+*   `nrql` - (Optional) The NRQL query that defines the data to be processed by this Pipeline Cloud Rule. Mutually exclusive with `ottl_transform`; exactly one of `nrql` or `ottl_transform` must be set.
+*   `ottl_transform` - (Optional) OTTL transformation statements for non-NRQL pipeline cloud rules. Mutually exclusive with `nrql`; exactly one of `nrql` or `ottl_transform` must be set. See [OTTL Transform](#ottl-transform) below for details.
+
+### OTTL Transform
+
+The `ottl_transform` block supports the following arguments. Exactly one of the statement fields must be specified, scoped to a single telemetry type:
+
+*   `log_statements` - (Optional) List of OTTL statements applied to log data.
+*   `event_statements` - (Optional) List of OTTL statements applied to event data.
+*   `metric_statements` - (Optional) List of OTTL statements applied to metric data.
+*   `trace_statements` - (Optional) List of OTTL statements applied to trace data.
 
 ## Attributes Reference
 
