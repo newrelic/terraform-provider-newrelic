@@ -148,6 +148,11 @@ func resourceNewRelicFederatedLogsPartition() *schema.Resource {
 				Computed: true,
 				Elem:     statusDetailSchema(),
 			},
+			"derived_lifecycle_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The derived lifecycle state of the partition, computed from the stored lifecycle status and PCG deployment progress. Possible values: DRAFT, ACTIVE, UPDATE_STAGED, ENABLE_STAGED, DISABLE_STAGED, DISABLED, DECOMMISSION_STAGED, DECOMMISSIONED, ERROR.",
+			},
 			"health_check": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -258,7 +263,7 @@ func resourceNewRelicFederatedLogsPartitionUpdate(ctx context.Context, d *schema
 
 func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Partition deletion is a soft-delete via the wrapper update
-	// mutation, transitioning lifecycleStatus to DELETING.
+	// mutation, transitioning lifecycleStatus to DECOMMISSION_STAGED.
 	// The entity is not removed outright.
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
@@ -266,11 +271,11 @@ func resourceNewRelicFederatedLogsPartitionDelete(ctx context.Context, d *schema
 
 	input := federatedlogs.FederatedLogsUpdatePartitionInput{
 		LifecycleStatus: &federatedlogs.FederatedLogsLifecycleStatusInput{
-			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
+			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DECOMMISSION_STAGED,
 		},
 	}
 	if _, err := client.Federatedlogs.FederatedLogsUpdatePartitionWithContext(ctx, accountID, d.Id(), input); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to mark partition %s as DELETING: %w", d.Id(), err))
+		return diag.FromErr(fmt.Errorf("failed to mark partition %s as DECOMMISSION_STAGED: %w", d.Id(), err))
 	}
 
 	return nil
