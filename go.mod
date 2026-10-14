@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.45.0
-	github.com/newrelic/newrelic-client-go/v2 v2.96.3-0.20261013073726-b1955079a9ec
+	github.com/newrelic/newrelic-client-go/v2 v2.96.3-0.20261014094539-d81725bac914
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	gopkg.in/yaml.v3 v3.0.1
@@ -75,4 +75,4 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
 
-replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.96.3-0.20261013073726-b1955079a9ec
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.96.3-0.20261014094539-d81725bac914
