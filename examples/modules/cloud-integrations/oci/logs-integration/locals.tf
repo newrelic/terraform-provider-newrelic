@@ -43,10 +43,19 @@ locals {
   function_image_digest     = data.external.function_image.result.digest
   function_image            = "${local.ocir_host}/${local.ocir_namespace}/${local.function_image_repository}:${data.external.function_image.result.tag}"
 
+  # nonsensitive() here is safe: this only reveals whether the token string was empty, never
+  # the token itself. It's required because count/for_each reject sensitive values outright.
   create_registry_token = nonsensitive(var.registry_auth_token == "")
   registry_username     = "${local.ocir_namespace}/${var.registry_username != "" ? var.registry_username : data.oci_identity_user.registry_user[0].name}"
-  # Unmarked so Terraform keeps showing the copy's log output; image_mirror.py never prints it.
-  registry_password = local.create_registry_token ? oci_identity_auth_token.registry_push[0].token : nonsensitive(var.registry_auth_token)
+  # Left sensitive (no nonsensitive() here) so a customer-supplied token stays masked in
+  # plan/apply console output and whatever captures it (ORM/CI job logs). Terraform suppresses
+  # the whole local-exec invocation's output when this branch is taken, including image_mirror.py's
+  # progress log -- that's the correct trade: no partial masking exists, so visibility loses to
+  # not leaking the credential. When we create the token ourselves instead (the other branch),
+  # progress stays visible, because terraform-provider-oci's oci_identity_auth_token resource never
+  # marks its own `token` attribute Sensitive -- a provider-level gap outside this module's control,
+  # so that value is already in the Terraform state in plaintext regardless of what we do here.
+  registry_password = local.create_registry_token ? oci_identity_auth_token.registry_push[0].token : var.registry_auth_token
 
   # The tenancy's root compartment shares its OCID with the tenancy itself, but OCI's
   # Identity service can't return it from GetCompartment (data.oci_identity_compartment) --
