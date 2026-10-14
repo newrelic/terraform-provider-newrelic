@@ -12,7 +12,7 @@ Use this resource to create, update, and delete [New Relic Teams](https://docs.n
 
 Teams group people and associate owned entities (services, dashboards, scorecards, and more) under a single operational identity. They appear across alerts, service maps, and the Teams UI.
 
--> **NOTE:** Entity discovery can auto-assign entities to a team when their tags match the team name or an alias. See [`newrelic_teams_organization_settings`](teams_organization_settings.html) to configure which tag keys trigger discovery. Terraform tracks and diffs only entities that are declared in the `entities` attribute or added manually outside Terraform. Tag-discovered entities are excluded from drift detection and reported as an informational warning.
+-> **NOTE:** Entity ownership is managed non-authoritatively. Terraform tracks only the entities you declare in the `entities` block and ensures they remain in the collection. Entities added to the collection outside Terraform — through tag-based discovery, relationship propagation, or manual UI additions — are not surfaced as drift and are not removed on apply. To disable entity management entirely and suppress all entity-related plan output, set `entity_management_mode = "unmanaged"`.
 
 ## Example Usage
 
@@ -88,23 +88,25 @@ The following arguments are supported:
 ### Entity Ownership
 
   * `entity_management_mode` - (Optional) Controls how Terraform manages the team's owned entities. Accepted values: `managed` (default) and `unmanaged`. See [Entity Ownership Modes](#entity-ownership-modes) below.
-  * `entities` - (Optional, Computed) A set of entity GUIDs this team statically owns. Valid only when `entity_management_mode = "managed"`. Cannot be set when mode is `"unmanaged"`.
+  * `entities` - (Optional, Computed) A set of entity GUIDs that Terraform tracks within the team's ownership collection. Valid only when `entity_management_mode = "managed"`. Cannot be set when mode is `"unmanaged"`.
 
--> **NOTE:** When the `entities` block is omitted from your configuration entirely, Terraform carries the current state forward (the attribute is `Computed`) and does not surface drift for entities added to the collection. To have Terraform detect additions and surface them as drift, declare `entities = []` explicitly. This design allows teams to coexist with tag-based discovery without generating spurious plan noise.
+-> **NOTE:** When the `entities` attribute is omitted from your configuration, Terraform carries the current state forward (`Computed`) and surfaces no drift. To explicitly clear all tracked entities, declare `entities = []`.
 
 ## Entity Ownership Modes
 
 ### `managed` (default)
 
-Terraform is the authoritative source for the team's owned entities. The `entities` attribute declares exactly which entity GUIDs the team owns, and Terraform reconciles the ownership collection on every apply.
+Terraform manages a declared set of entities within the team's ownership collection using a non-authoritative approach. You declare which entity GUIDs Terraform should track; Terraform ensures those entities are present in the collection and surfaces a plan change only when one of them is missing.
 
-**When to use:** You want Terraform to be the single source of truth for entity ownership, such as when the team owns a fixed set of APM applications or scorecards.
+Entities added to the collection outside Terraform — through tag-based discovery, relationship propagation, or manual UI additions — are not surfaced as drift and are not removed on apply. This means the ownership collection can contain more entities than are declared in `entities`, and Terraform will not interfere with those additional entries.
+
+**When to use:** You want Terraform to maintain a specific set of owned entities (for example, a scorecard or a key service) while allowing the platform to populate the rest of the collection through its own discovery mechanisms.
 
 **Behaviour:**
-- Entities in the `entities` block are added to the collection on apply.
-- Entities removed from the `entities` block are removed on apply.
-- Entities added to the collection outside Terraform (via the UI or API) are detected as drift on the next plan. A warning explains what happened, and the entity is removed on apply unless you add it to the `entities` block.
-- Entities auto-assigned by tag-based discovery are excluded from drift detection. A separate informational warning is emitted. To take declarative control of a tag-discovered entity, add its GUID to the `entities` block.
+- Entities declared in the `entities` block are added to the collection on apply.
+- Entities removed from the `entities` block are removed from the collection on apply.
+- If a declared entity is removed from the collection outside Terraform, the next plan surfaces a change to re-add it.
+- Entities present in the collection but not declared in `entities` are silently ignored — no drift, no warnings.
 
 ```hcl
 resource "newrelic_team" "example" {
@@ -112,21 +114,21 @@ resource "newrelic_team" "example" {
   entity_management_mode = "managed"
   entities = [
     "MjUyMDUyOHxBUE18QVBQTElDQVRJT058MjE1MDM3Nzk1",
+    newrelic_scorecard.platform_standards.id,
   ]
 }
 ```
 
 ### `unmanaged`
 
-Terraform does not manage the team's entity ownership collection at all. The collection is left entirely to New Relic's tag-based discovery and/or manual management through the Teams UI.
+Terraform does not manage the team's entity ownership collection at all. The collection is left entirely to the New Relic platform — tag-based discovery, relationship propagation, or manual management through the Teams UI.
 
-**When to use:** Your team's entity ownership is governed by tagging conventions (for example, any service tagged `team: platform` is automatically assigned to the Platform team). Declaring entities in Terraform would conflict with the platform's dynamic assignment.
+**When to use:** Entity ownership for this team is governed entirely outside Terraform (for example, by tagging conventions). You want to manage the team resource itself — name, aliases, members — without Terraform interfering with what the platform assigns to the collection.
 
 **Behaviour:**
-- The `entities` attribute must not be set in config. The provider returns a plan-time error if it is.
+- The `entities` attribute cannot be set in config. The provider returns a plan-time error if it is.
 - The `entities` attribute is always empty in state.
-- No drift is shown for the ownership collection.
-- No entity warnings are emitted.
+- No drift is surfaced for the ownership collection, regardless of what is added or removed externally.
 
 ```hcl
 resource "newrelic_team" "example" {
@@ -139,7 +141,7 @@ resource "newrelic_team" "example" {
 
 Switching from `managed` to `unmanaged` clears `entities` from state on the next apply. The ownership collection itself is **not modified** — entities remain in the collection and are governed entirely outside Terraform from that point.
 
-Switching from `unmanaged` back to `managed` re-enables entity tracking. Any entities that were added to the collection during the unmanaged phase will appear as drift on the next plan if they are not declared in the `entities` block.
+Switching from `unmanaged` back to `managed` allows entity tracking to resume. Entities already in the collection are unaffected; you can begin declaring any of them in the `entities` block to bring them under Terraform management.
 
 ## Attributes Reference
 
@@ -253,9 +255,9 @@ resource "newrelic_team" "platform" {
 }
 ```
 
-### Tag-discovered team (unmanaged entity ownership)
+### Team with externally managed entity ownership
 
-When entity ownership is governed by tag-based discovery, use `unmanaged` mode to prevent Terraform from interfering with the collection.
+Use `unmanaged` mode when entity ownership is managed outside Terraform — through tag-based discovery, relationship rules, or the Teams UI — and you do not want Terraform to produce any drift for the ownership collection.
 
 ```hcl
 resource "newrelic_team" "payments" {
