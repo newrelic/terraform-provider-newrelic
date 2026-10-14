@@ -68,10 +68,9 @@ func resourceNewRelicTeam() *schema.Resource {
 						},
 					},
 				},
-				Set: func(v interface{}) int {
-					m := v.(map[string]interface{})
-					return schema.HashString(m["key"].(string))
-				},
+				// No custom Set hash — default schema.HashResource hashes all fields
+				// (key + values), so changing a tag value is detected as a diff.
+				// A key-only hash would mask value changes.
 			},
 			// ── Hierarchy ───────────────────────────────────────────────────
 			"parent_id": {
