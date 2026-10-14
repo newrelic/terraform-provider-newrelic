@@ -1,3 +1,12 @@
+<a name="v3.101.0"></a>
+## [v3.101.0] - 2026-10-14
+### Bug Fixes
+- **deps:** upgrade grpc to v1.83.2 and otel/sdk to v1.45.0 (security) ([#3259](https://github.com/newrelic/terraform-provider-newrelic/issues/3259))
+- **oci:** remove duplicate oci_identity_tenancy data block in logs-integration ([#3255](https://github.com/newrelic/terraform-provider-newrelic/issues/3255))
+
+### Features
+- **sai:** add newrelic_team, newrelic_scorecard, newrelic_scorecard_rule and Teams organisation resources ([#3221](https://github.com/newrelic/terraform-provider-newrelic/issues/3221))
+
 <a name="v3.100.5"></a>
 ## [v3.100.5] - 2026-10-12
 ### Bug Fixes
@@ -2933,7 +2942,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.0...HEAD
+[v3.101.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.5...v3.101.0
 [v3.100.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.4...v3.100.5
 [v3.100.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.3...v3.100.4
 [v3.100.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.2...v3.100.3
