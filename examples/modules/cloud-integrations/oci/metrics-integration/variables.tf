@@ -70,26 +70,26 @@ variable "fingerprint" {
 
 variable "user_ocid" {
   type        = string
-  description = "OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image."
+  description = "OCID of the user Terraform authenticates as. Unless registry_username and registry_auth_token are set, the module uses this user's name to log in to Container Registry and creates an auth token for it to push the function image."
 }
 
 variable "function_image" {
   type        = string
   default     = "docker.io/newrelic/beyond-oci-metric-function:latest"
-  description = "Public image for the metrics function. The module copies it into a private Container Registry repository in your tenancy and runs the function from there. Re-applying picks up a new image pushed under the same tag."
+  description = "Public image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. Re-applying picks up a new image pushed under the same tag; use a version tag (for example :1.5) to choose when to upgrade."
 }
 
 variable "registry_username" {
   type        = string
   default     = ""
-  description = "Container Registry username, without the tenancy namespace. Leave empty to use the name of user_ocid. Set it for users in a non-default identity domain (<domain_name>/<username>)."
+  description = "Container Registry username, without the tenancy namespace. Leave empty to use the name of user_ocid. Set it to the user that owns registry_auth_token when that is a different user, or to <identity_domain_name>/<username> for a user in a non-default identity domain."
 }
 
 variable "registry_auth_token" {
   type        = string
   default     = ""
   sensitive   = true
-  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid (OCI allows two auth tokens per user)."
+  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid, which it keeps for later upgrades and deletes on destroy. Set it if that user already has two auth tokens (the OCI maximum), your organization doesn't allow creating tokens, or pushes should use a dedicated user."
 }
 
 variable "newrelic_account_id" {
