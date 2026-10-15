@@ -120,6 +120,13 @@ resource "oci_identity_policy" "nr_common_policy" {
   statements = [
     "Allow dynamic-group ${local.dynamic_group_name} to use fn-function in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to use fn-invocation in tenancy",
+    # Lets the metrics/logs function pull its own mirrored image from the Container
+    # Repository created in this same compartment (see metrics-integration/logs-integration's
+    # oci_artifacts_container_repository). Scoped to this compartment, not tenancy-wide --
+    # the equivalent grant Metrics added in newrelic-oracle-cloud-integration's shared
+    # policy-setup (still unmerged as of this writing) is tenancy-wide; this one is scoped
+    # correctly from the start.
+    "Allow service faas to read repos in compartment id ${oci_identity_compartment.newrelic_compartment.id}",
     "Allow dynamic-group ${local.dynamic_group_name} to read secret-bundles in tenancy where any { target.secret.id = '${local.ingest_key_secret_ocid}', target.secret.id = '${local.user_key_secret_ocid}' }",
     "Allow dynamic-group ${local.dynamic_group_name} to inspect dns-family in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to inspect goldengate-family in tenancy",
