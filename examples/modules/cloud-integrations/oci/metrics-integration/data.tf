@@ -16,3 +16,17 @@ data "oci_secrets_secretbundle" "user_api_key" {
   secret_id = var.user_api_secret_ocid
   provider = oci.home_provider
 }
+
+# Resolved on every plan, so re-applying notices when the tag points at a new image.
+data "external" "function_image" {
+  program = ["python3", "${path.module}/image_mirror.py", "resolve"]
+  query = {
+    source_image = var.function_image
+    platform     = "linux/amd64"
+  }
+}
+
+data "oci_identity_user" "registry_user" {
+  count   = var.registry_username == "" ? 1 : 0
+  user_id = var.user_ocid
+}
