@@ -18,8 +18,8 @@ locals {
   function_image            = "${local.ocir_host}/${local.ocir_namespace}/${local.function_image_repository}:${data.external.function_image.result.tag}"
   create_registry_token     = nonsensitive(var.registry_auth_token == "")
   registry_username         = "${local.ocir_namespace}/${var.registry_username != "" ? var.registry_username : data.oci_identity_user.registry_user[0].name}"
-  # Unmarked so Terraform keeps showing the copy's log output; image_mirror.py never prints it.
-  registry_password = local.create_registry_token ? oci_identity_auth_token.registry_push[0].token : nonsensitive(var.registry_auth_token)
+  # Sensitive, so Terraform hides the copy step's output; a failed copy still prints it in the error.
+  registry_password = local.create_registry_token ? sensitive(oci_identity_auth_token.registry_push[0].token) : var.registry_auth_token
 
   # Names for the network infra
   vcn_name        = "newrelic-${var.nr_prefix}-${var.region}-vcn-${local.terraform_suffix}"
