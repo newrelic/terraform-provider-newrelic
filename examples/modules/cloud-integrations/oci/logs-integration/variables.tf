@@ -17,7 +17,7 @@ variable "region" {
 variable "newrelic_logging_identifier" {
   type        = string
   description = "A unique label or name identifier for all resources in this deployment. Leave it blank if not needed."
-  default = "logs"
+  default     = "logs"
 }
 
 # VCN variables
@@ -40,22 +40,40 @@ variable "connector_hub_details" {
 }
 
 variable "batch_size_in_kbs" {
-  type = number
+  type        = number
   description = "The maximum size of the batch of events to process. Maximum is 6000 KB."
-  default = 6000
+  default     = 6000
 }
 
 variable "batch_time_in_sec" {
-  type = number
+  type        = number
   description = "The maximum amount of time to wait before processing a batch of events. Maximum is 300 seconds."
-  default = 60
+  default     = 60
 }
 
 # New Relic Function variables
-variable "image_version" {
-  type = string
-  description = "The version of the Docker image for the New Relic function for the region."
-  default = "latest"
+variable "user_ocid" {
+  type        = string
+  description = "OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image."
+}
+
+variable "function_image" {
+  type        = string
+  default     = "docker.io/newrelic/oci-log-forwarder:latest"
+  description = "Public image for the log-forwarder function. The module copies it into a private Container Registry repository in your tenancy and runs the function from there. Re-applying picks up a new image pushed under the same tag."
+}
+
+variable "registry_username" {
+  type        = string
+  default     = ""
+  description = "Container Registry username, without the tenancy namespace. Leave empty to use the name of user_ocid. Set it for users in a non-default identity domain (/)."
+}
+
+variable "registry_auth_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid (OCI allows two auth tokens per user)."
 }
 
 variable "debug_enabled" {
