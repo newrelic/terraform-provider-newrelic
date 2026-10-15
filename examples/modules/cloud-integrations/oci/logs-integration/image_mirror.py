@@ -11,7 +11,10 @@ Modes:
   resolve   Terraform external data source. Reads {"source_image", "platform"} from stdin and
             prints {"digest", "tag"}: the digest of the platform-specific manifest and the tag
             to push it under. Read-only, re-evaluated on every plan so a re-apply notices when
-            the tag points at a new image.
+            the tag points at a new image. If source_image resolves to "latest", looks up the
+            real version tag published alongside it (same digest) and uses that as the
+            destination tag instead, so the customer's registry keeps an identifiable,
+            retained version per release rather than one "latest" tag overwritten in place.
   copy      Called from a local-exec provisioner. Copies SOURCE_DIGEST (with its config and
             layers) to DEST_REGISTRY/DEST_REPOSITORY:DEST_TAG. Settings come from environment
             variables so the registry password never appears on the command line.
@@ -229,6 +232,11 @@ class Registry:
                 return None
             return response.headers.get("Docker-Content-Digest")
 
+    def list_tags(self):
+        """All tag names in this repository (Docker Registry v2 /tags/list)."""
+        with self.request("GET", "/tags/list") as response:
+            return json.loads(response.read()).get("tags") or []
+
     def blob_exists(self, digest):
         with self.request("HEAD", "/blobs/" + digest, ok=(200, 404)) as response:
             return response.getcode() == 200
@@ -304,8 +312,25 @@ def resolve(source_image, platform):
         media_type, body = source.get_manifest(matches[0]["digest"])
 
     manifest_digest = sha256_digest(body)
+
+    dest_tag = tag
+    if dest_tag == "latest":
+        # "latest" isn't a useful tag to hand a customer -- they'd have to check the
+        # digest to know what they're actually running, and re-mirroring under the same
+        # name on every release means their registry never retains old versions. Every
+        # release publishes a real version tag alongside "latest" pointing at the same
+        # digest (see push_dockerhub_image.sh); find it and mirror under that name
+        # instead, so the customer's registry ends up with an identifiable, retained
+        # version per release rather than one "latest" tag overwritten in place.
+        candidates = [t for t in source.list_tags() if t != "latest"
+                      and source.manifest_digest(t) == manifest_digest]
+        if candidates:
+            dest_tag = candidates[0]
+        else:
+            log("no version tag found alongside 'latest' for %s; mirroring as 'latest'" % source_image)
+
     # A digest-pinned source has no tag; derive a stable one from the digest.
-    dest_tag = tag or "sha256-" + manifest_digest.split(":", 1)[1][:12]
+    dest_tag = dest_tag or "sha256-" + manifest_digest.split(":", 1)[1][:12]
     return manifest_digest, dest_tag
 
 
