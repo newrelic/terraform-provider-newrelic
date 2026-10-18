@@ -55,6 +55,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
   vpc_access       { metrics_polling_interval = 300 }
   firebase_app_hosting { metrics_polling_interval = 300 }
   firebase_vertex_ai   { metrics_polling_interval = 300 }
+  edge_container       { metrics_polling_interval = 300 }
 
   # Services where 1-minute polling is in Limited Preview (LP)
   alloy_db       { metrics_polling_interval = 60 }
@@ -104,6 +105,7 @@ resource "newrelic_cloud_gcp_dm_integrations" "example" {
 * `vpc_access` - (Optional) VPC Access integration. See [Integration blocks](#integration-blocks) below.
 * `firebase_app_hosting` - (Optional) Firebase App Hosting integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 * `firebase_vertex_ai` - (Optional) Firebase Vertex AI integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
+* `edge_container` - (Optional) Distributed Cloud Edge integration (DM only, metrics only — no entity support). See [Integration blocks](#integration-blocks) below.
 
 ### Services with Limited Preview (LP) 1-minute polling
 

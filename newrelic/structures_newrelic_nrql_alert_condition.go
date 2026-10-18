@@ -213,7 +213,7 @@ func expandNrqlAlertConditionUpdateInput(d *schema.ResourceData) (*alerts.NrqlCo
 		return nil, err
 	}
 
-	input.Terms = terms
+	input.Terms = &terms
 
 	if input.Expiration, err = expandExpiration(d); err != nil {
 		return nil, err
@@ -455,7 +455,7 @@ func expandNrqlThresholdOccurrences(term map[string]interface{}) (*alerts.Thresh
 
 // Terraform config => NerdGraph payload
 func expandNrqlTerms(d *schema.ResourceData, conditionType string) ([]alerts.NrqlConditionTerm, error) {
-	var expandedTerms []alerts.NrqlConditionTerm
+	expandedTerms := []alerts.NrqlConditionTerm{}
 	var err error
 	var errs []string
 

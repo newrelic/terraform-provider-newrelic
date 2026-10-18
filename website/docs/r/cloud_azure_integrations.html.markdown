@@ -275,6 +275,8 @@ Other integration type support an additional argument:
   * `exclude_tags` - (Optional) A list of resource tags associated with the resources that need to be excluded from monitoring.
   * `enabled` - (Optional) A boolean value, that specifies if the integration needs to be active. Defaults to 'true' if not specified.
 
+-> **NOTE:** Omitting `include_tags` or `exclude_tags` from the `monitor` block leaves any tags already configured on the integration untouched. To remove tags that were configured previously, set the corresponding attribute to an empty list, i.e. `include_tags = []` or `exclude_tags = []`.
+
 -> **IMPORTANT!** Using the `monitor` integration along with other polling integrations in this resource might lead to duplication of metrics. More information about this scenario may be found in the note in [this section](https://docs.newrelic.com/docs/infrastructure/microsoft-azure-integrations/azure-integrations-list/azure-monitor/#migration-from-polling) of New Relic's documentation on the Azure Monitor integration.
 
 ## Attributes Reference

@@ -9,7 +9,12 @@ terraform {
 }
 
 provider "oci" {
-  alias        = "home"
   tenancy_ocid = var.tenancy_ocid
   region       = var.region
+}
+
+provider "oci" {
+  alias        = "home"
+  tenancy_ocid = var.tenancy_ocid
+  region       = local.home_region
 }
