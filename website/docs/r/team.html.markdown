@@ -12,7 +12,7 @@ Use this resource to create, update, and delete [New Relic Teams](https://docs.n
 
 Teams group people and associate owned entities (services, dashboards, scorecards, and more) under a single operational identity. They appear across alerts, service maps, and the Teams UI.
 
--> **NOTE:** Entity ownership is managed non-authoritatively. Terraform tracks only the entities you declare in the `entities` block and ensures they remain in the collection. Entities added to the collection outside Terraform — through tag-based discovery, relationship propagation, or manual UI additions — are not surfaced as drift and are not removed on apply. To disable entity management entirely and suppress all entity-related plan output, set `entity_management_mode = "unmanaged"`.
+-> **NOTE:** Entity ownership is managed non-authoritatively. Terraform tracks only the entities you declare in the `entities` block and ensures they remain in the collection. Entities added to the collection outside Terraform — through tag-based discovery or manual additions via the UI or API — are not surfaced as drift and are not removed on apply. To disable entity management entirely and suppress all entity-related plan output, set `entity_management_mode = "unmanaged"`.
 
 ## Example Usage
 
@@ -98,7 +98,7 @@ The following arguments are supported:
 
 Terraform manages a declared set of entities within the team's ownership collection using a non-authoritative approach. You declare which entity GUIDs Terraform should track; Terraform ensures those entities are present in the collection and surfaces a plan change only when one of them is missing.
 
-Entities added to the collection outside Terraform — through tag-based discovery, relationship propagation, or manual UI additions — are not surfaced as drift and are not removed on apply. This means the ownership collection can contain more entities than are declared in `entities`, and Terraform will not interfere with those additional entries.
+Entities added to the collection outside Terraform — through tag-based discovery or manual additions via the UI or API — are not surfaced as drift and are not removed on apply. This means the ownership collection can contain more entities than are declared in `entities`, and Terraform will not interfere with those additional entries.
 
 **When to use:** You want Terraform to maintain a specific set of owned entities (for example, a scorecard or a key service) while allowing the platform to populate the rest of the collection through its own discovery mechanisms.
 
@@ -121,7 +121,7 @@ resource "newrelic_team" "example" {
 
 ### `unmanaged`
 
-Terraform does not manage the team's entity ownership collection at all. The collection is left entirely to the New Relic platform — tag-based discovery, relationship propagation, or manual management through the Teams UI.
+Terraform does not manage the team's entity ownership collection at all. The collection is left entirely to the New Relic platform — tag-based discovery or manual management through the Teams UI or API.
 
 **When to use:** Entity ownership for this team is governed entirely outside Terraform (for example, by tagging conventions). You want to manage the team resource itself — name, aliases, members — without Terraform interfering with what the platform assigns to the collection.
 
