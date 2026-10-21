@@ -301,6 +301,13 @@ func gcpDmServices() []gcpDmService {
 			disable: func(in *cloud.CloudGcpDisableIntegrationsInput, disableInput cloud.CloudDisableAccountIntegrationInput) {
 				in.GcpEdgeContainer = []cloud.CloudDisableAccountIntegrationInput{disableInput}
 			}},
+		{key: "gemini_enterprise", slug: "gcp_gemini_enterprise", description: "GCP Gemini Enterprise (Dimensional Metrics only).",
+			configure: genericConfigure(func(in *cloud.CloudGcpIntegrationsInput, generic []cloud.CloudGcpGenericIntegrationInput) {
+				in.GcpGeminiEnterprise = generic
+			}),
+			disable: func(in *cloud.CloudGcpDisableIntegrationsInput, disableInput cloud.CloudDisableAccountIntegrationInput) {
+				in.GcpGeminiEnterprise = []cloud.CloudDisableAccountIntegrationInput{disableInput}
+			}},
 	}
 }
 
