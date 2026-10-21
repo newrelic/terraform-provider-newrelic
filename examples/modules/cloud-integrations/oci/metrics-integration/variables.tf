@@ -70,7 +70,8 @@ variable "fingerprint" {
 
 variable "user_ocid" {
   type        = string
-  description = "OCID of the user Terraform authenticates as. Unless registry_username and registry_auth_token are set, the module uses this user's name to log in to Container Registry and creates an auth token for it to push the function image."
+  default     = ""
+  description = "OCID of the user whose API key Terraform uses (the owner of private_key and fingerprint). The module looks up this user's name and creates an auth token for it to push the function image. Find it in the OCI Console at Profile menu > User settings (or My profile) > OCID, or in the user= line of that profile in ~/.oci/config. Not needed when both registry_username and registry_auth_token are set."
 }
 
 variable "function_image" {

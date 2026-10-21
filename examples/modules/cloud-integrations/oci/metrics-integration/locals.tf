@@ -17,6 +17,7 @@ locals {
   function_image_digest     = data.external.function_image.result.digest
   function_image            = "${local.ocir_host}/${local.ocir_namespace}/${local.function_image_repository}:${data.external.function_image.result.tag}"
   create_registry_token     = nonsensitive(var.registry_auth_token == "")
+  user_ocid_required        = "user_ocid is empty. Set it to the OCID of the user whose API key Terraform uses, or set both registry_username and registry_auth_token."
   registry_username         = "${local.ocir_namespace}/${var.registry_username != "" ? var.registry_username : data.oci_identity_user.registry_user[0].name}"
   # Sensitive, so Terraform hides the copy step's output; a failed copy still prints it in the error.
   registry_password = local.create_registry_token ? sensitive(oci_identity_auth_token.registry_push[0].token) : var.registry_auth_token

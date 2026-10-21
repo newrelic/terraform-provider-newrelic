@@ -29,4 +29,11 @@ data "external" "function_image" {
 data "oci_identity_user" "registry_user" {
   count   = var.registry_username == "" ? 1 : 0
   user_id = var.user_ocid
+
+  lifecycle {
+    precondition {
+      condition     = var.user_ocid != ""
+      error_message = local.user_ocid_required
+    }
+  }
 }

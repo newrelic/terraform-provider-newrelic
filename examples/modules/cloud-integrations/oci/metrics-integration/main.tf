@@ -30,6 +30,13 @@ resource "oci_identity_auth_token" "registry_push" {
   provider    = oci.home_provider
   user_id     = var.user_ocid
   description = "New Relic metrics module: pushes the function image to ${local.function_image_repository} in ${var.region}"
+
+  lifecycle {
+    precondition {
+      condition     = var.user_ocid != ""
+      error_message = local.user_ocid_required
+    }
+  }
 }
 
 # Copies the image over the registry HTTP API, so the machine running Terraform needs no Docker.
