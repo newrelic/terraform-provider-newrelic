@@ -72,7 +72,8 @@ variable "enabled_services" {
       ai_platform, alloy_db, api_gateway, app_engine, big_query, big_table,
       composer, data_flow, data_proc, data_store, edge_container,
       firebase_app_hosting, firebase_auth, firebase_database, firebase_hosting,
-      firebase_storage, firebase_vertex_ai, firestore, functions, interconnect,
+      firebase_storage, firebase_vertex_ai, firestore, functions,
+      gemini_enterprise, interconnect,
       istio, kubernetes, load_balancing, managed_kafka, mem_cache, memory_store,
       pub_sub, redis, router, run, spanner, sql, storage,
       virtual_machines, vpc_access
