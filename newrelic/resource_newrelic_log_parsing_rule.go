@@ -204,13 +204,12 @@ func resourceNewRelicLogParsingRuleUpdate(ctx context.Context, d *schema.Resourc
 				Summary:  "The grok pattern is not tested against log lines from the New Relic",
 			})
 		}
-		return diags
 	}
 	_, err := client.Logconfigurations.LogConfigurationsUpdateParsingRuleWithContext(ctx, accountID, ruleID, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceNewRelicLogParsingRuleRead(ctx, d, meta)
+	return append(diags, resourceNewRelicLogParsingRuleRead(ctx, d, meta)...)
 }
 
 func expandLogParsingRuleUpdateInput(d *schema.ResourceData) logconfigurations.LogConfigurationsParsingRuleConfiguration {
