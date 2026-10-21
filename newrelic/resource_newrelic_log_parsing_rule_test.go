@@ -140,6 +140,42 @@ func TestAccNewRelicLogParsingRule_Grok_Test_Matched(t *testing.T) {
 	})
 }
 
+// TestAccNewRelicLogParsingRule_UpdateWhenMatchedTrue is a regression test for
+// https://github.com/newrelic/terraform-provider-newrelic/issues/3261 — updates
+// were silently skipped when matched=true because resourceNewRelicLogParsingRuleUpdate
+// returned before the API call. The check reads from the API directly (not state)
+// because Terraform writes plan values to state even when Update returns early,
+// so resource.TestCheckResourceAttr would not catch the regression.
+func TestAccNewRelicLogParsingRule_UpdateWhenMatchedTrue(t *testing.T) {
+	resourceName := "newrelic_log_parsing_rule.foo"
+	rName := generateNameForIntegrationTestResource()
+	updatedGrok := "%{NUMBER:bytes:int}"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicLogParsingRuleDestroy,
+		Steps: []resource.TestStep{
+			// create with matched=true (grok=%{IP:host_ip})
+			{
+				Config: testAccNewRelicLogParsingRuleGrokConfigMatched(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicLogParsingRuleExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "matched", "true"),
+				),
+			},
+			// update grok while matched=true — the API must be called
+			{
+				Config: testAccNewRelicLogParsingRuleGrokConfigMatchedUpdate(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicLogParsingRuleExists(resourceName),
+					// Verify the new grok reached the API, not just state.
+					testAccCheckNewRelicLogParsingRuleGrokIs(resourceName, updatedGrok),
+				),
+			},
+		},
+	})
+}
+
 func TestAccNewRelicLogParsingRule_Grok_Test_Unmatched(t *testing.T) {
 	resourceName := "newrelic_log_parsing_rule.foo"
 	rName := generateNameForIntegrationTestResource()
@@ -380,7 +416,54 @@ resource "newrelic_log_parsing_rule" "foo"{
 	enabled     = false
 	grok        = "customattribute='%%%%{BASE10NUM:test:float}"
 	lucene      = "responseCode:500 AND requestMethod:GET"
-	nrql        = "SELECT * FROM Log WHERE logtype = 'nginx_error'"                                                
+	nrql        = "SELECT * FROM Log WHERE logtype = 'nginx_error'"
 }
 `, testAccountID, name, testAccExpectedApplicationName)
+}
+
+// testAccNewRelicLogParsingRuleGrokConfigMatchedUpdate is the update config for
+// TestAccNewRelicLogParsingRule_UpdateWhenMatchedTrue. It uses a different grok
+// pattern than testAccNewRelicLogParsingRuleGrokConfigMatched so the update is
+// detectable in the API response.
+func testAccNewRelicLogParsingRuleGrokConfigMatchedUpdate(name string) string {
+	return fmt.Sprintf(`
+data "newrelic_test_grok_pattern" "grok"{
+	account_id  = %[1]d
+	grok        = "%%%%{NUMBER:bytes:int}"
+	log_lines   = ["2048"]
+}
+resource "newrelic_log_parsing_rule" "foo"{
+	account_id  = %[1]d
+	name        = "%[2]s"
+	attribute   = "%[3]s"
+	enabled     = true
+	grok        = data.newrelic_test_grok_pattern.grok.grok
+	lucene      = "logtype:linux_messages"
+	nrql        = "SELECT * FROM Log WHERE logtype = 'linux_messages'"
+	matched     = data.newrelic_test_grok_pattern.grok.test_grok[0].matched
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+// testAccCheckNewRelicLogParsingRuleGrokIs reads the rule directly from the API
+// and checks that its grok matches the expected value. This is intentionally NOT
+// a state check — Terraform writes plan values to state even when Update returns
+// early (the bug in #3261), so resource.TestCheckResourceAttr would pass even
+// when the API was never called.
+func testAccCheckNewRelicLogParsingRuleGrokIs(n string, expectedGrok string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+		client := testAccProvider.Meta().(*ProviderConfig).NewClient
+		rule, err := getLogParsingRuleByID(context.Background(), client, testAccountID, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		if rule.Grok != expectedGrok {
+			return fmt.Errorf("API has grok %q but expected %q — update may not have reached the API", rule.Grok, expectedGrok)
+		}
+		return nil
+	}
 }
