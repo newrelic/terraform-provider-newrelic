@@ -40,7 +40,7 @@ MAX_ATTEMPTS = 6
 TIMEOUT_SECONDS = 120
 CHUNK_SIZE = 1024 * 1024
 # A newly created OCI auth token can take a few minutes before the registry accepts it.
-AUTH_PROPAGATION_SECONDS = int(os.environ.get("AUTH_PROPAGATION_SECONDS", "300"))
+AUTH_PROPAGATION_SECONDS = int(os.environ.get("AUTH_PROPAGATION_SECONDS", "600"))
 
 
 class RegistryError(Exception):
