@@ -204,8 +204,14 @@ class Registry:
                     attempt += 1
                     _backoff(attempt, e.headers.get("Retry-After"))
                     continue
-                raise RegistryError("authentication to %s failed with %s: %s" % (
-                    self.host, e.code, e.read()[:300].decode("utf-8", "replace")))
+                detail = e.read()[:300].decode("utf-8", "replace")
+                if e.code in (401, 403) and basic:
+                    raise RegistryError(
+                        "%s rejected the username %s and its auth token (%s). Check that the "
+                        "registry username belongs to the token's owner and is entered exactly as "
+                        "the OCI Console shows it, without the tenancy namespace, and that the "
+                        "token hasn't been deleted: %s" % (self.host, self.username, e.code, detail))
+                raise RegistryError("authentication to %s failed with %s: %s" % (self.host, e.code, detail))
 
     def get_manifest(self, reference):
         with self.request("GET", "/manifests/" + reference, headers={"Accept": MANIFEST_ACCEPT}) as response:
