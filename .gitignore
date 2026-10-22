@@ -49,4 +49,3 @@ examples/modules/cloud-integrations/gcp/*.json
 examples/modules/cloud-integrations/gcp/*.pem
 .env
 *.py
-!examples/modules/cloud-integrations/oci/metrics-integration/image_mirror.py
