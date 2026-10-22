@@ -551,6 +551,7 @@ module "oci_metrics_integration" {
   region           = "iad"
   fingerprint      = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
   private_key      = "USER_PVT_KEY"
+  user_ocid        = "ocid1.user.oc1..ccccccccexampleuser" # owner of the API key above
 
   # New Relic account configuration
   newrelic_account_id   = "1234567"
@@ -567,9 +568,10 @@ module "oci_metrics_integration" {
   ingest_api_secret_ocid = "ocid1.vaultsecret.oc1..dddddddigingestsecret" # or module.oci_policy_setup.ingest_vault_ocid
   user_api_secret_ocid   = "ocid1.vaultsecret.oc1..eeeeeeeeusersecret123" # or module.oci_policy_setup.user_vault_ocid
 
-  # Docker image configuration (optional)
-  image_version = "latest"
-  image_bucket  = "idptojlonu4e"
+  # Function image (optional); copied into a private Container Registry repository in your tenancy
+  function_image = "docker.io/newrelic/beyond-oci-metric-function:latest"
+  # registry_auth_token = var.ocir_auth_token  # optional: push with an existing auth token
+  # registry_username   = "jane@example.com"   # optional: owner of that token
 
   connector_hubs_data = "[{\"compartments\":[{\"compartment_id\":\"ocid1.tenancy.oc1..aaaaaaaaexampletenancy\",\"namespaces\":[\"oci_faas\"]}],\"description\":\"[DO NOT DELETE] New Relic Metrics Connector Hub\",\"name\":\"newrelic-metrics-connector-hub-us-ashburn\"}]"
 }
@@ -605,7 +607,19 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
 * `ingest_api_secret_ocid` / `user_api_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
 * `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (`US`, `EU`, or `JP`).
 * `region` – OCI region key (short code) where resources for this module are created (for example: `iad`, `phx`, `fra`). Provide ONLY the region key, not the full region identifier (so use `iad` instead of `us-ashburn-1`).
-* `image_version` / `image_bucket` – Docker image configuration for the New Relic function (optional, defaults to latest version).
+* `function_image` (Optional) – Public image the metrics function runs, by default `docker.io/newrelic/beyond-oci-metric-function:latest`. The module creates a private Container Registry repository in `compartment_ocid` in this region, copies the linux/amd64 image into it over the registry API, and runs the function from that copy. The machine running Terraform needs `python3` on the PATH but not Docker. Each plan checks which image the tag points at: if it changed, apply copies the new image and updates the function in place; otherwise nothing changes. Use a version tag (for example `:1.5`) to choose when to upgrade. Apply the module once per region; each region's function pulls only from its own region's registry.
+* `user_ocid` (Optional) – OCID of the user whose API key Terraform uses, meaning the owner of `private_key` and `fingerprint`. Find it in the OCI Console at **Profile** → **User settings** (or **My profile**) → **OCID**, or in the `user=` line of that profile in `~/.oci/config`. Required unless both `registry_username` and `registry_auth_token` are set. The module logs in to Container Registry as `<tenancy_namespace>/<name of user_ocid>` with an auth token it creates for this user; if `user_ocid` is a different user from the API key's owner, creating that token needs permission to manage the other user's credentials. The module keeps the token in state for later upgrades and deletes it on destroy. A new token can take a few minutes to become active; the copy retries during that time, so the first apply can show `Still creating...` for up to ten minutes. The copy step's output is hidden because it uses the token; if the copy fails, Terraform shows the full output in the error.
+* `registry_auth_token` (Optional) – Existing auth token to push with, instead of creating one. Set it together with `registry_username` when:
+  * different OCI users or pipelines apply the module. A token the module creates belongs to `user_ocid`, and replacing it for another user deletes the old one, which needs permission to manage that user's credentials;
+  * `user_ocid` already has two auth tokens, the OCI maximum. Each regional module call creates its own token;
+  * your organization doesn't allow creating auth tokens.
+
+  Use a dedicated user if you can; the same token and username work in every region. To create a token, open the **Profile** menu in the OCI Console, select **User settings** (or **My profile**), then **Tokens and keys** → **Auth tokens** → **Generate token**, and copy it right away; the Console shows it only once. See [Getting an auth token](https://docs.oracle.com/en-us/iaas/Content/Registry/Tasks/registrygettingauthtoken.htm). Pass it from a sensitive variable or secret store rather than writing it in your configuration. If the token is later deleted or replaced, update it before the next upgrade.
+* `registry_username` (Optional) – Container Registry username of the token's owner, without the tenancy namespace. Defaults to the name of `user_ocid`. Copy it exactly as shown at the top of **Profile** → **User settings** (or **My profile**), for example `jane@example.com`, also for users who sign in with single sign-on; `user_ocid` is on the same page. For a user outside the **Default** identity domain, use `<identity_domain_name>/<username>`. Tenancies that still federate through Oracle Identity Cloud Service show usernames that start with `oracleidentitycloudservice/`; copy them including that prefix.
+
+  If the copy fails with `rejected the username … and its auth token (401)`, Container Registry doesn't accept that username and token: check that the username belongs to the token's owner, is entered exactly as the Console shows it, and that the token still exists.
+
+  The user that pushes needs permission to manage repositories in `compartment_ocid`.
 
 #### Example: Logs integration module
 
