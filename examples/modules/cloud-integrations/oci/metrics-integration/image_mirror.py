@@ -293,6 +293,12 @@ def resolve(source_image, platform):
     source = Registry(host, repository, "pull",
                       os.environ.get("SOURCE_USERNAME", ""), os.environ.get("SOURCE_PASSWORD", ""))
     media_type, body = source.get_manifest(digest or tag)
+    # A registry can answer an @sha256: request with a different manifest. Every digest this
+    # function follows is checked against the bytes that come back, so the digest it returns is
+    # reachable from the pin; otherwise copy() would verify a substitute against its own digest
+    # and pass.
+    if digest and sha256_digest(body) != digest:
+        raise RegistryError("manifest from %s does not match %s" % (source_image, digest))
 
     if media_type in (OCI_INDEX, DOCKER_LIST):
         wanted_os, wanted_arch = platform.split("/")[:2]
@@ -301,7 +307,13 @@ def resolve(source_image, platform):
                    and m.get("platform", {}).get("architecture") == wanted_arch]
         if not matches:
             raise RegistryError("%s has no %s image" % (source_image, platform))
-        media_type, body = source.get_manifest(matches[0]["digest"])
+        # Checked unconditionally: the index names this digest, so there is always something to
+        # compare against, even when the index itself was reached through a tag.
+        child = matches[0]["digest"]
+        media_type, body = source.get_manifest(child)
+        if sha256_digest(body) != child:
+            raise RegistryError("%s manifest from %s does not match %s" % (
+                platform, source_image, child))
 
     manifest_digest = sha256_digest(body)
     # A digest-pinned source has no tag; derive a stable one from the digest.

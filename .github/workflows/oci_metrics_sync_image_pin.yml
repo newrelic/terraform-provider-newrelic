@@ -1,0 +1,118 @@
+name: OCI Metrics - Sync pinned function image
+
+# The metrics function image is built and published by newrelic/newrelic-oracle-cloud-integration,
+# not here. Each of its releases records the image that release shipped with, by digest, in a
+# `function_image.lock` release asset written from the digest the publishing build output. This
+# reads that asset and opens a pull request when it differs from the module's pinned default, so
+# the module stays in step with the published image.
+#
+# The digest is never resolved from a Docker Hub tag. The trust root is the release asset, so a
+# Docker Hub tag change, or a leaked Docker Hub token, cannot change what this module deploys.
+# Resolving a tag here instead would give tamper detection but no authenticity, which is the
+# property this is for.
+#
+# That repository is public, so reading the asset needs no credentials, and opening the pull
+# request uses this repository's own GITHUB_TOKEN. No cross-repository token is involved.
+#
+# Note: pull requests opened with GITHUB_TOKEN do not trigger workflow runs, so CI does not run on
+# the bump automatically. Close and reopen it, or push to its branch, to get a run.
+
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_REPO: newrelic/newrelic-oracle-cloud-integration
+      MODULE: examples/modules/cloud-integrations/oci/metrics-integration
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Read the pinned image from the latest release
+        id: pin
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! ref=$(gh release download --repo "$SOURCE_REPO" --pattern function_image.lock --output -); then
+            echo "Error: the latest $SOURCE_REPO release has no function_image.lock asset."
+            exit 1
+          fi
+          # Same shape the publishing repository enforces when it writes the asset. A reference
+          # that is not digest-pinned must never reach the module's default.
+          if ! echo "$ref" | grep -Eq '^docker\.io/newrelic/beyond-oci-metric-function:[0-9.]+@sha256:[0-9a-f]{64}$'; then
+            echo "Error: function_image.lock is not a pinned image reference: '$ref'"
+            exit 1
+          fi
+          echo "Pinned image in the latest release: $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      # Catches a reference naming an image that is no longer pullable, before it reaches the
+      # module. The digest still comes from the release asset; this only checks it resolves.
+      - name: Check the reference resolves
+        working-directory: ${{ env.MODULE }}
+        run: |
+          echo '{"source_image":"${{ steps.pin.outputs.ref }}","platform":"linux/amd64"}' \
+            | python3 image_mirror.py resolve
+
+      - name: Update the pinned default
+        id: bump
+        env:
+          REF: ${{ steps.pin.outputs.ref }}
+        run: |
+          python3 - "$MODULE/variables.tf" "$REF" <<'EOF' >> "$GITHUB_OUTPUT"
+          import io, re, sys
+          path, ref = sys.argv[1], sys.argv[2]
+          source = io.open(path, encoding="utf-8").read()
+          # Scoped to the function_image block: variables.tf has other `default =` lines that an
+          # unscoped substitution would corrupt.
+          block = re.search(r'variable "function_image" \{.*?\n\}', source, re.S)
+          if not block:
+              sys.exit("could not find the function_image variable in %s" % path)
+          old = block.group(0)
+          new, count = re.subn(r'(default\s*=\s*)"[^"]*"',
+                               lambda m: m.group(1) + '"' + ref + '"', old, count=1)
+          if count != 1:
+              sys.exit("could not find a default value in the function_image variable")
+          if new == old:
+              print("changed=false")
+          else:
+              io.open(path, "w", encoding="utf-8").write(source.replace(old, new))
+              print("changed=true")
+          EOF
+          git --no-pager diff -- "$MODULE/variables.tf"
+
+      # Pinned by commit SHA rather than a tag: this action receives contents and pull-requests
+      # write. Other workflows here track tags; the write scope is worth the inconsistency.
+      - name: Open a pull request
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Fixed branch, so a later release updates this pull request instead of opening another.
+          branch: oci/metrics-function-image-pin
+          delete-branch: true
+          commit-message: |
+            chore(oci): pin the metrics function image to ${{ steps.pin.outputs.ref }}
+          title: 'chore(oci): pin the metrics function image to the latest published digest'
+          body: |
+            The OCI metrics module pins the metrics function image by digest. `${{ env.SOURCE_REPO }}`
+            has published a newer image, so this bumps that pin to:
+
+            ```
+            ${{ steps.pin.outputs.ref }}
+            ```
+
+            Read from the `function_image.lock` asset on that repository's
+            [latest release](https://github.com/${{ env.SOURCE_REPO }}/releases/latest), which is
+            written from the digest output by the build that pushed the image. It is not resolved
+            from a Docker Hub tag, so merging this does not widen what the module trusts.
+
+            Opened automatically by `.github/workflows/oci_metrics_sync_image_pin.yml`.
