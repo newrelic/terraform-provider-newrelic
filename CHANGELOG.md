@@ -1,3 +1,8 @@
+<a name="v3.101.1"></a>
+## [v3.101.1] - 2026-10-18
+### Bug Fixes
+- **deps:** bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0 in /tools ([#3232](https://github.com/newrelic/terraform-provider-newrelic/issues/3232))
+
 <a name="v3.101.0"></a>
 ## [v3.101.0] - 2026-10-14
 ### Bug Fixes
@@ -2942,7 +2947,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.1...HEAD
+[v3.101.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.0...v3.101.1
 [v3.101.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.5...v3.101.0
 [v3.100.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.4...v3.100.5
 [v3.100.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.3...v3.100.4
