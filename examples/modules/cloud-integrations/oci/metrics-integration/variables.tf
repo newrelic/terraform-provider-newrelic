@@ -76,8 +76,8 @@ variable "user_ocid" {
 
 variable "function_image" {
   type        = string
-  default     = "docker.io/newrelic/beyond-oci-metric-function:stable"
-  description = "Public image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. The default stable tag points at the image New Relic has released for the integration; re-applying picks up a newer one when New Relic moves the tag. Use a version tag (for example :1.5) to stay on a specific build."
+  default     = "docker.io/newrelic/beyond-oci-metric-function:latest"
+  description = "Public image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. Re-applying picks up a new image pushed under the same tag; use a version tag (for example :1.5) to choose when to upgrade."
 }
 
 variable "registry_username" {
