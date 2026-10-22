@@ -1,3 +1,8 @@
+<a name="v3.101.2"></a>
+## [v3.101.2] - 2026-10-22
+### Bug Fixes
+- **oci:** run the metrics function from a copy of its image in the customer's registry ([#3253](https://github.com/newrelic/terraform-provider-newrelic/issues/3253))
+
 <a name="v3.101.1"></a>
 ## [v3.101.1] - 2026-10-18
 ### Bug Fixes
@@ -2947,7 +2952,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.1...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.2...HEAD
+[v3.101.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.1...v3.101.2
 [v3.101.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.0...v3.101.1
 [v3.101.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.5...v3.101.0
 [v3.100.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.4...v3.100.5
