@@ -19,13 +19,13 @@ variable "region" {
   description = "The name of the OCI region where these resources will be deployed."
 }
 
-variable "newrelic_endpoint" {
+variable "newrelic_region" {
   type        = string
   default     = "US"
   description = "The endpoint to hit for sending the metrics. Varies by region [US|EU|JP]"
   validation {
-    condition     = contains(["US", "EU", "JP"], var.newrelic_endpoint)
-    error_message = "Valid values for var: newrelic_endpoint are (US, EU, JP)."
+    condition     = contains(["US", "EU", "JP"], var.newrelic_region)
+    error_message = "Valid values for var: newrelic_region are (US, EU, JP)."
   }
 }
 
@@ -46,12 +46,12 @@ variable "connector_hubs_data" {
   description = "JSON-encoded string describing the connector hub layout. OCI caps each hub at 5 compartments and 50 namespaces total. For tenancies with multiple compartments or dense namespace selections, use the hub-calculator script (examples/modules/cloud-integrations/oci/hub-calculator) to compute this value automatically."
 }
 
-variable "ingest_api_secret_ocid" {
+variable "ingest_key_secret_ocid" {
   type        = string
   description = "The OCID of the vault storing the ingest key for secure access."
 }
 
-variable "user_api_secret_ocid" {
+variable "user_key_secret_ocid" {
   type        = string
   description = "The OCID of the vault storing the user key for secure access."
 }
