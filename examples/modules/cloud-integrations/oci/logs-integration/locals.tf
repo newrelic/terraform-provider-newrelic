@@ -48,7 +48,7 @@ locals {
     US = "https://api.newrelic.com/graphql"
     EU = "https://api.eu.newrelic.com/graphql"
     JP = "https://api.jp.newrelic.com/graphql"
-  }[var.new_relic_region]
+  }[var.newrelic_region]
 
   updateLinkAccount_graphql_query = <<EOF
   mutation {

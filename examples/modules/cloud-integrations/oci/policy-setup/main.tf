@@ -153,11 +153,11 @@ output "compartment_ocid" {
   value = oci_identity_compartment.newrelic_compartment.id
 }
 
-output "ingest_vault_ocid" {
+output "ingest_key_secret_ocid" {
   value = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
 }
 
-output "user_vault_ocid" {
+output "user_key_secret_ocid" {
   value = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
 }
 
