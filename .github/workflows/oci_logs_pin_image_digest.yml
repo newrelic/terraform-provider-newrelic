@@ -4,8 +4,19 @@ name: OCI Logs - Pin function_image to published digest
 # process to hook a "pin on release" step into (unlike oci-log-integration's
 # release-terraform.yaml) -- customers reference it by git ref directly. So
 # instead this re-resolves the current published digest on a schedule and
-# commits it if it changed, keeping this module's default in step with
-# whatever oci-log-integration last published to Docker Hub.
+# opens a pull request if it changed, keeping this module's default in step
+# with whatever oci-log-integration last published to Docker Hub.
+#
+# Opens a pull request rather than pushing to main directly -- matches the
+# oci_metrics_sync_image_pin.yml precedent (SLCREV-1730's metrics-side
+# counterpart), which a security review flagged this same pattern against.
+#
+# This does still resolve the digest from a Docker Hub tag (image_mirror.py
+# resolve), not from an authenticated release asset the way the metrics
+# workflow does -- that stronger trust root relies on oci-log-integration
+# writing a signed lock-file release asset, which doesn't exist yet. Worth
+# revisiting if that gets built, but out of scope for just fixing the
+# direct-push issue.
 on:
   schedule:
     - cron: "17 6 * * *"
@@ -13,13 +24,14 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   pin_digest:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Resolve current published digest
         id: resolve
@@ -35,6 +47,7 @@ jobs:
           echo "digest_ref=docker.io/newrelic/oci-log-forwarder@${digest}" >> "$GITHUB_OUTPUT"
 
       - name: Pin function_image default to the resolved digest
+        id: bump
         run: |
           digest_ref="${{ steps.resolve.outputs.digest_ref }}"
           # Scoped to the function_image block only -- variables.tf has several other
@@ -47,10 +60,34 @@ jobs:
           mv /tmp/variables.tf.tmp examples/modules/cloud-integrations/oci/logs-integration/variables.tf
           if git diff --quiet -- examples/modules/cloud-integrations/oci/logs-integration/variables.tf; then
             echo "Already pinned to ${digest_ref} -- nothing to commit."
-            exit 0
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add examples/modules/cloud-integrations/oci/logs-integration/variables.tf
-          git commit -m "oci-logs: pin function_image default to ${digest_ref} [skip ci]"
-          git push origin HEAD:main
+
+      # Pinned by commit SHA rather than a tag, matching oci_metrics_sync_image_pin.yml: this
+      # action receives contents and pull-requests write. Other workflows here track tags; the
+      # write scope is worth the inconsistency.
+      - name: Open a pull request
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Fixed branch, so a later re-run updates this pull request instead of opening another.
+          branch: oci/logs-function-image-pin
+          delete-branch: true
+          commit-message: |
+            chore(oci): pin the logs function image to ${{ steps.resolve.outputs.digest_ref }}
+          title: 'chore(oci): pin the logs function image to the latest published digest'
+          body: |
+            `oci-log-integration` has published a newer image, so this bumps the
+            `logs-integration` module's `function_image` default to:
+
+            ```
+            ${{ steps.resolve.outputs.digest_ref }}
+            ```
+
+            Resolved from the `:latest` Docker Hub tag via `image_mirror.py resolve`, the same
+            way the module's own `data "external" "function_image"` data source does.
+
+            Opened automatically by `.github/workflows/oci_logs_pin_image_digest.yml`.
