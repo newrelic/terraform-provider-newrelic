@@ -1,3 +1,8 @@
+<a name="v3.101.3"></a>
+## [v3.101.3] - 2026-10-22
+### Bug Fixes
+- **oci:** pin the metrics function image by digest in the metrics module ([#3264](https://github.com/newrelic/terraform-provider-newrelic/issues/3264))
+
 <a name="v3.101.2"></a>
 ## [v3.101.2] - 2026-10-22
 ### Bug Fixes
@@ -2952,7 +2957,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.2...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.3...HEAD
+[v3.101.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.2...v3.101.3
 [v3.101.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.1...v3.101.2
 [v3.101.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.0...v3.101.1
 [v3.101.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.100.5...v3.101.0

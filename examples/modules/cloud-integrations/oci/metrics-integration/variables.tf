@@ -75,9 +75,12 @@ variable "user_ocid" {
 }
 
 variable "function_image" {
-  type        = string
-  default     = "docker.io/newrelic/beyond-oci-metric-function:latest"
-  description = "Public image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. Re-applying picks up a new image pushed under the same tag; use a version tag (for example :1.5) to choose when to upgrade."
+  type = string
+  # Pinned by digest: the module deploys the image this module version was published with, and
+  # every plan verifies the registry's bytes against this digest. Bumped by a pull request when
+  # New Relic publishes a new image, so a Docker Hub tag change cannot alter what gets deployed.
+  default     = "docker.io/newrelic/beyond-oci-metric-function:1.5@sha256:4ea026e91390768c8e3c27e661e707bbbf15ace99b06b035b652049f6532fdce"
+  description = "Image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. The default is pinned by digest to the image this module version was published with. Set a tag such as docker.io/newrelic/beyond-oci-metric-function:latest to track that tag instead; re-applying then picks up whatever it points to."
 }
 
 variable "registry_username" {
