@@ -68,16 +68,29 @@ variable "fingerprint" {
   description = "The fingerprint of the public key. Get this from OCI Console -> User Settings -> API Keys"
 }
 
-variable "image_version" {
-  type = string
-  description = "The version of the Docker image for the New Relic function for the region."
-  default = "latest"
+variable "user_ocid" {
+  type        = string
+  default     = ""
+  description = "OCID of the user whose API key Terraform uses (the owner of private_key and fingerprint). The module looks up this user's name and creates an auth token for it to push the function image. Find it in the OCI Console at Profile menu > User settings (or My profile) > OCID, or in the user= line of that profile in ~/.oci/config. Not needed when both registry_username and registry_auth_token are set."
 }
 
-variable "image_bucket" {
-  type = string
-  description = "The name of the bucket where the Docker image for the New Relic function is stored."
-  default = "idptojlonu4e"
+variable "function_image" {
+  type        = string
+  default     = "docker.io/newrelic/beyond-oci-metric-function:latest"
+  description = "Public image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. Re-applying picks up a new image pushed under the same tag; use a version tag (for example :1.5) to choose when to upgrade."
+}
+
+variable "registry_username" {
+  type        = string
+  default     = ""
+  description = "Container Registry username of the user that owns registry_auth_token, without the tenancy namespace. Leave empty to use the name of user_ocid. Enter it exactly as shown in the OCI Console at Profile menu > User settings (or My profile); add <identity_domain_name>/ in front only for a user outside the Default identity domain."
+}
+
+variable "registry_auth_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid, which it keeps for later upgrades and deletes on destroy. Set it, together with registry_username, when different OCI users or pipelines apply this module, when user_ocid already has two auth tokens (the OCI maximum), or when your organization doesn't allow creating tokens. The same token works in every region. Create one in the OCI Console at Profile menu > User settings (or My profile) > Tokens and keys > Auth tokens > Generate token; it is shown only once."
 }
 
 variable "newrelic_account_id" {
