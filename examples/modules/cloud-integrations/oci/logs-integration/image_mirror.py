@@ -24,6 +24,7 @@ Terraform knows it at plan time (pinned via the function's image_digest, not jus
 """
 import base64
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -257,10 +258,13 @@ class Registry:
                             break
                         sha.update(chunk)
                         out.write(chunk)
-            except (urllib.error.URLError, ConnectionError, socket.timeout) as e:
-                # request() only retries establishing the connection/response -- a timeout or
-                # reset while streaming this body afterward lands here instead, uncaught by
-                # anything upstream, so it needs its own retry.
+            except (OSError, http.client.HTTPException) as e:
+                # request() only retries establishing the connection/response -- a network
+                # error while streaming this body afterward (including a short read the
+                # server never completes, http.client.IncompleteRead) lands here instead,
+                # uncaught by anything upstream, so it needs its own retry. OSError alone
+                # already covers URLError/ConnectionError/socket.timeout (all subclass it);
+                # HTTPException adds IncompleteRead, which OSError doesn't.
                 log("blob %s download failed (%s), retrying (%d/%d)" % (digest, e, attempt, MAX_ATTEMPTS))
                 _backoff(attempt)
                 continue
