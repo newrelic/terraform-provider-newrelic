@@ -54,7 +54,8 @@ variable "batch_time_in_sec" {
 # New Relic Function variables
 variable "user_ocid" {
   type        = string
-  description = "OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image."
+  default     = ""
+  description = "OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image. Not needed when both registry_username and registry_auth_token are set."
 }
 
 variable "function_image" {

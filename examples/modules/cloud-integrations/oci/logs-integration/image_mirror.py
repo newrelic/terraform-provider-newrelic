@@ -186,6 +186,11 @@ class Registry:
         query = {"scope": "repository:%s:%s" % (self.repository, self.actions)}
         if params.get("service"):
             query["service"] = params["service"]
+        # token_url's host isn't validated against self.host or required to be https: accepted
+        # as low-risk rather than allow-listed, since self.host is always one of the two hosts
+        # this module itself configures (OCIR's own region host, or Docker Hub for the public
+        # source) and TLS is verified on the request that returned this challenge in the first
+        # place -- there's no attacker-influenced input feeding `realm`.
         token_url = params["realm"] + "?" + urllib.parse.urlencode(query)
         headers = {"Authorization": basic} if basic else {}
 
@@ -244,13 +249,21 @@ class Registry:
     def download_blob(self, digest, path):
         for attempt in range(1, MAX_ATTEMPTS + 1):
             sha = hashlib.sha256()
-            with self.request("GET", "/blobs/" + digest) as response, open(path, "wb") as out:
-                while True:
-                    chunk = response.read(CHUNK_SIZE)
-                    if not chunk:
-                        break
-                    sha.update(chunk)
-                    out.write(chunk)
+            try:
+                with self.request("GET", "/blobs/" + digest) as response, open(path, "wb") as out:
+                    while True:
+                        chunk = response.read(CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        sha.update(chunk)
+                        out.write(chunk)
+            except (urllib.error.URLError, ConnectionError, socket.timeout) as e:
+                # request() only retries establishing the connection/response -- a timeout or
+                # reset while streaming this body afterward lands here instead, uncaught by
+                # anything upstream, so it needs its own retry.
+                log("blob %s download failed (%s), retrying (%d/%d)" % (digest, e, attempt, MAX_ATTEMPTS))
+                _backoff(attempt)
+                continue
             if "sha256:" + sha.hexdigest() == digest:
                 return
             log("blob %s failed digest verification, downloading again (%d/%d)" % (digest, attempt, MAX_ATTEMPTS))
