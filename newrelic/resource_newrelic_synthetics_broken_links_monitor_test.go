@@ -52,7 +52,6 @@ func TestAccNewRelicSyntheticsBrokenLinksMonitor(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"locations_private",
 					"tag",
-					SyntheticsUseLegacyRuntimeAttrLabel,
 				},
 			},
 		},
