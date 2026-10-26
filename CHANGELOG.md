@@ -1,3 +1,5 @@
+<a name="v3.101.6"></a>
+## [v3.101.6] - 2026-10-26
 <a name="v3.101.5"></a>
 ## [v3.101.5] - 2026-10-26
 ### Documentation Updates
@@ -2967,7 +2969,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.5...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.6...HEAD
+[v3.101.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.5...v3.101.6
 [v3.101.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.4...v3.101.5
 [v3.101.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.3...v3.101.4
 [v3.101.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.2...v3.101.3
