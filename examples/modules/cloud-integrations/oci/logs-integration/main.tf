@@ -4,8 +4,8 @@ resource "oci_functions_application" "logging_function_app" {
   config = {
     "VAULT_REGION"           = local.home_region
     "DEBUG_ENABLED"          = var.debug_enabled
-    "NEW_RELIC_REGION"       = var.new_relic_region
-    "SECRET_OCID"            = var.secret_ocid
+    "NEW_RELIC_REGION"       = var.newrelic_region
+    "SECRET_OCID"            = var.ingest_key_secret_ocid
     "CLIENT_TTL"             = local.client_ttl
     "FORWARDER_METRICS_TIER" = var.metrics_tier
     "TENANCY_NAME"           = data.oci_identity_tenancy.current_tenancy.name
@@ -75,8 +75,8 @@ resource "oci_functions_function" "logging_function" {
 
 # --- Service Connector Hub - Routes logs to New Relic function ---
 resource "oci_sch_service_connector" "nr_logging_service_connector" {
-  for_each = var.connector_hub_details != null ? {
-    for connector in jsondecode(var.connector_hub_details) : connector.display_name => connector
+  for_each = var.connector_hubs_data != null ? {
+    for connector in jsondecode(var.connector_hubs_data) : connector.display_name => connector
   } : {}
 
   compartment_id = var.compartment_ocid
@@ -107,7 +107,7 @@ resource "oci_sch_service_connector" "nr_logging_service_connector" {
 # Resource to link the New Relic account and configure the integration
 resource "null_resource" "newrelic_update_account" {
   depends_on = [oci_functions_function.logging_function, oci_sch_service_connector.nr_logging_service_connector]
-  count      = var.connector_hub_details != null ? 1 : 0
+  count = var.connector_hubs_data != null ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
       # Main execution for cloudUpdateAccount

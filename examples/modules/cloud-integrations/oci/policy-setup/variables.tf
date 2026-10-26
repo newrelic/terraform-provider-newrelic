@@ -34,7 +34,7 @@ variable "newrelic_account_id" {
   description = "The New Relic account ID for sending metrics to New Relic endpoints"
 }
 
-variable "newrelic_provider_region" {
+variable "newrelic_region" {
   type        = string
   description = "The region where the New Relic provider resources will be created."
 }

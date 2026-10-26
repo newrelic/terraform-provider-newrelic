@@ -7,7 +7,7 @@ data "oci_identity_region_subscriptions" "subscriptions" {
 }
 
 data "oci_secrets_secretbundle" "user_api_key" {
-  secret_id = var.user_api_secret_ocid
+  secret_id = var.user_key_secret_ocid
   provider  = oci.home
 }
 

@@ -3,9 +3,9 @@ resource "oci_functions_application" "metrics_function_app" {
   config = {
     "FORWARD_TO_NR"      = "True"
     "LOGGING_ENABLED"    = "False"
-    "NR_METRIC_ENDPOINT" = var.newrelic_endpoint
+    "NR_METRIC_ENDPOINT" = var.newrelic_region
     "TENANCY_OCID"       = var.tenancy_ocid
-    "SECRET_OCID"        = var.ingest_api_secret_ocid
+    "SECRET_OCID"        = var.ingest_key_secret_ocid
     "VAULT_REGION"       = local.home_region
   }
   defined_tags               = {}

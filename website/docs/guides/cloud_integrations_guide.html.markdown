@@ -336,6 +336,23 @@ The following composable modules are available under `examples/modules/cloud-int
 
 Use them independently or combine them in the same configuration. When using Workload Identity Federation, the `wif-setup` module must be applied first to create the OAuth credentials and trust relationship. The `policy-setup` module must be applied successfully before the `metrics-integration` or `logging-integration` module, because the latter depends on IAM policies, dynamic groups / identity trust, and (if configured) workload identity federation artifacts created by the former.
 
+~> **UPGRADE NOTE:** The `policy-setup`, `metrics-integration`, and `logs-integration` modules now share the same names for the New Relic region and the vault secret OCIDs. If your configuration uses the old names, `terraform plan` fails with `Unsupported argument` or `Unsupported attribute` after you fetch the latest module source. Rename them as follows:
+
+| Module | Old name | New name |
+|---|---|---|
+| `policy-setup` (variable) | `newrelic_provider_region` | `newrelic_region` |
+| `policy-setup` (output) | `ingest_vault_ocid` | `ingest_key_secret_ocid` |
+| `policy-setup` (output) | `user_vault_ocid` | `user_key_secret_ocid` |
+| `metrics-integration` | `newrelic_endpoint` | `newrelic_region` |
+| `metrics-integration` | `ingest_api_secret_ocid` | `ingest_key_secret_ocid` |
+| `metrics-integration` | `user_api_secret_ocid` | `user_key_secret_ocid` |
+| `logs-integration` | `new_relic_region` | `newrelic_region` |
+| `logs-integration` | `secret_ocid` | `ingest_key_secret_ocid` |
+| `logs-integration` | `user_api_secret_ocid` | `user_key_secret_ocid` |
+| `logs-integration` | `connector_hub_details` | `connector_hubs_data` |
+
+The values stay the same, so after renaming, `terraform plan` shows no changes to your OCI resources.
+
 #### Example: Workload Identity Federation setup module
 
 The `wif-setup` module creates the foundational components required for Workload Identity Federation (WIF) between New Relic and OCI. This module must be applied before the `policy-setup` module when using WIF authentication.
@@ -469,7 +486,7 @@ module "oci_policy_setup" {
   newrelic_account_id      = 1234567
   newrelic_ingest_api_key  = "NRII-INGEST-API-KEY-EXAMPLE"
   newrelic_user_api_key    = "NRAA-USER-API-KEY-EXAMPLE"
-  newrelic_provider_region = "US" # or "EU" or "JP"
+  newrelic_region          = "US" # or "EU" or "JP"
 
   # Workload Identity Federation / OAuth2 (sample values)
   client_id      = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
@@ -498,12 +515,12 @@ output "compartment_ocid" {
   value = module.oci_policy_setup.compartment_ocid
 }
 
-output "ingest_vault_ocid" {
-  value = module.oci_policy_setup.ingest_vault_ocid
+output "ingest_key_secret_ocid" {
+  value = module.oci_policy_setup.ingest_key_secret_ocid
 }
 
-output "user_vault_ocid" {
-  value = module.oci_policy_setup.user_vault_ocid
+output "user_key_secret_ocid" {
+  value = module.oci_policy_setup.user_key_secret_ocid
 }
 ```
 
@@ -511,7 +528,7 @@ Key variables:
 
 * `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
 * `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
-* `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US`, `EU`, or `JP`).
+* `newrelic_region` – Region context for New Relic provider operations (for example, `US`, `EU`, or `JP`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
 * `trust_type` (Optional) – `"UPST"` (default) or `"RPST"`. Must match the trust type the `wif-setup` module created. Wire from `module.oci_wif_setup.newrelic_integration_details.trust_type` for consistency.
 * `resource_tag` (Optional, RPST only) – Propagated as the `ext_resource_tag` claim on the RPST so customer IAM policies can scope on a specific tag value. Wire from `module.oci_wif_setup.newrelic_integration_details.resource_tag`.
@@ -519,8 +536,8 @@ Key variables:
 The module outputs:
 * `provider_account_id` – The account identifier issued by New Relic that uniquely associates this OCI integration with a New Relic account.
 * `compartment_ocid` – The OCID of the compartment where the policy resources were created.
-* `ingest_vault_ocid` – The OCID of the vault secret storing the New Relic ingest API key.
-* `user_vault_ocid` – The OCID of the vault secret storing the New Relic user API key.
+* `ingest_key_secret_ocid` – The OCID of the vault secret storing the New Relic ingest API key.
+* `user_key_secret_ocid` – The OCID of the vault secret storing the New Relic user API key.
 
 These outputs are required by the metrics and logs integration modules below.
 
@@ -557,16 +574,16 @@ module "oci_metrics_integration" {
   newrelic_account_id   = "1234567"
   provider_account_id   = "1234567"
 
-  # Endpoint selection (validated internally)
-  newrelic_endpoint = "US" # or EU or JP
+  # New Relic region (validated internally)
+  newrelic_region = "US" # or EU or JP
 
   # Networking
   create_vcn         = true
   function_subnet_id = "" # ignored when create_vcn = true
 
   # Vault secret OCIDs (dummy)
-  ingest_api_secret_ocid = "ocid1.vaultsecret.oc1..dddddddigingestsecret" # or module.oci_policy_setup.ingest_vault_ocid
-  user_api_secret_ocid   = "ocid1.vaultsecret.oc1..eeeeeeeeusersecret123" # or module.oci_policy_setup.user_vault_ocid
+  ingest_key_secret_ocid = "ocid1.vaultsecret.oc1..dddddddigingestsecret" # or module.oci_policy_setup.ingest_key_secret_ocid
+  user_key_secret_ocid   = "ocid1.vaultsecret.oc1..eeeeeeeeusersecret123" # or module.oci_policy_setup.user_key_secret_ocid
 
   # Function image (optional); copied into a private Container Registry repository in your tenancy.
   # Leave it unset to deploy the digest-pinned image this module version was published with.
@@ -605,8 +622,8 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
     }
   ]
   ```
-* `ingest_api_secret_ocid` / `user_api_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
-* `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (`US`, `EU`, or `JP`).
+* `ingest_key_secret_ocid` / `user_key_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
+* `newrelic_region` – The New Relic region (`US`, `EU`, or `JP`); the module maps this value to the actual metric ingest URL.
 * `region` – OCI region key (short code) where resources for this module are created (for example: `iad`, `phx`, `fra`). Provide ONLY the region key, not the full region identifier (so use `iad` instead of `us-ashburn-1`).
 * `function_image` (Optional) – Image the metrics function runs. The default is **pinned by digest** to the image this module version was published with, so a change to a Docker Hub tag, or a leaked Docker Hub token, cannot alter what this module deploys. The module creates a private Container Registry repository in `compartment_ocid` in this region, copies the linux/amd64 image into it over the registry API, and runs the function from that copy. Every plan verifies the registry's manifest against the pinned digest, every blob against its own SHA-256, and the image's platform, and the function is created with `image_digest` set. The machine running Terraform needs `python3` on the PATH but not Docker. To upgrade, move to a module version whose pinned digest is newer. To track a floating tag instead, set this to a tag such as `docker.io/newrelic/beyond-oci-metric-function:latest`; each plan then resolves whatever that tag currently points at, and apply copies it and updates the function in place when it changed. Apply the module once per region; each region's function pulls only from its own region's registry.
 * `user_ocid` (Optional) – OCID of the user whose API key Terraform uses, meaning the owner of `private_key` and `fingerprint`. Find it in the OCI Console at **Profile** → **User settings** (or **My profile**) → **OCID**, or in the `user=` line of that profile in `~/.oci/config`. Required unless both `registry_username` and `registry_auth_token` are set. The module logs in to Container Registry as `<tenancy_namespace>/<name of user_ocid>` with an auth token it creates for this user; if `user_ocid` is a different user from the API key's owner, creating that token needs permission to manage the other user's credentials. The module keeps the token in state for later upgrades and deletes it on destroy. A new token can take a few minutes to become active; the copy retries during that time, so the first apply can show `Still creating...` for up to ten minutes. The copy step's output is hidden because it uses the token; if the copy fails, Terraform shows the full output in the error.
@@ -647,14 +664,14 @@ module "oci_logs_integration" {
   
   # function application environment variables configuration
   function_image       = "docker.io/newrelic/oci-log-forwarder:latest" # copied into a private Container Registry repository in your tenancy
-  debug_enabled        = "FALSE"
-  new_relic_region     = "US" # or "EU" or "JP"
-  secret_ocid          = module.oci_policy_setup.ingest_vault_ocid
-  user_api_secret_ocid = module.oci_policy_setup.user_vault_ocid
+  debug_enabled          = "FALSE"
+  newrelic_region        = "US" # or "EU" or "JP"
+  ingest_key_secret_ocid = module.oci_policy_setup.ingest_key_secret_ocid
+  user_key_secret_ocid   = module.oci_policy_setup.user_key_secret_ocid
   
   # connector hub configuration (Optional)
   # Don't add the following variables if you want to skip log export.
-  connector_hub_details = jsonencode([
+  connector_hubs_data = jsonencode([
     {
       display_name = "newrelic-logs-connector"
       description  = "Service connector for logs from compartment A to New Relic"
@@ -690,14 +707,14 @@ Key variables:
 > If you want to use an existing private subnet, make sure it has required route rules and gateways with internet and all OCI services access. 
 - function application environment variables configuration:
   - `debug_enabled`: Boolean to enable or disable function debug logs.
-  - `new_relic_region`: The New Relic region (`US`, `EU`, or `JP`).
-  - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
-  - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
+  - `newrelic_region`: The New Relic region (`US`, `EU`, or `JP`).
+  - `ingest_key_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
+  - `user_key_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
   - `function_image` (Optional): Public image for the log-forwarder function, by default `docker.io/newrelic/oci-log-forwarder:latest`. The module creates a private Container Registry repository in `compartment_ocid`, copies the linux/amd64 image into it over the registry API (no Docker needed; `python3` must be on the PATH), and runs the function from that copy. On every plan the module checks which image the tag points at, so re-applying picks up a new image and updates the function in place. Pin a version tag to control upgrades.
   - `user_ocid` (Optional): OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image. Not needed when both `registry_username` and `registry_auth_token` are set. OCI allows two auth tokens per user.
   - `registry_auth_token` / `registry_username` (Optional): Use an existing auth token instead of creating one, and override the registry username (without the tenancy namespace). Users in a non-default identity domain must set `registry_username` to `<domain_name>/<username>`. If the copy fails with `rejected the username … and its auth token (401)`, Container Registry doesn't accept that username and token: check that the username belongs to the token's owner, is entered exactly as the OCI Console shows it, and that the token still exists. The user that pushes needs permission to manage repositories in `compartment_ocid`.
   - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (no custom metrics), `basic` (default, core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest. For more details on setting up a dashboard, refer to [OCI Log Forwarder Observability](https://docs.newrelic.com/docs/logs/forward-logs/oci-log-forwarder-observability/).
-- connector hub configuration (`connector_hub_details`): A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
+- connector hub configuration (`connector_hubs_data`): A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
   * `display_name` (string) : name of the connector hub - must have prefix `newrelic-logs`
   * `description` (string) (optional): connector hub description
   * `log_sources`: 
@@ -734,7 +751,7 @@ This means **the machine running `apply` needs outbound network access to Docker
 
 #### OCI Audit Logs (Optional)
 
-To ingest OCI audit logs, add a dedicated audit connector object to `connector_hub_details` and set `log_group_id` to one of the two OCI-reserved literals below. For reference, see the [Oracle tutorial on centralizing OCI logs](https://docs.oracle.com/en/learn/centralize-oci-tenancies-logs/index.html).
+To ingest OCI audit logs, add a dedicated audit connector object to `connector_hubs_data` and set `log_group_id` to one of the two OCI-reserved literals below. For reference, see the [Oracle tutorial on centralizing OCI logs](https://docs.oracle.com/en/learn/centralize-oci-tenancies-logs/index.html).
 
 Two audit scoping modes are supported:
 
@@ -745,7 +762,7 @@ Two audit scoping modes are supported:
 
 `compartment_id` selects the root of the audit scope; the `log_group_id` literal decides whether child compartments are included.
 
-- Keep the audit connector as a separate object in the `connector_hub_details` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
+- Keep the audit connector as a separate object in the `connector_hubs_data` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
 - `display_name` must follow the convention `newrelic-logs-<region>-audit` (e.g. `newrelic-logs-us-ashburn-1-audit`).
 - On first creation, OCI may deliver up to 24 hours of historical audit events before switching to steady-state streaming — this is standard OCI Connector Hub behaviour.
 

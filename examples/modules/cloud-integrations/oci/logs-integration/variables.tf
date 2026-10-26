@@ -33,7 +33,7 @@ variable "function_subnet_id" {
 }
 
 # Connector Hub Variables
-variable "connector_hub_details" {
+variable "connector_hubs_data" {
   type        = string
   description = "JSON formatted string for the service connectors to be created. See README for details and example"
   default     = null
@@ -83,18 +83,18 @@ variable "debug_enabled" {
   description = "Enable debug mode."
 }
 
-variable "new_relic_region" {
+variable "newrelic_region" {
   type        = string
   default     = "US"
   description = "New Relic Region. US, EU or JP"
 }
 
-variable "secret_ocid" {
+variable "ingest_key_secret_ocid" {
   type        = string
   description = "OCI Vault Secret OCID that contains the New Relic License Key. Use the secret OCID already created as part of Policy Setup module."
 }
 
-variable "user_api_secret_ocid" {
+variable "user_key_secret_ocid" {
   type        = string
   description = "The OCID of the vault storing the user key for secure access."
 }
