@@ -5,6 +5,10 @@ terraform {
       source  = "oracle/oci"
       version = "5.46.0"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = "2.3.5"
+    }
   }
 }
 
