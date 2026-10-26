@@ -3,8 +3,10 @@
 package newrelic
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 	"time"
 
@@ -238,7 +240,17 @@ func cleanupDanglingServiceLevelResources() error {
 	if matches != nil {
 		resources := matches.Results.Entities
 		for _, r := range resources {
-			_, err := client.ServiceLevel.ServiceLevelDelete(common.EntityGUID(string(r.GetGUID())))
+			guid := string(r.GetGUID())
+
+			decoded, decodeErr := base64.RawStdEncoding.DecodeString(guid)
+			if decodeErr != nil {
+				log.Printf("[ERROR] error decoding GUID for dangling resource: %s", decodeErr)
+				continue
+			}
+			parts := strings.Split(string(decoded), "|")
+			id := parts[len(parts)-1]
+
+			_, err := client.ServiceLevel.ServiceLevelDelete(common.EntityGUID(guid), id)
 			if err != nil {
 				log.Printf("[ERROR] error deleting dangling resource: %s", err)
 			}
