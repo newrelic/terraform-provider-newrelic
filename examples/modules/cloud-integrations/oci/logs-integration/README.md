@@ -30,7 +30,7 @@ See the [Cloud integrations guide](https://registry.terraform.io/providers/newre
 | `connector_hub_details` | string (JSON) | `null` | no | JSON array of connectors to create — see [Connector Hub format](#connector-hub-format) below |
 | `batch_size_in_kbs` | number | `6000` | no | Max batch size per Service Connector Hub delivery (max `6000`) |
 | `batch_time_in_sec` | number | `60` | no | Max wait before flushing a batch (max `300`) |
-| `user_ocid` | string | — | yes | OCID of the user Terraform authenticates as; used for the Container Registry push token |
+| `user_ocid` | string | `""` | no | OCID of the user Terraform authenticates as; used to look up the Container Registry username and to create the auth token that pushes the function image. Not needed when both `registry_username` and `registry_auth_token` are set |
 | `function_image` | string | `"docker.io/newrelic/oci-log-forwarder:latest"` | no | Public source image, mirrored into a private repo in your tenancy. Re-apply after a new push under the same tag to pick up the update |
 | `registry_username` | string | `""` | no | Container Registry username (no tenancy namespace). Leave empty to derive from `user_ocid` |
 | `registry_auth_token` | string (sensitive) | `""` | no | Existing registry auth token. Leave empty to let the module create one (OCI allows 2 per user) |
