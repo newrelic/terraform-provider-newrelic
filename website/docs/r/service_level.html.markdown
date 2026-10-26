@@ -91,6 +91,7 @@ All nested `events` blocks support the following common arguments:
         * `attribute` - (Optional) The event attribute to use in the SELECT clause.
         * `function` - (Required) The function to use in the SELECT clause. Valid values are `COUNT`, `SUM`, `GET_FIELD`, and `GET_CDF_COUNT`.
         * `threshold` - (Optional) Limit for values to be counter by `GET_CDF_COUNT` function.
+  * `facets` - (Optional) A list of NRQL `FACET` attributes to group results by. These facets are applied to all event queries (`valid_events`, `good_events`, and `bad_events`). A maximum of 2 facets can be specified. When set, the `valid_events` query and the `good_events`/`bad_events` query must use the same `from` event type and the same SELECT `function` (and, unless the function is `COUNT`, the same `attribute`) — otherwise the API rejects the configuration.
 
 ### Objective
 

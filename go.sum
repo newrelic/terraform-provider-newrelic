@@ -170,8 +170,6 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/newrelic/go-agent/v3 v3.45.0 h1:6Y/NvrdVOY+UuvGDPytBDqAECuvCb2uvU6k0qq8gxnE=
 github.com/newrelic/go-agent/v3 v3.45.0/go.mod h1:2aY3paC/QaI9wf/qz9iD0lWP5AQ7UQ9Ks35iDA40ndU=
-github.com/newrelic/newrelic-client-go/v2 v2.97.0 h1:fBSVPnxMjpBT064mOVmKE/Zle9Iqjl5w2gULt18tI10=
-github.com/newrelic/newrelic-client-go/v2 v2.97.0/go.mod h1:Zuv+2A5y4076Ytp/bFw8ZwNYHSgTxdEa30jMySmySRc=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nsf/jsondiff v0.0.0-20260207060731-8e8d90c4c0ac h1:4YV96Dzy2csSnhzl14/Qk5YsSrKAQusGsIADDn/4/g8=
 github.com/nsf/jsondiff v0.0.0-20260207060731-8e8d90c4c0ac/go.mod h1:mpRZBD8SJ55OIICQ3iWH0Yz3cjzA61JdqMLoWXeB2+8=
@@ -210,6 +208,8 @@ github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJ
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
 github.com/valyala/fastjson v1.6.4 h1:uAUNq9Z6ymTgGhcm0UynUAB6tlbakBrz6CQFax3BXVQ=
 github.com/valyala/fastjson v1.6.4/go.mod h1:CLCAqky6SMuOcxStkYQvblddUtoRxhYMGLrsQns1aXY=
+github.com/vinaym0007/newrelic-client-go/v2 v2.0.0-20261022083748-029bae22e801 h1:6YQwKOrAqOGWjdJ6X58aCt5M4BLLq+Eg4UkHWHwFhXE=
+github.com/vinaym0007/newrelic-client-go/v2 v2.0.0-20261022083748-029bae22e801/go.mod h1:Zuv+2A5y4076Ytp/bFw8ZwNYHSgTxdEa30jMySmySRc=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
