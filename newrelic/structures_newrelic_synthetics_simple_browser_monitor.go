@@ -2,7 +2,6 @@ package newrelic
 
 import (
 	"errors"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/synthetics"
 )
@@ -71,29 +70,29 @@ func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulation(d *schema.Reso
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
 	simpleBrowserMonitorInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
-	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
-		if scriptLangOk {
-			simpleBrowserMonitorInput.Runtime.ScriptLanguage = scriptLang.(string)
-		}
 
-		if runtimeTypeOk {
-			simpleBrowserMonitorInput.Runtime.RuntimeType = runtimeType.(string)
-		}
+	if scriptLangOk {
+		simpleBrowserMonitorInput.Runtime.ScriptLanguage = scriptLang.(string)
+	}
 
-		if runtimeTypeVersionOk {
-			simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
-		}
+	if runtimeTypeOk {
+		simpleBrowserMonitorInput.Runtime.RuntimeType = runtimeType.(string)
 	} else {
-		simpleBrowserMonitorInput.Runtime.RuntimeType = ""
-		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = ""
+		simpleBrowserMonitorInput.Runtime.RuntimeType = "CHROME_BROWSER"
+	}
+
+	if runtimeTypeVersionOk {
+		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+	} else {
+		simpleBrowserMonitorInput.Runtime.RuntimeTypeVersion = "100"
 	}
 
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
-	if !(runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
-		return errors.New("device emulation is not supported by legacy runtime")
-	}
+	//if !(runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
+	//	return errors.New("device emulation is not supported by legacy runtime")
+	//}
 
 	if doOk && dtOk {
 		simpleBrowserMonitorInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}
@@ -172,28 +171,30 @@ func buildSyntheticsSimpleBrowserMonitorRuntimeAndDeviceEmulationUpdateStruct(d 
 	runtimeType, runtimeTypeOk := d.GetOk("runtime_type")
 	runtimeTypeVersion, runtimeTypeVersionOk := d.GetOk("runtime_type_version")
 
-	if scriptLangOk || runtimeTypeOk || runtimeTypeVersionOk {
-		simpleBrowserMonitorUpdateInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
+	simpleBrowserMonitorUpdateInput.Runtime = &synthetics.SyntheticsRuntimeInput{}
 
-		if scriptLangOk {
-			simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = scriptLang.(string)
-		}
+	if scriptLangOk {
+		simpleBrowserMonitorUpdateInput.Runtime.ScriptLanguage = scriptLang.(string)
+	}
 
-		if runtimeTypeOk {
-			simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = runtimeType.(string)
-		}
+	if runtimeTypeOk {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = runtimeType.(string)
+	} else {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeType = "CHROME_BROWSER"
+	}
 
-		if runtimeTypeVersionOk {
-			simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
-		}
+	if runtimeTypeVersionOk {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = synthetics.SemVer(runtimeTypeVersion.(string))
+	} else {
+		simpleBrowserMonitorUpdateInput.Runtime.RuntimeTypeVersion = "100"
 	}
 
 	do, doOk := d.GetOk("device_orientation")
 	dt, dtOk := d.GetOk("device_type")
 
-	if !(runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
-		return errors.New("device emulation is not supported by legacy runtime")
-	}
+	//if !(runtimeTypeOk && runtimeTypeVersionOk) && (doOk && dtOk) {
+	//	return errors.New("device emulation is not supported by legacy runtime")
+	//}
 
 	if doOk && dtOk {
 		simpleBrowserMonitorUpdateInput.AdvancedOptions.DeviceEmulation = &synthetics.SyntheticsDeviceEmulationInput{}

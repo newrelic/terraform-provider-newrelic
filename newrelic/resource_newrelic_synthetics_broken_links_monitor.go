@@ -37,7 +37,6 @@ func syntheticsBrokenLinksMonitorSchema() map[string]*schema.Schema {
 			Description: "The URI the monitor runs against.",
 			Required:    true,
 		},
-		SyntheticsUseLegacyRuntimeAttrLabel: SyntheticsUseLegacyRuntimeSchema,
 	}
 }
 
