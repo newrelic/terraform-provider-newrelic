@@ -1,5 +1,10 @@
+<a name="v3.101.4"></a>
+## [v3.101.4] - 2026-10-26
+### Bug Fixes
+- **oci:** mirror log-forwarder image from Docker Hub into customer OCIR ([#3257](https://github.com/newrelic/terraform-provider-newrelic/issues/3257))
+
 <a name="v3.101.3"></a>
-## [v3.101.3] - 2026-10-22
+## [v3.101.3] - 2026-10-23
 ### Bug Fixes
 - **oci:** pin the metrics function image by digest in the metrics module ([#3264](https://github.com/newrelic/terraform-provider-newrelic/issues/3264))
 
@@ -2957,7 +2962,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.3...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.4...HEAD
+[v3.101.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.3...v3.101.4
 [v3.101.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.2...v3.101.3
 [v3.101.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.1...v3.101.2
 [v3.101.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.0...v3.101.1
