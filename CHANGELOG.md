@@ -1,3 +1,8 @@
+<a name="v3.101.5"></a>
+## [v3.101.5] - 2026-10-26
+### Documentation Updates
+- **oci:** add README for logs-integration module ([#3258](https://github.com/newrelic/terraform-provider-newrelic/issues/3258))
+
 <a name="v3.101.4"></a>
 ## [v3.101.4] - 2026-10-26
 ### Bug Fixes
@@ -2962,7 +2967,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.4...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.5...HEAD
+[v3.101.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.4...v3.101.5
 [v3.101.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.3...v3.101.4
 [v3.101.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.2...v3.101.3
 [v3.101.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.1...v3.101.2
