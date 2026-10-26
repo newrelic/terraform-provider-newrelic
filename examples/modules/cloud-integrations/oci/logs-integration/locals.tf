@@ -37,16 +37,21 @@ locals {
   time_out_in_seconds    = 300
 
   # The function runs from a copy of var.function_image in the tenancy's own Container Registry.
-  ocir_host                 = "${var.region}.ocir.io"
-  ocir_namespace            = oci_artifacts_container_repository.log_forwarder_repo.namespace
+  ocir_host = "${var.region}.ocir.io"
+  ocir_namespace = local.create_container_repository ? (
+    oci_artifacts_container_repository.log_forwarder_repo[0].namespace
+    ) : (
+    data.oci_artifacts_container_repository.existing[0].namespace
+  )
   function_image_repository = "newrelic-${var.newrelic_logging_identifier}-${local.terraform_suffix}/oci-log-forwarder"
   function_image_digest     = data.external.function_image.result.digest
   function_image            = "${local.ocir_host}/${local.ocir_namespace}/${local.function_image_repository}:${data.external.function_image.result.tag}"
 
   # nonsensitive() here is safe: this only reveals whether the token string was empty, never
   # the token itself. It's required because count/for_each reject sensitive values outright.
-  create_registry_token = nonsensitive(var.registry_auth_token == "")
-  registry_username     = "${local.ocir_namespace}/${var.registry_username != "" ? var.registry_username : data.oci_identity_user.registry_user[0].name}"
+  create_container_repository = nonsensitive(var.existing_container_repository_id == "")
+  create_registry_token       = nonsensitive(var.registry_auth_token == "")
+  registry_username           = "${local.ocir_namespace}/${var.registry_username != "" ? var.registry_username : data.oci_identity_user.registry_user[0].name}"
   # Left sensitive (no nonsensitive() here) so a customer-supplied token stays masked in
   # plan/apply console output and whatever captures it (ORM/CI job logs). Terraform suppresses
   # the whole local-exec invocation's output when this branch is taken, including image_mirror.py's

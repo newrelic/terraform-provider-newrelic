@@ -17,11 +17,28 @@ resource "oci_functions_application" "logging_function_app" {
   subnet_ids    = [var.create_vcn ? module.vcn[0].subnet_id[local.subnet] : var.function_subnet_id]
 }
 
+# OCIR repository names are unique tenancy+region-wide, not scoped per compartment, so a
+# repository created by a prior deployment anywhere in this tenancy+region (even a different
+# compartment) blocks a plain `create` here with a raw 409 NAMESPACE_CONFLICT (GameDay finding,
+# NR-640865). A data-source-based existence check can't safely auto-detect and skip creation
+# here: Terraform disallows a resource's own precondition from referencing that same resource
+# (no self-reference), and every other exclusion signal (compartment, freeform_tags) is
+# indistinguishable between "this is the repo this exact module instance already created" and
+# "this is an unrelated orphaned repo with the same display_name" -- both look identical by the
+# time a second apply runs. So this mirrors the registry_auth_token pattern below instead: if
+# you hit the conflict, supply the existing repository's OCID via
+# existing_container_repository_id and this module uses it instead of trying to create a new one.
 resource "oci_artifacts_container_repository" "log_forwarder_repo" {
+  count          = local.create_container_repository ? 1 : 0
   compartment_id = var.compartment_ocid
   display_name   = local.function_image_repository
   is_public      = false
   freeform_tags  = local.freeform_tags
+}
+
+data "oci_artifacts_container_repository" "existing" {
+  count         = local.create_container_repository ? 0 : 1
+  repository_id = var.existing_container_repository_id
 }
 
 resource "oci_identity_auth_token" "registry_push" {
