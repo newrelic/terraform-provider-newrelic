@@ -181,7 +181,7 @@ func TestExpandCloudAzureIntegrationMonitorInputTagsWithoutRawConfig(t *testing.
 }
 
 // The Azure Auto Discovery integration performs an inventory sweep rather than a metric
-// poll, and accepts only three intervals: 8, 12 and 16 hours. These tests pin that set at
+// poll, and accepts only four intervals: 8, 12, 16 and 24 hours. These tests pin that set at
 // the schema level so an unsupported value fails during plan instead of apply.
 func TestCloudAzureAutoDiscoveryPollingIntervalValidation(t *testing.T) {
 	validateFunc := cloudAzureAutoDiscoveryElem().Schema["metrics_polling_interval"].ValidateFunc
@@ -195,9 +195,11 @@ func TestCloudAzureAutoDiscoveryPollingIntervalValidation(t *testing.T) {
 		{name: "8 hours, the default", interval: 28800, valid: true},
 		{name: "12 hours", interval: 43200, valid: true},
 		{name: "16 hours", interval: 57600, valid: true},
-		{name: "24 hours, allowed for AWS but not Azure", interval: 86400, valid: false},
+		{name: "24 hours", interval: 86400, valid: true},
 		{name: "between two allowed values", interval: 36000, valid: false},
 		{name: "one second below the smallest allowed value", interval: 28799, valid: false},
+		{name: "one second below the largest allowed value", interval: 86399, valid: false},
+		{name: "one second above the largest allowed value", interval: 86401, valid: false},
 		{name: "1 hour, the metric integration default", interval: 3600, valid: false},
 		{name: "5 minutes", interval: 300, valid: false},
 		{name: "zero", interval: 0, valid: false},
@@ -223,7 +225,7 @@ func TestCloudAzureAutoDiscoveryPollingIntervalValidation(t *testing.T) {
 func TestCloudAzureAutoDiscoveryPollingIntervalsAreAllAccepted(t *testing.T) {
 	validateFunc := cloudAzureAutoDiscoveryElem().Schema["metrics_polling_interval"].ValidateFunc
 
-	require.ElementsMatch(t, []int{28800, 43200, 57600}, cloudAzureAutoDiscoveryPollingIntervals)
+	require.ElementsMatch(t, []int{28800, 43200, 57600, 86400}, cloudAzureAutoDiscoveryPollingIntervals)
 
 	for _, interval := range cloudAzureAutoDiscoveryPollingIntervals {
 		warns, errs := validateFunc(interval, "metrics_polling_interval")
