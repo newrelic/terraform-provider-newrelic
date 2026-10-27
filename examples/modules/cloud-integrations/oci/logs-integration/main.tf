@@ -17,13 +17,6 @@ resource "oci_functions_application" "logging_function_app" {
   subnet_ids    = [var.create_vcn ? module.vcn[0].subnet_id[local.subnet] : var.function_subnet_id]
 }
 
-resource "oci_artifacts_container_repository" "log_forwarder_repo" {
-  compartment_id = var.compartment_ocid
-  display_name   = local.function_image_repository
-  is_public      = false
-  freeform_tags  = local.freeform_tags
-}
-
 resource "oci_identity_auth_token" "registry_push" {
   count       = local.create_registry_token ? 1 : 0
   provider    = oci.home

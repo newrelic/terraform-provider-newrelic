@@ -9,6 +9,11 @@ variable "compartment_ocid" {
   description = "The OCID of the compartment where resources will be created. Use the compartment OCID already created as part of Policy Setup module."
 }
 
+variable "container_repository_id" {
+  type        = string
+  description = "OCID of the Container Registry repository the function image is mirrored into. Use the container_repository_id output from the container-registry-setup module -- this module no longer creates its own repository (OCIR repository names are unique tenancy+region-wide, not per compartment, so each deployment creating its own caused collisions; see NR-640865)."
+}
+
 variable "region" {
   type        = string
   description = "The name of the OCI region where these resources will be deployed."
