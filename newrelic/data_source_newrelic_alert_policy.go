@@ -58,6 +58,8 @@ func dataSourceNewRelicAlertPolicyRead(ctx context.Context, d *schema.ResourceDa
 	name := d.Get("name").(string)
 	accountID := selectAccountID(cfg, d)
 
+	// TODO(newrelic-client-go#1285): replace with AlertsPoliciesSearchCriteriaInput{Name: name}
+	// once that PR is merged and go.mod is bumped to the new release.
 	params := alerts.AlertsPoliciesSearchCriteriaInput{}
 
 	policies, err := client.Alerts.QueryPolicySearchWithContext(ctx, accountID, params)
