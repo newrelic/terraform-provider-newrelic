@@ -688,6 +688,9 @@ structures_newrelic_scorecard_test.go:
 structures_newrelic_service_level.go:
   test: false
   product_mapping: WORKLOADS
+structures_newrelic_service_level_facets_test.go:
+  test: true
+  product_mapping: WORKLOADS
 structures_newrelic_synthetics_all_monitors_validation_helpers.go:
   test: false
   product_mapping: SYNTHETICS
