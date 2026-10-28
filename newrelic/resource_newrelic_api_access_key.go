@@ -43,7 +43,7 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 		ingestKeyOpts.Notes = getAPIAccessKeyNotes(d)
 
 		if owningTeamIDs := getAPIAccessKeyOwningTeamIDs(d); len(owningTeamIDs) > 0 {
-			ingestKeyOpts.OwningTeamIDs = &owningTeamIDs
+			ingestKeyOpts.OwningTeamIDs = owningTeamIDs
 		}
 
 		opts.Ingest = []apiaccess.APIAccessCreateIngestKeyInput{ingestKeyOpts}
@@ -154,11 +154,9 @@ func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(setErr)
 	}
 
-	if key.Enabled != nil {
-		setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Enabled, *key.Enabled)
-		if setErr != nil {
-			return diag.FromErr(setErr)
-		}
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Enabled, key.Enabled)
+	if setErr != nil {
+		return diag.FromErr(setErr)
 	}
 
 	if key.Type == apiaccess.APIAccessKeyTypeTypes.INGEST {
@@ -219,9 +217,10 @@ func resourceNewRelicAPIAccessKeyUpdate(ctx context.Context, d *schema.ResourceD
 			Notes:   getAPIAccessKeyNotes(d),
 			Enabled: getAPIAccessKeyEnabledForUpdate(d),
 		}
+		// Teams are only sent when changed (a nil list is sent as null, leaving them unchanged);
+		// getAPIAccessKeyOwningTeamIDs returns a non-nil, possibly empty, list, so clearing sends [].
 		if d.HasChange(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs) {
-			owningTeamIDs := getAPIAccessKeyOwningTeamIDs(d)
-			updateKeyOpts.OwningTeamIDs = &owningTeamIDs
+			updateKeyOpts.OwningTeamIDs = getAPIAccessKeyOwningTeamIDs(d)
 		}
 		opts.Ingest = []apiaccess.APIAccessUpdateIngestKeyInput{updateKeyOpts}
 	case keyTypeUser:
