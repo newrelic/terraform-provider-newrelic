@@ -806,11 +806,9 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 		}
 	}
 
-	if signal.EvaluationDelay != nil {
-		if err := d.Set("evaluation_delay", signal.EvaluationDelay); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
-		}
-
+	// Set even when nil, so a delay turned off outside Terraform clears from state instead of being re-sent
+	if err := d.Set("evaluation_delay", signal.EvaluationDelay); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `evaluation_delay`: %v", err)
 	}
 
 	return nil
