@@ -1,3 +1,8 @@
+<a name="v3.101.7"></a>
+## [v3.101.7] - 2026-10-28
+### Bug Fixes
+- **azure:** allow 24 hour polling interval for auto_discovery ([#3272](https://github.com/newrelic/terraform-provider-newrelic/issues/3272))
+
 <a name="v3.101.6"></a>
 ## [v3.101.6] - 2026-10-26
 <a name="v3.101.5"></a>
@@ -2299,10 +2304,10 @@ new synthetics resources use GraphQL API schema
 ### Features
 - **alerts:** allow a 30 day violation limit for nrql conditions
 
-<a name="2.11.1"></a>
-## [2.11.1] - 2020-10-07
 <a name="v2.11.1"></a>
 ## [v2.11.1] - 2020-10-07
+<a name="2.11.1"></a>
+## [2.11.1] - 2020-10-07
 ### Documentation Updates
 - add website documentation for nrql_alert aggregation_window
 
@@ -2969,7 +2974,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.6...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.7...HEAD
+[v3.101.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.6...v3.101.7
 [v3.101.6]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.5...v3.101.6
 [v3.101.5]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.4...v3.101.5
 [v3.101.4]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.3...v3.101.4
@@ -3274,9 +3280,9 @@ new synthetics resources use GraphQL API schema
 [v2.13.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.13.0...v2.13.1
 [v2.13.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.1...v2.13.0
 [v2.12.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.12.0...v2.12.1
-[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.12.0
-[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...2.11.1
-[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...v2.11.1
+[v2.12.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.1...v2.12.0
+[v2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/2.11.1...v2.11.1
+[2.11.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.11.0...2.11.1
 [v2.11.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.3...v2.11.0
 [v2.10.3]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.10.2...v2.10.3
 [v2.10.2]: https://github.com/newrelic/terraform-provider-newrelic/compare/v2.9.0...v2.10.2
