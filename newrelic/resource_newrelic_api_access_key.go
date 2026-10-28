@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	nr "github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/apiaccess"
 )
 
@@ -40,6 +41,10 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 		ingestKeyOpts.IngestType = apiaccess.APIAccessIngestKeyType(getAPIAccessIngestType(d))
 		ingestKeyOpts.Name = getAPIAccessKeyName(d)
 		ingestKeyOpts.Notes = getAPIAccessKeyNotes(d)
+
+		if owningTeamIDs := getAPIAccessKeyOwningTeamIDs(d); len(owningTeamIDs) > 0 {
+			ingestKeyOpts.OwningTeamIDs = &owningTeamIDs
+		}
 
 		opts.Ingest = []apiaccess.APIAccessCreateIngestKeyInput{ingestKeyOpts}
 	case keyTypeUser:
@@ -75,13 +80,38 @@ func resourceNewRelicAPIAccessKeyCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	// Keys are always created enabled, as the create mutation does not accept `enabled`;
+	// a key configured as disabled is therefore disabled right after it is created.
+	if enabled := getAPIAccessKeyEnabledFromConfiguration(d); enabled != nil && !*enabled {
+		if err := updateAPIAccessKeyEnabled(ctx, client, d.Id(), keyType, false); err != nil {
+			return diag.Errorf("the API access key %s was created, but could not be disabled: %s", d.Id(), err)
+		}
+	}
+
 	return resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
+}
+
+func updateAPIAccessKeyEnabled(ctx context.Context, client *nr.NewRelic, keyID string, keyType string, enabled bool) error {
+	opts := apiaccess.APIAccessUpdateInput{}
+
+	switch keyType {
+	case keyTypeIngest:
+		opts.Ingest = []apiaccess.APIAccessUpdateIngestKeyInput{{KeyID: keyID, Enabled: &enabled}}
+	case keyTypeUser:
+		opts.User = []apiaccess.APIAccessUpdateUserKeyInput{{KeyID: keyID, Enabled: &enabled}}
+	default:
+		return fmt.Errorf("unknown api access key type: %s", keyType)
+	}
+
+	_, err := client.APIAccess.UpdateAPIAccessKeysWithContext(ctx, opts)
+	return err
 }
 
 func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ProviderConfig).NewClient
 
-	key, readErr := client.APIAccess.GetAPIAccessKeyWithContext(ctx, d.Id(), apiaccess.APIAccessKeyType(getAPIAccessKeyType(d)))
+	// Include disabled keys, so that a disabled key is not mistaken for a deleted one and removed from the state.
+	key, readErr := client.APIAccess.GetAPIAccessKeyIncludingDisabledWithContext(ctx, d.Id(), apiaccess.APIAccessKeyType(getAPIAccessKeyType(d)))
 	if readErr != nil {
 		if strings.Contains(readErr.Error(), "Key not found") {
 			d.SetId("")
@@ -122,6 +152,20 @@ func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceDat
 	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Notes, key.Notes)
 	if setErr != nil {
 		return diag.FromErr(setErr)
+	}
+
+	if key.Enabled != nil {
+		setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.Enabled, *key.Enabled)
+		if setErr != nil {
+			return diag.FromErr(setErr)
+		}
+	}
+
+	if key.Type == apiaccess.APIAccessKeyTypeTypes.INGEST {
+		setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs, key.OwningTeamIDs)
+		if setErr != nil {
+			return diag.FromErr(setErr)
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,16 +214,22 @@ func resourceNewRelicAPIAccessKeyUpdate(ctx context.Context, d *schema.ResourceD
 	switch keyType {
 	case keyTypeIngest:
 		updateKeyOpts := apiaccess.APIAccessUpdateIngestKeyInput{
-			KeyID: d.Id(),
-			Name:  getAPIAccessKeyName(d),
-			Notes: getAPIAccessKeyNotes(d),
+			KeyID:   d.Id(),
+			Name:    getAPIAccessKeyName(d),
+			Notes:   getAPIAccessKeyNotes(d),
+			Enabled: getAPIAccessKeyEnabledForUpdate(d),
+		}
+		if d.HasChange(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs) {
+			owningTeamIDs := getAPIAccessKeyOwningTeamIDs(d)
+			updateKeyOpts.OwningTeamIDs = &owningTeamIDs
 		}
 		opts.Ingest = []apiaccess.APIAccessUpdateIngestKeyInput{updateKeyOpts}
 	case keyTypeUser:
 		updateKeyOpts := apiaccess.APIAccessUpdateUserKeyInput{
-			KeyID: d.Id(),
-			Name:  getAPIAccessKeyName(d),
-			Notes: getAPIAccessKeyNotes(d),
+			KeyID:   d.Id(),
+			Name:    getAPIAccessKeyName(d),
+			Notes:   getAPIAccessKeyNotes(d),
+			Enabled: getAPIAccessKeyEnabledForUpdate(d),
 		}
 		opts.User = []apiaccess.APIAccessUpdateUserKeyInput{updateKeyOpts}
 	default:
@@ -197,6 +247,25 @@ func resourceNewRelicAPIAccessKeyUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	return resourceNewRelicAPIAccessKeyRead(ctx, d, meta)
+}
+
+// getAPIAccessKeyEnabledForUpdate returns the `enabled` value to send in an update, or nil to leave the status unchanged.
+// It is sent when it changes, and also whenever the key is currently disabled, since NerdGraph rejects
+// an update of a disabled key as not found unless the update carries `enabled`.
+func getAPIAccessKeyEnabledForUpdate(d *schema.ResourceData) *bool {
+	label := ResourceNewRelicAPIAccessKeyAttributeLabels.Enabled
+
+	if configured := getAPIAccessKeyEnabledFromConfiguration(d); configured != nil && d.HasChange(label) {
+		return configured
+	}
+
+	stateEnabled := d.GetRawState().GetAttr(label)
+	if !stateEnabled.IsNull() && stateEnabled.IsKnown() && stateEnabled.False() {
+		disabled := false
+		return &disabled
+	}
+
+	return nil
 }
 
 func resourceNewRelicAPIAccessKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -19,13 +19,15 @@ var (
 
 func resourceNewRelicAPIAccessKeySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		ResourceNewRelicAPIAccessKeyAttributeLabels.AccountID:  APIAccessKeysSchemaAccountID,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.KeyType:    APIAccessKeysSchemaKeyType,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.IngestType: APIAccessKeysSchemaIngestType,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.UserID:     APIAccessKeysSchemaUserID,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.Name:       APIAccessKeysSchemaName,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.Notes:      APIAccessKeysSchemaNotes,
-		ResourceNewRelicAPIAccessKeyAttributeLabels.Key:        APIAccessKeysSchemaKey,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.AccountID:     APIAccessKeysSchemaAccountID,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.KeyType:       APIAccessKeysSchemaKeyType,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.IngestType:    APIAccessKeysSchemaIngestType,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.UserID:        APIAccessKeysSchemaUserID,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.Name:          APIAccessKeysSchemaName,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.Notes:         APIAccessKeysSchemaNotes,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.Key:           APIAccessKeysSchemaKey,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.Enabled:       APIAccessKeysSchemaEnabled,
+		ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs: APIAccessKeysSchemaOwningTeamIDs,
 	}
 }
 
@@ -35,21 +37,25 @@ func resourceNewRelicAPIAccessKeySchema() map[string]*schema.Schema {
 // and not directly as a string isn't allowing them to be recognized as strings in the schema
 
 var ResourceNewRelicAPIAccessKeyAttributeLabels = struct {
-	AccountID  string
-	KeyType    string
-	UserID     string
-	IngestType string
-	Name       string
-	Notes      string
-	Key        string
+	AccountID     string
+	KeyType       string
+	UserID        string
+	IngestType    string
+	Name          string
+	Notes         string
+	Key           string
+	Enabled       string
+	OwningTeamIDs string
 }{
-	AccountID:  "account_id",
-	KeyType:    "key_type",
-	UserID:     "user_id",
-	IngestType: "ingest_type",
-	Name:       "name",
-	Notes:      "notes",
-	Key:        "key",
+	AccountID:     "account_id",
+	KeyType:       "key_type",
+	UserID:        "user_id",
+	IngestType:    "ingest_type",
+	Name:          "name",
+	Notes:         "notes",
+	Key:           "key",
+	Enabled:       "enabled",
+	OwningTeamIDs: "owning_team_ids",
 }
 
 func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -106,10 +112,13 @@ func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff,
 		if d.GetRawConfig().GetAttr(ResourceNewRelicAPIAccessKeyAttributeLabels.UserID).IsNull() {
 			errorsList = append(errorsList, fmt.Errorf("the `user_id` attribute is required when `key_type` is set to USER, please specify a valid user ID"))
 		}
+		if !d.GetRawConfig().GetAttr(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs).IsNull() {
+			errorsList = append(errorsList, fmt.Errorf("the `owning_team_ids` attribute cannot be set when `key_type` is set to USER, as owning teams are only supported on INGEST keys"))
+		}
 	}
 
 	if len(errorsList) == 0 {
-		return nil
+		return clearOwningTeamIDsIfEmptyInConfiguration(d)
 	}
 
 	errorsString := "the following validation errors have been identified with the configuration of the API access key resource: \n"
@@ -119,6 +128,24 @@ func validateAPIAccessKeyAttributes(ctx context.Context, d *schema.ResourceDiff,
 	}
 
 	return errors.New(errorsString)
+}
+
+// clearOwningTeamIDsIfEmptyInConfiguration plans an empty `owning_team_ids` when the configuration explicitly sets it
+// to an empty set. As the attribute is Optional + Computed, Terraform would otherwise treat an empty set like an
+// omitted attribute and keep the teams in the state.
+func clearOwningTeamIDsIfEmptyInConfiguration(d *schema.ResourceDiff) error {
+	label := ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs
+	rawTeams := d.GetRawConfig().GetAttr(label)
+
+	if rawTeams.IsNull() || !rawTeams.IsKnown() || rawTeams.LengthInt() != 0 {
+		return nil
+	}
+
+	if old, _ := d.GetChange(label); old.(*schema.Set).Len() == 0 {
+		return nil
+	}
+
+	return d.SetNew(label, []string{})
 }
 
 func getAPIAccessKeyAccountID(d *schema.ResourceData) int {
@@ -192,6 +219,30 @@ func getAPIAccessKeyName(d *schema.ResourceData) string {
 	return name
 }
 
+func getAPIAccessKeyOwningTeamIDs(d *schema.ResourceData) []string {
+	teamIDs := []string{}
+	if v, ok := d.GetOk(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs); ok {
+		for _, teamID := range v.(*schema.Set).List() {
+			teamIDs = append(teamIDs, teamID.(string))
+		}
+	}
+
+	log.Printf("[DEBUG] api access key owning_team_ids: %v", teamIDs)
+
+	return teamIDs
+}
+
+// getAPIAccessKeyEnabledFromConfiguration returns the `enabled` value only if it is explicitly set in the configuration.
+func getAPIAccessKeyEnabledFromConfiguration(d *schema.ResourceData) *bool {
+	rawEnabled := d.GetRawConfig().GetAttr(ResourceNewRelicAPIAccessKeyAttributeLabels.Enabled)
+	if rawEnabled.IsNull() || !rawEnabled.IsKnown() {
+		return nil
+	}
+
+	enabled := rawEnabled.True()
+	return &enabled
+}
+
 func getAPIAccessKeyAttributeValueFromConfiguration(
 	d *schema.ResourceDiff,
 	attributeLabel string,
@@ -248,4 +299,22 @@ var APIAccessKeysSchemaNotes = &schema.Schema{
 var APIAccessKeysSchemaKey = &schema.Schema{
 	Type:     schema.TypeString,
 	Computed: true,
+}
+
+var APIAccessKeysSchemaEnabled = &schema.Schema{
+	Type: schema.TypeBool,
+	// Optional + Computed with no default: when omitted from the configuration, the key's current status is
+	// left as-is, so a key disabled outside Terraform (e.g. during an incident) is not re-enabled by an apply.
+	Optional: true,
+	Computed: true,
+}
+
+var APIAccessKeysSchemaOwningTeamIDs = &schema.Schema{
+	Type:     schema.TypeSet,
+	Elem:     &schema.Schema{Type: schema.TypeString},
+	Optional: true,
+	// Computed so teams assigned outside Terraform are kept when this attribute is omitted;
+	// an explicit empty set clears all teams (see validateAPIAccessKeyAttributes).
+	Computed: true,
+	MaxItems: 50,
 }
