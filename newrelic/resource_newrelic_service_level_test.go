@@ -166,6 +166,118 @@ resource "newrelic_service_level" "sli" {
 `, testAccountID, name)
 }
 
+func TestAccNewRelicServiceLevel_Facets(t *testing.T) {
+	resourceName := "newrelic_service_level.facets_sli"
+	rName := generateNameForIntegrationTestResource()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicServiceLevelDestroy,
+		Steps: []resource.TestStep{
+			// Test: Create with facets
+			{
+				Config: testAccNewRelicServiceLevelConfigFacets(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicServiceLevelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "events.0.facets.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "events.0.facets.0", "appName"),
+				),
+			},
+			// Test: Update facets
+			{
+				Config: testAccNewRelicServiceLevelConfigFacetsUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicServiceLevelExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "events.0.facets.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "events.0.facets.0", "appName"),
+					resource.TestCheckResourceAttr(resourceName, "events.0.facets.1", "transactionType"),
+				),
+			},
+		},
+	})
+}
+
+func testAccNewRelicServiceLevelConfigFacets(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workload" "facets_workload" {
+	name = "%[2]s"
+	account_id = %[1]d
+	entity_search_query {
+		query = "tags.namespace like '%%App%%' "
+	}
+	scope_account_ids =  [%[1]d]
+}
+
+resource "newrelic_service_level" "facets_sli" {
+	guid = newrelic_workload.facets_workload.guid
+	name = "%[2]s"
+
+	events {
+		account_id = %[1]d
+		facets     = ["appName"]
+
+		valid_events {
+			from = "Transaction"
+		}
+		good_events {
+			from = "Transaction"
+		}
+	}
+
+	objective {
+		target = 99.00
+		time_window {
+			rolling {
+				count = 7
+				unit = "DAY"
+			}
+		}
+	}
+}
+`, testAccountID, name)
+}
+
+func testAccNewRelicServiceLevelConfigFacetsUpdated(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_workload" "facets_workload" {
+	name = "%[2]s"
+	account_id = %[1]d
+	entity_search_query {
+		query = "tags.namespace like '%%App%%' "
+	}
+	scope_account_ids =  [%[1]d]
+}
+
+resource "newrelic_service_level" "facets_sli" {
+	guid = newrelic_workload.facets_workload.guid
+	name = "%[2]s-updated"
+
+	events {
+		account_id = %[1]d
+		facets     = ["appName", "transactionType"]
+
+		valid_events {
+			from = "Transaction"
+		}
+		good_events {
+			from = "Transaction"
+		}
+	}
+
+	objective {
+		target = 99.00
+		time_window {
+			rolling {
+				count = 7
+				unit = "DAY"
+			}
+		}
+	}
+}
+`, testAccountID, name)
+}
+
 func testAccCheckNewRelicServiceLevelExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 

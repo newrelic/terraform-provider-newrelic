@@ -111,6 +111,7 @@ func eventsSchema() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The list of NRQL FACET attributes to group results by. These facets are applied to all event queries (valid, good or bad events). A maximum of 2 facets can be specified.",
+				MinItems:    1,
 				MaxItems:    2,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},

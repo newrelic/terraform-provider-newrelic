@@ -28,6 +28,7 @@ resource "newrelic_service_level" "foo" {
 
     events {
         account_id = 12345678
+        facets     = ["appName"]
         valid_events {
             from = "Transaction"
             where = "appName = 'Example application' AND (transactionType='Web')"
