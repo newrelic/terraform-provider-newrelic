@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/newrelic/go-agent/v3 v3.45.0
-	github.com/newrelic/newrelic-client-go/v2 v2.97.1-0.20261026123410-fea97496e39c
+	github.com/newrelic/newrelic-client-go/v2 v2.97.1-0.20261028055431-c5015c0989d2
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	gopkg.in/yaml.v3 v3.0.1
