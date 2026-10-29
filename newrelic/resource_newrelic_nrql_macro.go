@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -102,11 +103,15 @@ func resourceNewRelicNrqlMacroRead(ctx context.Context, d *schema.ResourceData, 
 
 	resp, err := client.Nrqlmacros.GetEntityWithContext(ctx, macroID)
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			log.Printf("[WARN] NRQL macro %s not found; removing from state", macroID)
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
 	if resp == nil {
-		// Entity not found; remove from state so Terraform plans a re-create.
 		d.SetId("")
 		return nil
 	}
