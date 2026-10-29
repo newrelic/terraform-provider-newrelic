@@ -2,32 +2,81 @@
 resource "oci_functions_application" "logging_function_app" {
   compartment_id = var.compartment_ocid
   config = {
-    "VAULT_REGION"      = var.region
-    "DEBUG_ENABLED"     = var.debug_enabled
-    "NEW_RELIC_REGION"  = var.new_relic_region
-    "SECRET_OCID"       = var.secret_ocid
-    "CLIENT_TTL"        = local.client_ttl
+    "VAULT_REGION"           = local.home_region
+    "DEBUG_ENABLED"          = var.debug_enabled
+    "NEW_RELIC_REGION"       = var.newrelic_region
+    "SECRET_OCID"            = var.ingest_key_secret_ocid
+    "CLIENT_TTL"             = local.client_ttl
+    "FORWARDER_METRICS_TIER" = var.metrics_tier
+    "TENANCY_NAME"           = data.oci_identity_tenancy.current_tenancy.name
+    "COMPARTMENT_NAME"       = local.compartment_name
   }
-  display_name               = local.function_app_name
-  freeform_tags              = local.freeform_tags
-  shape                      = local.function_app_shape
-  subnet_ids                 = [var.create_vcn ? module.vcn[0].subnet_id[local.subnet] : var.function_subnet_id]
+  display_name  = local.function_app_name
+  freeform_tags = local.freeform_tags
+  shape         = local.function_app_shape
+  subnet_ids    = [var.create_vcn ? module.vcn[0].subnet_id[local.subnet] : var.function_subnet_id]
+}
+
+resource "oci_artifacts_container_repository" "log_forwarder_repo" {
+  compartment_id = var.compartment_ocid
+  display_name   = local.function_image_repository
+  is_public      = false
+  freeform_tags  = local.freeform_tags
+}
+
+resource "oci_identity_auth_token" "registry_push" {
+  count       = local.create_registry_token ? 1 : 0
+  provider    = oci.home
+  user_id     = var.user_ocid
+  description = "New Relic logs module: pushes the function image to ${local.function_image_repository} in ${var.region}"
+
+  lifecycle {
+    precondition {
+      condition     = length(data.oci_identity_auth_tokens.existing[0].tokens) < 2
+      error_message = "This user already has 2 OCI auth tokens, the platform maximum. Supply an existing token via registry_auth_token instead of leaving it blank, so Terraform doesn't try to create a third one."
+    }
+  }
+}
+
+# Copies the image over the registry HTTP API, so the machine running Terraform needs no Docker.
+# Runs again whenever var.function_image resolves to a new digest.
+resource "null_resource" "mirror_function_image" {
+  triggers = {
+    source_digest = local.function_image_digest
+    destination   = local.function_image
+  }
+
+  provisioner "local-exec" {
+    command = "python3 ${path.module}/image_mirror.py copy"
+    environment = {
+      SOURCE_IMAGE    = var.function_image
+      SOURCE_DIGEST   = local.function_image_digest
+      DEST_REGISTRY   = local.ocir_host
+      DEST_REPOSITORY = "${local.ocir_namespace}/${local.function_image_repository}"
+      DEST_TAG        = data.external.function_image.result.tag
+      DEST_USERNAME   = local.registry_username
+      DEST_PASSWORD   = local.registry_password
+    }
+  }
 }
 
 # --- Function Resources ---
 resource "oci_functions_function" "logging_function" {
+  depends_on         = [null_resource.mirror_function_image]
   application_id     = oci_functions_application.logging_function_app.id
   display_name       = local.function_name
   memory_in_mbs      = local.function_memory_in_mbs
   timeout_in_seconds = local.time_out_in_seconds
   freeform_tags      = local.freeform_tags
-  image              = local.image_url
+  image              = local.function_image
+  # Set explicitly: the function stays on the digest it was created with until this changes.
+  image_digest = local.function_image_digest
 }
 
 # --- Service Connector Hub - Routes logs to New Relic function ---
 resource "oci_sch_service_connector" "nr_logging_service_connector" {
-  for_each = var.connector_hub_details != null ? {
-    for connector in jsondecode(var.connector_hub_details) : connector.display_name => connector
+  for_each = var.connector_hubs_data != null ? {
+    for connector in jsondecode(var.connector_hubs_data) : connector.display_name => connector
   } : {}
 
   compartment_id = var.compartment_ocid
@@ -58,7 +107,7 @@ resource "oci_sch_service_connector" "nr_logging_service_connector" {
 # Resource to link the New Relic account and configure the integration
 resource "null_resource" "newrelic_update_account" {
   depends_on = [oci_functions_function.logging_function, oci_sch_service_connector.nr_logging_service_connector]
-  count = var.connector_hub_details != null ? 1 : 0
+  count = var.connector_hubs_data != null ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
       # Main execution for cloudUpdateAccount
@@ -68,8 +117,8 @@ resource "null_resource" "newrelic_update_account" {
         --header "Content-Type: application/json" \
         --header "User-Agent: insomnia/11.1.0" \
         --data '${jsonencode({
-          query = local.updateLinkAccount_graphql_query
-        })}')
+    query = local.updateLinkAccount_graphql_query
+})}')
         # Log the full response for debugging
         echo "Full Response: $response"
         # Extract errors from the response
@@ -95,5 +144,5 @@ resource "null_resource" "newrelic_update_account" {
         fi
         echo "Successfully updated New Relic account link"
       EOT
-  }
+}
 }

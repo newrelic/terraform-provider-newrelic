@@ -17,7 +17,7 @@ variable "region" {
 variable "newrelic_logging_identifier" {
   type        = string
   description = "A unique label or name identifier for all resources in this deployment. Leave it blank if not needed."
-  default = "logs"
+  default     = "logs"
 }
 
 # VCN variables
@@ -33,29 +33,48 @@ variable "function_subnet_id" {
 }
 
 # Connector Hub Variables
-variable "connector_hub_details" {
+variable "connector_hubs_data" {
   type        = string
   description = "JSON formatted string for the service connectors to be created. See README for details and example"
   default     = null
 }
 
 variable "batch_size_in_kbs" {
-  type = number
+  type        = number
   description = "The maximum size of the batch of events to process. Maximum is 6000 KB."
-  default = 6000
+  default     = 6000
 }
 
 variable "batch_time_in_sec" {
-  type = number
+  type        = number
   description = "The maximum amount of time to wait before processing a batch of events. Maximum is 300 seconds."
-  default = 60
+  default     = 60
 }
 
 # New Relic Function variables
-variable "image_version" {
-  type = string
-  description = "The version of the Docker image for the New Relic function for the region."
-  default = "latest"
+variable "user_ocid" {
+  type        = string
+  default     = ""
+  description = "OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image. Not needed when both registry_username and registry_auth_token are set."
+}
+
+variable "function_image" {
+  type        = string
+  default     = "docker.io/newrelic/oci-log-forwarder:latest"
+  description = "Public image for the log-forwarder function. The module copies it into a private Container Registry repository in your tenancy and runs the function from there. The default is kept pinned to a specific published digest (not a floating tag) by a scheduled workflow in this repo -- pull the latest version of this module to pick up a new image, rather than expecting a re-apply of the same checkout to do so."
+}
+
+variable "registry_username" {
+  type        = string
+  default     = ""
+  description = "Container Registry username, without the tenancy namespace. Leave empty to use the name of user_ocid. Set it for users in a non-default identity domain (/)."
+}
+
+variable "registry_auth_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid (OCI allows two auth tokens per user)."
 }
 
 variable "debug_enabled" {
@@ -64,18 +83,18 @@ variable "debug_enabled" {
   description = "Enable debug mode."
 }
 
-variable "new_relic_region" {
+variable "newrelic_region" {
   type        = string
   default     = "US"
   description = "New Relic Region. US, EU or JP"
 }
 
-variable "secret_ocid" {
+variable "ingest_key_secret_ocid" {
   type        = string
   description = "OCI Vault Secret OCID that contains the New Relic License Key. Use the secret OCID already created as part of Policy Setup module."
 }
 
-variable "user_api_secret_ocid" {
+variable "user_key_secret_ocid" {
   type        = string
   description = "The OCID of the vault storing the user key for secure access."
 }
@@ -90,4 +109,15 @@ variable "provider_account_id" {
   type        = string
   sensitive   = true
   description = "The Provider Account ID that has been linked with New Relic"
+}
+
+variable "metrics_tier" {
+  type        = string
+  default     = "basic"
+  description = "Tier of forwarder.* custom metrics the function emits about itself (in addition to New Relic's own ingested logs): none (no custom metrics), basic (core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or advanced (basic plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). Custom metrics are billed by New Relic on ingest. For more details on setting up a dashboard, refer to https://docs.newrelic.com/docs/logs/forward-logs/oci-log-forwarder-observability/."
+
+  validation {
+    condition     = contains(["none", "basic", "advanced"], var.metrics_tier)
+    error_message = "metrics_tier must be one of: none, basic, advanced."
+  }
 }

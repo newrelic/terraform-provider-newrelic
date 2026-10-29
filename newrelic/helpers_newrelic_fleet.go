@@ -81,6 +81,32 @@ func mapManagedEntityType(typeStr string) (fleetcontrol.FleetControlManagedEntit
 	}
 }
 
+// fleetConfigForcedLegacyAgentTypePrefix is an agent_type prefix that must never receive the
+// "AgentConfig" configuration_type default. PipelineControlGateway and its variants
+// (PipelineControlGatewayConfig, PipelineControlGatewayConfigMode) don't have "AgentConfig"
+// classified in their agent-type registries on the fleet-management side.
+//
+// Not reachable via newrelic_fleet_configuration's current agent_type allow-list (NRInfra,
+// NRDOT, FluentBit, NRPrometheusAgent) - kept as defense-in-depth in case that allow-list is
+// ever widened.
+const fleetConfigForcedLegacyAgentTypePrefix = "pipelinecontrol"
+
+// fleetConfigForcedLegacyManagedEntityType is the one managed_entity_type value that must never
+// receive the "AgentConfig" default.
+//
+// Not reachable via newrelic_fleet_configuration's current managed_entity_type allow-list
+// (HOST, KUBERNETESCLUSTER) - kept as defense-in-depth in case that allow-list is ever widened
+// to include APPLICATION.
+const fleetConfigForcedLegacyManagedEntityType = "application"
+
+// fleetConfigurationMustStayLegacy reports whether agentType or managedEntityType forces a
+// fleet configuration to remain legacy (null configuration_type), regardless of the default or
+// an explicit configuration_type/legacy_config choice.
+func fleetConfigurationMustStayLegacy(agentType, managedEntityType string) bool {
+	return strings.HasPrefix(strings.ToLower(agentType), fleetConfigForcedLegacyAgentTypePrefix) ||
+		strings.EqualFold(managedEntityType, fleetConfigForcedLegacyManagedEntityType)
+}
+
 // mapOperatingSystemType converts string to FleetControlOperatingSystemType
 func mapOperatingSystemType(typeStr string) (fleetcontrol.FleetControlOperatingSystemType, error) {
 	switch strings.ToUpper(typeStr) {

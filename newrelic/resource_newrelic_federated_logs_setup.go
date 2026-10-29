@@ -210,6 +210,11 @@ func resourceNewRelicFederatedLogsSetup() *schema.Resource {
 				Computed: true,
 				Elem:     statusDetailSchema(),
 			},
+			"derived_lifecycle_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The derived lifecycle state of the setup, computed from the stored lifecycle status and PCG deployment progress. Possible values: DRAFT, ACTIVE, UPDATE_STAGED, ENABLE_STAGED, DISABLE_STAGED, DISABLED, DECOMMISSION_STAGED, DECOMMISSIONED, ERROR.",
+			},
 			"health_check": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -328,7 +333,7 @@ func resourceNewRelicFederatedLogsSetupUpdate(ctx context.Context, d *schema.Res
 
 func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Setup deletion is a soft-delete that transitions the entity to
-	// the DELETING lifecycle state. The API cascades the DELETING state
+	// the DECOMMISSION_STAGED lifecycle state. The API cascades the state
 	// to the default partition automatically; we don't need a separate
 	// updatePartition call. Validation (no non-default partitions exist)
 	// are handled server-side.
@@ -338,11 +343,11 @@ func resourceNewRelicFederatedLogsSetupDelete(ctx context.Context, d *schema.Res
 
 	input := federatedlogs.FederatedLogsUpdateSetupInput{
 		LifecycleStatus: &federatedlogs.FederatedLogsLifecycleStatusInput{
-			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DELETING,
+			Status: federatedlogs.FederatedLogsLifecycleStateTypes.DECOMMISSION_STAGED,
 		},
 	}
 	if _, err := client.Federatedlogs.FederatedLogsUpdateSetupWithContext(ctx, accountID, d.Id(), input); err != nil {
-		return diag.FromErr(fmt.Errorf("failed to mark setup %s as DELETING: %w", d.Id(), err))
+		return diag.FromErr(fmt.Errorf("failed to mark setup %s as DECOMMISSION_STAGED: %w", d.Id(), err))
 	}
 
 	return nil

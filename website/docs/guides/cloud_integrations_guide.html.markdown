@@ -251,7 +251,7 @@ The following GCP services are supported by the `newrelic_cloud_gcp_dm_integrati
 | `Virtual Machines`     | `VPC Access`              |                          |
 | `Firebase Auth` *(DM only)* | `Firebase Vertex AI` *(DM only, metrics only)* | `Managed Kafka` *(DM only)* (supports 1m polling) |
 | `Memorystore` *(DM only)*   | `Firebase App Hosting` *(DM only, metrics only)* | `Istio` *(DM only, metrics only)* |
-| `API Gateway` *(DM only)* | `Kubernetes Engine` *(metrics only)* (supports 1m polling) |                  |
+| `API Gateway` *(DM only)* | `Kubernetes Engine` *(metrics only)* (supports 1m polling) | `Distributed Cloud Edge` *(DM only, metrics only)* |
 
 -> **NOTE:** Services marked *(supports 1m polling)* support a `metrics_polling_interval` as low as **60 seconds**. 1-minute polling for these services is in **Limited Preview (LP)** and available only for: `alloy_db`, `big_query`, `data_flow`, `data_proc`, `kubernetes`, `load_balancing`, `managed_kafka`, `pub_sub`, and `spanner`. All other services have a **300-second** minimum. Services marked *(DM only)* are only available in the Dimensional Metrics integration. Services marked *(metrics only)* produce metrics but do not create entities in the New Relic entity explorer.
 
@@ -336,6 +336,23 @@ The following composable modules are available under `examples/modules/cloud-int
 
 Use them independently or combine them in the same configuration. When using Workload Identity Federation, the `wif-setup` module must be applied first to create the OAuth credentials and trust relationship. The `policy-setup` module must be applied successfully before the `metrics-integration` or `logging-integration` module, because the latter depends on IAM policies, dynamic groups / identity trust, and (if configured) workload identity federation artifacts created by the former.
 
+~> **UPGRADE NOTE:** The `policy-setup`, `metrics-integration`, and `logs-integration` modules now share the same names for the New Relic region and the vault secret OCIDs. If your configuration uses the old names, `terraform plan` fails with `Unsupported argument` or `Unsupported attribute` after you fetch the latest module source. Rename them as follows:
+
+| Module | Old name | New name |
+|---|---|---|
+| `policy-setup` (variable) | `newrelic_provider_region` | `newrelic_region` |
+| `policy-setup` (output) | `ingest_vault_ocid` | `ingest_key_secret_ocid` |
+| `policy-setup` (output) | `user_vault_ocid` | `user_key_secret_ocid` |
+| `metrics-integration` | `newrelic_endpoint` | `newrelic_region` |
+| `metrics-integration` | `ingest_api_secret_ocid` | `ingest_key_secret_ocid` |
+| `metrics-integration` | `user_api_secret_ocid` | `user_key_secret_ocid` |
+| `logs-integration` | `new_relic_region` | `newrelic_region` |
+| `logs-integration` | `secret_ocid` | `ingest_key_secret_ocid` |
+| `logs-integration` | `user_api_secret_ocid` | `user_key_secret_ocid` |
+| `logs-integration` | `connector_hub_details` | `connector_hubs_data` |
+
+The values stay the same, so after renaming, `terraform plan` shows no changes to your OCI resources.
+
 #### Example: Workload Identity Federation setup module
 
 The `wif-setup` module creates the foundational components required for Workload Identity Federation (WIF) between New Relic and OCI. This module must be applied before the `policy-setup` module when using WIF authentication.
@@ -361,7 +378,7 @@ module "oci_wif_setup" {
   tenancy_ocid = "ocid1.tenancy.oc1..aaaaaaaaexampletenancy"
   home_region  = "us-ashburn-1"
   fingerprint  = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
-  private_key  = "USER_PVT_KEY"
+  private_key  = "USER_PVT_KEY" # or file("/path/to/private_key.pem")
 
   # Identity Domain Configuration
   identity_domain_name = "Default"
@@ -426,7 +443,7 @@ These outputs should be provided to the `policy-setup` module as the `oci_domain
 
   1. List the identity domain (skip if ID is already known):
      ```bash
-     oci identity-domains identity-propagation-trusts list --all --endpoint $DOMAIN_URL
+     oci identity-domains identity-propagation-trust list --all --endpoint $DOMAIN_URL
      ```
 
   2. Delete the trust configuration using its ID (be CAUTIOUS with this command):
@@ -435,6 +452,24 @@ These outputs should be provided to the `policy-setup` module as the `oci_domain
      ```
 
   After deleting the trust, you can remove the OAuth applications through the OCI Console or CLI before running `terraform destroy`.
+
+> **Troubleshooting:** If you get an error related to a missing module, add the following code at the top of file:
+> ```hcl
+> # Configure Terraform
+> terraform {
+>  required_providers {
+>    newrelic = {
+>      source = "newrelic/newrelic"
+>    }
+>  }
+>}
+># Configure the New Relic provider
+>provider "newrelic" {
+>  account_id = newrelic_account_id
+>  api_key    = "new relic api key" # Usually prefixed with 'NRAK'
+>  region     = "US"                # Valid regions are US, EU, and JP
+>}
+>```
 
 #### Example: Policy setup module
 
@@ -445,13 +480,13 @@ module "oci_policy_setup" {
   tenancy_ocid      = "ocid1.tenancy.oc1..aaaaaaaaexampletenancy"
   region            = "iad"
   fingerprint       = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
-  private_key       = "USER_PVT_KEY"
+  private_key       = "USER_PVT_KEY" # or file("/path/to/private_key.pem")
 
   # New Relic linkage / API keys (dummy values)
   newrelic_account_id      = 1234567
   newrelic_ingest_api_key  = "NRII-INGEST-API-KEY-EXAMPLE"
   newrelic_user_api_key    = "NRAA-USER-API-KEY-EXAMPLE"
-  newrelic_provider_region = "US" # or "EU" or "JP"
+  newrelic_region          = "US" # or "EU" or "JP"
 
   # Workload Identity Federation / OAuth2 (sample values)
   client_id      = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
@@ -470,16 +505,57 @@ module "oci_policy_setup" {
   trust_type   = "UPST"   # or "RPST"
   resource_tag = ""       # RPST only — propagated as ext_resource_tag claim
 }
+
+# These outputs will be required in logs and metrics setup
+output "provider_account_id" {
+  value = module.oci_policy_setup.provider_account_id
+}
+
+output "compartment_ocid" {
+  value = module.oci_policy_setup.compartment_ocid
+}
+
+output "ingest_key_secret_ocid" {
+  value = module.oci_policy_setup.ingest_key_secret_ocid
+}
+
+output "user_key_secret_ocid" {
+  value = module.oci_policy_setup.user_key_secret_ocid
+}
 ```
 
 Key variables:
 
 * `instrumentation_type` – Comma‑separated list of any of `METRICS`, `LOGS`, `METRICS,LOGS` controlling which policy sets are deployed.
 * `client_id`, `client_secret`, `oci_domain_url` – Workload identity federation (OAuth2) inputs.
-* `newrelic_provider_region` – Region context for New Relic provider operations (for example, `US`, `EU`, or `JP`).
+* `newrelic_region` – Region context for New Relic provider operations (for example, `US`, `EU`, or `JP`).
 * `user_key_secret_ocid` / `ingest_key_secret_ocid` (Optional) – OCIDs of existing vault secrets containing New Relic API keys. Leave empty to create new vault secrets.
 * `trust_type` (Optional) – `"UPST"` (default) or `"RPST"`. Must match the trust type the `wif-setup` module created. Wire from `module.oci_wif_setup.newrelic_integration_details.trust_type` for consistency.
 * `resource_tag` (Optional, RPST only) – Propagated as the `ext_resource_tag` claim on the RPST so customer IAM policies can scope on a specific tag value. Wire from `module.oci_wif_setup.newrelic_integration_details.resource_tag`.
+
+The module outputs:
+* `provider_account_id` – The account identifier issued by New Relic that uniquely associates this OCI integration with a New Relic account.
+* `compartment_ocid` – The OCID of the compartment where the policy resources were created.
+* `ingest_key_secret_ocid` – The OCID of the vault secret storing the New Relic ingest API key.
+* `user_key_secret_ocid` – The OCID of the vault secret storing the New Relic user API key.
+
+These outputs are required by the metrics and logs integration modules below.
+
+> **Troubleshooting:** If you get an error related to invalid provider configuration or `Error: can not create client, bad configuration: did not find a proper configuration for private key`, add the following code at the top of file:
+> ```hcl
+> terraform {
+>  required_providers {
+>   oci = {
+>     source  = "oracle/oci"
+>     version = "5.46.0"
+>   }
+>  }
+>}
+>
+> provider "oci" {
+>  private_key  = file("~/.oci/private_key.pem")
+>}
+> ```
 
 #### Example: Metrics integration module
 
@@ -492,25 +568,28 @@ module "oci_metrics_integration" {
   region           = "iad"
   fingerprint      = "12:34:56:78:9a:bc:de:f0:12:34:56:78:9a:bc:de:f0"
   private_key      = "USER_PVT_KEY"
+  user_ocid        = "ocid1.user.oc1..ccccccccexampleuser" # owner of the API key above
 
   # New Relic account configuration
   newrelic_account_id   = "1234567"
   provider_account_id   = "1234567"
 
-  # Endpoint selection (validated internally)
-  newrelic_endpoint = "US" # or EU or JP
+  # New Relic region (validated internally)
+  newrelic_region = "US" # or EU or JP
 
   # Networking
   create_vcn         = true
   function_subnet_id = "" # ignored when create_vcn = true
 
   # Vault secret OCIDs (dummy)
-  ingest_api_secret_ocid = "ocid1.vaultsecret.oc1..dddddddigingestsecret" # or module.oci_policy_setup.ingest_vault_ocid
-  user_api_secret_ocid   = "ocid1.vaultsecret.oc1..eeeeeeeeusersecret123" # or module.oci_policy_setup.user_vault_ocid
+  ingest_key_secret_ocid = "ocid1.vaultsecret.oc1..dddddddigingestsecret" # or module.oci_policy_setup.ingest_key_secret_ocid
+  user_key_secret_ocid   = "ocid1.vaultsecret.oc1..eeeeeeeeusersecret123" # or module.oci_policy_setup.user_key_secret_ocid
 
-  # Docker image configuration (optional)
-  image_version = "latest"
-  image_bucket  = "idptojlonu4e"
+  # Function image (optional); copied into a private Container Registry repository in your tenancy.
+  # Leave it unset to deploy the digest-pinned image this module version was published with.
+  # function_image = "docker.io/newrelic/beyond-oci-metric-function:latest" # track the tag instead
+  # registry_auth_token = var.ocir_auth_token  # optional: push with an existing auth token
+  # registry_username   = "jane@example.com"   # optional: owner of that token
 
   connector_hubs_data = "[{\"compartments\":[{\"compartment_id\":\"ocid1.tenancy.oc1..aaaaaaaaexampletenancy\",\"namespaces\":[\"oci_faas\"]}],\"description\":\"[DO NOT DELETE] New Relic Metrics Connector Hub\",\"name\":\"newrelic-metrics-connector-hub-us-ashburn\"}]"
 }
@@ -543,10 +622,22 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
     }
   ]
   ```
-* `ingest_api_secret_ocid` / `user_api_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
-* `newrelic_endpoint` – Logical endpoint selector; the module maps this value to the actual metric ingest URL (`US`, `EU`, or `JP`).
+* `ingest_key_secret_ocid` / `user_key_secret_ocid` – Vault secret OCIDs for ingest and user API keys (avoid embedding plain‑text keys).
+* `newrelic_region` – The New Relic region (`US`, `EU`, or `JP`); the module maps this value to the actual metric ingest URL.
 * `region` – OCI region key (short code) where resources for this module are created (for example: `iad`, `phx`, `fra`). Provide ONLY the region key, not the full region identifier (so use `iad` instead of `us-ashburn-1`).
-* `image_version` / `image_bucket` – Docker image configuration for the New Relic function (optional, defaults to latest version).
+* `function_image` (Optional) – Image the metrics function runs. The default is **pinned by digest** to the image this module version was published with, so a change to a Docker Hub tag, or a leaked Docker Hub token, cannot alter what this module deploys. The module creates a private Container Registry repository in `compartment_ocid` in this region, copies the linux/amd64 image into it over the registry API, and runs the function from that copy. Every plan verifies the registry's manifest against the pinned digest, every blob against its own SHA-256, and the image's platform, and the function is created with `image_digest` set. The machine running Terraform needs `python3` on the PATH but not Docker. To upgrade, move to a module version whose pinned digest is newer. To track a floating tag instead, set this to a tag such as `docker.io/newrelic/beyond-oci-metric-function:latest`; each plan then resolves whatever that tag currently points at, and apply copies it and updates the function in place when it changed. Apply the module once per region; each region's function pulls only from its own region's registry.
+* `user_ocid` (Optional) – OCID of the user whose API key Terraform uses, meaning the owner of `private_key` and `fingerprint`. Find it in the OCI Console at **Profile** → **User settings** (or **My profile**) → **OCID**, or in the `user=` line of that profile in `~/.oci/config`. Required unless both `registry_username` and `registry_auth_token` are set. The module logs in to Container Registry as `<tenancy_namespace>/<name of user_ocid>` with an auth token it creates for this user; if `user_ocid` is a different user from the API key's owner, creating that token needs permission to manage the other user's credentials. The module keeps the token in state for later upgrades and deletes it on destroy. A new token can take a few minutes to become active; the copy retries during that time, so the first apply can show `Still creating...` for up to ten minutes. The copy step's output is hidden because it uses the token; if the copy fails, Terraform shows the full output in the error.
+* `registry_auth_token` (Optional) – Existing auth token to push with, instead of creating one. Set it together with `registry_username` when:
+  * different OCI users or pipelines apply the module. A token the module creates belongs to `user_ocid`, and replacing it for another user deletes the old one, which needs permission to manage that user's credentials;
+  * `user_ocid` already has two auth tokens, the OCI maximum. Each regional module call creates its own token;
+  * your organization doesn't allow creating auth tokens.
+
+  Use a dedicated user if you can; the same token and username work in every region. To create a token, open the **Profile** menu in the OCI Console, select **User settings** (or **My profile**), then **Tokens and keys** → **Auth tokens** → **Generate token**, and copy it right away; the Console shows it only once. See [Getting an auth token](https://docs.oracle.com/en-us/iaas/Content/Registry/Tasks/registrygettingauthtoken.htm). Pass it from a sensitive variable or secret store rather than writing it in your configuration. If the token is later deleted or replaced, update it before the next upgrade.
+* `registry_username` (Optional) – Container Registry username of the token's owner, without the tenancy namespace. Defaults to the name of `user_ocid`. Copy it exactly as shown at the top of **Profile** → **User settings** (or **My profile**), for example `jane@example.com`, also for users who sign in with single sign-on; `user_ocid` is on the same page. For a user outside the **Default** identity domain, use `<identity_domain_name>/<username>`. Tenancies that still federate through Oracle Identity Cloud Service show usernames that start with `oracleidentitycloudservice/`; copy them including that prefix.
+
+  If the copy fails with `rejected the username … and its auth token (401)`, Container Registry doesn't accept that username and token: check that the username belongs to the token's owner, is entered exactly as the Console shows it, and that the token still exists.
+
+  The user that pushes needs permission to manage repositories in `compartment_ocid`.
 
 #### Example: Logs integration module
 
@@ -556,56 +647,80 @@ module "oci_logs_integration" {
 
   # oci configuration
   tenancy_ocid     = "ocid1.tenancy.oc1..***"
-  compartment_ocid = module.oci_policy_setup.compartment_ocid
+  compartment_ocid = "ocid1.compartment.oc1..bbbbbbbbexamplecmp" # or module.oci_policy_setup.compartment_ocid
   region           = "us-ashburn-1"
-  
+  user_ocid        = "ocid1.user.oc1..ccccccccexampleuser"
+
   # New Relic account configuration
-  newrelic_account_id = "1234567"
-  provider_account_id = "1234567"
+  newrelic_account_id = "123456789"
+  provider_account_id = "123456" # or module.oci_policy_setup.provider_account_id
   
   # new relic logging prefix
   newrelic_logging_identifier = "logs"
   
   # network components
   create_vcn         = true # set to false to reuse existing VCN/subnet created from metrics module
-  function_subnet_id = ""   # ignored when create_vcn = true
+  function_subnet_id = "ocid1.subnet.oc1.iad.aaaaaaaa***"   # ignored when create_vcn = true
   
   # function application environment variables configuration
-  image_version        = "latest" # latest image version for the logging function
-  debug_enabled        = "FALSE"
-  new_relic_region     = "US" # or "EU" or "JP"
-  secret_ocid          = module.oci_policy_setup.ingest_vault_ocid
-  user_api_secret_ocid = module.oci_policy_setup.user_vault_ocid
+  function_image       = "docker.io/newrelic/oci-log-forwarder:latest" # copied into a private Container Registry repository in your tenancy
+  debug_enabled          = "FALSE"
+  newrelic_region        = "US" # or "EU" or "JP"
+  ingest_key_secret_ocid = module.oci_policy_setup.ingest_key_secret_ocid
+  user_key_secret_ocid   = module.oci_policy_setup.user_key_secret_ocid
   
   # connector hub configuration (Optional)
   # Don't add the following variables if you want to skip log export.
-  connector_hub_details = "[{\"display_name\":\"newrelic-logs-connector\",\"description\":\"Service connector for logs from compartment A to New Relic\",\"log_sources\":[{\"compartment_id\":\"ocid1.tenancy.oc1..***\",\"log_group_id\":\"ocid1.loggroup.oc1.iad.***\"}]}]"
+  connector_hubs_data = jsonencode([
+    {
+      display_name = "newrelic-logs-connector"
+      description  = "Service connector for logs from compartment A to New Relic"
+      log_sources = [
+        {
+          "compartment_id": "ocid1.compartment.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
+        },
+        {
+          "compartment_id": "ocid1.compartment.oc1..***",
+          "log_group_id": "ocid1.loggroup.oc1.iad.***"
+        }
+      ]
+    }
+  ])
+
   batch_size_in_kbs     = 6000 # max payload size in KBs (default 6000)
   batch_time_in_sec     = 60   # max wait time in seconds before sending batch (default 60)
+
+  # forwarder self-monitoring metrics (Optional)
+  metrics_tier = "basic" # "none", "basic" (default), or "advanced"
 }
 ```
 
 Key variables:
 
 - New Relic account configuration:
-  - `newrelic_account_id` / `provider_account_id`: New Relic account identifiers for linking the OCI integration.
+  - `newrelic_account_id` – The New Relic account ID that will receive the OCI integration data.
+  - `provider_account_id` – The New Relic provider account ID output by the `policy-setup` module (`module.oci_policy_setup.provider_account_id`).
 - network components:
-  - `create_vcn`: set to false to reuse existing VCN/subnet created from metrics module. 
-  - `function_subnet_id`: subnet OCID for the function to be created in. Ignored if create_vcn is true.
+  - `create_vcn`: set to `false` to reuse existing VCN/subnet created from metrics module. 
+  - `function_subnet_id`: subnet OCID for the function to be created in. Ignored if `create_vcn` is true.
 > If you want to use an existing private subnet, make sure it has required route rules and gateways with internet and all OCI services access. 
 - function application environment variables configuration:
   - `debug_enabled`: Boolean to enable or disable function debug logs.
-  - `new_relic_region`: The New Relic region (`US`, `EU`, or `JP`).
-  - `secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
-  - `user_api_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
-  - `image_version`: Docker image version for the logging function (defaults to "latest").
-- connector hub configuration: A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
+  - `newrelic_region`: The New Relic region (`US`, `EU`, or `JP`).
+  - `ingest_key_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic License Key.
+  - `user_key_secret_ocid`: The OCID of the secret in OCI Vault containing New Relic User API Key.
+  - `function_image` (Optional): Public image for the log-forwarder function, by default `docker.io/newrelic/oci-log-forwarder:latest`. The module creates a private Container Registry repository in `compartment_ocid`, copies the linux/amd64 image into it over the registry API (no Docker needed; `python3` must be on the PATH), and runs the function from that copy. On every plan the module checks which image the tag points at, so re-applying picks up a new image and updates the function in place. Pin a version tag to control upgrades.
+  - `user_ocid` (Optional): OCID of the user Terraform authenticates as. Used to look up the Container Registry username and to create the auth token that pushes the function image. Not needed when both `registry_username` and `registry_auth_token` are set. OCI allows two auth tokens per user.
+  - `registry_auth_token` / `registry_username` (Optional): Use an existing auth token instead of creating one, and override the registry username (without the tenancy namespace). Users in a non-default identity domain must set `registry_username` to `<domain_name>/<username>`. If the copy fails with `rejected the username … and its auth token (401)`, Container Registry doesn't accept that username and token: check that the username belongs to the token's owner, is entered exactly as the OCI Console shows it, and that the token still exists. The user that pushes needs permission to manage repositories in `compartment_ocid`.
+  - `metrics_tier`: Tier of `forwarder.*` custom metrics the function emits about itself, in addition to the logs it forwards to New Relic. One of `none` (no custom metrics), `basic` (default, core health metrics: invocations, records received/delivered/dropped, delivery duration, pipeline lag), or `advanced` (`basic` plus deeper root-cause/tuning metrics: byte volumes, decode/serialize errors, batching behavior, delivery error classes, run duration, secret-fetch failures, client-cache hit rate). These custom metrics are billed by New Relic on ingest. For more details on setting up a dashboard, refer to [OCI Log Forwarder Observability](https://docs.newrelic.com/docs/logs/forward-logs/oci-log-forwarder-observability/).
+- connector hub configuration (`connector_hubs_data`): A JSON *string* (must be valid, stringified JSON) whose root is an array of connector hub definition objects. Each object supports:
   * `display_name` (string) : name of the connector hub - must have prefix `newrelic-logs`
   * `description` (string) (optional): connector hub description
   * `log_sources`: 
     * list of compartment OCID and log group OCID
 
-The example above shows a single‑element JSON array wrapped in quotes to satisfy Terraform's string input expectation. Example object structure:
+Example object structure:
      
 ```json
 [
@@ -625,6 +740,103 @@ The example above shows a single‑element JSON array wrapped in quotes to satis
   }
 ]
 ```
+
+#### Image hosting and versioning
+
+The log-forwarder function image is published to Docker Hub (`docker.io/newrelic/oci-log-forwarder`). At `apply` time, the module copies it into a private Container Registry repository in your own tenancy and runs the Function from that copy — your tenancy never pulls directly from Docker Hub at runtime, only during `apply`.
+
+This means **the machine running `apply` needs outbound network access to Docker Hub** (`registry-1.docker.io` and `auth.docker.io`) **and to your own tenancy's Container Registry** (`<region>.ocir.io`), in addition to the OCI API endpoints the module already requires. Docker Hub also redirects actual blob downloads to a separate storage host that varies and isn't one Docker Hub publishes as a fixed hostname — if your environment allow-lists by exact host rather than general HTTPS egress, expect to add that host once you see it in a run, rather than assuming `registry-1.docker.io` alone covers blob transfer.
+
+**Versioning:** `function_image` defaults to the `:latest` tag. Re-applying checks what image that tag currently points to and copies the new one if it's changed, so you'll pick up new releases automatically on your next `apply` without any action. To control exactly when you upgrade instead, pin `function_image` to a specific version tag (e.g. `docker.io/newrelic/oci-log-forwarder:1.42`) — the module will then only ever copy that pinned version, and upgrading becomes a deliberate change to that variable followed by `apply`.
+
+#### OCI Audit Logs (Optional)
+
+To ingest OCI audit logs, add a dedicated audit connector object to `connector_hubs_data` and set `log_group_id` to one of the two OCI-reserved literals below. For reference, see the [Oracle tutorial on centralizing OCI logs](https://docs.oracle.com/en/learn/centralize-oci-tenancies-logs/index.html).
+
+Two audit scoping modes are supported:
+
+| Mode | `log_group_id` value | Coverage |
+|---|---|---|
+| Selected compartment only | `_Audit` | Audit logs from the chosen compartment only. Child compartments are NOT included. |
+| Selected compartment + all child compartments | `_Audit_Include_Subcompartment` | Audit logs from the chosen compartment and every child compartment beneath it. Tenancy-wide when the chosen compartment is the tenancy root. |
+
+`compartment_id` selects the root of the audit scope; the `log_group_id` literal decides whether child compartments are included.
+
+- Keep the audit connector as a separate object in the `connector_hubs_data` array — do not mix `_Audit` / `_Audit_Include_Subcompartment` log sources with business log sources in the same connector.
+- `display_name` must follow the convention `newrelic-logs-<region>-audit` (e.g. `newrelic-logs-us-ashburn-1-audit`).
+- On first creation, OCI may deliver up to 24 hours of historical audit events before switching to steady-state streaming — this is standard OCI Connector Hub behaviour.
+
+#### Example: tenancy-wide audit logs (root compartment, include all child compartments)
+
+```json
+[
+  {
+    "display_name": "newrelic-logs-us-ashburn-1-audit",
+    "log_sources": [
+      {
+        "compartment_id": "ocid1.tenancy.oc1..***",
+        "log_group_id": "_Audit_Include_Subcompartment"
+      }
+    ]
+  }
+]
+```
+
+#### Example: compartment + all child compartments (non-root compartment)
+
+```json
+[
+  {
+    "display_name": "newrelic-logs-us-ashburn-1-audit",
+    "log_sources": [
+      {
+        "compartment_id": "ocid1.compartment.oc1..***",
+        "log_group_id": "_Audit_Include_Subcompartment"
+      }
+    ]
+  }
+]
+```
+
+#### Example: selected compartment only (child compartments not included)
+
+```json
+[
+  {
+    "display_name": "newrelic-logs-us-ashburn-1-audit",
+    "log_sources": [
+      {
+        "compartment_id": "ocid1.compartment.oc1..***",
+        "log_group_id": "_Audit"
+      }
+    ]
+  }
+]
+```
+
+**Once complete, navigate to your New Relic account's OCI Integration page and check that log groups are being ingested.**
+
+> **Troubleshooting:** "Couldn't load tenancyDetails, exception while fetching data, Token exchange failed"
+>
+> *Root cause:* The trust's oauthClients drifted from the live `token_exchange_app` client ID. It only gets set once, by a `null_resource` curl POST, so recreating the OAuth app later leaves the trust pointing at the old client.
+>
+> *Diagnosis:* Get an admin token, then list the trust records:
+> ```bash
+> curl -s -u "$ADMIN_ID:$ADMIN_SECRET" --data-urlencode grant_type=client_credentials \
+>  --data-urlencode scope=urn:opc:idm:__myscopes__ \
+>  "$DOMAIN_URL/oauth2/v1/token"
+>
+> curl -s -H "Authorization: Bearer $TOKEN" \
+>  "$DOMAIN_URL/admin/v1/IdentityPropagationTrusts" | jq '.Resources[] | {name, oauthClients}'
+> ```
+>
+> Compare `newrelic-trust-setup`'s oauthClients against the live `token_exchange_app` client ID from `terraform state show`. A mismatch confirms drift.
+>
+> *Fix:* Recreate the trust through Terraform:
+> ```bash
+> terraform apply -replace='module.oci_wif_setup.null_resource.trust_setup' -auto-approve
+> ```
+> This re-runs the module's curl POST against `IdentityPropagationTrusts`, rebuilding the trust with the correct `oauthClients` value. This is purely an OCI/IDCS-side state fix via targeted resource replacement.
 
 > When implementing the New Relic OCI integration with Workload Identity Federation, the modules must be applied in this order: `wif-setup` (to create OAuth credentials) → `policy-setup` (to configure IAM policies and vault secrets) → `metrics-integration` or `logging-integration` (to set up data collection). The `wif-setup` module outputs (`client_id`, `client_secret`, `oci_domain_url`) must be provided as inputs to the `policy-setup` module. These modules can be run together in a single Terraform configuration if the dependency graph can be successfully resolved by referencing outputs from earlier modules. Failure to apply modules in the correct order will result in authorization errors when creating Service Connector Hub resources or invoking functions.
 

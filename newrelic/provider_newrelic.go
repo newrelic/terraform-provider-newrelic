@@ -128,6 +128,7 @@ func Provider() *schema.Provider {
 			"newrelic_authentication_domain":        dataSourceNewRelicAuthenticationDomain(),
 			"newrelic_cloud_account":                dataSourceNewRelicCloudAccount(),
 			"newrelic_entity":                       dataSourceNewRelicEntity(),
+			"newrelic_notebook":                     dataSourceNewRelicNotebook(),
 			"newrelic_group":                        dataSourceNewRelicGroup(),
 			"newrelic_key_transaction":              dataSourceNewRelicKeyTransaction(),
 			"newrelic_notification_destination":     dataSourceNewRelicNotificationDestination(),
@@ -139,6 +140,7 @@ func Provider() *schema.Provider {
 			"newrelic_user":                         dataSourceNewRelicUser(),
 			"newrelic_fleet_configuration":          dataSourceNewRelicFleetConfiguration(),
 			"newrelic_fleet_members":                dataSourceNewRelicFleetMembers(),
+			"newrelic_teams_hierarchy_levels":       dataSourceNewRelicTeamsHierarchyLevels(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -179,9 +181,11 @@ func Provider() *schema.Provider {
 			"newrelic_cardinality_management":                   resourceNewRelicCardinalityManagement(),
 			"newrelic_metric_pruning_rule":                      resourceNewRelicMetricPruningRule(),
 			"newrelic_nrql_drop_rule":                           resourceNewRelicNRQLDropRule(),
+			"newrelic_nrql_macro":                               resourceNewRelicNrqlMacro(),
 			"newrelic_pipeline_cloud_rule":                      resourceNewRelicPipelineCloudRule(),
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
 			"newrelic_obfuscation_rule":                         resourceNewRelicObfuscationRule(),
+			"newrelic_notebook":                                 resourceNewRelicNotebook(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),
@@ -206,6 +210,11 @@ func Provider() *schema.Provider {
 			"newrelic_federated_logs_setup":                     resourceNewRelicFederatedLogsSetup(),
 			"newrelic_federated_logs_partition":                 resourceNewRelicFederatedLogsPartition(),
 			"newrelic_aws_connection":                           resourceNewRelicAwsConnection(),
+			"newrelic_pathpoint_flow":                           resourceNewRelicPathpointFlow(),
+			"newrelic_team":                                     resourceNewRelicTeam(),
+			"newrelic_scorecard":                                resourceNewRelicScorecard(),
+			"newrelic_scorecard_rule":                           resourceNewRelicScorecardRule(),
+			"newrelic_teams_organization_settings":              resourceNewRelicTeamsOrganizationSettings(),
 		},
 	}
 

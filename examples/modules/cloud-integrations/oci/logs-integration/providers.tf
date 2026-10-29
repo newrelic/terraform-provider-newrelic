@@ -5,11 +5,20 @@ terraform {
       source  = "oracle/oci"
       version = "5.46.0"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = "2.3.5"
+    }
   }
+}
+
+provider "oci" {
+  tenancy_ocid = var.tenancy_ocid
+  region       = var.region
 }
 
 provider "oci" {
   alias        = "home"
   tenancy_ocid = var.tenancy_ocid
-  region       = var.region
+  region       = local.home_region
 }

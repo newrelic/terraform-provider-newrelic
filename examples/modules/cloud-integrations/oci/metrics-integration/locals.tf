@@ -10,6 +10,18 @@ locals {
 
   terraform_suffix = "tf"
 
+  # The function runs from a copy of var.function_image in the tenancy's own Container Registry.
+  ocir_host                 = "${var.region}.ocir.io"
+  ocir_namespace            = oci_artifacts_container_repository.metrics_function_repo.namespace
+  function_image_repository = "newrelic-${lower(var.nr_prefix)}-${local.terraform_suffix}/oci-metrics-forwarder"
+  function_image_digest     = data.external.function_image.result.digest
+  function_image            = "${local.ocir_host}/${local.ocir_namespace}/${local.function_image_repository}:${data.external.function_image.result.tag}"
+  create_registry_token     = nonsensitive(var.registry_auth_token == "")
+  user_ocid_required        = "user_ocid is empty. Set it to the OCID of the user whose API key Terraform uses, or set both registry_username and registry_auth_token."
+  registry_username         = "${local.ocir_namespace}/${var.registry_username != "" ? var.registry_username : data.oci_identity_user.registry_user[0].name}"
+  # Sensitive, so Terraform hides the copy step's output; a failed copy still prints it in the error.
+  registry_password = local.create_registry_token ? sensitive(oci_identity_auth_token.registry_push[0].token) : var.registry_auth_token
+
   # Names for the network infra
   vcn_name        = "newrelic-${var.nr_prefix}-${var.region}-vcn-${local.terraform_suffix}"
   nat_gateway     = "newrelic-${var.nr_prefix}-${var.region}-vcn-${local.terraform_suffix}"
@@ -21,7 +33,7 @@ locals {
     US = "https://api.newrelic.com/graphql"
     EU = "https://api.eu.newrelic.com/graphql"
     JP = "https://api.jp.newrelic.com/graphql"
-  }[var.newrelic_endpoint]
+  }[var.newrelic_region]
 
   updateLinkAccount_graphql_query = <<EOF
   mutation {

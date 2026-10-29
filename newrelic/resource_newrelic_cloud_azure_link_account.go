@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
 
@@ -29,16 +30,18 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				ForceNew:    true,
 			},
 			"application_id": {
-				Type:        schema.TypeString,
-				Description: "Application ID for Azure account",
-				Required:    true,
-				Sensitive:   true,
+				Type:         schema.TypeString,
+				Description:  "Application ID for Azure account",
+				Required:     true,
+				Sensitive:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"client_secret": {
-				Type:        schema.TypeString,
-				Description: "Value of the client secret from Azure",
-				Required:    true,
-				Sensitive:   true,
+				Type:         schema.TypeString,
+				Description:  "Value of the client secret from Azure",
+				Required:     true,
+				Sensitive:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -46,16 +49,18 @@ func resourceNewRelicCloudAzureLinkAccount() *schema.Resource {
 				Required:    true,
 			},
 			"subscription_id": {
-				Type:        schema.TypeString,
-				Description: "Subscription ID for the Azure account",
-				Required:    true,
-				Sensitive:   true,
+				Type:         schema.TypeString,
+				Description:  "Subscription ID for the Azure account",
+				Required:     true,
+				Sensitive:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"tenant_id": {
-				Type:        schema.TypeString,
-				Description: "Tenant ID for the Azure account",
-				Required:    true,
-				Sensitive:   true,
+				Type:         schema.TypeString,
+				Description:  "Tenant ID for the Azure account",
+				Required:     true,
+				Sensitive:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 	}

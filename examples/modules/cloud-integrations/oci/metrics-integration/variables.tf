@@ -19,13 +19,13 @@ variable "region" {
   description = "The name of the OCI region where these resources will be deployed."
 }
 
-variable "newrelic_endpoint" {
+variable "newrelic_region" {
   type        = string
   default     = "US"
   description = "The endpoint to hit for sending the metrics. Varies by region [US|EU|JP]"
   validation {
-    condition     = contains(["US", "EU", "JP"], var.newrelic_endpoint)
-    error_message = "Valid values for var: newrelic_endpoint are (US, EU, JP)."
+    condition     = contains(["US", "EU", "JP"], var.newrelic_region)
+    error_message = "Valid values for var: newrelic_region are (US, EU, JP)."
   }
 }
 
@@ -46,12 +46,12 @@ variable "connector_hubs_data" {
   description = "JSON-encoded string describing the connector hub layout. OCI caps each hub at 5 compartments and 50 namespaces total. For tenancies with multiple compartments or dense namespace selections, use the hub-calculator script (examples/modules/cloud-integrations/oci/hub-calculator) to compute this value automatically."
 }
 
-variable "ingest_api_secret_ocid" {
+variable "ingest_key_secret_ocid" {
   type        = string
   description = "The OCID of the vault storing the ingest key for secure access."
 }
 
-variable "user_api_secret_ocid" {
+variable "user_key_secret_ocid" {
   type        = string
   description = "The OCID of the vault storing the user key for secure access."
 }
@@ -68,16 +68,32 @@ variable "fingerprint" {
   description = "The fingerprint of the public key. Get this from OCI Console -> User Settings -> API Keys"
 }
 
-variable "image_version" {
-  type = string
-  description = "The version of the Docker image for the New Relic function for the region."
-  default = "latest"
+variable "user_ocid" {
+  type        = string
+  default     = ""
+  description = "OCID of the user whose API key Terraform uses (the owner of private_key and fingerprint). The module looks up this user's name and creates an auth token for it to push the function image. Find it in the OCI Console at Profile menu > User settings (or My profile) > OCID, or in the user= line of that profile in ~/.oci/config. Not needed when both registry_username and registry_auth_token are set."
 }
 
-variable "image_bucket" {
+variable "function_image" {
   type = string
-  description = "The name of the bucket where the Docker image for the New Relic function is stored."
-  default = "idptojlonu4e"
+  # Pinned by digest: the module deploys the image this module version was published with, and
+  # every plan verifies the registry's bytes against this digest. Bumped by a pull request when
+  # New Relic publishes a new image, so a Docker Hub tag change cannot alter what gets deployed.
+  default     = "docker.io/newrelic/beyond-oci-metric-function:1.5@sha256:4ea026e91390768c8e3c27e661e707bbbf15ace99b06b035b652049f6532fdce"
+  description = "Image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. The default is pinned by digest to the image this module version was published with. Set a tag such as docker.io/newrelic/beyond-oci-metric-function:latest to track that tag instead; re-applying then picks up whatever it points to."
+}
+
+variable "registry_username" {
+  type        = string
+  default     = ""
+  description = "Container Registry username of the user that owns registry_auth_token, without the tenancy namespace. Leave empty to use the name of user_ocid. Enter it exactly as shown in the OCI Console at Profile menu > User settings (or My profile); add <identity_domain_name>/ in front only for a user outside the Default identity domain."
+}
+
+variable "registry_auth_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Existing auth token for pushing to Container Registry. Leave empty to have the module create one for user_ocid, which it keeps for later upgrades and deletes on destroy. Set it, together with registry_username, when different OCI users or pipelines apply this module, when user_ocid already has two auth tokens (the OCI maximum), or when your organization doesn't allow creating tokens. The same token works in every region. Create one in the OCI Console at Profile menu > User settings (or My profile) > Tokens and keys > Auth tokens > Generate token; it is shown only once."
 }
 
 variable "newrelic_account_id" {

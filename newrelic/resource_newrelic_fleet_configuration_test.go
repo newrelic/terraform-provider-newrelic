@@ -32,6 +32,9 @@ func TestAccNewRelicFleetConfiguration_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
 					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
+					// configuration_type defaults to "AgentConfig" even though it's not set in HCL.
+					resource.TestCheckResourceAttr(resourceName, "configuration_type", "AgentConfig"),
+					resource.TestCheckResourceAttr(resourceName, "legacy_config", "false"),
 					resource.TestCheckResourceAttrSet(resourceName, "configuration_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "organization_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "configuration_content"),
@@ -125,6 +128,79 @@ func TestAccNewRelicFleetConfiguration_WithOperatingSystem(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
 					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
 					resource.TestCheckResourceAttr(resourceName, "operating_system", "LINUX"),
+					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccFleetConfigImportID(resourceName),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicFleetConfiguration_WithConfigurationType verifies that a configuration can be
+// created and imported with configuration_type explicitly set to the one currently-supported
+// value, "AgentConfig" — same effective result as the default (see _Basic), but asserts the
+// explicit path still works now that the field is Optional+Computed rather than plain Optional.
+// configuration_type is returned by the GetEntity GraphQL query already (unlike
+// managed_entity_type), so no composite import ID trickery is needed for it.
+func TestAccNewRelicFleetConfiguration_WithConfigurationType(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-configtype-%s", acctest.RandString(5))
+	resourceName := "newrelic_fleet_configuration.with_config_type"
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFleetConfigWithConfigurationType(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetConfigurationExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
+					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
+					resource.TestCheckResourceAttr(resourceName, "configuration_type", "AgentConfig"),
+					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
+					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccFleetConfigImportID(resourceName),
+			},
+		},
+	})
+}
+
+// TestAccNewRelicFleetConfiguration_LegacyConfig verifies that legacy_config = true opts a
+// configuration out of the "AgentConfig" default, resulting in a null configuration_type.
+func TestAccNewRelicFleetConfiguration_LegacyConfig(t *testing.T) {
+	rName := fmt.Sprintf("tf-test-legacy-%s", acctest.RandString(5))
+	resourceName := "newrelic_fleet_configuration.legacy"
+
+	setupFleetTestCredentials(t)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheckFleetEnvVars(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicFleetConfigurationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFleetConfigLegacy(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicFleetConfigurationExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "agent_type", "NRInfra"),
+					resource.TestCheckResourceAttr(resourceName, "managed_entity_type", "HOST"),
+					resource.TestCheckResourceAttr(resourceName, "legacy_config", "true"),
+					resource.TestCheckResourceAttr(resourceName, "configuration_type", ""),
 					resource.TestCheckResourceAttr(resourceName, "total_versions", "1"),
 					resource.TestCheckResourceAttr(resourceName, "version_entity_ids.#", "1"),
 				),
@@ -284,6 +360,40 @@ resource "newrelic_fleet_configuration" "k8s" {
     prometheus:
       enabled: true
     # v1
+  EOT
+}
+`, name)
+}
+
+func testAccFleetConfigWithConfigurationType(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "with_config_type" {
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  configuration_type    = "AgentConfig"
+  configuration_content = <<-EOT
+    log:
+      level: info
+    # config-type-test-v1
+  EOT
+}
+`, name)
+}
+
+func testAccFleetConfigLegacy(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_fleet_configuration" "legacy" {
+  name                  = %q
+  agent_type            = "NRInfra"
+  managed_entity_type   = "HOST"
+  operating_system      = "LINUX"
+  legacy_config         = true
+  configuration_content = <<-EOT
+    log:
+      level: info
+    # legacy-config-test-v1
   EOT
 }
 `, name)

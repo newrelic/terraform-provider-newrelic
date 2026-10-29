@@ -7,8 +7,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/cloud"
 )
+
+// cloudAzureAutoDiscoveryPollingIntervals are the data polling intervals, in seconds,
+// that the Azure Auto Discovery integration accepts: 8 hours, 12 hours, 16 hours and 24 hours.
+// Auto Discovery performs an inventory sweep rather than a metric poll, so the shorter
+// intervals offered by the metric integrations do not apply to it.
+var cloudAzureAutoDiscoveryPollingIntervals = []int{28800, 43200, 57600, 86400}
 
 func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 	return &schema.Resource{
@@ -263,7 +270,7 @@ func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Azure Auto Discovery",
-				Elem:        cloudAzureIntegrationMergeResourceGroupsElem(),
+				Elem:        cloudAzureAutoDiscoveryElem(),
 				MaxItems:    1,
 			},
 		},
@@ -284,6 +291,28 @@ func cloudAzureIntegrationSchemaBase() map[string]*schema.Schema {
 func cloudAzureIntegrationMergeResourceGroupsElem() *schema.Resource {
 	s := mergeSchemas(
 		cloudAzureIntegrationSchemaBase(),
+		cloudAzureIntegrationResourceGroupsSchema())
+
+	return &schema.Resource{
+		Schema: s,
+	}
+}
+
+// cloudAzureAutoDiscoveryElem defines the schema of elements in the "auto_discovery" Azure
+// integration. It deliberately does not reuse cloudAzureIntegrationMergeResourceGroupsElem:
+// that element's shared base is used by every other integration block, each of which
+// permits a different set of intervals, so the Auto Discovery values cannot be validated
+// there without breaking them.
+func cloudAzureAutoDiscoveryElem() *schema.Resource {
+	s := mergeSchemas(
+		map[string]*schema.Schema{
+			"metrics_polling_interval": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours), 57600 (16 hours) and 86400 (24 hours)",
+				ValidateFunc: validation.IntInSlice(cloudAzureAutoDiscoveryPollingIntervals),
+			},
+		},
 		cloudAzureIntegrationResourceGroupsSchema())
 
 	return &schema.Resource{
@@ -534,7 +563,7 @@ func expandCloudAzureIntegrationsInput(d *schema.ResourceData) (cloud.CloudInteg
 	}
 
 	if v, ok := fetchAttributeValueFromResourceConfig(d, "monitor"); ok {
-		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(v.([]interface{}), linkedAccountID)
+		cloudAzureIntegration.AzureMonitor = expandCloudAzureIntegrationMonitorInput(d, v.([]interface{}), linkedAccountID)
 	} else if o, n := d.GetChange("monitor"); len(n.([]interface{})) < len(o.([]interface{})) {
 		cloudDisableAzureIntegration.AzureMonitor = []cloud.CloudDisableAccountIntegrationInput{{LinkedAccountId: linkedAccountID}}
 	}
@@ -1255,7 +1284,7 @@ func expandCloudAzureIntegrationMariadbInput(b []interface{}, linkedAccountID in
 }
 
 // Expanding the input for the azureMonitor integration
-func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID int) []cloud.CloudAzureMonitorIntegrationInput {
+func expandCloudAzureIntegrationMonitorInput(d *schema.ResourceData, b []interface{}, linkedAccountID int) []cloud.CloudAzureMonitorIntegrationInput {
 	expanded := make([]cloud.CloudAzureMonitorIntegrationInput, len(b))
 
 	for i, azureMonitor := range b {
@@ -1293,32 +1322,87 @@ func expandCloudAzureIntegrationMonitorInput(b []interface{}, linkedAccountID in
 			azureMonitorInput.ResourceTypes = rTypes
 		}
 		if et, ok := in["exclude_tags"]; ok {
-			excludeTags := et.([]interface{})
-			var eTags []string
-
-			for _, eTag := range excludeTags {
-				eTags = append(eTags, eTag.(string))
-			}
-			azureMonitorInput.ExcludeTags = eTags
+			azureMonitorInput.ExcludeTags = expandCloudAzureMonitorTags(d, i, "exclude_tags", et)
 		}
 
 		if it, ok := in["include_tags"]; ok {
-			includeTags := it.([]interface{})
-			var iTags []string
-
-			for _, iTag := range includeTags {
-				iTags = append(iTags, iTag.(string))
-			}
-			azureMonitorInput.IncludeTags = iTags
+			azureMonitorInput.IncludeTags = expandCloudAzureMonitorTags(d, i, "include_tags", it)
 		}
 
 		if enabled, ok := in["enabled"]; ok {
-			azureMonitorInput.Enabled = enabled.(bool)
+			enabledVal := enabled.(bool)
+			azureMonitorInput.Enabled = &enabledVal
 		}
 		expanded[i] = azureMonitorInput
 	}
 
 	return expanded
+}
+
+// expandCloudAzureMonitorTags builds the value sent to NerdGraph for the "include_tags" or
+// "exclude_tags" attribute of the "monitor" block at monitorIndex.
+//
+// These fields are `*[]string` with `omitempty` in newrelic-client-go, where `omitempty` keys off the
+// pointer rather than the length. That is what lets the pointer returned here express all three
+// outcomes:
+//
+//	nil          -> field omitted, which leaves the existing tags untouched
+//	&[]string{}  -> `[]`, which clears the existing tags
+//	&[]string{x} -> `["x"]`
+//
+// A plain slice could not do this: `omitempty` drops nil and empty alike, and without it a nil slice
+// marshals to `null`, which NerdGraph rejects outright with
+// "ERR_INVALID_DATA include_tags must be a list".
+//
+// ResourceData reports an empty list both when the attribute is absent from the configuration and
+// when it is explicitly set to `[]`, so the raw configuration is what tells the two apart.
+func expandCloudAzureMonitorTags(d *schema.ResourceData, monitorIndex int, attributeName string, attributeValue interface{}) *[]string {
+	tags := attributeValue.([]interface{})
+
+	if len(tags) == 0 {
+		if isCloudAzureMonitorAttributeNullInConfig(d, monitorIndex, attributeName) {
+			return nil
+		}
+		return &[]string{}
+	}
+
+	expanded := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		expanded = append(expanded, tag.(string))
+	}
+
+	return &expanded
+}
+
+// isCloudAzureMonitorAttributeNullInConfig reports whether monitor[monitorIndex].<attributeName> is
+// absent from the Terraform configuration. Anything other than a known, non-null value in the raw
+// configuration counts as absent, so an unspecified attribute is never mistaken for an explicit
+// empty list. Note that GetRawConfig returns a null value when no raw configuration is available,
+// which lands on the same "leave the existing tags alone" behaviour.
+func isCloudAzureMonitorAttributeNullInConfig(d *schema.ResourceData, monitorIndex int, attributeName string) bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() || !rawConfig.IsKnown() || !rawConfig.Type().IsObjectType() || !rawConfig.Type().HasAttribute("monitor") {
+		return true
+	}
+
+	monitor := rawConfig.GetAttr("monitor")
+	if monitor.IsNull() || !monitor.IsKnown() {
+		return true
+	}
+
+	monitorBlocks := monitor.AsValueSlice()
+	if monitorIndex >= len(monitorBlocks) {
+		return true
+	}
+
+	monitorBlock := monitorBlocks[monitorIndex]
+	if monitorBlock.IsNull() || !monitorBlock.IsKnown() || !monitorBlock.Type().IsObjectType() || !monitorBlock.Type().HasAttribute(attributeName) {
+		return true
+	}
+
+	tags := monitorBlock.GetAttr(attributeName)
+
+	return tags.IsNull() || !tags.IsKnown()
 }
 
 // Expanding the Azure_mysql

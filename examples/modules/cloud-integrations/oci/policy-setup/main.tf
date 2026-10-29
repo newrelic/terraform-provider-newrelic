@@ -121,6 +121,11 @@ resource "oci_identity_policy" "nr_common_policy" {
     "Allow dynamic-group ${local.dynamic_group_name} to use fn-function in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to use fn-invocation in tenancy",
     "Allow dynamic-group ${local.dynamic_group_name} to read secret-bundles in tenancy where any { target.secret.id = '${local.ingest_key_secret_ocid}', target.secret.id = '${local.user_key_secret_ocid}' }",
+    "Allow dynamic-group ${local.dynamic_group_name} to inspect dns-family in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to inspect goldengate-family in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to inspect network-firewall-family in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to inspect cloudevents-rules in tenancy",
+    "Allow dynamic-group ${local.dynamic_group_name} to inspect integration-instance in tenancy",
   ]
   defined_tags  = {}
   freeform_tags = local.freeform_tags
@@ -148,11 +153,11 @@ output "compartment_ocid" {
   value = oci_identity_compartment.newrelic_compartment.id
 }
 
-output "ingest_vault_ocid" {
+output "ingest_key_secret_ocid" {
   value = local.is_ingest_vault_key_present ? var.ingest_key_secret_ocid : oci_vault_secret.ingest_api_key[0].id
 }
 
-output "user_vault_ocid" {
+output "user_key_secret_ocid" {
   value = local.is_user_vault_key_present ? var.user_key_secret_ocid : oci_vault_secret.user_api_key[0].id
 }
 
