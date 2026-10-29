@@ -20,9 +20,9 @@ func TestAccNewRelicNrqlMacro_Basic(t *testing.T) {
 	t.Parallel()
 
 	var (
-		macroName        = fmt.Sprintf("testMacro%s", acctest.RandString(8))
-		macroExpression  = "environment = 'production' AND appName NOT LIKE '%test%'"
-		resourceName     = "newrelic_nrql_macro.foo"
+		macroName       = fmt.Sprintf("testMacro%s", acctest.RandString(8))
+		macroExpression = "environment = 'production' AND appName NOT LIKE '%test%'"
+		resourceName    = "newrelic_nrql_macro.foo"
 
 		macroExpressionUpdated = "environment = 'staging' AND appName NOT LIKE '%test%'"
 	)
