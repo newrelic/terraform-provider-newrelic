@@ -80,7 +80,7 @@ resource "newrelic_one_dashboard" "example" {
 
   -> **Warning:** Changes to `expression` take effect immediately. Every query, dashboard, and alert condition that references this macro will reflect the new expression on next execution.
 
-* `parameter_count` - (Optional) The number of positional parameters the expression accepts. Required when the expression contains `$1`, `$2`, ... tokens; defaults to `0` for expressions without parameters. The count must equal the number of distinct `$N` tokens or the API will return an error.
+* `parameter_count` - (Optional, Computed) The number of positional parameters the expression accepts. Required when the expression contains `$1`, `$2`, ... tokens; defaults to `0` for expressions without parameters. The count must equal the number of distinct `$N` tokens or the API will return an error.
 
 ## Attributes Reference
 

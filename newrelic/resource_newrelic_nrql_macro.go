@@ -125,10 +125,8 @@ func resourceNewRelicNrqlMacroRead(ctx context.Context, d *schema.ResourceData, 
 		return nil
 	}
 
-	switch entityType := (*resp).(type) {
+	switch entity := (*resp).(type) {
 	case *nrqlmacros.EntityManagementNRQLMacroEntity:
-		entity := (*resp).(*nrqlmacros.EntityManagementNRQLMacroEntity)
-
 		if err := d.Set(nrqlMacroAttrName, entity.Name); err != nil {
 			return diag.FromErr(err)
 		}
@@ -142,7 +140,7 @@ func resourceNewRelicNrqlMacroRead(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(err)
 		}
 	default:
-		return diag.Errorf("unexpected entity type %T for ID %s", entityType, d.Id())
+		return diag.Errorf("unexpected entity type %T for ID %s", entity, d.Id())
 	}
 
 	return nil
