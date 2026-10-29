@@ -71,10 +71,15 @@ func resourceNewRelicDataPartition() *schema.Resource {
 	}
 }
 
+// dataPartitionRuleRetentionPolicyStandardLiveArchive is the retention policy NerdGraph reports for
+// partitions with Live Archives enabled. newrelic-client-go does not define it yet.
+const dataPartitionRuleRetentionPolicyStandardLiveArchive logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyType = "STANDARD_LIVE_ARCHIVE"
+
 func listValidDataPartitionRuleRetentionPolicyType() []string {
 	return []string{
 		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.SECONDARY),
 		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.STANDARD),
+		string(dataPartitionRuleRetentionPolicyStandardLiveArchive),
 	}
 }
 
