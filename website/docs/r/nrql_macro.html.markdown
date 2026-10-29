@@ -3,16 +3,16 @@ layout: "newrelic"
 page_title: "New Relic: newrelic_nrql_macro"
 sidebar_current: "docs-newrelic-nrql-macro"
 description: |-
-  Manage a New Relic NRQL Macro.
+  Use this resource to create and manage a New Relic NRQL Macro.
 ---
 
 # Resource: newrelic\_nrql\_macro
 
-Manages a [NRQL Macro](https://docs.newrelic.com/docs/nrql/nrql-macros/nrql-macros-overview/) — a reusable expression fragment that you reference in NRQL queries using the `$macroName` syntax.
+Use this resource to create and manage a [NRQL Macro](https://docs.newrelic.com/docs/nrql/nrql-macros/nrql-macros-overview/).
 
-Macros are scoped to your organization and available across every account within it. Any query, dashboard widget, or alert condition that references a macro will pick up changes to that macro's expression on its next execution.
+A NRQL Macro is a named expression fragment you can reuse across NRQL queries using the `$macroName` syntax. Macros belong to your organization and are available in every account within it.
 
--> **Note:** Macros are always created in your organization. The `organization_id` shown in the state is resolved automatically from your provider credentials and cannot be set in configuration.
+-> **NOTE:** Changes to a macro's `expression` take effect immediately. Every dashboard widget, alert condition, and query that references this macro will use the new expression on its next execution.
 
 ## Example Usage
 
@@ -33,7 +33,7 @@ SELECT count(*) FROM Transaction WHERE $filterProductionTraffic TIMESERIES
 
 ### Macro with positional parameters
 
-Positional parameters use bare `$1`, `$2`, ... tokens (without quotes). The `parameter_count` must equal the number of distinct `$N` tokens in the expression.
+Positional parameters use bare `$1`, `$2`, ... tokens (not quoted). `parameter_count` must equal the number of distinct `$N` tokens in the expression.
 
 ```hcl
 resource "newrelic_nrql_macro" "status_region_filter" {
@@ -74,25 +74,25 @@ resource "newrelic_one_dashboard" "example" {
 
 ## Argument Reference
 
-* `name` - (Required, Forces new resource) The macro name. Used to reference it as `$name` in NRQL queries. Cannot be changed after the resource is created.
+The following arguments are supported:
 
-* `expression` - (Required) The NRQL fragment this macro expands to. Must not be empty. If the expression contains positional parameters (`$1`, `$2`, ...), you must also set `parameter_count` to match the number of distinct tokens.
+* `name` - (Required, ForceNew) A unique name for the macro within your organization. Used to reference it as `$name` in NRQL queries. **Cannot be changed after creation.**
 
-  -> **Warning:** Changes to `expression` take effect immediately. Every query, dashboard, and alert condition that references this macro will reflect the new expression on next execution.
+* `expression` - (Required) The NRQL expression fragment this macro expands to. When using positional parameters (`$1`, `$2`, ...), `parameter_count` must also be set to the number of distinct tokens used.
 
-* `parameter_count` - (Optional, Computed) The number of positional parameters the expression accepts. Required when the expression contains `$1`, `$2`, ... tokens; defaults to `0` for expressions without parameters. The count must equal the number of distinct `$N` tokens or the API will return an error.
+* `parameter_count` - (Optional, Computed) The number of positional parameters (`$1`, `$2`, ...) the expression uses. Required when the expression contains positional parameters; defaults to `0` for expressions without them. Must equal the exact count of distinct `$N` tokens in the expression.
 
 ## Attributes Reference
 
-In addition to the arguments above, the following attribute is exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The entity GUID of the macro.
 
-* `organization_id` - The GUID of the organization that owns this macro.
+* `organization_id` - The GUID of the organization that owns this macro, resolved automatically from your provider credentials.
 
 ## Import
 
-Import using the macro's entity GUID:
+NRQL Macros can be imported using the entity GUID:
 
 ```bash
 $ terraform import newrelic_nrql_macro.production_filter <entity-guid>
