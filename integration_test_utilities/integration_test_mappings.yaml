@@ -283,6 +283,12 @@ resource_newrelic_cloud_oci_link_account.go:
 resource_newrelic_cloud_oci_link_account_test.go:
   test: true
   product_mapping: CLOUD
+resource_newrelic_composite_service_level.go:
+  test: false
+  product_mapping: WORKLOADS
+resource_newrelic_composite_service_level_test.go:
+  test: true
+  product_mapping: WORKLOADS
 resource_newrelic_data_partition.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -439,6 +445,12 @@ resource_newrelic_one_dashboard_raw_test.go:
 resource_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+resource_newrelic_pathpoint_flow.go:
+  test: false
+  product_mapping: PATHPOINT
+resource_newrelic_pathpoint_flow_test.go:
+  test: true
+  product_mapping: PATHPOINT
 resource_newrelic_pipeline_cloud_rule.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
@@ -553,12 +565,6 @@ resource_newrelic_workload.go:
 resource_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
-resource_newrelic_pathpoint_flow.go:
-  test: false
-  product_mapping: PATHPOINT
-resource_newrelic_pathpoint_flow_test.go:
-  test: true
-  product_mapping: PATHPOINT
 structures_newrelic_alert_channel.go:
   test: false
   product_mapping: ALERTS_DEPRECATED
@@ -616,6 +622,9 @@ structures_newrelic_cloud_gcp_dm_integrations.go:
 structures_newrelic_cloud_gcp_link_account.go:
   test: false
   product_mapping: CLOUD
+structures_newrelic_composite_service_level.go:
+  test: false
+  product_mapping: WORKLOADS
 structures_newrelic_federated_logs.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -679,6 +688,12 @@ structures_newrelic_one_dashboard_test.go:
 structures_newrelic_org_settings.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
+structures_newrelic_pathpoint.go:
+  test: false
+  product_mapping: PATHPOINT
+structures_newrelic_pathpoint_test.go:
+  test: true
+  product_mapping: PATHPOINT
 structures_newrelic_scorecard.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
@@ -733,9 +748,3 @@ structures_newrelic_workload.go:
 structures_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
-structures_newrelic_pathpoint.go:
-  test: false
-  product_mapping: PATHPOINT
-structures_newrelic_pathpoint_test.go:
-  test: true
-  product_mapping: PATHPOINT

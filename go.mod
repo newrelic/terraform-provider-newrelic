@@ -2,6 +2,13 @@ module github.com/newrelic/terraform-provider-newrelic/v3
 
 go 1.26.0
 
+// TEMPORARY: pins to the in-review newrelic-client-go commit (branch
+// composite-support-sli, PR #1514) per the OaC-documented procedure, since
+// the composite SDK changes aren't released yet. Swap this replace directive
+// for a real tagged version once that PR merges and releases. Remove before
+// final merge.
+replace github.com/newrelic/newrelic-client-go/v2 => github.com/newrelic/newrelic-client-go/v2 v2.97.3-0.20261029105553-80ad443f6172
+
 require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
