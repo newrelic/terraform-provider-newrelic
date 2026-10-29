@@ -770,10 +770,9 @@ func flattenSignal(d *schema.ResourceData, signal *alerts.AlertsNrqlConditionSig
 	if err := d.Set("aggregation_window", signal.AggregationWindow); err != nil {
 		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `aggregation_window`: %v", err)
 	}
-	if signal.SlideBy != nil {
-		if err := d.Set("slide_by", signal.SlideBy); err != nil {
-			return fmt.Errorf("[DEBUG] Error setting nrql alert condition `slide_by`: %v", err)
-		}
+	// Set even when nil, so a slide_by removed outside Terraform clears from state instead of being re-sent
+	if err := d.Set("slide_by", signal.SlideBy); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting nrql alert condition `slide_by`: %v", err)
 	}
 
 	if err := d.Set("fill_value", signal.FillValue); err != nil {

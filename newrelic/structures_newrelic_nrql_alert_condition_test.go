@@ -802,6 +802,37 @@ func TestFlattenNrqlAlertCondition_EvaluationDelayCleared(t *testing.T) {
 	require.False(t, ok, "a null evaluation delay from the API should clear the old value from state")
 }
 
+func TestFlattenNrqlAlertCondition_SlideByCleared(t *testing.T) {
+	r := resourceNewRelicNrqlAlertCondition()
+	d := r.TestResourceData()
+
+	// State still has the old slide_by, like after it's removed in the UI
+	require.NoError(t, d.Set("slide_by", 60))
+
+	condition := &alerts.NrqlAlertCondition{
+		ID:       "1234567",
+		PolicyID: "7654321",
+		NrqlConditionBase: alerts.NrqlConditionBase{
+			Name: "slide by condition",
+			Nrql: alerts.NrqlConditionQuery{
+				Query: "SELECT count(*) FROM Transaction",
+			},
+			Signal: &alerts.AlertsNrqlConditionSignal{
+				SlideBy: nil,
+			},
+		},
+	}
+	condition.Type = alerts.NrqlConditionTypes.Static
+
+	testAccountID, err := nr.GetTestAccountID()
+	require.NoError(t, err)
+
+	require.NoError(t, flattenNrqlAlertCondition(testAccountID, condition, d))
+
+	_, ok := d.GetOk("slide_by")
+	require.False(t, ok, "a null slide_by from the API should clear the old value from state")
+}
+
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 	dataAccountId := 987654
