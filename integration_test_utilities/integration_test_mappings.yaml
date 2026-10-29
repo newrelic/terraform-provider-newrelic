@@ -445,6 +445,12 @@ resource_newrelic_pipeline_cloud_rule.go:
 resource_newrelic_pipeline_cloud_rule_test.go:
   test: true
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
+resource_newrelic_nrql_macro.go:
+  test: false
+  product_mapping: NRQL_MACROS
+resource_newrelic_nrql_macro_test.go:
+  test: true
+  product_mapping: NRQL_MACROS
 resource_newrelic_scorecard.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
