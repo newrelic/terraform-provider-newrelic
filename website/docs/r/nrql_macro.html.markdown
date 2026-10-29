@@ -76,11 +76,11 @@ resource "newrelic_one_dashboard" "example" {
 
 The following arguments are supported:
 
-* `name` - (Required, ForceNew) A unique name for the macro within your organization. Used to reference it as `$name` in NRQL queries. **Cannot be changed after creation.**
+* `name` - (Required) A unique name for the macro within your organization. Used to reference it as `$name` in NRQL queries. **Changing this value forces recreation of the resource.**
 
 * `expression` - (Required) The NRQL expression fragment this macro expands to. When using positional parameters (`$1`, `$2`, ...), `parameter_count` must also be set to the number of distinct tokens used.
 
-* `parameter_count` - (Optional, Computed) The number of positional parameters (`$1`, `$2`, ...) the expression uses. Required when the expression contains positional parameters; defaults to `0` for expressions without them. Must equal the exact count of distinct `$N` tokens in the expression.
+* `parameter_count` - (Optional) The number of positional parameters (`$1`, `$2`, ...) the expression uses. Required when the expression contains positional parameters; defaults to `0` for expressions without them. Must equal the exact count of distinct `$N` tokens in the expression.
 
 ## Attributes Reference
 
