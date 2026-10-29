@@ -5,7 +5,6 @@ package newrelic
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -15,49 +14,36 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/nrqlmacros"
 )
 
-// TestAccNewRelicNrqlMacro_Basic tests the complete lifecycle (Create, Update, Import, Delete) of the resource.
+// TestAccNewRelicNrqlMacro_Basic covers the full lifecycle of a non-parameterized macro:
+// create, verify, update expression, verify again, then import.
 func TestAccNewRelicNrqlMacro_Basic(t *testing.T) {
 	t.Parallel()
 
-	var (
-		macroName       = fmt.Sprintf("testMacro%s", acctest.RandString(8))
-		macroExpression = "environment = 'production' AND appName NOT LIKE '%test%'"
-		resourceName    = "newrelic_nrql_macro.foo"
-
-		macroExpressionUpdated = "environment = 'staging' AND appName NOT LIKE '%test%'"
-	)
+	macroName := fmt.Sprintf("testMacro%s", acctest.RandString(8))
+	resourceName := "newrelic_nrql_macro.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-			if v := os.Getenv("NEW_RELIC_ORGANIZATION_ID"); v == "" {
-				t.Log("NEW_RELIC_ORGANIZATION_ID not set; organization_id will be auto-resolved from provider credentials")
-			}
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicNrqlMacroDestroy,
 		Steps: []resource.TestStep{
-			// Test: Create
 			{
-				Config: testAccNrqlMacroConfig(macroName, macroExpression),
+				Config: testAccNrqlMacroConfig(macroName, "environment = 'production'"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlMacroExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", macroName),
-					resource.TestCheckResourceAttr(resourceName, "expression", macroExpression),
+					resource.TestCheckResourceAttr(resourceName, "expression", "environment = 'production'"),
 					resource.TestCheckResourceAttrSet(resourceName, "organization_id"),
+					resource.TestCheckResourceAttr(resourceName, "parameter_count", "0"),
 				),
 			},
-			// Test: Update expression
 			{
-				Config: testAccNrqlMacroConfig(macroName, macroExpressionUpdated),
+				Config: testAccNrqlMacroConfig(macroName, "environment = 'staging'"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNrqlMacroExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", macroName),
-					resource.TestCheckResourceAttr(resourceName, "expression", macroExpressionUpdated),
-					resource.TestCheckResourceAttrSet(resourceName, "organization_id"),
+					resource.TestCheckResourceAttr(resourceName, "expression", "environment = 'staging'"),
 				),
 			},
-			// Test: Import
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
@@ -67,8 +53,38 @@ func TestAccNewRelicNrqlMacro_Basic(t *testing.T) {
 	})
 }
 
-// testAccCheckNewRelicNrqlMacroDestroy verifies that the NRQL macro resource
-// has been successfully destroyed in New Relic.
+// TestAccNewRelicNrqlMacro_Parameterized verifies that parameter_count is accepted
+// and enforced correctly for expressions that use positional parameters.
+func TestAccNewRelicNrqlMacro_Parameterized(t *testing.T) {
+	t.Parallel()
+
+	macroName := fmt.Sprintf("testMacroP%s", acctest.RandString(8))
+	resourceName := "newrelic_nrql_macro.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNrqlMacroDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNrqlMacroConfigParameterized(macroName, "status = $1 AND region = $2", 2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlMacroExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "parameter_count", "2"),
+				),
+			},
+			// Update to remove parameters (go from 2 to 0)
+			{
+				Config: testAccNrqlMacroConfig(macroName, "environment = 'production'"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNrqlMacroExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "parameter_count", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckNewRelicNrqlMacroDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
@@ -79,7 +95,7 @@ func testAccCheckNewRelicNrqlMacroDestroy(s *terraform.State) error {
 
 		_, err := client.Nrqlmacros.GetEntityWithContext(context.Background(), rs.Primary.ID)
 		if err != nil {
-			return nil // Success: resource has been destroyed.
+			return nil
 		}
 
 		return fmt.Errorf("NRQL macro '%s' still exists", rs.Primary.ID)
@@ -88,13 +104,11 @@ func testAccCheckNewRelicNrqlMacroDestroy(s *terraform.State) error {
 	return nil
 }
 
-// testAccCheckNewRelicNrqlMacroExists verifies that the NRQL macro resource
-// has been created in New Relic by querying the API.
 func testAccCheckNewRelicNrqlMacroExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("not found in state: %s", resourceName)
+			return fmt.Errorf("resource not found in state: %s", resourceName)
 		}
 
 		if rs.Primary.ID == "" {
@@ -104,28 +118,36 @@ func testAccCheckNewRelicNrqlMacroExists(resourceName string) resource.TestCheck
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
 		resp, err := client.Nrqlmacros.GetEntityWithContext(context.Background(), rs.Primary.ID)
 		if err != nil {
-			return fmt.Errorf("error fetching NRQL macro with ID %s: %w", rs.Primary.ID, err)
+			return fmt.Errorf("error fetching NRQL macro %s: %w", rs.Primary.ID, err)
 		}
 
 		if resp == nil {
-			return fmt.Errorf("entity with macroID %s returned nil response", rs.Primary.ID)
+			return fmt.Errorf("NRQL macro %s returned nil from the API", rs.Primary.ID)
 		}
 
 		if _, ok := (*resp).(*nrqlmacros.EntityManagementNRQLMacroEntity); !ok {
-			return fmt.Errorf("entity %s is not of type EntityManagementNRQLMacroEntity", rs.Primary.ID)
+			return fmt.Errorf("entity %s is not a NRQL macro", rs.Primary.ID)
 		}
 
 		return nil
 	}
 }
 
-// testAccNrqlMacroConfig is a helper function to generate the HCL configuration
-// for a newrelic_nrql_macro resource.
 func testAccNrqlMacroConfig(name, expression string) string {
 	return fmt.Sprintf(`
-resource "newrelic_nrql_macro" "foo" {
-  name       = "%s"
-  expression = "%s"
+resource "newrelic_nrql_macro" "test" {
+  name       = %q
+  expression = %q
 }
 `, name, expression)
+}
+
+func testAccNrqlMacroConfigParameterized(name, expression string, parameterCount int) string {
+	return fmt.Sprintf(`
+resource "newrelic_nrql_macro" "test" {
+  name            = %q
+  expression      = %q
+  parameter_count = %d
+}
+`, name, expression, parameterCount)
 }

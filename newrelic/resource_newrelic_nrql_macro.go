@@ -12,6 +12,15 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/nrqlmacros"
 )
 
+// Schema attribute name constants. Use these everywhere instead of bare string
+// literals so that a rename only requires a change in one place.
+const (
+	nrqlMacroAttrName           = "name"
+	nrqlMacroAttrExpression     = "expression"
+	nrqlMacroAttrOrganizationID = "organization_id"
+	nrqlMacroAttrParameterCount = "parameter_count"
+)
+
 func resourceNewRelicNrqlMacro() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNewRelicNrqlMacroCreate,
@@ -22,30 +31,28 @@ func resourceNewRelicNrqlMacro() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
+			nrqlMacroAttrName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The unique name of the NRQL macro. Used to reference it as $name in queries. Immutable after creation.",
+				Description: "A unique name for the macro within your organization. Once created, the name cannot be changed — it is the identifier used to reference the macro as `$name` in NRQL queries.",
 			},
-			"expression": {
+			nrqlMacroAttrExpression: {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  "The NRQL expression fragment that this macro expands to when referenced in a query. Updating this value will immediately affect all queries, dashboards, and alert conditions that reference this macro.",
+				Description:  "The NRQL fragment this macro expands to wherever `$name` appears in a query. Changes to this field take effect immediately across every dashboard widget, alert condition, and query that references the macro.",
 			},
-			"organization_id": {
+			nrqlMacroAttrOrganizationID: {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
-				Description: "The organization GUID to which this macro belongs. If omitted, the organization ID is resolved from the provider credentials.",
+				Description: "The GUID of the organization that owns this macro. Populated automatically from your provider credentials — NRQL macros are always scoped to your organization.",
 			},
-			"num_parameters": {
+			nrqlMacroAttrParameterCount: {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "The number of positional parameters ($1, $2, ...) used in the expression.",
+				Description: "The number of positional parameters the expression accepts, expressed as bare `$1`, `$2`, ... tokens. Required when the expression contains any positional parameters; defaults to `0` for expressions that do not.",
 			},
 		},
 	}
@@ -55,19 +62,19 @@ func resourceNewRelicNrqlMacroCreate(ctx context.Context, d *schema.ResourceData
 	providerConfig := meta.(*ProviderConfig)
 	client := providerConfig.NewClient
 
-	orgID, err := getOrganizationID(ctx, providerConfig, d.Get("organization_id").(string))
+	orgID, err := getOrganizationID(ctx, providerConfig, "")
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	name := d.Get("name").(string)
-	expression := d.Get("expression").(string)
-	numParameters := d.Get("num_parameters").(int)
+	name := d.Get(nrqlMacroAttrName).(string)
+	expression := d.Get(nrqlMacroAttrExpression).(string)
+	parameterCount := d.Get(nrqlMacroAttrParameterCount).(int)
 
 	createInput := nrqlmacros.EntityManagementNRQLMacroEntityCreateInput{
 		Name:          name,
 		Expression:    expression,
-		NumParameters: numParameters,
+		NumParameters: parameterCount,
 		Scope: nrqlmacros.EntityManagementScopedReferenceInput{
 			Type: nrqlmacros.EntityManagementEntityScopeTypes.ORGANIZATION,
 			ID:   orgID,
@@ -88,10 +95,10 @@ func resourceNewRelicNrqlMacroCreate(ctx context.Context, d *schema.ResourceData
 	log.Printf("[INFO] New Relic NRQL Macro created, ID: %s", created.Entity.ID)
 
 	d.SetId(created.Entity.ID)
-	_ = d.Set("organization_id", orgID)
-	_ = d.Set("name", created.Entity.Name)
-	_ = d.Set("expression", created.Entity.Expression)
-	_ = d.Set("num_parameters", created.Entity.NumParameters)
+	_ = d.Set(nrqlMacroAttrOrganizationID, orgID)
+	_ = d.Set(nrqlMacroAttrName, created.Entity.Name)
+	_ = d.Set(nrqlMacroAttrExpression, created.Entity.Expression)
+	_ = d.Set(nrqlMacroAttrParameterCount, created.Entity.NumParameters)
 
 	return nil
 }
@@ -122,19 +129,16 @@ func resourceNewRelicNrqlMacroRead(ctx context.Context, d *schema.ResourceData, 
 	case *nrqlmacros.EntityManagementNRQLMacroEntity:
 		entity := (*resp).(*nrqlmacros.EntityManagementNRQLMacroEntity)
 
-		if err := d.Set("name", entity.Name); err != nil {
+		if err := d.Set(nrqlMacroAttrName, entity.Name); err != nil {
 			return diag.FromErr(err)
 		}
-
-		if err := d.Set("expression", entity.Expression); err != nil {
+		if err := d.Set(nrqlMacroAttrExpression, entity.Expression); err != nil {
 			return diag.FromErr(err)
 		}
-
-		if err := d.Set("organization_id", entity.Scope.ID); err != nil {
+		if err := d.Set(nrqlMacroAttrOrganizationID, entity.Scope.ID); err != nil {
 			return diag.FromErr(err)
 		}
-
-		if err := d.Set("num_parameters", entity.NumParameters); err != nil {
+		if err := d.Set(nrqlMacroAttrParameterCount, entity.NumParameters); err != nil {
 			return diag.FromErr(err)
 		}
 	default:
@@ -149,14 +153,13 @@ func resourceNewRelicNrqlMacroUpdate(ctx context.Context, d *schema.ResourceData
 	client := providerConfig.NewClient
 
 	macroID := d.Id()
-
 	updateInput := nrqlmacros.EntityManagementNRQLMacroEntityUpdateInput{}
 
-	if d.HasChange("expression") {
-		updateInput.Expression = d.Get("expression").(string)
+	if d.HasChange(nrqlMacroAttrExpression) {
+		updateInput.Expression = d.Get(nrqlMacroAttrExpression).(string)
 	}
-	if d.HasChange("num_parameters") {
-		n := d.Get("num_parameters").(int)
+	if d.HasChange(nrqlMacroAttrParameterCount) {
+		n := d.Get(nrqlMacroAttrParameterCount).(int)
 		updateInput.NumParameters = &n
 	}
 
@@ -168,7 +171,7 @@ func resourceNewRelicNrqlMacroUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if updated.Entity.ID == "" {
-		return diag.FromErr(fmt.Errorf("error in updating NRQL macro with ID %s", macroID))
+		return diag.FromErr(fmt.Errorf("error updating NRQL macro with ID %s", macroID))
 	}
 
 	return resourceNewRelicNrqlMacroRead(ctx, d, meta)
@@ -187,7 +190,7 @@ func resourceNewRelicNrqlMacroDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	if result.ID == "" {
-		return diag.FromErr(fmt.Errorf("error in deleting NRQL macro with ID %s", macroID))
+		return diag.FromErr(fmt.Errorf("error deleting NRQL macro with ID %s", macroID))
 	}
 
 	return nil
