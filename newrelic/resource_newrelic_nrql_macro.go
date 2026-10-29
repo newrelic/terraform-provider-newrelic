@@ -106,8 +106,9 @@ func resourceNewRelicNrqlMacroRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if resp == nil {
+		// Entity not found; remove from state so Terraform plans a re-create.
 		d.SetId("")
-		return diag.FromErr(fmt.Errorf("entity with macroID %s was nil", macroID))
+		return nil
 	}
 
 	switch entityType := (*resp).(type) {
