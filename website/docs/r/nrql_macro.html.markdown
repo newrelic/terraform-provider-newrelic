@@ -25,6 +25,19 @@ resource "newrelic_nrql_macro" "production_filter" {
 }
 ```
 
+### With positional parameters
+
+NRQL Macros support positional parameters using bare `$1`, `$2`, ... tokens (not quoted).
+The `num_parameters` attribute must match the number of distinct `$N` tokens in the expression.
+
+```hcl
+resource "newrelic_nrql_macro" "status_region_filter" {
+  name           = "filterStatusRegion"
+  expression     = "status = $1 AND region = $2"
+  num_parameters = 2
+}
+```
+
 ### With explicit organization ID
 
 ```hcl
@@ -71,7 +84,7 @@ The following arguments are supported:
 *   `name` - (Required, Forces new resource) The unique name of the NRQL macro. Used to reference it as `$name` in queries. **This field is immutable after creation.** Changing this value will destroy and recreate the resource.
 *   `expression` - (Required) The NRQL expression fragment that this macro expands to when referenced in a query. **Updating this value will immediately affect all queries, dashboards, and alert conditions that reference this macro.**
 *   `organization_id` - (Optional, Computed, Forces new resource) The organization GUID to which this macro belongs. If omitted, the organization ID is resolved from the provider credentials. Changing this value will destroy and recreate the resource.
-*   `num_parameters` - (Optional, Computed) The number of positional parameters (`$1`, `$2`, ...) used in the expression.
+*   `num_parameters` - (Optional, Computed) The number of positional parameters (`$1`, `$2`, ...) used in the expression. Must match the exact count of distinct bare `$N` tokens in the expression (e.g. `expression = "status = $1 AND region = $2"` requires `num_parameters = 2`). Defaults to `0` for expressions without parameters.
 
 ## Attributes Reference
 

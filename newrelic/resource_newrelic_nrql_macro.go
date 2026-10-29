@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/nrqlmacros"
 )
 
@@ -28,9 +29,10 @@ func resourceNewRelicNrqlMacro() *schema.Resource {
 				Description: "The unique name of the NRQL macro. Used to reference it as $name in queries. Immutable after creation.",
 			},
 			"expression": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The NRQL expression fragment that this macro expands to when referenced in a query. Updating this value will immediately affect all queries, dashboards, and alert conditions that reference this macro.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+				Description:  "The NRQL expression fragment that this macro expands to when referenced in a query. Updating this value will immediately affect all queries, dashboards, and alert conditions that reference this macro.",
 			},
 			"organization_id": {
 				Type:        schema.TypeString,
@@ -148,9 +150,14 @@ func resourceNewRelicNrqlMacroUpdate(ctx context.Context, d *schema.ResourceData
 
 	macroID := d.Id()
 
-	updateInput := nrqlmacros.EntityManagementNRQLMacroEntityUpdateInput{
-		Expression:    d.Get("expression").(string),
-		NumParameters: d.Get("num_parameters").(int),
+	updateInput := nrqlmacros.EntityManagementNRQLMacroEntityUpdateInput{}
+
+	if d.HasChange("expression") {
+		updateInput.Expression = d.Get("expression").(string)
+	}
+	if d.HasChange("num_parameters") {
+		n := d.Get("num_parameters").(int)
+		updateInput.NumParameters = &n
 	}
 
 	log.Printf("[INFO] Updating New Relic NRQL Macro %s", macroID)
