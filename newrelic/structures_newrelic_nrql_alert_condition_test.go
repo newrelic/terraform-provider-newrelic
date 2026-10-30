@@ -720,6 +720,119 @@ func TestExpandNrqlAlertConditionUpdateInput_TermsClearing(t *testing.T) {
 	})
 }
 
+func TestExpandNrqlAlertConditionUpdateInput_EvaluationDelay(t *testing.T) {
+	nrql := map[string]interface{}{
+		"query": "SELECT count(*) FROM Transaction",
+	}
+
+	r := resourceNewRelicNrqlAlertCondition()
+
+	cases := map[string]struct {
+		evaluationDelay interface{}
+		expected        *int
+	}{
+		// The client sends a nil evaluation delay as null, which turns the delay off
+		"evaluation_delay omitted leaves it nil so the delay is turned off": {
+			evaluationDelay: nil,
+			expected:        nil,
+		},
+		"evaluation_delay set to 0 leaves it nil so the delay is turned off": {
+			evaluationDelay: 0,
+			expected:        nil,
+		},
+		"evaluation_delay set to 30 is carried through": {
+			evaluationDelay: 30,
+			expected:        &[]int{30}[0],
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			d := r.TestResourceData()
+
+			data := map[string]interface{}{
+				"nrql": []interface{}{nrql},
+				"type": "static",
+				"name": "evaluation delay condition",
+			}
+			if tc.evaluationDelay != nil {
+				data["evaluation_delay"] = tc.evaluationDelay
+			}
+			for k, v := range data {
+				require.NoError(t, d.Set(k, v))
+			}
+
+			expanded, err := expandNrqlAlertConditionUpdateInput(d)
+			require.NoError(t, err)
+
+			require.NotNil(t, expanded.Signal)
+			require.Equal(t, tc.expected, expanded.Signal.EvaluationDelay)
+		})
+	}
+}
+
+func TestFlattenNrqlAlertCondition_EvaluationDelayCleared(t *testing.T) {
+	r := resourceNewRelicNrqlAlertCondition()
+	d := r.TestResourceData()
+
+	// State still has the old delay, like after the delay is turned off in the UI
+	require.NoError(t, d.Set("evaluation_delay", 30))
+
+	condition := &alerts.NrqlAlertCondition{
+		ID:       "1234567",
+		PolicyID: "7654321",
+		NrqlConditionBase: alerts.NrqlConditionBase{
+			Name: "evaluation delay condition",
+			Nrql: alerts.NrqlConditionQuery{
+				Query: "SELECT count(*) FROM Transaction",
+			},
+			Signal: &alerts.AlertsNrqlConditionSignal{
+				EvaluationDelay: nil,
+			},
+		},
+	}
+	condition.Type = alerts.NrqlConditionTypes.Static
+
+	testAccountID, err := nr.GetTestAccountID()
+	require.NoError(t, err)
+
+	require.NoError(t, flattenNrqlAlertCondition(testAccountID, condition, d))
+
+	_, ok := d.GetOk("evaluation_delay")
+	require.False(t, ok, "a null evaluation delay from the API should clear the old value from state")
+}
+
+func TestFlattenNrqlAlertCondition_SlideByCleared(t *testing.T) {
+	r := resourceNewRelicNrqlAlertCondition()
+	d := r.TestResourceData()
+
+	// State still has the old slide_by, like after it's removed in the UI
+	require.NoError(t, d.Set("slide_by", 60))
+
+	condition := &alerts.NrqlAlertCondition{
+		ID:       "1234567",
+		PolicyID: "7654321",
+		NrqlConditionBase: alerts.NrqlConditionBase{
+			Name: "slide by condition",
+			Nrql: alerts.NrqlConditionQuery{
+				Query: "SELECT count(*) FROM Transaction",
+			},
+			Signal: &alerts.AlertsNrqlConditionSignal{
+				SlideBy: nil,
+			},
+		},
+	}
+	condition.Type = alerts.NrqlConditionTypes.Static
+
+	testAccountID, err := nr.GetTestAccountID()
+	require.NoError(t, err)
+
+	require.NoError(t, flattenNrqlAlertCondition(testAccountID, condition, d))
+
+	_, ok := d.GetOk("slide_by")
+	require.False(t, ok, "a null slide_by from the API should clear the old value from state")
+}
+
 func TestFlattenNrqlAlertCondition(t *testing.T) {
 	r := resourceNewRelicNrqlAlertCondition()
 	dataAccountId := 987654
