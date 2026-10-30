@@ -74,6 +74,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the API key.
 - `key` - The actual API key.
   - <span style="color:tomato;">It is important to exercise caution when exporting the value of `key`, as it is sensitive information</span>. Avoid logging or exposing it inappropriately.
+  - This attribute is marked as sensitive, so its value is redacted in plan and apply output. Any root module `output` that references `key` must set `sensitive = true`.
 
 ## Important Considerations
 #### Updating Existing Keys
