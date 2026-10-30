@@ -31,8 +31,7 @@ func testAccDeleteNewRelicAlertPolicy(name string) func() {
 		providerConfig := testAccProvider.Meta().(*ProviderConfig)
 		client := providerConfig.NewClient
 
-		// TODO(newrelic-client-go#1285): replace with AlertsPoliciesSearchCriteriaInput{Name: name}
-		params := alerts.AlertsPoliciesSearchCriteriaInput{}
+		params := alerts.AlertsPoliciesSearchCriteriaInput{Name: name}
 		policies, _ := client.Alerts.QueryPolicySearch(providerConfig.AccountID, params)
 
 		for _, p := range policies {
