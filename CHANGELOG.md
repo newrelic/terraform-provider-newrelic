@@ -1,3 +1,9 @@
+<a name="v3.101.10"></a>
+## [v3.101.10] - 2026-10-30
+### Bug Fixes
+- **alerts:** allow evaluation_delay to be turned off and read back null slide_by
+- **data_partition_rule:** accept STANDARD_LIVE_ARCHIVE retention policy
+
 <a name="v3.101.9"></a>
 ## [v3.101.9] - 2026-10-29
 <a name="v3.101.8"></a>
@@ -2981,7 +2987,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.9...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.10...HEAD
+[v3.101.10]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.9...v3.101.10
 [v3.101.9]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.8...v3.101.9
 [v3.101.8]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.7...v3.101.8
 [v3.101.7]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.6...v3.101.7
