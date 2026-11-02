@@ -19,18 +19,17 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 		ReadContext:   schema.NoopContext,
 		Delete:        schema.RemoveFromState,
 		Schema: map[string]*schema.Schema{
+			"entity_guid": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The GUID of the entity the deployment is associated with.",
+			},
 			"version": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "The version of the deployed software, for example, something like v1.1.",
-			},
-			"entity_guid": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The GUID of the New Relic entity that was deployed.",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"changelog": {
 				Type:        schema.TypeString,
@@ -109,7 +108,6 @@ func listValidChangeTrackingDeploymentTypes() []string {
 var _ = common.EntityGUID("")
 var _ = log.Printf
 var _ = diag.FromErr
-var _ = context.Background
 
 func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
