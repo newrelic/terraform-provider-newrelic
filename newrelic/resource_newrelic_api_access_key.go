@@ -159,11 +159,11 @@ func resourceNewRelicAPIAccessKeyRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(setErr)
 	}
 
-	if key.Type == apiaccess.APIAccessKeyTypeTypes.INGEST {
-		setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs, key.OwningTeamIDs)
-		if setErr != nil {
-			return diag.FromErr(setErr)
-		}
+	// Set for every key type (always empty for USER keys), so that the Computed attribute has a known value in
+	// the state and keys created with an earlier provider version show no diff for it after an upgrade.
+	setErr = d.Set(ResourceNewRelicAPIAccessKeyAttributeLabels.OwningTeamIDs, key.OwningTeamIDs)
+	if setErr != nil {
+		return diag.FromErr(setErr)
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
