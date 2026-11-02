@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,9 +18,6 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 		CreateContext: resourceNewRelicChangeTrackingDeploymentCreate,
 		ReadContext:   schema.NoopContext,
 		Delete:        schema.RemoveFromState,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
 		Schema: map[string]*schema.Schema{
 			"version": {
 				Type:        schema.TypeString,
@@ -28,10 +26,11 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 				Description: "The version of the deployed software, for example, something like v1.1.",
 			},
 			"entity_guid": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The NR entity that was deployed.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The GUID of the New Relic entity that was deployed.",
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"changelog": {
 				Type:        schema.TypeString,
@@ -56,7 +55,7 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(listValidChangeTrackingDeploymentTypes(), false),
-				Description:  fmt.Sprintf("The type of deployment. One of: (%s).", listValidChangeTrackingDeploymentTypesStr()),
+				Description:  fmt.Sprintf("The type of deployment. One of: (%s).", strings.Join(listValidChangeTrackingDeploymentTypes(), ", ")),
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -82,22 +81,16 @@ func resourceNewRelicChangeTrackingDeployment() *schema.Resource {
 				ForceNew:    true,
 				Description: "The username of the deployer or bot.",
 			},
-			"validation_flags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Flags for validation, for example, 'FAIL_ON_FIELD_LENGTH'.",
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(listValidChangeTrackingValidationFlags(), false),
-				},
-			},
+
 			// Computed
 			"deployment_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "A unique deployment identifier.",
+				Description: "The unique deployment identifier.",
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }
@@ -113,31 +106,10 @@ func listValidChangeTrackingDeploymentTypes() []string {
 	}
 }
 
-func listValidChangeTrackingDeploymentTypesStr() string {
-	types := listValidChangeTrackingDeploymentTypes()
-	result := ""
-	for i, t := range types {
-		if i > 0 {
-			result += ", "
-		}
-		result += t
-	}
-	return result
-}
-
-func listValidChangeTrackingValidationFlags() []string {
-	return []string{
-		string(changetracking.ChangeTrackingValidationFlagTypes.ALLOW_CUSTOM_CATEGORY_OR_TYPE),
-		string(changetracking.ChangeTrackingValidationFlagTypes.FAIL_ON_FIELD_LENGTH),
-		string(changetracking.ChangeTrackingValidationFlagTypes.FAIL_ON_REST_API_FAILURES),
-	}
-}
-
-// Ensure imported packages are used (referenced by CRUD functions appended later).
-var _ = context.Background
+var _ = common.EntityGUID("")
 var _ = log.Printf
 var _ = diag.FromErr
-var _ = common.EntityGUID("")
+var _ = context.Background
 
 func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	providerConfig := meta.(*ProviderConfig)
@@ -148,7 +120,7 @@ func resourceNewRelicChangeTrackingDeploymentCreate(ctx context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating New Relic change tracking deployment for entity %s", deployment.EntityGUID)
+	log.Printf("[INFO] Creating New Relic change tracking deployment for entity GUID %s", deployment.EntityGUID)
 
 	result, err := client.ChangeTracking.ChangeTrackingCreateDeploymentWithContext(ctx, dataHandlingRules, deployment)
 	if err != nil {
