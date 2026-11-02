@@ -10,30 +10,11 @@ import (
 )
 
 func expandChangeTrackingDeployment(d *schema.ResourceData) (changetracking.ChangeTrackingDataHandlingRules, changetracking.ChangeTrackingDeploymentInput, error) {
-	dataHandlingRules := expandChangeTrackingDataHandlingRules(d)
-	deployment := expandChangeTrackingDeploymentInput(d)
-	return dataHandlingRules, deployment, nil
-}
+	dataHandlingRules := changetracking.ChangeTrackingDataHandlingRules{}
 
-func expandChangeTrackingDataHandlingRules(d *schema.ResourceData) changetracking.ChangeTrackingDataHandlingRules {
-	rules := changetracking.ChangeTrackingDataHandlingRules{}
-
-	if v, ok := d.GetOk("validation_flags"); ok {
-		flags := v.([]interface{})
-		validationFlags := make([]changetracking.ChangeTrackingValidationFlag, len(flags))
-		for i, f := range flags {
-			validationFlags[i] = changetracking.ChangeTrackingValidationFlag(f.(string))
-		}
-		rules.ValidationFlags = validationFlags
-	}
-
-	return rules
-}
-
-func expandChangeTrackingDeploymentInput(d *schema.ResourceData) changetracking.ChangeTrackingDeploymentInput {
 	deployment := changetracking.ChangeTrackingDeploymentInput{
-		Version:    d.Get("version").(string),
 		EntityGUID: common.EntityGUID(d.Get("entity_guid").(string)),
+		Version:    d.Get("version").(string),
 	}
 
 	if v, ok := d.GetOk("changelog"); ok {
@@ -68,7 +49,7 @@ func expandChangeTrackingDeploymentInput(d *schema.ResourceData) changetracking.
 		deployment.User = v.(string)
 	}
 
-	return deployment
+	return dataHandlingRules, deployment, nil
 }
 
 // No flatten functions: this API is write-only.
