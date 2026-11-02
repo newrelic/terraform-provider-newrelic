@@ -12,10 +12,10 @@ import (
 )
 
 // cloudAzureAutoDiscoveryPollingIntervals are the data polling intervals, in seconds,
-// that the Azure Auto Discovery integration accepts: 8 hours, 12 hours and 16 hours.
+// that the Azure Auto Discovery integration accepts: 8 hours, 12 hours, 16 hours and 24 hours.
 // Auto Discovery performs an inventory sweep rather than a metric poll, so the shorter
 // intervals offered by the metric integrations do not apply to it.
-var cloudAzureAutoDiscoveryPollingIntervals = []int{28800, 43200, 57600}
+var cloudAzureAutoDiscoveryPollingIntervals = []int{28800, 43200, 57600, 86400}
 
 func resourceNewRelicCloudAzureIntegrations() *schema.Resource {
 	return &schema.Resource{
@@ -309,7 +309,7 @@ func cloudAzureAutoDiscoveryElem() *schema.Resource {
 			"metrics_polling_interval": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Description:  "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours) and 57600 (16 hours)",
+				Description:  "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours), 57600 (16 hours) and 86400 (24 hours)",
 				ValidateFunc: validation.IntInSlice(cloudAzureAutoDiscoveryPollingIntervals),
 			},
 		},

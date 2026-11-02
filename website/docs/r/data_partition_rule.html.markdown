@@ -31,7 +31,7 @@ The following arguments are supported:
 * `description` - (Optional) The description of the data partition rule.
 * `enabled` - (Required) Whether or not this data partition rule is enabled.
 * `nrql` - (Required) The NRQL to match events for this data partition rule. Logs matching this criteria will be routed to the specified data partition.
-* `retention_policy` - (Required) The retention policy of the data partition data. Valid values are `SECONDARY` and `STANDARD`.
+* `retention_policy` - (Required) The retention policy of the data partition data. Valid values are `SECONDARY`, `STANDARD` and `STANDARD_LIVE_ARCHIVE` (standard retention with Live Archives enabled).
 * `target_data_partition` - (Required) The name of the data partition where logs will be allocated once the rule is enabled.
 
 ## Attributes Reference

@@ -368,7 +368,7 @@ func resourceNewRelicNrqlAlertCondition() *schema.Resource {
 			"evaluation_delay": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes)",
+				Description: "How long we wait until the signal starts evaluating. The maximum delay is 7200 seconds (120 minutes). To turn off the delay, set it to 0 or leave it out.",
 			},
 			"aggregation_timer": {
 				Type:         schema.TypeString,

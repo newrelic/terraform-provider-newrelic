@@ -107,6 +107,14 @@ func eventsSchema() *schema.Resource {
 				MaxItems:    1,
 				Elem:        eventsQuerySchema(),
 			},
+			"facets": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The list of NRQL FACET attributes to group results by. These facets are applied to all event queries (valid, good or bad events). A maximum of 2 facets can be specified.",
+				MinItems:    1,
+				MaxItems:    2,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	}
 }
@@ -298,7 +306,7 @@ func resourceNewRelicServiceLevelUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, err = client.ServiceLevel.ServiceLevelUpdateWithContext(ctx, common.EntityGUID(getSliGUID(identifier)), updateInput)
+	_, err = client.ServiceLevel.ServiceLevelUpdateWithContext(ctx, common.EntityGUID(getSliGUID(identifier)), identifier.ID, updateInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -316,7 +324,7 @@ func resourceNewRelicServiceLevelDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.ServiceLevel.ServiceLevelDeleteWithContext(ctx, common.EntityGUID(getSliGUID(identifier))); err != nil {
+	if _, err := client.ServiceLevel.ServiceLevelDeleteWithContext(ctx, common.EntityGUID(getSliGUID(identifier)), identifier.ID); err != nil {
 		return diag.FromErr(err)
 	}
 

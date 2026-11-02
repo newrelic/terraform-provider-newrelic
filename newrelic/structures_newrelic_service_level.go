@@ -31,6 +31,10 @@ func flattenServiceLevelIndicator(indicator servicelevel.ServiceLevelIndicator, 
 		eventsMap["bad_events"] = flattenServiceLevelEventsQuery(indicator.Events.BadEvents, d, "bad_events")
 	}
 
+	if indicator.Events.ValidEvents != nil && len(indicator.Events.ValidEvents.Facets) > 0 {
+		eventsMap["facets"] = indicator.Events.ValidEvents.Facets
+	}
+
 	events[0] = eventsMap
 	_ = d.Set("events", events)
 
@@ -148,7 +152,23 @@ func expandServiceLevelEventsCreateInput(cfg map[string]interface{}) serviceleve
 		events.BadEvents = expandServiceLevelEventsQueryCreateInput(badEvents)
 	}
 
+	events.Facets = expandServiceLevelFacets(cfg)
+
 	return events
+}
+
+func expandServiceLevelFacets(cfg map[string]interface{}) []string {
+	value, ok := cfg["facets"].([]interface{})
+	if !ok || len(value) == 0 {
+		return nil
+	}
+
+	facets := make([]string, len(value))
+	for i, facet := range value {
+		facets[i] = facet.(string)
+	}
+
+	return facets
 }
 
 func expandServiceLevelEventsQueryCreateInput(cfg map[string]interface{}) *servicelevel.ServiceLevelEventsQueryCreateInput {
@@ -272,6 +292,8 @@ func expandServiceLevelEventsUpdateInput(cfg map[string]interface{}) *servicelev
 		badEvents := value[0].(map[string]interface{})
 		events.BadEvents = expandServiceLevelEventsQueryUpdateInput(badEvents)
 	}
+
+	events.Facets = expandServiceLevelFacets(cfg)
 
 	return &events
 }

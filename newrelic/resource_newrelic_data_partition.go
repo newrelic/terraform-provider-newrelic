@@ -75,6 +75,7 @@ func listValidDataPartitionRuleRetentionPolicyType() []string {
 	return []string{
 		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.SECONDARY),
 		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.STANDARD),
+		string(logconfigurations.LogConfigurationsDataPartitionRuleRetentionPolicyTypeTypes.STANDARD_LIVE_ARCHIVE),
 	}
 }
 
