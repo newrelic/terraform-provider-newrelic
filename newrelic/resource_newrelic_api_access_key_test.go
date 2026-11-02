@@ -4,9 +4,7 @@ package newrelic
 
 import (
 	"fmt"
-	"os"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -218,16 +216,10 @@ func TestAccNewRelicAPIAccessKey_IngestEnabled(t *testing.T) {
 }
 
 func TestAccNewRelicAPIAccessKey_IngestOwningTeamIDs(t *testing.T) {
-	teamGUIDs := os.Getenv("NEW_RELIC_TEST_TEAM_GUIDS")
-	if teamGUIDs == "" {
-		t.Skipf("Skipping this test, as NEW_RELIC_TEST_TEAM_GUIDS (two comma-separated team entity GUIDs) must be set for this test to run.")
-	}
-	teams := strings.Split(teamGUIDs, ",")
-	if len(teams) < 2 {
-		t.Skipf("Skipping this test, as NEW_RELIC_TEST_TEAM_GUIDS must contain two comma-separated team entity GUIDs.")
-	}
-
 	keyName := fmt.Sprintf("tftest-keyname-%s", acctest.RandString(10))
+	teamName := fmt.Sprintf("tftest-team-%s", acctest.RandString(10))
+	bothTeams := "[newrelic_team.first.id, newrelic_team.second.id]"
+	firstTeam := "[newrelic_team.first.id]"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -235,47 +227,47 @@ func TestAccNewRelicAPIAccessKey_IngestOwningTeamIDs(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create a key with owning teams
-				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teams),
+				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, bothTeams, ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "owning_team_ids.#", "2"),
-					resource.TestCheckTypeSetElemAttr("newrelic_api_access_key.foobar", "owning_team_ids.*", teams[0]),
-					resource.TestCheckTypeSetElemAttr("newrelic_api_access_key.foobar", "owning_team_ids.*", teams[1]),
+					resource.TestCheckTypeSetElemAttrPair("newrelic_api_access_key.foobar", "owning_team_ids.*", "newrelic_team.first", "id"),
+					resource.TestCheckTypeSetElemAttrPair("newrelic_api_access_key.foobar", "owning_team_ids.*", "newrelic_team.second", "id"),
 				),
 			},
 			{
 				// Ensure a subsequent plan has no drift
-				Config:   testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teams),
+				Config:   testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, bothTeams, ""),
 				PlanOnly: true,
 			},
 			{
 				// Replace the owning teams
-				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teams[:1]),
+				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, firstTeam, ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "owning_team_ids.#", "1"),
-					resource.TestCheckTypeSetElemAttr("newrelic_api_access_key.foobar", "owning_team_ids.*", teams[0]),
+					resource.TestCheckTypeSetElemAttrPair("newrelic_api_access_key.foobar", "owning_team_ids.*", "newrelic_team.first", "id"),
 				),
 			},
 			{
 				// Omitting `owning_team_ids` leaves the key's owning teams unchanged
-				Config: testAccCheckNewRelicAPIAccessKeyIngest(testSubAccountID, keyTypeIngestLicense, keyName, ""),
+				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, "", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "owning_team_ids.#", "1"),
-					resource.TestCheckTypeSetElemAttr("newrelic_api_access_key.foobar", "owning_team_ids.*", teams[0]),
+					resource.TestCheckTypeSetElemAttrPair("newrelic_api_access_key.foobar", "owning_team_ids.*", "newrelic_team.first", "id"),
 				),
 			},
 			{
 				// Clear all owning teams
-				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, []string{}),
+				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, "[]", ""),
 				Check:  resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "owning_team_ids.#", "0"),
 			},
 			{
 				// Ensure a subsequent plan has no drift
-				Config:   testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, []string{}),
+				Config:   testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, "[]", ""),
 				PlanOnly: true,
 			},
 			{
 				// Change owning teams and disable the key in the same apply
-				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDsDisabled(testSubAccountID, keyName, teams),
+				Config: testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(testSubAccountID, keyName, teamName, bothTeams, "false"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "owning_team_ids.#", "2"),
 					resource.TestCheckResourceAttr("newrelic_api_access_key.foobar", "enabled", "false"),
@@ -362,34 +354,33 @@ resource "newrelic_api_access_key" "foobar" {
 `, accountID, name, enabled)
 }
 
-func testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(accountID int, name string, teamIDs []string) string {
-	quotedTeamIDs := make([]string, len(teamIDs))
-	for i, teamID := range teamIDs {
-		quotedTeamIDs[i] = fmt.Sprintf("%q", teamID)
+// testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs returns a configuration with two temporary teams and an ingest key.
+// owningTeamIDs and enabled are HCL expressions; an empty value omits the attribute from the key.
+func testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDs(accountID int, name, teamName, owningTeamIDs, enabled string) string {
+	optionalAttributes := ""
+	if owningTeamIDs != "" {
+		optionalAttributes += fmt.Sprintf("\n\towning_team_ids = %s", owningTeamIDs)
+	}
+	if enabled != "" {
+		optionalAttributes += fmt.Sprintf("\n\tenabled         = %s", enabled)
 	}
 
 	return fmt.Sprintf(`
-resource "newrelic_api_access_key" "foobar" {
-	account_id      = %d
-	key_type        = "INGEST"
-	ingest_type     = "LICENSE"
-	name            = "%s"
-	owning_team_ids = [%s]
-}
-`, accountID, name, strings.Join(quotedTeamIDs, ", "))
+resource "newrelic_team" "first" {
+	name = "%[3]s-1"
 }
 
-func testAccCheckNewRelicAPIAccessKeyIngestOwningTeamIDsDisabled(accountID int, name string, teamIDs []string) string {
-	return fmt.Sprintf(`
+resource "newrelic_team" "second" {
+	name = "%[3]s-2"
+}
+
 resource "newrelic_api_access_key" "foobar" {
-	account_id      = %d
+	account_id      = %[1]d
 	key_type        = "INGEST"
 	ingest_type     = "LICENSE"
-	name            = "%s"
-	owning_team_ids = ["%s"]
-	enabled         = false
+	name            = "%[2]s"%[4]s
 }
-`, accountID, name, strings.Join(teamIDs, `", "`))
+`, accountID, name, teamName, optionalAttributes)
 }
 
 func testAccCheckNewRelicAPIAccessKeyUserEnabled(accountID, userID int, name, enabled string) string {
