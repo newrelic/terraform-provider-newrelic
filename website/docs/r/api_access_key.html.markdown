@@ -53,6 +53,18 @@ resource "newrelic_api_access_key" "ingest_browser_key" {
 }
 ```
 
+### Example: Disabling a Key and Assigning Owning Teams
+```
+resource "newrelic_api_access_key" "ingest_license_key" {
+  account_id      = 1234321
+  key_type        = "INGEST"
+  ingest_type     = "LICENSE"
+  name            = "Ingest License Key for App Monitoring"
+  enabled         = false # Disables the key; set to true to re-enable it
+  owning_team_ids = ["MTIzNDMyMXxOR0VQfFRFQU18MDE5ODBkOTEtMDJhYS03MjNjLTkxYTYtOWJlNzg3YzUxNWUz"] # INGEST keys only
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -66,6 +78,8 @@ The following arguments are supported:
 - `name` - (Optional) The name of the API key.
   - **Note**: While `name` is optional, it is <b style="color:red;">\*\*strongly recommended\*\*</b> to provide a meaningful name for easier identification and management of keys. If a `name` is not provided, the API will assign a default name when processing the request to create the API key, which may cause unexpected drift in your Terraform state. To prevent this, it is best practice to always specify a `name`.
 - `notes` - (Optional) Additional notes about the API access key.
+- `enabled` - (Optional) Set to `false` to disable the key, or `true` to re-enable it. A disabled key is retained, but cannot be used until it is re-enabled. If omitted, the key's current status is left unchanged. See [Disabling and Re-enabling Keys](#disabling-and-re-enabling-keys) below.
+- `owning_team_ids` - (Optional) A set of up to 50 New Relic team entity GUIDs of the teams that own the key. Only supported when `key_type` is `INGEST`. Set to `[]` to remove all owning teams. If omitted, the key's current owning teams are left unchanged.
 
 ## Attributes Reference
 
@@ -77,7 +91,13 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Important Considerations
 #### Updating Existing Keys
-- Only `name` and `notes` can be updated in place. Changes to other attributes will recreate the key (the `newrelic_api_access_key` resource), invalidating the existing one.
+- Only `name`, `notes`, `enabled` and `owning_team_ids` can be updated in place. Changes to other attributes will recreate the key (the `newrelic_api_access_key` resource), invalidating the existing one.
+
+#### Disabling and Re-enabling Keys
+- New keys are always created enabled. If `enabled = false` is set when a key is created, the key is created and then disabled in the same `terraform apply`.
+- When `enabled` is omitted, Terraform does not manage the key's status: a key disabled outside Terraform (for example, in the New Relic UI during a security incident) stays disabled. Removing `enabled = false` from the configuration therefore does not re-enable the key; set `enabled = true` to do so.
+- When `enabled` is set, Terraform enforces it: for example, `enabled = true` re-enables a key that was disabled outside Terraform.
+- A disabled key can still be updated, imported and deleted.
 
 #### Creating API Keys for Other Users
 - If an API key is created for a user other than the owner of the API key used to run Terraform, the full key value will not be returned by the API for security reasons. Instead, a truncated version of the key will be provided. To retrieve the full key, ensure the necessary capabilities and access management settings are applied to the user running Terraform. For more details, contact New Relic Support.

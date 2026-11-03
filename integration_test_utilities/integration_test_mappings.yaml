@@ -289,6 +289,9 @@ resource_newrelic_data_partition.go:
 resource_newrelic_data_partition_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_data_partition_unit_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
 resource_newrelic_entity_tags.go:
   test: false
   product_mapping: ENTITY
@@ -409,6 +412,12 @@ resource_newrelic_nrql_drop_rule.go:
 resource_newrelic_nrql_drop_rule_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_nrql_macro.go:
+  test: false
+  product_mapping: NRQL_MACROS
+resource_newrelic_nrql_macro_test.go:
+  test: true
+  product_mapping: NRQL_MACROS
 resource_newrelic_obfuscation_expression.go:
   test: false
   product_mapping: LOGGING_INTEGRATIONS
@@ -439,18 +448,18 @@ resource_newrelic_one_dashboard_raw_test.go:
 resource_newrelic_one_dashboard_test.go:
   test: true
   product_mapping: DASHBOARDS
+resource_newrelic_pathpoint_flow.go:
+  test: false
+  product_mapping: PATHPOINT
+resource_newrelic_pathpoint_flow_test.go:
+  test: true
+  product_mapping: PATHPOINT
 resource_newrelic_pipeline_cloud_rule.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
 resource_newrelic_pipeline_cloud_rule_test.go:
   test: true
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
-resource_newrelic_nrql_macro.go:
-  test: false
-  product_mapping: NRQL_MACROS
-resource_newrelic_nrql_macro_test.go:
-  test: true
-  product_mapping: NRQL_MACROS
 resource_newrelic_scorecard.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
@@ -559,12 +568,6 @@ resource_newrelic_workload.go:
 resource_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
-resource_newrelic_pathpoint_flow.go:
-  test: false
-  product_mapping: PATHPOINT
-resource_newrelic_pathpoint_flow_test.go:
-  test: true
-  product_mapping: PATHPOINT
 structures_newrelic_alert_channel.go:
   test: false
   product_mapping: ALERTS_DEPRECATED
@@ -685,6 +688,12 @@ structures_newrelic_one_dashboard_test.go:
 structures_newrelic_org_settings.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
+structures_newrelic_pathpoint.go:
+  test: false
+  product_mapping: PATHPOINT
+structures_newrelic_pathpoint_test.go:
+  test: true
+  product_mapping: PATHPOINT
 structures_newrelic_scorecard.go:
   test: false
   product_mapping: SERVICE_ARCHITECTURE_INTELLIGENCE
@@ -739,9 +748,3 @@ structures_newrelic_workload.go:
 structures_newrelic_workload_test.go:
   test: true
   product_mapping: WORKLOADS
-structures_newrelic_pathpoint.go:
-  test: false
-  product_mapping: PATHPOINT
-structures_newrelic_pathpoint_test.go:
-  test: true
-  product_mapping: PATHPOINT
