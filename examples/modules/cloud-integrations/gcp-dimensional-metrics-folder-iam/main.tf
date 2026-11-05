@@ -215,6 +215,10 @@ resource "newrelic_cloud_gcp_dm_integrations" "this" {
     for_each = contains(local.on, "functions") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
   }
+  dynamic "gemini_enterprise" {
+    for_each = contains(local.on, "gemini_enterprise") ? [1] : []
+    content { metrics_polling_interval = var.metrics_polling_interval }
+  }
   dynamic "interconnect" {
     for_each = contains(local.on, "interconnect") ? [1] : []
     content { metrics_polling_interval = var.metrics_polling_interval }
