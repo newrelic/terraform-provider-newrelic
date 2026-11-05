@@ -1,3 +1,8 @@
+<a name="v3.101.12"></a>
+## [v3.101.12] - 2026-11-05
+### Bug Fixes
+- **cloud:** add gemini_enterprise service to newrelic_cloud_gcp_dm_integrations ([#3262](https://github.com/newrelic/terraform-provider-newrelic/issues/3262))
+
 <a name="v3.101.11"></a>
 ## [v3.101.11] - 2026-11-03
 ### Bug Fixes
@@ -2992,7 +2997,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.11...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.12...HEAD
+[v3.101.12]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.11...v3.101.12
 [v3.101.11]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.10...v3.101.11
 [v3.101.10]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.9...v3.101.10
 [v3.101.9]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.8...v3.101.9
