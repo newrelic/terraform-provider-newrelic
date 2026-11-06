@@ -36,10 +36,12 @@ locals {
   function_memory_in_mbs = "128"
   time_out_in_seconds    = 300
 
-  # The function runs from a copy of var.function_image in the tenancy's own Container Registry.
+  # The function runs from a copy of var.function_image in the tenancy's own Container Registry,
+  # created by the container-registry-setup module (NR-640865) -- read back by var.container_repository_id
+  # rather than recomputed here, so this can never drift from the name that module actually created.
   ocir_host                 = "${var.region}.ocir.io"
-  ocir_namespace            = oci_artifacts_container_repository.log_forwarder_repo.namespace
-  function_image_repository = "newrelic-${var.newrelic_logging_identifier}-${local.terraform_suffix}/oci-log-forwarder"
+  ocir_namespace            = data.oci_artifacts_container_repository.existing.namespace
+  function_image_repository = data.oci_artifacts_container_repository.existing.display_name
   function_image_digest     = data.external.function_image.result.digest
   function_image            = "${local.ocir_host}/${local.ocir_namespace}/${local.function_image_repository}:${data.external.function_image.result.tag}"
 

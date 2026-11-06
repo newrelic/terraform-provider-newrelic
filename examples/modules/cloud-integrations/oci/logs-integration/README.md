@@ -1,21 +1,22 @@
 # OCI Logs Integration Module
 
-Ships OCI logs to New Relic. Creates (or reuses) a VCN, a log-forwarder Function, a private Container Repository the Function's image is mirrored into, and one Service Connector Hub per entry in `connector_hub_details` to route log sources to that Function.
+Ships OCI logs to New Relic. Creates (or reuses) a VCN and a log-forwarder Function, and one Service Connector Hub per entry in `connector_hub_details` to route log sources to that Function. The Function's image is mirrored into a Container Repository provisioned separately by [`container-registry-setup`](../container-registry-setup) — this module no longer creates its own (see that module's README for why).
 
 ## Where this module fits in the full integration
 
-A complete New Relic + OCI integration via Terraform composes four modules plus one resource. This module is **step 4b** (logs):
+A complete New Relic + OCI integration via Terraform composes five modules plus one resource. This module is **step 4b** (logs):
 
 | Order | Component | What it provisions | Required? |
 |-------|-----------|--------------------|-----------|
 | 1 | [`wif-setup`](../wif-setup) | OAuth apps, IAM, identity propagation trust — the auth foundation | Yes |
 | 2 | [`policy-setup`](../policy-setup) | IAM policies — including the `inspect` grants entity synthesis needs to resolve names for DNS, GoldenGate, Network Firewall, Integration, and Cloud Events — + (optionally) Vault secrets for NR keys | Yes |
+| 2b | [`container-registry-setup`](../container-registry-setup) | Private Container Registry repository for the log-forwarder image | Yes, once per region, if deploying this module |
 | 3 | [`newrelic_cloud_oci_link_account`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/cloud_oci_link_account) | Registers the OCI tenancy with New Relic | Yes |
 | 4a | [`metrics-integration`](../metrics-integration) | Service Connector Hub + Function for metrics shipping | Optional (need metrics) |
 | 4b | `logs-integration` (this module) | Service Connector Hub + Function for logs shipping | Optional (need logs) |
 | — | [`hub-calculator`](../hub-calculator) | Script that computes `connector_hubs_data`-style payloads across multiple compartments | Recommended for step 4a/4b |
 
-See the [Cloud integrations guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#oci) for the full end-to-end example wiring all four modules together.
+See the [Cloud integrations guide](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide#oci) for the full end-to-end example wiring all modules together.
 
 ## Inputs
 
@@ -23,6 +24,7 @@ See the [Cloud integrations guide](https://registry.terraform.io/providers/newre
 |----------|------|---------|----------|-------|
 | `tenancy_ocid` | string | — | yes | Your OCI tenancy OCID |
 | `compartment_ocid` | string | — | yes | Compartment where resources are created. Use the compartment OCID already created by `policy-setup` |
+| `container_repository_id` | string | — | yes | OCID of the Container Registry repository the function image is mirrored into. Use the `container_repository_id` output from `container-registry-setup` |
 | `region` | string | — | yes | OCI region to deploy into |
 | `newrelic_logging_identifier` | string | `"logs"` | no | Label used in resource names; leave blank if not needed |
 | `create_vcn` | bool | `true` | no | Set `false` to use an existing subnet via `function_subnet_id` instead |
@@ -86,7 +88,8 @@ vcn_network_details = {
 │                                                            │
 │  ┌────────────────────────┐   ┌─────────────────────────┐ │
 │  │ Container Repository   │◄──│ function_image mirrored │ │
-│  │ (private)               │   │ in via image_mirror.py  │ │
+│  │ (from container-       │   │ in via image_mirror.py  │ │
+│  │  registry-setup)       │   │                          │ │
 │  └────────────────────────┘   └─────────────────────────┘ │
 │              │                                             │
 │              ▼                                             │
@@ -108,11 +111,22 @@ After the Function and connectors are created, a `null_resource` calls New Relic
 ## Calling pattern
 
 ```hcl
+module "oci_container_registry_setup" {
+  source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/container-registry-setup"
+
+  tenancy_ocid     = var.tenancy_ocid
+  region           = var.region
+  fingerprint      = var.fingerprint
+  private_key      = var.private_key
+  compartment_ocid = var.compartment_ocid
+}
+
 module "newrelic_oci_logs" {
   source = "github.com/newrelic/terraform-provider-newrelic//examples/modules/cloud-integrations/oci/logs-integration"
 
   tenancy_ocid      = var.tenancy_ocid
   compartment_ocid  = var.compartment_ocid
+  container_repository_id = module.oci_container_registry_setup.container_repository_id
   region            = var.region
   user_ocid         = var.user_ocid
   secret_ocid       = var.secret_ocid
