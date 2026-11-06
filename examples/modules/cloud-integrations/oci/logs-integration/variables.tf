@@ -60,7 +60,7 @@ variable "user_ocid" {
 
 variable "function_image" {
   type        = string
-  default     = "docker.io/newrelic/oci-log-forwarder:latest"
+  default     = "docker.io/newrelic/oci-log-forwarder@sha256:efcd146139b4b0c8630944f0f1c757a4d5c4754ac8ff9358ea6d70953e05cbdd"
   description = "Public image for the log-forwarder function. The module copies it into a private Container Registry repository in your tenancy and runs the function from there. The default is kept pinned to a specific published digest (not a floating tag) by a scheduled workflow in this repo -- pull the latest version of this module to pick up a new image, rather than expecting a re-apply of the same checkout to do so."
 }
 
