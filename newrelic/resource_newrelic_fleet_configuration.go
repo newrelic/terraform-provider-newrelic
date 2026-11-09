@@ -42,8 +42,10 @@ func resourceNewRelicFleetConfiguration() *schema.Resource {
 					"NRDOT",
 					"FluentBit",
 					"NRPrometheusAgent",
+					"PipelineControlGateway",
+					"PipelineControlGatewayConfigMode",
 				}, false),
-				Description: "The type of agent this configuration is for. Allowed values: NRInfra, NRDOT, FluentBit, NRPrometheusAgent.",
+				Description: "The type of agent this configuration is for. Allowed values: NRInfra, NRDOT, FluentBit, NRPrometheusAgent, PipelineControlGateway, PipelineControlGatewayConfigMode.",
 			},
 			"managed_entity_type": {
 				Type:     schema.TypeString,

@@ -33,7 +33,7 @@ func flattenFleetControlTags(tags []fleetcontrol.FleetControlTag) []string {
 // applyFleetEntityToState writes the fleet entity fields shared by all fleet
 // resource CRUD responses into Terraform state. operatingSystem is only set
 // when non-empty and the managed entity type is HOST.
-func applyFleetEntityToState(d *schema.ResourceData, name, managedEntityType, operatingSystem, description string, tags []string, organizationID string) error {
+func applyFleetEntityToState(d *schema.ResourceData, name, managedEntityType, operatingSystem, description string, tags []string, product []string, organizationID string) error {
 	if err := d.Set("name", name); err != nil {
 		return err
 	}
@@ -51,6 +51,9 @@ func applyFleetEntityToState(d *schema.ResourceData, name, managedEntityType, op
 	if err := d.Set("tags", tags); err != nil {
 		return err
 	}
+	if err := d.Set("product", product); err != nil {
+		return err
+	}
 	if err := d.Set("organization_id", organizationID); err != nil {
 		return err
 	}
@@ -65,6 +68,7 @@ func flattenFleetEntity(fleet *fleetcontrol.EntityManagementFleetEntity, d *sche
 		string(fleet.OperatingSystem.Type),
 		fleet.Description,
 		flattenEntityManagementTags(fleet.Tags),
+		fleet.Product,
 		organizationID,
 	)
 }
@@ -77,6 +81,7 @@ func flattenFleetControlEntity(fleet *fleetcontrol.FleetControlFleetEntityResult
 		string(fleet.OperatingSystem.Type),
 		fleet.Description,
 		flattenFleetControlTags(fleet.Tags),
+		fleet.Product,
 		organizationID,
 	)
 }
