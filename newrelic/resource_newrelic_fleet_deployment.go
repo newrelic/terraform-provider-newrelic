@@ -53,8 +53,10 @@ func resourceNewRelicFleetDeployment() *schema.Resource {
 								"NRDOT",
 								"FluentBit",
 								"NRPrometheusAgent",
+								"PipelineControlGateway",
+								"PipelineControlGatewayConfigMode",
 							}, false),
-							Description: "The agent type. Allowed values: NRInfra, NRDOT, FluentBit, NRPrometheusAgent.",
+							Description: "The agent type. Allowed values: NRInfra, NRDOT, FluentBit, NRPrometheusAgent, PipelineControlGateway, PipelineControlGatewayConfigMode.",
 						},
 						"version": {
 							Type:        schema.TypeString,
