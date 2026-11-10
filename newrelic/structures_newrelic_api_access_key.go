@@ -297,8 +297,9 @@ var APIAccessKeysSchemaNotes = &schema.Schema{
 }
 
 var APIAccessKeysSchemaKey = &schema.Schema{
-	Type:     schema.TypeString,
-	Computed: true,
+	Type:      schema.TypeString,
+	Computed:  true,
+	Sensitive: true,
 }
 
 var APIAccessKeysSchemaEnabled = &schema.Schema{
