@@ -99,6 +99,104 @@ The following arguments are supported:
 
   * `title` - (Required) The title of the notebook. Must be unique within the organization.
   * `content` - (Required) The notebook body as a JSON string. Accepts the raw JSON exported from the New Relic UI, a `file()` reference, or a `jsonencode({...})` expression. Produces line-level diffs of the normalized JSON in `terraform plan`.
+  * `variable` - (Optional) One or more variable definitions that appear in the notebook's variables bar. Variables can be referenced in widget queries with `{{variableName}}` syntax. See [Variables](#variables) below.
+
+### Variables
+
+Notebooks support three variable types that allow readers to filter and customize the data displayed in widgets without editing the underlying queries.
+
+```hcl
+resource "newrelic_notebook" "example" {
+  title = "Service Health — Parameterized"
+
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        props   = { title = "Requests per minute" }
+        content = {
+          type = "visualization"
+          id   = "viz.line"
+          props = {
+            nrqlQueries = [{
+              accountIds = [1234567]
+              query      = "SELECT rate(count(*), 1 minute) FROM Transaction WHERE appName = '{{appName}}' TIMESERIES 5 minutes SINCE 3 hours ago"
+            }]
+          }
+        }
+      }]
+    }]
+  })
+
+  # List variable — static dropdown
+  variable {
+    from     = "list"
+    name     = "region"
+    label    = "Region"
+    defaults = ["us-east-1"]
+    item { value = "us-east-1" }
+    item { value = "us-west-2" }
+    item { value = "eu-west-1" }
+  }
+
+  # Query variable — dynamic dropdown populated from NRQL
+  variable {
+    from              = "query"
+    name              = "appName"
+    label             = "Application"
+    ignore_time_range = true
+    nrql_query {
+      query       = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+      account_ids = [1234567]
+    }
+  }
+
+  # Input variable — free-text field
+  variable {
+    from  = "input"
+    name  = "filter"
+    label = "Custom filter"
+  }
+}
+```
+
+Each `variable` block supports the following arguments:
+
+**Common to all types:**
+
+  * `from` - (Required) The variable type. Valid values: `"list"`, `"query"`, `"input"`.
+  * `name` - (Required) The variable identifier. Used in `{{name}}` template syntax inside widget queries.
+  * `label` - (Optional) The display name shown in the variables bar. Defaults to `""`.
+  * `as` - (Optional) How the variable value is substituted in NRQL queries. Valid values: `"string"` (default), `"number"`, `"identifier"`.
+  * `hidden` - (Optional) When `true`, hides the variable from the variables bar entirely. The variable still participates in query substitution. Defaults to `false`.
+  * `omit` - (Optional) When `true`, the variable value is not injected into queries (equivalent to the "Include variable" toggle off in the UI). Defaults to `false`.
+  * `defaults` - (Optional) Default values pre-selected when the notebook loads. Omit this block when no default is desired. Use `["*"]` for "Select all" on multi-value list or query variables.
+
+**`from = "list"` only:**
+
+  * `item` - (Required) One or more static choice items. Each block requires:
+    * `value` - (Required) The item value string.
+  * `multi` - (Optional) Enables multi-value selection. Defaults to `false`.
+  * `defer_execution` - (Optional) Shows an Apply button when multi-selecting instead of applying each selection immediately. Defaults to `true`.
+
+**`from = "query"` only:**
+
+  * `nrql_query` - (Required) The NRQL query that dynamically populates variable choices. Requires:
+    * `query` - (Required) The NRQL query string. May reference other variables with `{{varName}}` syntax.
+    * `account_ids` - (Required) Account IDs to run the query against.
+  * `ignore_time_range` - (Optional) When `true` (default), the variable query ignores the notebook time picker and uses the query's own time range. Set to `false` to make the query respect the notebook's selected time window.
+  * `multi` - (Optional) Enables multi-value selection. Defaults to `false`.
+  * `defer_execution` - (Optional) Shows an Apply button when multi-selecting. Defaults to `true`.
+
+**`from = "input"` only:**
+
+Input variables have no type-specific arguments beyond the common set. The variable renders as a free-text field in the UI.
+
+-> **NOTE:** `item`, `nrql_query`, `multi`, and `defer_execution` are silently ignored when `from = "input"`. Set only the common attributes for input variables.
 
 ## Attributes Reference
 
