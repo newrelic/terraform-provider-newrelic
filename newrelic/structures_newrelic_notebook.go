@@ -302,12 +302,24 @@ func suppressEquivalentNotebookContent(_, oldVal, newVal string, _ *schema.Resou
 }
 
 // flattenNotebookContent normalizes the raw JSON returned by the API and stores
-// it in the correct state field ("content" or "content").
+// it in the content field. The "variables" key is stripped before normalizing
+// because variables are managed separately via the `variable` block — including
+// them in `content` would cause spurious diffs whenever variables change.
 func flattenNotebookContent(raw json.RawMessage, d *schema.ResourceData, field string) error {
 	if len(raw) == 0 {
 		return nil
 	}
-	normalized, _, err := normalizeNotebookContent(string(raw))
+	// Strip the variables key so it never appears in the content field.
+	var doc map[string]interface{}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		return fmt.Errorf("could not parse blob content: %w", err)
+	}
+	delete(doc, "variables")
+	stripped, err := json.Marshal(doc)
+	if err != nil {
+		return fmt.Errorf("could not re-serialize blob content: %w", err)
+	}
+	normalized, _, err := normalizeNotebookContent(string(stripped))
 	if err != nil {
 		return fmt.Errorf("could not normalize notebook content returned by the API: %w", err)
 	}
