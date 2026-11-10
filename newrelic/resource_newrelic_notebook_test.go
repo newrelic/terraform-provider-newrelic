@@ -296,6 +296,419 @@ resource "newrelic_notebook" "test" {
 	})
 }
 
+// ── Variable config helpers ────────────────────────────────────────────────────
+
+func testAccNotebookConfigWithListVariable(name string, accountID int) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "## Variable test" }
+        }
+      }]
+    }]
+  })
+
+  variable {
+    from  = "list"
+    name  = "environment"
+    label = "Environment"
+    as    = "string"
+    multi = false
+    item { value = "production" }
+    item { value = "staging" }
+    item { value = "development" }
+    defaults = ["production"]
+  }
+}
+`, name)
+}
+
+func testAccNotebookConfigWithListVariableUpdated(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "## Variable test" }
+        }
+      }]
+    }]
+  })
+
+  variable {
+    from  = "list"
+    name  = "environment"
+    label = "Environment"
+    as    = "string"
+    multi = true
+    item { value = "production" }
+    item { value = "staging" }
+    item { value = "development" }
+    item { value = "canary" }
+    defaults = ["production", "staging"]
+  }
+}
+`, name)
+}
+
+func testAccNotebookConfigWithQueryVariable(name string, accountID int) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "## Query variable test" }
+        }
+      }]
+    }]
+  })
+
+  variable {
+    from              = "query"
+    name              = "appName"
+    label             = "Application"
+    as                = "string"
+    multi             = false
+    ignore_time_range = true
+    nrql_query {
+      query       = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+      account_ids = [%[2]d]
+    }
+  }
+}
+`, name, accountID)
+}
+
+func testAccNotebookConfigWithInputVariable(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "## Input variable test" }
+        }
+      }]
+    }]
+  })
+
+  variable {
+    from     = "input"
+    name     = "searchTerm"
+    label    = "Search"
+    as       = "string"
+    defaults = ["default-value"]
+  }
+}
+`, name)
+}
+
+func testAccNotebookConfigWithAllVariableTypes(name string, accountID int) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "## All variable types test" }
+        }
+      }]
+    }]
+  })
+
+  variable {
+    from  = "list"
+    name  = "environment"
+    label = "Environment"
+    item { value = "prod" }
+    item { value = "staging" }
+  }
+
+  variable {
+    from              = "query"
+    name              = "appName"
+    label             = "Application"
+    ignore_time_range = true
+    nrql_query {
+      query       = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+      account_ids = [%[2]d]
+    }
+  }
+
+  variable {
+    from  = "input"
+    name  = "filter"
+    label = "Filter"
+  }
+}
+`, name, accountID)
+}
+
+func testAccNotebookConfigNoVariables(name string) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title = %[1]q
+  content = jsonencode({
+    type    = "declarative"
+    version = 1
+    content = [{
+      type  = "container"
+      props = { layout = "stack" }
+      content = [{
+        type    = "widget"
+        content = {
+          type = "visualization"
+          id   = "viz.markdown"
+          props = { text = "## No variables" }
+        }
+      }]
+    }]
+  })
+}
+`, name)
+}
+
+// ── Variable acceptance tests ─────────────────────────────────────────────────
+
+// TestAccNewRelicNotebook_WithListVariable covers the full lifecycle of a
+// notebook with a list variable: create, no-drift, update (add item + enable
+// multi), no-drift after update, and import.
+func TestAccNewRelicNotebook_WithListVariable(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-listvar-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotebookConfigWithListVariable(rName, testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "list"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "environment"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.label", "Environment"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.item.#", "3"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.item.0.value", "production"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.0", "production"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.multi", "false"),
+				),
+			},
+			// No drift.
+			{
+				Config:             testAccNotebookConfigWithListVariable(rName, testAccountID),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Update: add item, enable multi, add a second default.
+			{
+				Config: testAccNotebookConfigWithListVariableUpdated(rName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "variable.0.item.#", "4"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.multi", "true"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.#", "2"),
+				),
+			},
+			// No drift after update.
+			{
+				Config:             testAccNotebookConfigWithListVariableUpdated(rName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Import.
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicNotebook_WithQueryVariable covers the query variable type.
+func TestAccNewRelicNotebook_WithQueryVariable(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-queryvar-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotebookConfigWithQueryVariable(rName, testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "query"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "appName"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.nrql_query.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.ignore_time_range", "true"),
+				),
+			},
+			{
+				Config:             testAccNotebookConfigWithQueryVariable(rName, testAccountID),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicNotebook_WithInputVariable covers the input (text field) variable type.
+func TestAccNewRelicNotebook_WithInputVariable(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-inputvar-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotebookConfigWithInputVariable(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "input"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "searchTerm"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.0", "default-value"),
+				),
+			},
+			{
+				Config:             testAccNotebookConfigWithInputVariable(rName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicNotebook_WithAllVariableTypes covers a notebook with all three
+// variable types simultaneously to ensure no cross-type contamination.
+func TestAccNewRelicNotebook_WithAllVariableTypes(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-allvars-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotebookConfigWithAllVariableTypes(rName, testAccountID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "variable.#", "3"),
+					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "list"),
+					resource.TestCheckResourceAttr(resourceName, "variable.1.from", "query"),
+					resource.TestCheckResourceAttr(resourceName, "variable.2.from", "input"),
+				),
+			},
+			{
+				Config:             testAccNotebookConfigWithAllVariableTypes(rName, testAccountID),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+// TestAccNewRelicNotebook_RemoveVariables verifies that removing all variable
+// blocks from an existing notebook removes them from the blob without leaving
+// an empty "variables" key.
+func TestAccNewRelicNotebook_RemoveVariables(t *testing.T) {
+	rName := fmt.Sprintf("tf-acc-notebook-rmvars-%s", acctest.RandString(5))
+	resourceName := "newrelic_notebook.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNewRelicNotebookDestroy,
+		Steps: []resource.TestStep{
+			// Create with a variable.
+			{
+				Config: testAccNotebookConfigWithInputVariable(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
+				),
+			},
+			// Remove the variable — variables block absent → no drift.
+			{
+				Config: testAccNotebookConfigNoVariables(rName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "variable.#", "0"),
+				),
+			},
+			{
+				Config:             testAccNotebookConfigNoVariables(rName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 // TestAccNewRelicNotebook_WithBillboard verifies that a notebook containing
 // billboardSettings, thresholdsWithSeriesOverrides, and nested viz props
 // round-trips through create → read → no-drift without any spurious diff.
