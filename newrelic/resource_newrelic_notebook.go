@@ -183,16 +183,16 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		_ = d.Set("blob_id", currentBlobID)
 	}
 
-	if err := flattenNotebookContent(rawContent, d, "content"); err != nil {
-		return diag.FromErr(err)
+	if flattenErr := flattenNotebookContent(rawContent, d, "content"); flattenErr != nil {
+		return diag.FromErr(flattenErr)
 	}
 
 	blobVars, err := extractVariablesFromBlob(string(rawContent))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := flattenNotebookVariables(blobVars, d); err != nil {
-		return diag.FromErr(err)
+	if flattenErr := flattenNotebookVariables(blobVars, d); flattenErr != nil {
+		return diag.FromErr(flattenErr)
 	}
 
 	return nil

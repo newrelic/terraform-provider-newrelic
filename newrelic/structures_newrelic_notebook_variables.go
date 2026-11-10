@@ -369,66 +369,83 @@ func validateNotebookVariables(vars []map[string]interface{}) []string {
 			errs = append(errs, fmt.Sprintf(`%s: as must be one of "string", "number", "identifier" (lowercase), got %q`, path, as))
 		}
 
-		switch from {
-		case "list":
-			items, _ := v["items"].([]interface{})
-			if len(items) == 0 {
-				errs = append(errs, fmt.Sprintf(`%s: from = "list" requires at least one item`, path))
-			}
-			if _, hasNRQL := v["nrqlQueries"]; hasNRQL {
-				errs = append(errs, fmt.Sprintf(`%s: nrqlQueries must not be set on a list variable`, path))
-			}
-
-		case "query":
-			queries, _ := v["nrqlQueries"].([]interface{})
-			if len(queries) == 0 {
-				errs = append(errs, fmt.Sprintf(`%s: from = "query" requires at least one nrqlQueries entry`, path))
-			} else {
-				for qi, q := range queries {
-					qm, ok := q.(map[string]interface{})
-					if !ok {
-						errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: must be an object with query and accountIds`, path, qi))
-						continue
-					}
-					if qs, _ := qm["query"].(string); qs == "" {
-						errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: query must not be empty`, path, qi))
-					}
-					ids, _ := qm["accountIds"].([]interface{})
-					if len(ids) == 0 {
-						errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: accountIds must contain at least one account ID`, path, qi))
-					}
-				}
-			}
-			if _, hasItems := v["items"]; hasItems {
-				errs = append(errs, fmt.Sprintf(`%s: items must not be set on a query variable`, path))
-			}
-
-		case "input":
-			if _, hasItems := v["items"]; hasItems {
-				errs = append(errs, fmt.Sprintf(`%s: items must not be set on an input variable`, path))
-			}
-			if _, hasNRQL := v["nrqlQueries"]; hasNRQL {
-				errs = append(errs, fmt.Sprintf(`%s: nrqlQueries must not be set on an input variable`, path))
-			}
-		}
-
-		if defs, ok := v["defaults"]; ok && defs != nil {
-			defsArr, isArr := defs.([]interface{})
-			if !isArr {
-				errs = append(errs, fmt.Sprintf(`%s: defaults must be an array of strings`, path))
-			} else {
-				if from == "input" && len(defsArr) > 1 {
-					errs = append(errs, fmt.Sprintf(`%s: input variables support at most one default value`, path))
-				}
-				for di, d := range defsArr {
-					if _, ok := d.(string); !ok {
-						errs = append(errs, fmt.Sprintf(`%s.defaults[%d]: must be a string`, path, di))
-					}
-				}
-			}
-		}
+		errs = append(errs, validateNotebookVarByType(v, from, path)...)
+		errs = append(errs, validateNotebookVarDefaults(v, from, path)...)
 	}
 
+	return errs
+}
+
+func validateNotebookVarByType(v map[string]interface{}, from, path string) []string {
+	var errs []string
+	switch from {
+	case "list":
+		items, _ := v["items"].([]interface{})
+		if len(items) == 0 {
+			errs = append(errs, fmt.Sprintf(`%s: from = "list" requires at least one item`, path))
+		}
+		if _, hasNRQL := v["nrqlQueries"]; hasNRQL {
+			errs = append(errs, fmt.Sprintf(`%s: nrqlQueries must not be set on a list variable`, path))
+		}
+
+	case "query":
+		errs = append(errs, validateNotebookVarNRQLQueries(v, path)...)
+		if _, hasItems := v["items"]; hasItems {
+			errs = append(errs, fmt.Sprintf(`%s: items must not be set on a query variable`, path))
+		}
+
+	case "input":
+		if _, hasItems := v["items"]; hasItems {
+			errs = append(errs, fmt.Sprintf(`%s: items must not be set on an input variable`, path))
+		}
+		if _, hasNRQL := v["nrqlQueries"]; hasNRQL {
+			errs = append(errs, fmt.Sprintf(`%s: nrqlQueries must not be set on an input variable`, path))
+		}
+	}
+	return errs
+}
+
+func validateNotebookVarNRQLQueries(v map[string]interface{}, path string) []string {
+	var errs []string
+	queries, _ := v["nrqlQueries"].([]interface{})
+	if len(queries) == 0 {
+		return []string{fmt.Sprintf(`%s: from = "query" requires at least one nrqlQueries entry`, path)}
+	}
+	for qi, q := range queries {
+		qm, ok := q.(map[string]interface{})
+		if !ok {
+			errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: must be an object with query and accountIds`, path, qi))
+			continue
+		}
+		if qs, _ := qm["query"].(string); qs == "" {
+			errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: query must not be empty`, path, qi))
+		}
+		ids, _ := qm["accountIds"].([]interface{})
+		if len(ids) == 0 {
+			errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: accountIds must contain at least one account ID`, path, qi))
+		}
+	}
+	return errs
+}
+
+func validateNotebookVarDefaults(v map[string]interface{}, from, path string) []string {
+	defs, ok := v["defaults"]
+	if !ok || defs == nil {
+		return nil
+	}
+	defsArr, isArr := defs.([]interface{})
+	if !isArr {
+		return []string{fmt.Sprintf(`%s: defaults must be an array of strings`, path)}
+	}
+	var errs []string
+	if from == "input" && len(defsArr) > 1 {
+		errs = append(errs, fmt.Sprintf(`%s: input variables support at most one default value`, path))
+	}
+	for di, d := range defsArr {
+		if _, ok := d.(string); !ok {
+			errs = append(errs, fmt.Sprintf(`%s.defaults[%d]: must be a string`, path, di))
+		}
+	}
 	return errs
 }
 
