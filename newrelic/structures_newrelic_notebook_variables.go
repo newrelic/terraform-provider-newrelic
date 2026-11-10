@@ -380,26 +380,27 @@ func validateNotebookVarByType(v map[string]interface{}, from, path string) []st
 	var errs []string
 	switch from {
 	case "list":
-		items, _ := v["items"].([]interface{})
+		// TF blocks use "item" (the schema field name); check that key.
+		items, _ := v["item"].([]interface{})
 		if len(items) == 0 {
 			errs = append(errs, fmt.Sprintf(`%s: from = "list" requires at least one item`, path))
 		}
-		if _, hasNRQL := v["nrqlQueries"]; hasNRQL {
-			errs = append(errs, fmt.Sprintf(`%s: nrqlQueries must not be set on a list variable`, path))
+		if queries, _ := v["nrql_query"].([]interface{}); len(queries) > 0 {
+			errs = append(errs, fmt.Sprintf(`%s: nrql_query must not be set on a list variable`, path))
 		}
 
 	case "query":
 		errs = append(errs, validateNotebookVarNRQLQueries(v, path)...)
-		if _, hasItems := v["items"]; hasItems {
-			errs = append(errs, fmt.Sprintf(`%s: items must not be set on a query variable`, path))
+		if items, _ := v["item"].([]interface{}); len(items) > 0 {
+			errs = append(errs, fmt.Sprintf(`%s: item must not be set on a query variable`, path))
 		}
 
 	case "input":
-		if _, hasItems := v["items"]; hasItems {
-			errs = append(errs, fmt.Sprintf(`%s: items must not be set on an input variable`, path))
+		if items, _ := v["item"].([]interface{}); len(items) > 0 {
+			errs = append(errs, fmt.Sprintf(`%s: item must not be set on an input variable`, path))
 		}
-		if _, hasNRQL := v["nrqlQueries"]; hasNRQL {
-			errs = append(errs, fmt.Sprintf(`%s: nrqlQueries must not be set on an input variable`, path))
+		if queries, _ := v["nrql_query"].([]interface{}); len(queries) > 0 {
+			errs = append(errs, fmt.Sprintf(`%s: nrql_query must not be set on an input variable`, path))
 		}
 	}
 	return errs
@@ -407,22 +408,23 @@ func validateNotebookVarByType(v map[string]interface{}, from, path string) []st
 
 func validateNotebookVarNRQLQueries(v map[string]interface{}, path string) []string {
 	var errs []string
-	queries, _ := v["nrqlQueries"].([]interface{})
+	// TF blocks use "nrql_query" (the schema field name).
+	queries, _ := v["nrql_query"].([]interface{})
 	if len(queries) == 0 {
-		return []string{fmt.Sprintf(`%s: from = "query" requires at least one nrqlQueries entry`, path)}
+		return []string{fmt.Sprintf(`%s: from = "query" requires at least one nrql_query block`, path)}
 	}
 	for qi, q := range queries {
 		qm, ok := q.(map[string]interface{})
 		if !ok {
-			errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: must be an object with query and accountIds`, path, qi))
+			errs = append(errs, fmt.Sprintf(`%s.nrql_query[%d]: must be an object with query and account_ids`, path, qi))
 			continue
 		}
 		if qs, _ := qm["query"].(string); qs == "" {
-			errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: query must not be empty`, path, qi))
+			errs = append(errs, fmt.Sprintf(`%s.nrql_query[%d]: query must not be empty`, path, qi))
 		}
-		ids, _ := qm["accountIds"].([]interface{})
+		ids, _ := qm["account_ids"].([]interface{})
 		if len(ids) == 0 {
-			errs = append(errs, fmt.Sprintf(`%s.nrqlQueries[%d]: accountIds must contain at least one account ID`, path, qi))
+			errs = append(errs, fmt.Sprintf(`%s.nrql_query[%d]: account_ids must contain at least one account ID`, path, qi))
 		}
 	}
 	return errs

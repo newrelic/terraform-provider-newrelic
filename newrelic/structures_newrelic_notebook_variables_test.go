@@ -13,10 +13,10 @@ import (
 func TestValidateNotebookVariables_ValidList(t *testing.T) {
 	vars := []map[string]interface{}{
 		{
-			"from":  "list",
-			"name":  "env",
-			"as":    "string",
-			"items": []interface{}{map[string]interface{}{"value": "prod"}, map[string]interface{}{"value": "staging"}},
+			"from": "list",
+			"name": "env",
+			"as":   "string",
+			"item": []interface{}{map[string]interface{}{"value": "prod"}, map[string]interface{}{"value": "staging"}},
 		},
 	}
 	if errs := validateNotebookVariables(vars); len(errs) != 0 {
@@ -30,10 +30,10 @@ func TestValidateNotebookVariables_ValidQuery(t *testing.T) {
 			"from": "query",
 			"name": "appName",
 			"as":   "string",
-			"nrqlQueries": []interface{}{
+			"nrql_query": []interface{}{
 				map[string]interface{}{
-					"query":      "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago",
-					"accountIds": []interface{}{1234567},
+					"query":       "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago",
+					"account_ids": []interface{}{1234567},
 				},
 			},
 		},
@@ -58,7 +58,7 @@ func TestValidateNotebookVariables_ValidInput(t *testing.T) {
 
 func TestValidateNotebookVariables_EmptyName(t *testing.T) {
 	vars := []map[string]interface{}{
-		{"from": "list", "name": "", "items": []interface{}{map[string]interface{}{"value": "x"}}},
+		{"from": "list", "name": "", "item": []interface{}{map[string]interface{}{"value": "x"}}},
 	}
 	errs := validateNotebookVariables(vars)
 	if len(errs) == 0 || !strings.Contains(errs[0], "name must not be empty") {
@@ -79,10 +79,10 @@ func TestValidateNotebookVariables_InvalidFrom(t *testing.T) {
 func TestValidateNotebookVariables_InvalidAs(t *testing.T) {
 	vars := []map[string]interface{}{
 		{
-			"from":  "list",
-			"name":  "x",
-			"as":    "INTEGER",
-			"items": []interface{}{map[string]interface{}{"value": "1"}},
+			"from": "list",
+			"name": "x",
+			"as":   "INTEGER",
+			"item": []interface{}{map[string]interface{}{"value": "1"}},
 		},
 	}
 	errs := validateNotebookVariables(vars)
@@ -93,7 +93,7 @@ func TestValidateNotebookVariables_InvalidAs(t *testing.T) {
 
 func TestValidateNotebookVariables_ListWithNoItems(t *testing.T) {
 	vars := []map[string]interface{}{
-		{"from": "list", "name": "x", "items": []interface{}{}},
+		{"from": "list", "name": "x", "item": []interface{}{}},
 	}
 	errs := validateNotebookVariables(vars)
 	if len(errs) == 0 || !strings.Contains(errs[0], "requires at least one item") {
@@ -103,10 +103,10 @@ func TestValidateNotebookVariables_ListWithNoItems(t *testing.T) {
 
 func TestValidateNotebookVariables_QueryWithNoNRQL(t *testing.T) {
 	vars := []map[string]interface{}{
-		{"from": "query", "name": "x", "nrqlQueries": []interface{}{}},
+		{"from": "query", "name": "x", "nrql_query": []interface{}{}},
 	}
 	errs := validateNotebookVariables(vars)
-	if len(errs) == 0 || !strings.Contains(errs[0], "requires at least one nrqlQueries entry") {
+	if len(errs) == 0 || !strings.Contains(errs[0], "requires at least one nrql_query block") {
 		t.Errorf("expected nrql-empty error, got: %v", errs)
 	}
 }
@@ -116,8 +116,8 @@ func TestValidateNotebookVariables_QueryEmptyQueryString(t *testing.T) {
 		{
 			"from": "query",
 			"name": "x",
-			"nrqlQueries": []interface{}{
-				map[string]interface{}{"query": "", "accountIds": []interface{}{1}},
+			"nrql_query": []interface{}{
+				map[string]interface{}{"query": "", "account_ids": []interface{}{1}},
 			},
 		},
 	}
@@ -132,42 +132,42 @@ func TestValidateNotebookVariables_QueryEmptyAccountIDs(t *testing.T) {
 		{
 			"from": "query",
 			"name": "x",
-			"nrqlQueries": []interface{}{
-				map[string]interface{}{"query": "SELECT 1", "accountIds": []interface{}{}},
+			"nrql_query": []interface{}{
+				map[string]interface{}{"query": "SELECT 1", "account_ids": []interface{}{}},
 			},
 		},
 	}
 	errs := validateNotebookVariables(vars)
-	if len(errs) == 0 || !strings.Contains(errs[0], "accountIds must contain at least one") {
-		t.Errorf("expected accountIds-empty error, got: %v", errs)
+	if len(errs) == 0 || !strings.Contains(errs[0], "account_ids must contain at least one") {
+		t.Errorf("expected account_ids-empty error, got: %v", errs)
 	}
 }
 
 func TestValidateNotebookVariables_InputWithItems(t *testing.T) {
 	vars := []map[string]interface{}{
 		{
-			"from":  "input",
-			"name":  "x",
-			"items": []interface{}{map[string]interface{}{"value": "y"}},
+			"from": "input",
+			"name": "x",
+			"item": []interface{}{map[string]interface{}{"value": "y"}},
 		},
 	}
 	errs := validateNotebookVariables(vars)
-	if len(errs) == 0 || !strings.Contains(errs[0], "items must not be set on an input variable") {
-		t.Errorf("expected items-on-input error, got: %v", errs)
+	if len(errs) == 0 || !strings.Contains(errs[0], "item must not be set on an input variable") {
+		t.Errorf("expected item-on-input error, got: %v", errs)
 	}
 }
 
 func TestValidateNotebookVariables_InputWithNRQL(t *testing.T) {
 	vars := []map[string]interface{}{
 		{
-			"from":        "input",
-			"name":        "x",
-			"nrqlQueries": []interface{}{map[string]interface{}{"query": "SELECT 1", "accountIds": []interface{}{1}}},
+			"from":       "input",
+			"name":       "x",
+			"nrql_query": []interface{}{map[string]interface{}{"query": "SELECT 1", "account_ids": []interface{}{1}}},
 		},
 	}
 	errs := validateNotebookVariables(vars)
-	if len(errs) == 0 || !strings.Contains(errs[0], "nrqlQueries must not be set on an input variable") {
-		t.Errorf("expected nrql-on-input error, got: %v", errs)
+	if len(errs) == 0 || !strings.Contains(errs[0], "nrql_query must not be set on an input variable") {
+		t.Errorf("expected nrql_query-on-input error, got: %v", errs)
 	}
 }
 
@@ -187,8 +187,8 @@ func TestValidateNotebookVariables_InputMultipleDefaults(t *testing.T) {
 
 func TestValidateNotebookVariables_MultipleVarsMixedErrors(t *testing.T) {
 	vars := []map[string]interface{}{
-		{"from": "list", "name": "", "items": []interface{}{}},
-		{"from": "query", "name": "x", "nrqlQueries": []interface{}{}},
+		{"from": "list", "name": "", "item": []interface{}{}},
+		{"from": "query", "name": "x", "nrql_query": []interface{}{}},
 	}
 	errs := validateNotebookVariables(vars)
 	if len(errs) < 2 {
