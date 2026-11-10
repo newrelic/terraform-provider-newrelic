@@ -137,33 +137,45 @@ func jsonValueDesc(v interface{}) string {
 	}
 }
 
-// customizeNotebookDiff runs all content validation at plan time.
+// customizeNotebookDiff runs all content and variable validation at plan time.
 // Using CustomizeDiff (rather than ValidateFunc) means Terraform never echoes
 // the full JSON body in the error output — only the concise error messages are shown.
 func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	var allErrs []string
+
 	raw := d.Get("content").(string)
 
-	// Skip validation only when the content is unchanged AND non-empty — meaning
-	// it was already validated on a previous plan. An empty string always requires
-	// validation because the Terraform SDK treats nil and "" as equivalent for string
-	// fields, so d.HasChange returns false even for a brand-new resource with content = "".
-	if raw != "" && !d.HasChange("content") {
+	// Skip content validation only when content is unchanged AND non-empty.
+	// An empty string always requires validation because the Terraform SDK treats
+	// nil and "" as equivalent for string fields, so d.HasChange returns false
+	// even for a brand-new resource with content = "".
+	if raw == "" || d.HasChange("content") {
+		allErrs = append(allErrs, checkEnvelopeErrors(raw)...)
+		if len(allErrs) == 0 {
+			allErrs = append(allErrs, checkWidgetLevelProps(raw)...)
+		}
+	}
+
+	// Validate variable blocks when they are new or changed.
+	if d.HasChange("variable") {
+		rawVars, ok := d.GetOk("variable")
+		if ok {
+			blocks := rawVars.([]interface{})
+			varMaps := make([]map[string]interface{}, 0, len(blocks))
+			for _, b := range blocks {
+				if m, ok := b.(map[string]interface{}); ok {
+					varMaps = append(varMaps, m)
+				}
+			}
+			allErrs = append(allErrs, validateNotebookVariables(varMaps)...)
+		}
+	}
+
+	if len(allErrs) == 0 {
 		return nil
 	}
 
-	// Pool envelope errors first; if any exist, skip the widget-level check
-	// because the document structure may be too broken to walk safely.
-	var allErrs []string
-	allErrs = append(allErrs, checkEnvelopeErrors(raw)...)
-	if len(allErrs) == 0 {
-		allErrs = append(allErrs, checkWidgetLevelProps(raw)...)
-	}
-
-	if len(allErrs) == 0 {
-		return nil
-	}
-
-	msg := "invalid notebook content:\n"
+	msg := "invalid notebook configuration:\n"
 	for i, e := range allErrs {
 		msg += fmt.Sprintf("  (%d) %s\n", i+1, e)
 	}
