@@ -42,7 +42,7 @@ The following arguments are supported:
 * `type` - (Required) The type of channel.  One of: `EMAIL`, `SERVICENOW_INCIDENTS`, `SERVICE_NOW_APP`, `WEBHOOK`, `JIRA_CLASSIC`, `MOBILE_PUSH`, `EVENT_BRIDGE`, `SLACK` and `SLACK_COLLABORATION`, `PAGERDUTY_ACCOUNT_INTEGRATION`, `PAGERDUTY_SERVICE_INTEGRATION`, `MICROSOFT_TEAMS` or `WORKFLOW_AUTOMATION`.
 * `destination_id` - (Required) The id of the destination.
 * `product` - (Required) The type of product.  One of: `DISCUSSIONS`, `ERROR_TRACKING` or `IINT` (workflows).
-* `property` - A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
+* `property` - (Optional for `SERVICE_NOW_APP`, Required for all other channel types) A nested block that describes a notification channel property. See [Nested property blocks](#nested-property-blocks) below for details.
 
 ### Nested `property` blocks
 Most properties can use variables, which will be filled at the time of sending the notification with data from the issue. The properties where this is not available generally correlate to identifiers in the third party, such as Slack channel id or Jira project id. 
