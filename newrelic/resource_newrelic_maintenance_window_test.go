@@ -15,7 +15,7 @@ func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 	rName := generateNameForIntegrationTestResource()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckEnvVars(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicMaintenanceWindowDestroy,
 		Steps: []resource.TestStep{
@@ -45,17 +45,14 @@ func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 
 func testAccNewRelicMaintenanceWindowConfig(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_workload" "mw_workload" {
-	name       = "%[2]s-workload"
-	account_id = %[1]d
-	entity_search_query {
-		query = "tags.namespace like '%%App%%' "
-	}
-	scope_account_ids = [%[1]d]
+data "newrelic_entity" "app" {
+	name   = "%[3]s"
+	domain = "APM"
+	type   = "APPLICATION"
 }
 
 resource "newrelic_service_level" "mw_sli" {
-	guid = newrelic_workload.mw_workload.guid
+	guid = data.newrelic_entity.app.guid
 	name = "%[2]s-sli"
 
 	events {
@@ -91,22 +88,19 @@ resource "newrelic_maintenance_window" "foo" {
 	affected_entity_type = "SERVICE_LEVEL"
 	affected_entities    = [newrelic_service_level.mw_sli.sli_guid]
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccNewRelicMaintenanceWindowConfigUpdated(name string) string {
 	return fmt.Sprintf(`
-resource "newrelic_workload" "mw_workload" {
-	name       = "%[2]s-workload"
-	account_id = %[1]d
-	entity_search_query {
-		query = "tags.namespace like '%%App%%' "
-	}
-	scope_account_ids = [%[1]d]
+data "newrelic_entity" "app" {
+	name   = "%[3]s"
+	domain = "APM"
+	type   = "APPLICATION"
 }
 
 resource "newrelic_service_level" "mw_sli" {
-	guid = newrelic_workload.mw_workload.guid
+	guid = data.newrelic_entity.app.guid
 	name = "%[2]s-sli"
 
 	events {
@@ -143,7 +137,7 @@ resource "newrelic_maintenance_window" "foo" {
 	affected_entity_type = "SERVICE_LEVEL"
 	affected_entities    = [newrelic_service_level.mw_sli.sli_guid]
 }
-`, testAccountID, name)
+`, testAccountID, name, testAccExpectedApplicationName)
 }
 
 func testAccCheckNewRelicMaintenanceWindowExists(n string) resource.TestCheckFunc {
