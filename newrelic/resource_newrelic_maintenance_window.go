@@ -21,51 +21,52 @@ func resourceNewRelicMaintenanceWindow() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The name of the maintenance window.",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the maintenance window.",
-			},
-			"scope_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
-				Description: "The unique identifier of the object within the given scope (e.g. an account ID).",
+				Description: "The name of the maintenance window.",
+				ValidateFunc: validation.All(
+					validation.StringIsNotWhiteSpace,
+					validation.StringLenBetween(1, 100),
+				),
 			},
-			"scope_type": {
+			"description": {
 				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The scope the maintenance window belongs to.",
-				ValidateFunc: validation.StringInSlice([]string{"ACCOUNT", "ORGANIZATION"}, false),
+				Optional:     true,
+				Description:  "The description of the maintenance window.",
+				ValidateFunc: validation.StringLenBetween(0, 350),
+			},
+			"scope": {
+				Type:        schema.TypeList,
+				Required:    true,
+				ForceNew:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "The scope the maintenance window belongs to.",
+				Elem:        maintenanceWindowScopeSchema(),
 			},
 			"start_time": {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The start time of the maintenance window, as an ISO 8601 date-time without a time zone (e.g. 2026-11-05T21:00:00).",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validateMaintenanceWindowStartTime,
 			},
 			"duration": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The duration of the maintenance window, in ISO 8601 duration format (e.g. PT1H for one hour).",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				Description:  "The duration of the maintenance window, in ISO 8601 duration format (e.g. PT1H for one hour). Capped at 24 hours when `rrule` is set.",
+				ValidateFunc: validateMaintenanceWindowDuration,
 			},
 			"rrule": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The recurrence rule of the maintenance window, in RRULE format, for recurring maintenance windows.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "The recurrence rule of the maintenance window, in RRULE format, for recurring maintenance windows.",
+				ValidateFunc: validateMaintenanceWindowRrule,
 			},
 			"timezone": {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The timezone in which the maintenance window is scheduled (e.g. America/Los_Angeles).",
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validateMaintenanceWindowTimeZone,
 			},
 			"affected_entity_type": {
 				Type:         schema.TypeString,
@@ -78,8 +79,30 @@ func resourceNewRelicMaintenanceWindow() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,
+				MaxItems:    100,
 				Description: "The list of entity IDs affected by the maintenance window.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+		},
+		CustomizeDiff: validateMaintenanceWindowAttributes,
+	}
+}
+
+func maintenanceWindowScopeSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The unique identifier of the object within the given scope (e.g. an account ID).",
+			},
+			"type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The kind of scope `id` refers to. Valid values are `ACCOUNT` and `ORGANIZATION`.",
+				ValidateFunc: validation.StringInSlice([]string{"ACCOUNT", "ORGANIZATION"}, false),
 			},
 		},
 	}

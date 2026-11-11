@@ -1,7 +1,9 @@
 package newrelic
 
 import (
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/maintenancewindow"
@@ -17,10 +19,11 @@ func TestExpandMaintenanceWindowCreateInput(t *testing.T) {
 	t.Parallel()
 
 	d := testMaintenanceWindowResourceData(t, map[string]interface{}{
-		"name":                 "tf-test-mw",
-		"description":          "a test maintenance window",
-		"scope_id":             "1067061",
-		"scope_type":           "ACCOUNT",
+		"name":        "tf-test-mw",
+		"description": "a test maintenance window",
+		"scope": []interface{}{
+			map[string]interface{}{"id": "1067061", "type": "ACCOUNT"},
+		},
 		"start_time":           "2026-12-01T22:00:00",
 		"duration":             "PT1H",
 		"rrule":                "FREQ=MONTHLY;BYDAY=1SU",
@@ -99,12 +102,109 @@ func TestFlattenMaintenanceWindow(t *testing.T) {
 
 	assert.Equal(t, "tf-test-mw", d.Get("name"))
 	assert.Equal(t, "a test maintenance window", d.Get("description"))
-	assert.Equal(t, "1067061", d.Get("scope_id"))
-	assert.Equal(t, "ACCOUNT", d.Get("scope_type"))
+	assert.Equal(t, []interface{}{
+		map[string]interface{}{"id": "1067061", "type": "ACCOUNT"},
+	}, d.Get("scope"))
 	assert.Equal(t, "2026-12-01T22:00:00", d.Get("start_time"))
 	assert.Equal(t, "PT1H", d.Get("duration"))
 	assert.Equal(t, "FREQ=MONTHLY;BYDAY=1SU", d.Get("rrule"))
 	assert.Equal(t, "America/Los_Angeles", d.Get("timezone"))
 	assert.Equal(t, "SERVICE_LEVEL", d.Get("affected_entity_type"))
 	assert.Equal(t, []interface{}{"guid-1", "guid-2"}, d.Get("affected_entities"))
+}
+
+func TestValidateMaintenanceWindowTimeZone(t *testing.T) {
+	t.Parallel()
+
+	_, errs := validateMaintenanceWindowTimeZone("America/Los_Angeles", "timezone")
+	assert.Empty(t, errs)
+
+	_, errs = validateMaintenanceWindowTimeZone("Not/A_Real_Zone", "timezone")
+	assert.NotEmpty(t, errs)
+}
+
+func TestValidateMaintenanceWindowStartTime(t *testing.T) {
+	t.Parallel()
+
+	_, errs := validateMaintenanceWindowStartTime("2026-12-01T22:00:00", "start_time")
+	assert.Empty(t, errs)
+
+	_, errs = validateMaintenanceWindowStartTime("2026-12-01T22:00:00Z", "start_time")
+	assert.NotEmpty(t, errs, "a time zone offset should not be accepted on a naive datetime")
+
+	_, errs = validateMaintenanceWindowStartTime("not-a-date", "start_time")
+	assert.NotEmpty(t, errs)
+}
+
+func TestParseISO8601Duration(t *testing.T) {
+	t.Parallel()
+
+	valid := map[string]time.Duration{
+		"PT1H":    time.Hour,
+		"PT30M":   30 * time.Minute,
+		"PT1H30M": time.Hour + 30*time.Minute,
+		"P1D":     24 * time.Hour,
+		"PT24H":   24 * time.Hour,
+	}
+	for in, want := range valid {
+		got, err := parseISO8601Duration(in)
+		assert.NoError(t, err, in)
+		assert.Equal(t, want, got, in)
+	}
+
+	invalid := []string{"", "1H", "PT", "P", "garbage", "PTXH"}
+	for _, in := range invalid {
+		_, err := parseISO8601Duration(in)
+		assert.Error(t, err, in)
+	}
+}
+
+func TestValidateMaintenanceWindowDuration(t *testing.T) {
+	t.Parallel()
+
+	_, errs := validateMaintenanceWindowDuration("PT1H", "duration")
+	assert.Empty(t, errs)
+
+	_, errs = validateMaintenanceWindowDuration("not-a-duration", "duration")
+	assert.NotEmpty(t, errs)
+}
+
+func TestValidateMaintenanceWindowRrule(t *testing.T) {
+	t.Parallel()
+
+	validRrules := []string{
+		"",
+		"FREQ=DAILY",
+		"FREQ=DAILY;UNTIL=20271231T235959Z",
+		"FREQ=WEEKLY;BYDAY=MO,WE,FR",
+		"FREQ=MONTHLY;BYDAY=2TU",
+		"FREQ=MONTHLY;BYDAY=-1FR",
+		"FREQ=MONTHLY;BYMONTHDAY=15",
+		"FREQ=MONTHLY;BYMONTHDAY=-1",
+		"FREQ=WEEKLY;BYDAY=MO;INTERVAL=1",
+	}
+	for _, rrule := range validRrules {
+		_, errs := validateMaintenanceWindowRrule(rrule, "rrule")
+		assert.Empty(t, errs, rrule)
+	}
+
+	invalidRrules := []string{
+		"FREQ=YEARLY",
+		"FREQ=DAILY;BYDAY=MO",
+		"FREQ=WEEKLY",
+		"FREQ=WEEKLY;BYDAY=1MO",
+		"FREQ=MONTHLY",
+		"FREQ=MONTHLY;BYDAY=2TU;BYMONTHDAY=15",
+		"FREQ=MONTHLY;BYDAY=TU",
+		"FREQ=MONTHLY;BYMONTHDAY=32",
+		"FREQ=WEEKLY;BYDAY=MO;COUNT=5",
+		"FREQ=WEEKLY;BYDAY=MO;INTERVAL=2",
+		"FREQ=WEEKLY;BYDAY=MO;INTERVAL=2;extra=bad!",
+		"BYDAY=MO",
+		strings.Repeat("A", 201),
+	}
+	for _, rrule := range invalidRrules {
+		_, errs := validateMaintenanceWindowRrule(rrule, "rrule")
+		assert.NotEmpty(t, errs, rrule)
+	}
 }

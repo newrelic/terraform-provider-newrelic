@@ -77,9 +77,11 @@ resource "newrelic_service_level" "mw_sli" {
 }
 
 resource "newrelic_maintenance_window" "foo" {
-	name       = "%[2]s"
-	scope_id   = "%[1]d"
-	scope_type = "ACCOUNT"
+	name = "%[2]s"
+	scope {
+		id   = "%[1]d"
+		type = "ACCOUNT"
+	}
 
 	start_time = "2026-12-01T22:00:00"
 	duration   = "PT1H"
@@ -127,8 +129,10 @@ resource "newrelic_service_level" "mw_sli" {
 resource "newrelic_maintenance_window" "foo" {
 	name        = "%[2]s"
 	description = "updated by acceptance test"
-	scope_id    = "%[1]d"
-	scope_type  = "ACCOUNT"
+	scope {
+		id   = "%[1]d"
+		type = "ACCOUNT"
+	}
 
 	start_time = "2026-12-01T22:00:00"
 	duration   = "PT2H"
