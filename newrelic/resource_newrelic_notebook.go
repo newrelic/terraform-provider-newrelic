@@ -54,11 +54,11 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Computed:    true,
 				Description: "The blob identifier of the current notebook content version.",
 			},
-			"variable": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Variable definitions that appear in the notebook's variables bar. Variables can be referenced in widget queries with {{variableName}} syntax.",
-				Elem:        notebookVariableSchema(),
+			"variables": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentNotebookVariables,
+				Description:      "Variable definitions for the notebook as a JSON array string. Variables appear in the notebook's variables bar and can be referenced in widget queries using {{variableName}} syntax. Accepts a raw JSON string or a jsonencode([...]) expression.",
 			},
 		},
 	}
@@ -83,7 +83,7 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 
 	vars, err := expandNotebookVariables(d)
 	if err != nil {
-		return diag.Errorf("variable: %s", err)
+		return diag.Errorf("variables: %s", err)
 	}
 
 	blobBody := mergeVariablesIntoBlob(body.(map[string]interface{}), vars)
@@ -104,8 +104,8 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", orgID)
 	_ = d.Set("blob_id", resp.BlobID)
 	_ = d.Set("content", normalized)
-	if err := flattenNotebookVariables(vars, d); err != nil {
-		return diag.FromErr(err)
+	if flattenErr := flattenNotebookVariables(vars, d); flattenErr != nil {
+		return diag.FromErr(flattenErr)
 	}
 
 	// NerdGraph indexes the notebook entity asynchronously after the Blob Storage
@@ -162,7 +162,7 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 	// variables live inside the blob and require a GET to verify round-trip state.
 	storedBlobID, _ := d.Get("blob_id").(string)
 	currentBlobID := nb.Content.ID
-	variableChangesPending := d.HasChange("variable")
+	variableChangesPending := d.HasChange("variables")
 	if storedBlobID != "" && currentBlobID != "" && currentBlobID == storedBlobID && !variableChangesPending {
 		log.Printf("[DEBUG] Notebook %s content unchanged (blob_id %s) — skipping Blob GET", guid, storedBlobID)
 		_ = d.Set("title", nb.Name)
@@ -210,13 +210,13 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 
 	titleChanged := d.HasChange("title")
 	contentChanged := d.HasChange("content")
-	variablesChanged := d.HasChange("variable")
+	variablesChanged := d.HasChange("variables")
 
 	if !titleChanged && !contentChanged && !variablesChanged {
 		return nil
 	}
 
-	log.Printf("[INFO] Updating New Relic notebook %s (title=%v, content=%v, variable=%v)", guid, titleChanged, contentChanged, variablesChanged)
+	log.Printf("[INFO] Updating New Relic notebook %s (title=%v, content=%v, variables=%v)", guid, titleChanged, contentChanged, variablesChanged)
 
 	title := d.Get("title").(string)
 	normalized, body, err := normalizeNotebookContent(d.Get("content").(string))
@@ -226,7 +226,7 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 
 	vars, err := expandNotebookVariables(d)
 	if err != nil {
-		return diag.Errorf("variable: %s", err)
+		return diag.Errorf("variables: %s", err)
 	}
 
 	blobBody := mergeVariablesIntoBlob(body.(map[string]interface{}), vars)

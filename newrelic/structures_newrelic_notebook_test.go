@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 )
@@ -290,5 +291,248 @@ func TestSuppressEquivalentContent_DifferentValues(t *testing.T) {
 func TestSuppressEquivalentContent_InvalidJSON(t *testing.T) {
 	if suppressEquivalentNotebookContent("", "not json", "{}", nil) {
 		t.Error("invalid JSON should not suppress diff")
+	}
+}
+
+// ── checkNotebookVariablesJSON ────────────────────────────────────────────────
+
+func TestCheckNotebookVariablesJSON_Empty(t *testing.T) {
+	if errs := checkNotebookVariablesJSON(""); len(errs) != 0 {
+		t.Errorf("empty string should produce no errors, got %v", errs)
+	}
+}
+
+func TestCheckNotebookVariablesJSON_ValidList(t *testing.T) {
+	raw := `[{"name":"env","from":"list","items":[{"value":"prod"}]}]`
+	if errs := checkNotebookVariablesJSON(raw); len(errs) != 0 {
+		t.Errorf("valid list variable should produce no errors, got %v", errs)
+	}
+}
+
+func TestCheckNotebookVariablesJSON_ValidQuery(t *testing.T) {
+	raw := `[{"name":"app","from":"query","nrqlQueries":[{"query":"SELECT uniques(appName) FROM Transaction","accountIds":[1234567]}]}]`
+	if errs := checkNotebookVariablesJSON(raw); len(errs) != 0 {
+		t.Errorf("valid query variable should produce no errors, got %v", errs)
+	}
+}
+
+func TestCheckNotebookVariablesJSON_ValidInput(t *testing.T) {
+	raw := `[{"name":"searchTerm","from":"input"}]`
+	if errs := checkNotebookVariablesJSON(raw); len(errs) != 0 {
+		t.Errorf("valid input variable should produce no errors, got %v", errs)
+	}
+}
+
+func TestCheckNotebookVariablesJSON_ValidEmptyArray(t *testing.T) {
+	if errs := checkNotebookVariablesJSON("[]"); len(errs) != 0 {
+		t.Errorf("empty array should produce no errors, got %v", errs)
+	}
+}
+
+func TestCheckNotebookVariablesJSON_AllThreeTypes(t *testing.T) {
+	raw := `[
+		{"name":"env","from":"list","items":[{"value":"prod"}]},
+		{"name":"app","from":"query","nrqlQueries":[{"query":"SELECT 1","accountIds":[1]}]},
+		{"name":"filter","from":"input"}
+	]`
+	if errs := checkNotebookVariablesJSON(raw); len(errs) != 0 {
+		t.Errorf("all three variable types should produce no errors, got %v", errs)
+	}
+}
+
+func TestCheckNotebookVariablesJSON_InvalidJSON(t *testing.T) {
+	errs := checkNotebookVariablesJSON("not json")
+	if len(errs) == 0 {
+		t.Error("invalid JSON should produce an error")
+	}
+	if !strings.Contains(errs[0], "not a valid JSON array") {
+		t.Errorf("expected 'not a valid JSON array' in error, got %q", errs[0])
+	}
+}
+
+func TestCheckNotebookVariablesJSON_NotArray(t *testing.T) {
+	errs := checkNotebookVariablesJSON(`{"name":"env","from":"list"}`)
+	if len(errs) == 0 {
+		t.Error("JSON object (not array) should produce an error")
+	}
+}
+
+func TestCheckNotebookVariablesJSON_MissingName(t *testing.T) {
+	errs := checkNotebookVariablesJSON(`[{"from":"list"}]`)
+	if len(errs) == 0 {
+		t.Error("missing name should produce an error")
+	}
+	if !strings.Contains(errs[0], `"name" is required`) {
+		t.Errorf("expected name-required error, got %q", errs[0])
+	}
+}
+
+func TestCheckNotebookVariablesJSON_MissingFrom(t *testing.T) {
+	errs := checkNotebookVariablesJSON(`[{"name":"env"}]`)
+	if len(errs) == 0 {
+		t.Error("missing from should produce an error")
+	}
+	if !strings.Contains(errs[0], `"from" is required`) {
+		t.Errorf("expected from-required error, got %q", errs[0])
+	}
+}
+
+func TestCheckNotebookVariablesJSON_InvalidFrom(t *testing.T) {
+	errs := checkNotebookVariablesJSON(`[{"name":"env","from":"unknown"}]`)
+	if len(errs) == 0 {
+		t.Error("invalid from value should produce an error")
+	}
+	if !strings.Contains(errs[0], `"from" must be one of`) {
+		t.Errorf("expected from-must-be-one-of error, got %q", errs[0])
+	}
+}
+
+func TestCheckNotebookVariablesJSON_EntryNotObject(t *testing.T) {
+	errs := checkNotebookVariablesJSON(`["not-an-object"]`)
+	if len(errs) == 0 {
+		t.Error("non-object array entry should produce an error")
+	}
+	if !strings.Contains(errs[0], "must be a JSON object") {
+		t.Errorf("expected object-required error, got %q", errs[0])
+	}
+}
+
+func TestCheckNotebookVariablesJSON_MultipleErrors(t *testing.T) {
+	raw := `[{"from":"list"},{"name":"app","from":"bad"}]`
+	errs := checkNotebookVariablesJSON(raw)
+	if len(errs) < 2 {
+		t.Errorf("expected at least 2 errors for two invalid entries, got %d: %v", len(errs), errs)
+	}
+}
+
+// ── mergeVariablesIntoBlob / extractVariablesFromBlob ─────────────────────────
+
+func TestMergeVariablesIntoBlob_SetsKey(t *testing.T) {
+	doc := map[string]interface{}{"type": "declarative", "version": 1.0, "content": []interface{}{}}
+	vars := []interface{}{map[string]interface{}{"name": "env", "from": "list"}}
+	result := mergeVariablesIntoBlob(doc, vars)
+	v, ok := result["variables"]
+	if !ok {
+		t.Fatal("expected 'variables' key in merged doc")
+	}
+	arr, ok := v.([]interface{})
+	if !ok || len(arr) != 1 {
+		t.Errorf("expected 1-entry variables array, got %v", v)
+	}
+}
+
+func TestMergeVariablesIntoBlob_NilVarsDeletesKey(t *testing.T) {
+	doc := map[string]interface{}{
+		"type":      "declarative",
+		"variables": []interface{}{map[string]interface{}{"name": "old", "from": "list"}},
+	}
+	result := mergeVariablesIntoBlob(doc, nil)
+	if _, ok := result["variables"]; ok {
+		t.Error("nil vars should remove 'variables' key from blob")
+	}
+}
+
+func TestMergeVariablesIntoBlob_EmptySliceDeletesKey(t *testing.T) {
+	doc := map[string]interface{}{"type": "declarative", "variables": []interface{}{}}
+	result := mergeVariablesIntoBlob(doc, []interface{}{})
+	if _, ok := result["variables"]; ok {
+		t.Error("empty vars should remove 'variables' key from blob")
+	}
+}
+
+func TestExtractVariablesFromBlob_Present(t *testing.T) {
+	raw := `{"type":"declarative","version":1,"content":[],"variables":[{"name":"env","from":"list"}]}`
+	vars, err := extractVariablesFromBlob(raw)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(vars) != 1 {
+		t.Errorf("expected 1 variable, got %d", len(vars))
+	}
+	m := vars[0].(map[string]interface{})
+	if m["name"] != "env" {
+		t.Errorf("expected name=env, got %v", m["name"])
+	}
+}
+
+func TestExtractVariablesFromBlob_Absent(t *testing.T) {
+	raw := `{"type":"declarative","version":1,"content":[]}`
+	vars, err := extractVariablesFromBlob(raw)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(vars) != 0 {
+		t.Errorf("expected 0 variables when key absent, got %d", len(vars))
+	}
+}
+
+func TestExtractVariablesFromBlob_InvalidJSON(t *testing.T) {
+	_, err := extractVariablesFromBlob("not json")
+	if err == nil {
+		t.Error("invalid JSON should return error")
+	}
+}
+
+// ── suppressEquivalentNotebookVariables ───────────────────────────────────────
+
+func TestSuppressEquivalentVariables_BothEmpty(t *testing.T) {
+	if !suppressEquivalentNotebookVariables("", "", "", nil) {
+		t.Error("two empty strings should suppress diff")
+	}
+}
+
+func TestSuppressEquivalentVariables_NullAndEmpty(t *testing.T) {
+	if !suppressEquivalentNotebookVariables("", "null", "[]", nil) {
+		t.Error("null vs [] should suppress diff")
+	}
+}
+
+func TestSuppressEquivalentVariables_EmptyArrayBothWays(t *testing.T) {
+	if !suppressEquivalentNotebookVariables("", "[]", "", nil) {
+		t.Error("[] vs empty string should suppress diff")
+	}
+}
+
+func TestSuppressEquivalentVariables_FormattingOnly(t *testing.T) {
+	compact := `[{"from":"list","name":"env"}]`
+	pretty, _ := json.MarshalIndent([]interface{}{map[string]interface{}{"from": "list", "name": "env"}}, "", "  ")
+	if !suppressEquivalentNotebookVariables("", compact, string(pretty), nil) {
+		t.Error("formatting-only difference should suppress diff")
+	}
+}
+
+func TestSuppressEquivalentVariables_DifferentContent(t *testing.T) {
+	a := `[{"name":"env","from":"list"}]`
+	b := `[{"name":"env","from":"list"},{"name":"region","from":"input"}]`
+	if suppressEquivalentNotebookVariables("", a, b, nil) {
+		t.Error("different variable counts should not suppress diff")
+	}
+}
+
+func TestSuppressEquivalentVariables_InvalidJSON(t *testing.T) {
+	if suppressEquivalentNotebookVariables("", "not json", "[]", nil) {
+		t.Error("invalid JSON should not suppress diff")
+	}
+}
+
+// ── flattenNotebookContent strips variables ───────────────────────────────────
+
+func TestFlattenNotebookContent_StripsVariables(t *testing.T) {
+	// flattenNotebookContent should not store variables inside the content field.
+	raw := []byte(`{"type":"declarative","version":1,"content":[],"variables":[{"name":"env","from":"list"}]}`)
+	d := resourceNewRelicNotebook().TestResourceData()
+	_ = d.Set("content", `{"type":"declarative","version":1,"content":[]}`)
+
+	if err := flattenNotebookContent(raw, d, "content"); err != nil {
+		t.Fatalf("flattenNotebookContent error: %v", err)
+	}
+
+	stored := d.Get("content").(string)
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(stored), &m); err != nil {
+		t.Fatalf("stored content is not valid JSON: %v", err)
+	}
+	if _, ok := m["variables"]; ok {
+		t.Error("flattenNotebookContent must strip 'variables' key from the content field")
 	}
 }

@@ -298,219 +298,166 @@ resource "newrelic_notebook" "test" {
 
 // ── Variable config helpers ────────────────────────────────────────────────────
 
-func testAccNotebookConfigWithListVariable(name string, accountID int) string {
-	return fmt.Sprintf(`
-resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
+func testAccNotebookBaseContent() string {
+	return `jsonencode({
     type    = "declarative"
     version = 1
     content = [{
       type  = "container"
       props = { layout = "stack" }
       content = [{
-        type    = "widget"
+        type = "widget"
         content = {
-          type = "visualization"
-          id   = "viz.markdown"
+          type  = "visualization"
+          id    = "viz.markdown"
           props = { text = "## Variable test" }
         }
       }]
     }]
-  })
-
-  variable {
-    from  = "list"
-    name  = "environment"
-    label = "Environment"
-    as    = "string"
-    multi = false
-    item { value = "production" }
-    item { value = "staging" }
-    item { value = "development" }
-    defaults = ["production"]
-  }
+  })`
 }
-`, name)
+
+func testAccNotebookConfigWithListVariable(name string, accountID int) string {
+	return fmt.Sprintf(`
+resource "newrelic_notebook" "test" {
+  title   = %[1]q
+  content = %[3]s
+
+  variables = jsonencode([
+    {
+      from     = "list"
+      name     = "environment"
+      label    = "Environment"
+      as       = "string"
+      multi    = false
+      defaults = ["production"]
+      items    = [
+        { value = "production" },
+        { value = "staging" },
+        { value = "development" },
+      ]
+    }
+  ])
+}
+`, name, accountID, testAccNotebookBaseContent())
 }
 
 func testAccNotebookConfigWithListVariableUpdated(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
-    type    = "declarative"
-    version = 1
-    content = [{
-      type  = "container"
-      props = { layout = "stack" }
-      content = [{
-        type    = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "## Variable test" }
-        }
-      }]
-    }]
-  })
+  title   = %[1]q
+  content = %[2]s
 
-  variable {
-    from  = "list"
-    name  = "environment"
-    label = "Environment"
-    as    = "string"
-    multi = true
-    item { value = "production" }
-    item { value = "staging" }
-    item { value = "development" }
-    item { value = "canary" }
-    defaults = ["production", "staging"]
-  }
+  variables = jsonencode([
+    {
+      from     = "list"
+      name     = "environment"
+      label    = "Environment"
+      as       = "string"
+      multi    = true
+      defaults = ["production", "staging"]
+      items    = [
+        { value = "production" },
+        { value = "staging" },
+        { value = "development" },
+        { value = "canary" },
+      ]
+    }
+  ])
 }
-`, name)
+`, name, testAccNotebookBaseContent())
 }
 
 func testAccNotebookConfigWithQueryVariable(name string, accountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
-    type    = "declarative"
-    version = 1
-    content = [{
-      type  = "container"
-      props = { layout = "stack" }
-      content = [{
-        type    = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "## Query variable test" }
-        }
-      }]
-    }]
-  })
+  title   = %[1]q
+  content = %[3]s
 
-  variable {
-    from              = "query"
-    name              = "appName"
-    label             = "Application"
-    as                = "string"
-    multi             = false
-    ignore_time_range = true
-    nrql_query {
-      query       = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
-      account_ids = [%[2]d]
+  variables = jsonencode([
+    {
+      from            = "query"
+      name            = "appName"
+      label           = "Application"
+      as              = "string"
+      multi           = false
+      ignoreTimeRange = true
+      nrqlQueries     = [
+        {
+          query      = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+          accountIds = [%[2]d]
+        }
+      ]
     }
-  }
+  ])
 }
-`, name, accountID)
+`, name, accountID, testAccNotebookBaseContent())
 }
 
 func testAccNotebookConfigWithInputVariable(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
-    type    = "declarative"
-    version = 1
-    content = [{
-      type  = "container"
-      props = { layout = "stack" }
-      content = [{
-        type    = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "## Input variable test" }
-        }
-      }]
-    }]
-  })
+  title   = %[1]q
+  content = %[2]s
 
-  variable {
-    from     = "input"
-    name     = "searchTerm"
-    label    = "Search"
-    as       = "string"
-    defaults = ["default-value"]
-  }
+  variables = jsonencode([
+    {
+      from     = "input"
+      name     = "searchTerm"
+      label    = "Search"
+      as       = "string"
+      defaults = ["default-value"]
+    }
+  ])
 }
-`, name)
+`, name, testAccNotebookBaseContent())
 }
 
 func testAccNotebookConfigWithAllVariableTypes(name string, accountID int) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
-    type    = "declarative"
-    version = 1
-    content = [{
-      type  = "container"
-      props = { layout = "stack" }
-      content = [{
-        type    = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "## All variable types test" }
+  title   = %[1]q
+  content = %[3]s
+
+  variables = jsonencode([
+    {
+      from  = "list"
+      name  = "environment"
+      label = "Environment"
+      items = [
+        { value = "prod" },
+        { value = "staging" },
+      ]
+    },
+    {
+      from            = "query"
+      name            = "appName"
+      label           = "Application"
+      ignoreTimeRange = true
+      nrqlQueries     = [
+        {
+          query      = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+          accountIds = [%[2]d]
         }
-      }]
-    }]
-  })
-
-  variable {
-    from  = "list"
-    name  = "environment"
-    label = "Environment"
-    item { value = "prod" }
-    item { value = "staging" }
-  }
-
-  variable {
-    from              = "query"
-    name              = "appName"
-    label             = "Application"
-    ignore_time_range = true
-    nrql_query {
-      query       = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
-      account_ids = [%[2]d]
-    }
-  }
-
-  variable {
-    from  = "input"
-    name  = "filter"
-    label = "Filter"
-  }
+      ]
+    },
+    {
+      from  = "input"
+      name  = "filter"
+      label = "Filter"
+    },
+  ])
 }
-`, name, accountID)
+`, name, accountID, testAccNotebookBaseContent())
 }
 
 func testAccNotebookConfigNoVariables(name string) string {
 	return fmt.Sprintf(`
 resource "newrelic_notebook" "test" {
-  title = %[1]q
-  content = jsonencode({
-    type    = "declarative"
-    version = 1
-    content = [{
-      type  = "container"
-      props = { layout = "stack" }
-      content = [{
-        type    = "widget"
-        content = {
-          type = "visualization"
-          id   = "viz.markdown"
-          props = { text = "## No variables" }
-        }
-      }]
-    }]
-  })
+  title   = %[1]q
+  content = %[2]s
 }
-`, name)
+`, name, testAccNotebookBaseContent())
 }
 
 // ── Variable acceptance tests ─────────────────────────────────────────────────
@@ -531,15 +478,7 @@ func TestAccNewRelicNotebook_WithListVariable(t *testing.T) {
 				Config: testAccNotebookConfigWithListVariable(rName, testAccountID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "list"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "environment"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.label", "Environment"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.item.#", "3"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.item.0.value", "production"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.0", "production"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.multi", "false"),
+					resource.TestCheckResourceAttrSet(resourceName, "variables"),
 				),
 			},
 			// No drift.
@@ -552,9 +491,8 @@ func TestAccNewRelicNotebook_WithListVariable(t *testing.T) {
 			{
 				Config: testAccNotebookConfigWithListVariableUpdated(rName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "variable.0.item.#", "4"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.multi", "true"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.#", "2"),
+					testAccCheckNewRelicNotebookExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "variables"),
 				),
 			},
 			// No drift after update.
@@ -587,11 +525,7 @@ func TestAccNewRelicNotebook_WithQueryVariable(t *testing.T) {
 				Config: testAccNotebookConfigWithQueryVariable(rName, testAccountID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "query"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "appName"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.nrql_query.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.ignore_time_range", "true"),
+					resource.TestCheckResourceAttrSet(resourceName, "variables"),
 				),
 			},
 			{
@@ -622,11 +556,7 @@ func TestAccNewRelicNotebook_WithInputVariable(t *testing.T) {
 				Config: testAccNotebookConfigWithInputVariable(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "input"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.name", "searchTerm"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.defaults.0", "default-value"),
+					resource.TestCheckResourceAttrSet(resourceName, "variables"),
 				),
 			},
 			{
@@ -658,10 +588,7 @@ func TestAccNewRelicNotebook_WithAllVariableTypes(t *testing.T) {
 				Config: testAccNotebookConfigWithAllVariableTypes(rName, testAccountID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "variable.#", "3"),
-					resource.TestCheckResourceAttr(resourceName, "variable.0.from", "list"),
-					resource.TestCheckResourceAttr(resourceName, "variable.1.from", "query"),
-					resource.TestCheckResourceAttr(resourceName, "variable.2.from", "input"),
+					resource.TestCheckResourceAttrSet(resourceName, "variables"),
 				),
 			},
 			{
@@ -673,9 +600,9 @@ func TestAccNewRelicNotebook_WithAllVariableTypes(t *testing.T) {
 	})
 }
 
-// TestAccNewRelicNotebook_RemoveVariables verifies that removing all variable
-// blocks from an existing notebook removes them from the blob without leaving
-// an empty "variables" key.
+// TestAccNewRelicNotebook_RemoveVariables verifies that removing the variables
+// attribute from an existing notebook removes them from the blob without leaving
+// a spurious diff.
 func TestAccNewRelicNotebook_RemoveVariables(t *testing.T) {
 	rName := fmt.Sprintf("tf-acc-notebook-rmvars-%s", acctest.RandString(5))
 	resourceName := "newrelic_notebook.test"
@@ -690,14 +617,14 @@ func TestAccNewRelicNotebook_RemoveVariables(t *testing.T) {
 				Config: testAccNotebookConfigWithInputVariable(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicNotebookExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "variable.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "variables"),
 				),
 			},
-			// Remove the variable — variables block absent → no drift.
+			// Remove the variables attribute — no drift.
 			{
 				Config: testAccNotebookConfigNoVariables(rName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "variable.#", "0"),
+					testAccCheckNewRelicNotebookExists(resourceName),
 				),
 			},
 			{
