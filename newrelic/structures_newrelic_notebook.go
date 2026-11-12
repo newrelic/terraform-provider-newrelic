@@ -156,19 +156,9 @@ func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interfac
 		}
 	}
 
-	// Validate variable blocks when they are new or changed.
-	if d.HasChange("variable") {
-		rawVars, ok := d.GetOk("variable")
-		if ok {
-			blocks := rawVars.([]interface{})
-			varMaps := make([]map[string]interface{}, 0, len(blocks))
-			for _, b := range blocks {
-				if m, ok := b.(map[string]interface{}); ok {
-					varMaps = append(varMaps, m)
-				}
-			}
-			allErrs = append(allErrs, validateNotebookVariables(varMaps)...)
-		}
+	// Validate the variables JSON string when it is new or changed.
+	if rawVars, ok := d.GetOk("variables"); ok && (d.HasChange("variables") || rawVars.(string) != "") {
+		allErrs = append(allErrs, checkNotebookVariablesJSON(rawVars.(string))...)
 	}
 
 	if len(allErrs) == 0 {
@@ -180,6 +170,40 @@ func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interfac
 		msg += fmt.Sprintf("  (%d) %s\n", i+1, e)
 	}
 	return fmt.Errorf("%s", strings.TrimRight(msg, "\n"))
+}
+
+// checkNotebookVariablesJSON performs basic structural validation on the
+// variables JSON string. It intentionally does NOT validate individual field
+// values beyond name and from — unknown fields are passed through unchanged
+// so future API additions never require a provider update.
+func checkNotebookVariablesJSON(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+	var arr []interface{}
+	if err := json.Unmarshal([]byte(raw), &arr); err != nil {
+		return []string{fmt.Sprintf("variables: not a valid JSON array: %s", jsonParseHint(raw, err))}
+	}
+	var errs []string
+	validFrom := map[string]bool{"list": true, "query": true, "input": true}
+	for i, entry := range arr {
+		m, ok := entry.(map[string]interface{})
+		if !ok {
+			errs = append(errs, fmt.Sprintf("variables[%d]: each entry must be a JSON object", i))
+			continue
+		}
+		name, _ := m["name"].(string)
+		if name == "" {
+			errs = append(errs, fmt.Sprintf("variables[%d]: \"name\" is required and must not be empty", i))
+		}
+		from, _ := m["from"].(string)
+		if from == "" {
+			errs = append(errs, fmt.Sprintf("variables[%d]: \"from\" is required", i))
+		} else if !validFrom[from] {
+			errs = append(errs, fmt.Sprintf(`variables[%d]: "from" must be one of "list", "query", or "input", got %q`, i, from))
+		}
+	}
+	return errs
 }
 
 // ── Widget-level props typed tree ─────────────────────────────────────────────
@@ -303,8 +327,8 @@ func suppressEquivalentNotebookContent(_, oldVal, newVal string, _ *schema.Resou
 
 // flattenNotebookContent normalizes the raw JSON returned by the API and stores
 // it in the content field. The "variables" key is stripped before normalizing
-// because variables are managed separately via the `variable` block — including
-// them in `content` would cause spurious diffs whenever variables change.
+// because variables are managed separately via the `variables` attribute —
+// including them in `content` would cause spurious diffs whenever variables change.
 func flattenNotebookContent(raw json.RawMessage, d *schema.ResourceData, field string) error {
 	if len(raw) == 0 {
 		return nil
@@ -336,6 +360,112 @@ func notebookOrgID(ctx context.Context, guid string, d *schema.ResourceData, pc 
 	}
 	log.Printf("[DEBUG] organization_id not in state for notebook %s, resolving from provider credentials", guid)
 	return getOrganizationID(ctx, pc, "")
+}
+
+// ── Variables JSON helpers ────────────────────────────────────────────────────
+
+// suppressEquivalentNotebookVariables suppresses diffs between two variables
+// JSON strings that are semantically identical.
+func suppressEquivalentNotebookVariables(_, oldVal, newVal string, _ *schema.ResourceData) bool {
+	if oldVal == newVal {
+		return true
+	}
+	// Treat absent and empty-array as equivalent.
+	if (oldVal == "" || oldVal == "[]" || oldVal == "null") &&
+		(newVal == "" || newVal == "[]" || newVal == "null") {
+		return true
+	}
+	normOld, errOld := normalizeJSONString(oldVal)
+	normNew, errNew := normalizeJSONString(newVal)
+	if errOld != nil || errNew != nil {
+		return false
+	}
+	return normOld == normNew
+}
+
+// normalizeJSONString round-trips a JSON string through encoding/json to
+// produce a canonical, sorted-key representation for comparison.
+func normalizeJSONString(raw string) (string, error) {
+	if raw == "" {
+		return "", nil
+	}
+	var v interface{}
+	if err := json.Unmarshal([]byte(raw), &v); err != nil {
+		return "", err
+	}
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(v); err != nil {
+		return "", err
+	}
+	return string(bytes.TrimRight(buf.Bytes(), "\n")), nil
+}
+
+// expandNotebookVariables parses the `variables` JSON string from ResourceData
+// and returns a []interface{} ready for injection into the blob document.
+// Returns nil when the attribute is absent or empty.
+func expandNotebookVariables(d *schema.ResourceData) ([]interface{}, error) {
+	raw, ok := d.GetOk("variables")
+	if !ok {
+		return nil, nil
+	}
+	s := raw.(string)
+	if s == "" || s == "[]" || s == "null" {
+		return nil, nil
+	}
+	var arr []interface{}
+	if err := json.Unmarshal([]byte(s), &arr); err != nil {
+		return nil, fmt.Errorf("invalid JSON in variables: %w", err)
+	}
+	return arr, nil
+}
+
+// flattenNotebookVariables serializes a []interface{} variables slice back into
+// a normalized JSON string and stores it in the `variables` attribute.
+// Clears the attribute when vars is nil or empty.
+func flattenNotebookVariables(vars []interface{}, d *schema.ResourceData) error {
+	if len(vars) == 0 {
+		return d.Set("variables", "")
+	}
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(vars); err != nil {
+		return fmt.Errorf("could not serialize variables: %w", err)
+	}
+	return d.Set("variables", string(bytes.TrimRight(buf.Bytes(), "\n")))
+}
+
+// mergeVariablesIntoBlob injects or removes the "variables" key in a decoded
+// blob document map. Pass nil vars to remove the key (no variables configured).
+func mergeVariablesIntoBlob(doc map[string]interface{}, vars []interface{}) map[string]interface{} {
+	if len(vars) == 0 {
+		delete(doc, "variables")
+	} else {
+		doc["variables"] = vars
+	}
+	return doc
+}
+
+// extractVariablesFromBlob parses a raw JSON blob string and returns the
+// top-level "variables" array. Returns nil when the key is absent.
+func extractVariablesFromBlob(raw string) ([]interface{}, error) {
+	var doc map[string]interface{}
+	if err := json.Unmarshal([]byte(raw), &doc); err != nil {
+		return nil, fmt.Errorf("invalid blob JSON: %w", err)
+	}
+	v, ok := doc["variables"]
+	if !ok || v == nil {
+		return nil, nil
+	}
+	arr, ok := v.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf(`blob "variables" field is not an array`)
+	}
+	return arr, nil
 }
 
 // ── Error helpers ─────────────────────────────────────────────────────────────

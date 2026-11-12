@@ -99,11 +99,11 @@ The following arguments are supported:
 
   * `title` - (Required) The title of the notebook. Must be unique within the organization.
   * `content` - (Required) The notebook body as a JSON string. Accepts the raw JSON exported from the New Relic UI, a `file()` reference, or a `jsonencode({...})` expression. Produces line-level diffs of the normalized JSON in `terraform plan`.
-  * `variable` - (Optional) One or more variable definitions that appear in the notebook's variables bar. Variables can be referenced in widget queries with `{{variableName}}` syntax. See [Variables](#variables) below.
+  * `variables` - (Optional) Variable definitions for the notebook as a JSON array string. Variables appear in the notebook's variables bar and can be referenced in widget queries using `{{variableName}}` syntax. Accepts a raw JSON string or a `jsonencode([...])` expression. See [Variables](#variables) below for the full field reference.
 
 ### Variables
 
-Notebooks support three variable types that allow readers to filter and customize the data displayed in widgets without editing the underlying queries.
+The `variables` attribute accepts a JSON array of variable objects. Each object must include `name` and `from`; all other fields are optional and passed through to the New Relic Blob API unchanged, so new variable types or fields added by the platform are automatically supported without provider changes.
 
 ```hcl
 resource "newrelic_notebook" "example" {
@@ -132,71 +132,159 @@ resource "newrelic_notebook" "example" {
     }]
   })
 
-  # List variable — static dropdown
-  variable {
-    from     = "list"
-    name     = "region"
-    label    = "Region"
-    defaults = ["us-east-1"]
-    item { value = "us-east-1" }
-    item { value = "us-west-2" }
-    item { value = "eu-west-1" }
-  }
-
-  # Query variable — dynamic dropdown populated from NRQL
-  variable {
-    from              = "query"
-    name              = "appName"
-    label             = "Application"
-    ignore_time_range = true
-    nrql_query {
-      query       = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
-      account_ids = [1234567]
-    }
-  }
-
-  # Input variable — free-text field
-  variable {
-    from  = "input"
-    name  = "filter"
-    label = "Custom filter"
-  }
+  variables = jsonencode([
+    # List variable — static dropdown
+    {
+      from     = "list"
+      name     = "region"
+      label    = "Region"
+      defaults = ["us-east-1"]
+      items    = [
+        { value = "us-east-1" },
+        { value = "us-west-2" },
+        { value = "eu-west-1" },
+      ]
+    },
+    # Query variable — dynamic dropdown populated from NRQL
+    {
+      from            = "query"
+      name            = "appName"
+      label           = "Application"
+      ignoreTimeRange = true
+      nrqlQueries     = [
+        {
+          query      = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+          accountIds = [1234567]
+        }
+      ]
+    },
+    # Input variable — free-text field
+    {
+      from  = "input"
+      name  = "filter"
+      label = "Custom filter"
+    },
+  ])
 }
 ```
 
-Each `variable` block supports the following arguments:
+The provider performs two validations on the `variables` value:
 
-**Common to all types:**
+1. The value must be a valid JSON array.
+2. Each entry must be a JSON object with a non-empty `name` and a `from` value of `"list"`, `"query"`, or `"input"`.
 
-  * `from` - (Required) The variable type. Valid values: `"list"`, `"query"`, `"input"`.
-  * `name` - (Required) The variable identifier. Used in `{{name}}` template syntax inside widget queries.
-  * `label` - (Optional) The display name shown in the variables bar. Defaults to `""`.
-  * `as` - (Optional) How the variable value is substituted in NRQL queries. Valid values: `"string"` (default), `"number"`, `"identifier"`.
-  * `hidden` - (Optional) When `true`, hides the variable from the variables bar entirely. The variable still participates in query substitution. Defaults to `false`.
-  * `omit` - (Optional) When `true`, the variable value is not injected into queries (equivalent to the "Include variable" toggle off in the UI). Defaults to `false`.
-  * `defaults` - (Optional) Default values pre-selected when the notebook loads. Omit this block when no default is desired. Use `["*"]` for "Select all" on multi-value list or query variables.
+All other fields are accepted without validation and forwarded to the API as-is.
 
-**`from = "list"` only:**
+#### Common fields (all variable types)
 
-  * `item` - (Required) One or more static choice items. Each block requires:
-    * `value` - (Required) The item value string.
-  * `multi` - (Optional) Enables multi-value selection. Defaults to `false`.
-  * `defer_execution` - (Optional) Shows an Apply button when multi-selecting instead of applying each selection immediately. Defaults to `true`.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | **Yes** | The variable identifier. Referenced in widget queries as `{{name}}`. |
+| `from` | string | **Yes** | Variable type: `"list"`, `"query"`, or `"input"`. |
+| `label` | string | No | Display name shown in the variables bar. Defaults to `""`. |
+| `as` | string | No | How the value is substituted in NRQL. One of `"string"` (default), `"number"`, `"identifier"`. |
+| `hidden` | bool | No | When `true`, hides the variable from the bar but still injects it into queries. Defaults to `false`. |
+| `omit` | bool | No | When `true`, the variable is not injected into queries at all. Defaults to `false`. |
+| `defaults` | array | No | Default values pre-selected when the notebook loads. Use `["*"]` for "Select all" on multi-value variables. |
+| `multi` | bool | No | Enables multi-value selection (list and query types). Defaults to `false`. |
+| `deferExecution` | bool | No | Shows an Apply button when multi-selecting instead of applying each change immediately. Defaults to `true`. |
 
-**`from = "query"` only:**
+#### `from = "list"` fields
 
-  * `nrql_query` - (Required) The NRQL query that dynamically populates variable choices. Requires:
-    * `query` - (Required) The NRQL query string. May reference other variables with `{{varName}}` syntax.
-    * `account_ids` - (Required) Account IDs to run the query against.
-  * `ignore_time_range` - (Optional) When `true` (default), the variable query ignores the notebook time picker and uses the query's own time range. Set to `false` to make the query respect the notebook's selected time window.
-  * `multi` - (Optional) Enables multi-value selection. Defaults to `false`.
-  * `defer_execution` - (Optional) Shows an Apply button when multi-selecting. Defaults to `true`.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `items` | array | **Yes** | Static dropdown choices. Each entry is an object with a `value` string field. |
+| `multi` | bool | No | Enables multi-value selection. |
+| `deferExecution` | bool | No | Shows Apply button on multi-select. |
 
-**`from = "input"` only:**
+Example:
 
-Input variables have no type-specific arguments beyond the common set. The variable renders as a free-text field in the UI.
+```hcl
+variables = jsonencode([
+  {
+    from     = "list"
+    name     = "environment"
+    label    = "Environment"
+    as       = "string"
+    multi    = true
+    defaults = ["production"]
+    items    = [
+      { value = "production" },
+      { value = "staging" },
+      { value = "development" },
+    ]
+  }
+])
+```
 
--> **NOTE:** `item`, `nrql_query`, `multi`, and `defer_execution` are silently ignored when `from = "input"`. Set only the common attributes for input variables.
+#### `from = "query"` fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `nrqlQueries` | array | **Yes** | NRQL queries that populate variable choices. Each entry requires `query` (string) and `accountIds` (array of ints). |
+| `ignoreTimeRange` | bool | No | When `true` (default), the variable query ignores the notebook time picker. Set to `false` to respect the current time window. |
+| `multi` | bool | No | Enables multi-value selection. |
+| `deferExecution` | bool | No | Shows Apply button on multi-select. |
+
+Example:
+
+```hcl
+variables = jsonencode([
+  {
+    from            = "query"
+    name            = "appName"
+    label           = "Application"
+    ignoreTimeRange = true
+    multi           = false
+    nrqlQueries     = [
+      {
+        query      = "SELECT uniques(appName) FROM Transaction SINCE 1 hour ago"
+        accountIds = [1234567]
+      }
+    ]
+  }
+])
+```
+
+#### `from = "input"` fields
+
+Input variables render as a free-text field in the variables bar. There are no type-specific required fields beyond `name` and `from`.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `defaults` | array | No | Pre-filled default text. Supply a single-element array, e.g. `["my default value"]`. |
+| `as` | string | No | `"string"` (default), `"number"`, or `"identifier"`. |
+
+Example:
+
+```hcl
+variables = jsonencode([
+  {
+    from     = "input"
+    name     = "searchTerm"
+    label    = "Search Term"
+    defaults = ["error"]
+  }
+])
+```
+
+#### Using `jsonencode` vs raw JSON strings
+
+Both forms are equivalent and produce no diff:
+
+```hcl
+# jsonencode expression (recommended for readability)
+variables = jsonencode([
+  { from = "input", name = "filter", label = "Filter" }
+])
+
+# Raw JSON string (useful when sourcing from a file or data source)
+variables = <<-JSON
+  [{"from":"input","name":"filter","label":"Filter"}]
+JSON
+```
+
+The provider normalizes both forms during plan comparison, so switching between them does not produce a spurious diff.
 
 ## Attributes Reference
 
