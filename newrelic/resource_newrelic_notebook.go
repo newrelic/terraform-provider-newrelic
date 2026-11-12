@@ -54,6 +54,12 @@ func resourceNewRelicNotebook() *schema.Resource {
 				Computed:    true,
 				Description: "The blob identifier of the current notebook content version.",
 			},
+			"variables": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentNotebookVariables,
+				Description:      "Variable definitions for the notebook as a JSON array string. Variables appear in the notebook's variables bar and can be referenced in widget queries using {{variableName}} syntax. Accepts a raw JSON string or a jsonencode([...]) expression.",
+			},
 		},
 	}
 }
@@ -75,9 +81,16 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("content: %s", err)
 	}
 
+	vars, err := expandNotebookVariables(d)
+	if err != nil {
+		return diag.Errorf("variables: %s", err)
+	}
+
+	blobBody := mergeVariablesIntoBlob(body.(map[string]interface{}), vars)
+
 	log.Printf("[INFO] Creating New Relic notebook: %s", title)
 
-	resp, err := client.Notebooks.CreateNotebookWithContext(ctx, orgID, title, body)
+	resp, err := client.Notebooks.CreateNotebookWithContext(ctx, orgID, title, blobBody)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,6 +104,9 @@ func resourceNewRelicNotebookCreate(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", orgID)
 	_ = d.Set("blob_id", resp.BlobID)
 	_ = d.Set("content", normalized)
+	if flattenErr := flattenNotebookVariables(vars, d); flattenErr != nil {
+		return diag.FromErr(flattenErr)
+	}
 
 	// NerdGraph indexes the notebook entity asynchronously after the Blob Storage
 	// write. RetryContext polls until content.id is populated, ensuring blob_id
@@ -142,9 +158,12 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 
 	// Blob-ID short-circuit: skip the Blob Storage GET when NerdGraph confirms
 	// the content is unchanged. Falls through when NerdGraph lags and returns "".
+	// The short-circuit only applies when no variable changes are pending, since
+	// variables live inside the blob and require a GET to verify round-trip state.
 	storedBlobID, _ := d.Get("blob_id").(string)
 	currentBlobID := nb.Content.ID
-	if storedBlobID != "" && currentBlobID != "" && currentBlobID == storedBlobID {
+	variableChangesPending := d.HasChange("variables")
+	if storedBlobID != "" && currentBlobID != "" && currentBlobID == storedBlobID && !variableChangesPending {
 		log.Printf("[DEBUG] Notebook %s content unchanged (blob_id %s) — skipping Blob GET", guid, storedBlobID)
 		_ = d.Set("title", nb.Name)
 		_ = d.Set("guid", nb.ID)
@@ -164,8 +183,16 @@ func resourceNewRelicNotebookRead(ctx context.Context, d *schema.ResourceData, m
 		_ = d.Set("blob_id", currentBlobID)
 	}
 
-	if err := flattenNotebookContent(rawContent, d, "content"); err != nil {
+	if flattenErr := flattenNotebookContent(rawContent, d, "content"); flattenErr != nil {
+		return diag.FromErr(flattenErr)
+	}
+
+	blobVars, err := extractVariablesFromBlob(string(rawContent))
+	if err != nil {
 		return diag.FromErr(err)
+	}
+	if flattenErr := flattenNotebookVariables(blobVars, d); flattenErr != nil {
+		return diag.FromErr(flattenErr)
 	}
 
 	return nil
@@ -183,12 +210,13 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 
 	titleChanged := d.HasChange("title")
 	contentChanged := d.HasChange("content")
+	variablesChanged := d.HasChange("variables")
 
-	if !titleChanged && !contentChanged {
+	if !titleChanged && !contentChanged && !variablesChanged {
 		return nil
 	}
 
-	log.Printf("[INFO] Updating New Relic notebook %s (title=%v, content=%v)", guid, titleChanged, contentChanged)
+	log.Printf("[INFO] Updating New Relic notebook %s (title=%v, content=%v, variables=%v)", guid, titleChanged, contentChanged, variablesChanged)
 
 	title := d.Get("title").(string)
 	normalized, body, err := normalizeNotebookContent(d.Get("content").(string))
@@ -196,11 +224,18 @@ func resourceNewRelicNotebookUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("content: %s", err)
 	}
 
+	vars, err := expandNotebookVariables(d)
+	if err != nil {
+		return diag.Errorf("variables: %s", err)
+	}
+
+	blobBody := mergeVariablesIntoBlob(body.(map[string]interface{}), vars)
+
 	var mutResp *notebooks.NotebookMutationResponse
 	if titleChanged {
-		mutResp, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, body)
+		mutResp, err = client.Notebooks.RenameNotebookWithContext(ctx, orgID, guid, title, blobBody)
 	} else {
-		mutResp, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, body)
+		mutResp, err = client.Notebooks.UpdateNotebookContentWithContext(ctx, orgID, guid, blobBody)
 	}
 	if err != nil {
 		return diag.FromErr(err)
