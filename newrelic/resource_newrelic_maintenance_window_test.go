@@ -3,6 +3,7 @@
 package newrelic
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -40,6 +41,7 @@ func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicMaintenanceWindowExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "description", "created by acceptance test"),
 					resource.TestCheckResourceAttr(resourceName, "duration", "PT1H"),
 					resource.TestCheckResourceAttr(resourceName, "affected_entity_type", "SERVICE_LEVEL"),
 					resource.TestCheckResourceAttr(resourceName, "affected_entities.#", "1"),
@@ -58,6 +60,13 @@ func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "duration", "PT2H"),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "affected_entities.#", "1"),
+					// The refresh that follows this step reads the window back via
+					// GetListByIds, which can briefly return the pre-update values;
+					// give the update time to become visible so the plan stays empty.
+					func(s *terraform.State) error {
+						time.Sleep(30 * time.Second)
+						return nil
+					},
 				),
 			},
 			// Test: Import
@@ -144,7 +153,8 @@ resource "newrelic_service_level" "mw_sli" {
 }
 
 resource "newrelic_maintenance_window" "foo" {
-	name = "%[2]s"
+	name        = "%[2]s"
+	description = "created by acceptance test"
 	scope {
 		id   = "%[1]d"
 		type = "ACCOUNT"
@@ -211,6 +221,10 @@ resource "newrelic_maintenance_window" "foo" {
 `, testAccountID, name, testAccExpectedApplicationName, startTime)
 }
 
+// testAccCheckNewRelicMaintenanceWindowExists polls GetListByIds for up to a
+// minute rather than checking once: a maintenance window that was just
+// created is not always immediately resolvable by this query, the same
+// indexing delay already accounted for elsewhere in this test.
 func testAccCheckNewRelicMaintenanceWindowExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -222,18 +236,24 @@ func testAccCheckNewRelicMaintenanceWindowExists(n string) resource.TestCheckFun
 		}
 
 		client := testAccProvider.Meta().(*ProviderConfig).NewClient
-		resp, err := client.MaintenanceWindow.GetListByIds([]string{rs.Primary.ID})
-		if err != nil {
-			return err
-		}
-		if resp == nil || len(resp.MaintenanceWindows) != 1 {
-			return fmt.Errorf("maintenance window not found: %v", rs.Primary.ID)
-		}
 
-		return nil
+		return resource.RetryContext(context.Background(), 60*time.Second, func() *resource.RetryError {
+			resp, err := client.MaintenanceWindow.GetListByIds([]string{rs.Primary.ID})
+			if err != nil {
+				return resource.RetryableError(err)
+			}
+			if resp == nil || len(resp.MaintenanceWindows) != 1 {
+				return resource.RetryableError(fmt.Errorf("maintenance window not found yet: %v", rs.Primary.ID))
+			}
+
+			return nil
+		})
 	}
 }
 
+// testAccCheckNewRelicMaintenanceWindowDestroy mirrors the same retry
+// tolerance as the exists check, in case a just-deleted window briefly still
+// shows up in GetListByIds before the index catches up.
 func testAccCheckNewRelicMaintenanceWindowDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ProviderConfig).NewClient
 
@@ -242,9 +262,16 @@ func testAccCheckNewRelicMaintenanceWindowDestroy(s *terraform.State) error {
 			continue
 		}
 
-		resp, err := client.MaintenanceWindow.GetListByIds([]string{r.Primary.ID})
-		if err == nil && resp != nil && len(resp.MaintenanceWindows) > 0 {
-			return fmt.Errorf("maintenance window still exists: %v", r.Primary.ID)
+		retryErr := resource.RetryContext(context.Background(), 60*time.Second, func() *resource.RetryError {
+			resp, err := client.MaintenanceWindow.GetListByIds([]string{r.Primary.ID})
+			if err == nil && resp != nil && len(resp.MaintenanceWindows) > 0 {
+				return resource.RetryableError(fmt.Errorf("maintenance window still exists: %v", r.Primary.ID))
+			}
+
+			return nil
+		})
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 
