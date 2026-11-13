@@ -186,6 +186,7 @@ func Provider() *schema.Provider {
 			"newrelic_obfuscation_expression":                   resourceNewRelicObfuscationExpression(),
 			"newrelic_obfuscation_rule":                         resourceNewRelicObfuscationRule(),
 			"newrelic_notebook":                                 resourceNewRelicNotebook(),
+			"newrelic_maintenance_window":                       resourceNewRelicMaintenanceWindow(),
 			"newrelic_one_dashboard":                            resourceNewRelicOneDashboard(),
 			"newrelic_one_dashboard_raw":                        resourceNewRelicOneDashboardRaw(),
 			"newrelic_one_dashboard_json":                       resourceNewRelicOneDashboardJSON(),

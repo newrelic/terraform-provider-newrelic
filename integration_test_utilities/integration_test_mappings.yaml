@@ -370,6 +370,12 @@ resource_newrelic_log_parsing_rule.go:
 resource_newrelic_log_parsing_rule_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_maintenance_window.go:
+  test: false
+  product_mapping: WORKLOADS
+resource_newrelic_maintenance_window_test.go:
+  test: true
+  product_mapping: WORKLOADS
 resource_newrelic_metric_pruning_rule.go:
   test: false
   product_mapping: INGEST
@@ -640,6 +646,12 @@ structures_newrelic_infra_alert_condition.go:
 structures_newrelic_infra_alert_condition_test.go:
   test: true
   product_mapping: ALERTS_DEPRECATED
+structures_newrelic_maintenance_window.go:
+  test: false
+  product_mapping: WORKLOADS
+structures_newrelic_maintenance_window_test.go:
+  test: true
+  product_mapping: WORKLOADS
 structures_newrelic_monitor_downtime.go:
   test: false
   product_mapping: SYNTHETICS
