@@ -4,7 +4,9 @@ package newrelic
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -13,37 +15,102 @@ import (
 func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 	resourceName := "newrelic_maintenance_window.foo"
 	rName := generateNameForIntegrationTestResource()
+	// Always schedule the window in the future so the test doesn't expire.
+	startTime := time.Now().UTC().Add(24 * time.Hour).Format("2006-01-02T15:04:05")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNewRelicMaintenanceWindowDestroy,
 		Steps: []resource.TestStep{
+			// Step 0: create only the Service Level dependency, then wait for it to be
+			// indexed before any maintenance window references it as an affected entity.
+			// Without this wait, maintenanceWindowCreate intermittently fails with a
+			// generic "Internal server error" for an SLI that was created moments earlier.
+			{
+				Config: testAccNewRelicMaintenanceWindowSLIOnlyConfig(rName),
+				Check: func(s *terraform.State) error {
+					time.Sleep(20 * time.Second)
+					return nil
+				},
+			},
 			// Test: Create
 			{
-				Config: testAccNewRelicMaintenanceWindowConfig(rName),
+				Config: testAccNewRelicMaintenanceWindowConfig(rName, startTime),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicMaintenanceWindowExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttr(resourceName, "duration", "PT1H"),
 					resource.TestCheckResourceAttr(resourceName, "affected_entity_type", "SERVICE_LEVEL"),
 					resource.TestCheckResourceAttr(resourceName, "affected_entities.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "timezone", "UTC"),
+					resource.TestCheckResourceAttr(resourceName, "start_time", startTime),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.type", "ACCOUNT"),
+					resource.TestCheckResourceAttr(resourceName, "scope.0.id", strconv.Itoa(testAccountID)),
 				),
 			},
 			// Test: Update
 			{
-				Config: testAccNewRelicMaintenanceWindowConfigUpdated(rName),
+				Config: testAccNewRelicMaintenanceWindowConfigUpdated(rName, startTime),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicMaintenanceWindowExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "description", "updated by acceptance test"),
 					resource.TestCheckResourceAttr(resourceName, "duration", "PT2H"),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					resource.TestCheckResourceAttr(resourceName, "affected_entities.#", "1"),
 				),
+			},
+			// Test: Import
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccNewRelicMaintenanceWindowConfig(name string) string {
+// testAccNewRelicMaintenanceWindowSLIOnlyConfig creates just the Service Level
+// dependency used as the maintenance window's affected entity, without the
+// maintenance window itself. Its "newrelic_service_level" "mw_sli" block must
+// stay identical to the one in testAccNewRelicMaintenanceWindowConfig so that
+// applying that config next doesn't cause a diff/replace of this resource.
+func testAccNewRelicMaintenanceWindowSLIOnlyConfig(name string) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name   = "%[3]s"
+	domain = "APM"
+	type   = "APPLICATION"
+}
+
+resource "newrelic_service_level" "mw_sli" {
+	guid = data.newrelic_entity.app.guid
+	name = "%[2]s-sli"
+
+	events {
+		account_id = %[1]d
+		valid_events {
+			from = "Transaction"
+		}
+		good_events {
+			from = "Transaction"
+		}
+	}
+
+	objective {
+		target = 99.00
+		time_window {
+			rolling {
+				count = 7
+				unit  = "DAY"
+			}
+		}
+	}
+}
+`, testAccountID, name, testAccExpectedApplicationName)
+}
+
+func testAccNewRelicMaintenanceWindowConfig(name, startTime string) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "app" {
 	name   = "%[3]s"
@@ -83,17 +150,17 @@ resource "newrelic_maintenance_window" "foo" {
 		type = "ACCOUNT"
 	}
 
-	start_time = "2026-12-01T22:00:00"
+	start_time = "%[4]s"
 	duration   = "PT1H"
 	timezone   = "UTC"
 
 	affected_entity_type = "SERVICE_LEVEL"
 	affected_entities    = [newrelic_service_level.mw_sli.sli_guid]
 }
-`, testAccountID, name, testAccExpectedApplicationName)
+`, testAccountID, name, testAccExpectedApplicationName, startTime)
 }
 
-func testAccNewRelicMaintenanceWindowConfigUpdated(name string) string {
+func testAccNewRelicMaintenanceWindowConfigUpdated(name, startTime string) string {
 	return fmt.Sprintf(`
 data "newrelic_entity" "app" {
 	name   = "%[3]s"
@@ -134,14 +201,14 @@ resource "newrelic_maintenance_window" "foo" {
 		type = "ACCOUNT"
 	}
 
-	start_time = "2026-12-01T22:00:00"
+	start_time = "%[4]s"
 	duration   = "PT2H"
 	timezone   = "UTC"
 
 	affected_entity_type = "SERVICE_LEVEL"
 	affected_entities    = [newrelic_service_level.mw_sli.sli_guid]
 }
-`, testAccountID, name, testAccExpectedApplicationName)
+`, testAccountID, name, testAccExpectedApplicationName, startTime)
 }
 
 func testAccCheckNewRelicMaintenanceWindowExists(n string) resource.TestCheckFunc {
