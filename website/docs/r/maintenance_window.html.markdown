@@ -8,7 +8,7 @@ description: |-
 
 # Resource: newrelic\_maintenance\_window
 
-Use this resource to create, update, and delete New Relic Maintenance Windows. Maintenance windows let you schedule planned downtime for one or more affected entities (Service Levels) so that activity occurring during the window is excluded from calculations such as SLI/SLO compliance.
+Use this resource to create, update, and delete [New Relic Maintenance Windows](https://docs.newrelic.com/docs/apis/nerdgraph/examples/nerdgraph-maintenance-windows-slm/). Maintenance windows let you schedule planned downtime for one or more affected entities (Service Levels) so that activity occurring during the window is excluded from calculations such as SLI/SLO compliance.
 
 A New Relic User API key is required to provision this resource. Set the `api_key`
 attribute in the `provider` block or the `NEW_RELIC_API_KEY` environment
@@ -50,7 +50,7 @@ The following arguments are supported:
   * `id` - (Required) The unique identifier of the object within the given scope. In practice, this is your New Relic account ID.
   * `type` - (Required) The kind of scope `id` refers to. Valid values are `ACCOUNT` and `ORGANIZATION`. For Service Level maintenance windows, this should be `ACCOUNT`.
 * `start_time` - (Required) The start date and time of the maintenance window (or, for a recurring window, of its first occurrence), as an ISO 8601 date-time **without** a UTC offset or time zone suffix (e.g. `2026-12-01T22:00:00`). The time zone to interpret this value in is supplied separately via the `timezone` argument.
-* `duration` - (Required) How long each occurrence of the maintenance window lasts, expressed in ISO 8601 duration format (e.g. `PT2H` for two hours, `PT30M` for thirty minutes, `P1D` for one day). The window's end time is computed as `start_time + duration`. **Capped at 24 hours whenever `rrule` is set** (recurring windows) — this limit does not apply to a one-time, non-recurring window.
+* `duration` - (Required) How long each occurrence of the maintenance window lasts, expressed in [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g. `PT2H` for two hours, `PT30M` for thirty minutes, `P1D` for one day). The window's end time is computed as `start_time + duration`. **Capped at 24 hours whenever `rrule` is set** (recurring windows) — this limit does not apply to a one-time, non-recurring window.
 * `timezone` - (Required) The IANA time zone name that `start_time` (and the recurrence pattern, if `rrule` is set) should be interpreted in (e.g. `America/Los_Angeles`, `America/New_York`, `UTC`). Validated against the standard IANA time zone database.
 * `rrule` - (Optional) The recurrence rule for the maintenance window, expressed in iCalendar/RFC 5545 `RRULE` format, for a recurring maintenance window. This corresponds to the **Frequency** dropdown in the UI (`Once`, `Daily`, `Weekly`, `Monthly`). Omit this argument entirely for `Once` — a maintenance window that occurs only a single time, at `start_time`. This is the default behavior when `rrule` isn't set. The following constraints are enforced both by this provider at plan time and by the API itself:
   * 200 characters or fewer, restricted to the characters `A-Z`, `a-z`, `0-9`, and `` =;,:+TZ- ``.

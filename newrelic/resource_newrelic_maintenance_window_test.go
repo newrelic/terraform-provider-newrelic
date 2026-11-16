@@ -69,6 +69,23 @@ func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 					},
 				),
 			},
+			// Test: Update clearing an optional attribute. `description` is sent with
+			// `omitempty` on the Go client's update input type, so an empty value is
+			// never actually transmitted to the API — this step exists to confirm
+			// whether that means a cleared `description` is genuinely cleared
+			// server-side, or whether the previous value is silently retained.
+			{
+				Config: testAccNewRelicMaintenanceWindowConfigClearedOptional(rName, startTime),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNewRelicMaintenanceWindowExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "description", ""),
+					resource.TestCheckResourceAttr(resourceName, "duration", "PT2H"),
+					func(s *terraform.State) error {
+						time.Sleep(30 * time.Second)
+						return nil
+					},
+				),
+			},
 			// Test: Import
 			{
 				ResourceName:      resourceName,
@@ -206,6 +223,60 @@ resource "newrelic_service_level" "mw_sli" {
 resource "newrelic_maintenance_window" "foo" {
 	name        = "%[2]s"
 	description = "updated by acceptance test"
+	scope {
+		id   = "%[1]d"
+		type = "ACCOUNT"
+	}
+
+	start_time = "%[4]s"
+	duration   = "PT2H"
+	timezone   = "UTC"
+
+	affected_entity_type = "SERVICE_LEVEL"
+	affected_entities    = [newrelic_service_level.mw_sli.sli_guid]
+}
+`, testAccountID, name, testAccExpectedApplicationName, startTime)
+}
+
+// testAccNewRelicMaintenanceWindowConfigClearedOptional is identical to
+// testAccNewRelicMaintenanceWindowConfigUpdated except that the optional
+// `description` argument is omitted entirely, to test whether clearing it
+// actually clears the value server-side.
+func testAccNewRelicMaintenanceWindowConfigClearedOptional(name, startTime string) string {
+	return fmt.Sprintf(`
+data "newrelic_entity" "app" {
+	name   = "%[3]s"
+	domain = "APM"
+	type   = "APPLICATION"
+}
+
+resource "newrelic_service_level" "mw_sli" {
+	guid = data.newrelic_entity.app.guid
+	name = "%[2]s-sli"
+
+	events {
+		account_id = %[1]d
+		valid_events {
+			from = "Transaction"
+		}
+		good_events {
+			from = "Transaction"
+		}
+	}
+
+	objective {
+		target = 99.00
+		time_window {
+			rolling {
+				count = 7
+				unit  = "DAY"
+			}
+		}
+	}
+}
+
+resource "newrelic_maintenance_window" "foo" {
+	name = "%[2]s"
 	scope {
 		id   = "%[1]d"
 		type = "ACCOUNT"
