@@ -9,6 +9,7 @@ import (
 	"github.com/newrelic/newrelic-client-go/v2/pkg/maintenancewindow"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/workloads"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func testMaintenanceWindowResourceData(t *testing.T, raw map[string]interface{}) *schema.ResourceData {
@@ -64,10 +65,12 @@ func TestExpandMaintenanceWindowUpdateInput(t *testing.T) {
 	got := expandMaintenanceWindowUpdateInput(d)
 
 	assert.Equal(t, "tf-test-mw-updated", got.Name)
-	assert.Equal(t, "updated description", got.Description)
+	require.NotNil(t, got.Description)
+	assert.Equal(t, "updated description", *got.Description)
 	assert.Equal(t, maintenancewindow.NaiveDateTime("2026-12-02T22:00:00"), got.StartTime)
 	assert.Equal(t, workloads.Duration("PT2H"), got.Duration)
-	assert.Equal(t, "FREQ=WEEKLY", got.Rrule)
+	require.NotNil(t, got.Rrule)
+	assert.Equal(t, "FREQ=WEEKLY", *got.Rrule)
 	assert.Equal(t, "UTC", got.Timezone)
 	assert.Equal(t, []string{"guid-3"}, got.AffectedEntities)
 }

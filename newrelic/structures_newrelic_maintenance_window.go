@@ -36,12 +36,19 @@ func expandMaintenanceWindowScope(cfg []interface{}) maintenancewindow.Maintenan
 }
 
 func expandMaintenanceWindowUpdateInput(d *schema.ResourceData) maintenancewindow.MaintenanceWindowConfigUpdateInput {
+	// Description and Rrule are *string on the update input (see the SDK's
+	// types.go) so that clearing either of them is distinguishable from
+	// leaving it unset. Always send the current config value explicitly,
+	// rather than omitting it.
+	description := d.Get("description").(string)
+	rrule := d.Get("rrule").(string)
+
 	return maintenancewindow.MaintenanceWindowConfigUpdateInput{
 		Name:             d.Get("name").(string),
-		Description:      d.Get("description").(string),
+		Description:      &description,
 		StartTime:        maintenancewindow.NaiveDateTime(d.Get("start_time").(string)),
 		Duration:         workloads.Duration(d.Get("duration").(string)),
-		Rrule:            d.Get("rrule").(string),
+		Rrule:            &rrule,
 		Timezone:         d.Get("timezone").(string),
 		AffectedEntities: expandMaintenanceWindowAffectedEntities(d.Get("affected_entities").([]interface{})),
 	}
