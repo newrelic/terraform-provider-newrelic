@@ -14,12 +14,18 @@ import (
 )
 
 func expandMaintenanceWindowCreateInput(d *schema.ResourceData) maintenancewindow.MaintenanceWindowConfigCreateInput {
+	// Always send description and rrule, even when empty. The service stores an
+	// omitted field as null and then silently ignores later updates to it, but a
+	// field created as "" can be updated.
+	description := d.Get("description").(string)
+	rrule := d.Get("rrule").(string)
+
 	return maintenancewindow.MaintenanceWindowConfigCreateInput{
 		Name:               d.Get("name").(string),
-		Description:        d.Get("description").(string),
+		Description:        &description,
 		StartTime:          maintenancewindow.NaiveDateTime(d.Get("start_time").(string)),
 		Duration:           workloads.Duration(d.Get("duration").(string)),
-		Rrule:              d.Get("rrule").(string),
+		Rrule:              &rrule,
 		Timezone:           d.Get("timezone").(string),
 		AffectedEntityType: maintenancewindow.MaintenanceWindowAffectedEntityType(d.Get("affected_entity_type").(string)),
 		AffectedEntities:   expandMaintenanceWindowAffectedEntities(d.Get("affected_entities").([]interface{})),

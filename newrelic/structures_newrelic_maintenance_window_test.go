@@ -36,17 +36,39 @@ func TestExpandMaintenanceWindowCreateInput(t *testing.T) {
 	got := expandMaintenanceWindowCreateInput(d)
 
 	assert.Equal(t, "tf-test-mw", got.Name)
-	assert.Equal(t, "a test maintenance window", got.Description)
+	require.NotNil(t, got.Description)
+	assert.Equal(t, "a test maintenance window", *got.Description)
 	assert.Equal(t, maintenancewindow.MaintenanceWindowScopedReferenceInput{
 		ID:   "1067061",
 		Type: maintenancewindow.MaintenanceWindowEntityScopeTypes.ACCOUNT,
 	}, got.Scope)
 	assert.Equal(t, maintenancewindow.NaiveDateTime("2026-12-01T22:00:00"), got.StartTime)
 	assert.Equal(t, workloads.Duration("PT1H"), got.Duration)
-	assert.Equal(t, "FREQ=MONTHLY;BYDAY=1SU", got.Rrule)
+	require.NotNil(t, got.Rrule)
+	assert.Equal(t, "FREQ=MONTHLY;BYDAY=1SU", *got.Rrule)
 	assert.Equal(t, "America/Los_Angeles", got.Timezone)
 	assert.Equal(t, maintenancewindow.MaintenanceWindowAffectedEntityTypeTypes.SERVICE_LEVEL, got.AffectedEntityType)
 	assert.Equal(t, []string{"guid-1", "guid-2"}, got.AffectedEntities)
+}
+
+// An unset description/rrule must still be sent as "" on create: the service
+// stores an omitted field as null and then ignores later updates to it.
+func TestExpandMaintenanceWindowCreateInput_UnsetFieldsSentAsEmpty(t *testing.T) {
+	t.Parallel()
+
+	d := testMaintenanceWindowResourceData(t, map[string]interface{}{
+		"name": "tf-test-mw",
+		"scope": []interface{}{
+			map[string]interface{}{"id": "1067061", "type": "ACCOUNT"},
+		},
+	})
+
+	got := expandMaintenanceWindowCreateInput(d)
+
+	require.NotNil(t, got.Description)
+	assert.Equal(t, "", *got.Description)
+	require.NotNil(t, got.Rrule)
+	assert.Equal(t, "", *got.Rrule)
 }
 
 func TestExpandMaintenanceWindowUpdateInput(t *testing.T) {

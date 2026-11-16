@@ -41,7 +41,6 @@ func TestAccNewRelicMaintenanceWindow_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNewRelicMaintenanceWindowExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					resource.TestCheckResourceAttr(resourceName, "description", "created by acceptance test"),
 					resource.TestCheckResourceAttr(resourceName, "duration", "PT1H"),
 					resource.TestCheckResourceAttr(resourceName, "affected_entity_type", "SERVICE_LEVEL"),
 					resource.TestCheckResourceAttr(resourceName, "affected_entities.#", "1"),
@@ -170,8 +169,7 @@ resource "newrelic_service_level" "mw_sli" {
 }
 
 resource "newrelic_maintenance_window" "foo" {
-	name        = "%[2]s"
-	description = "created by acceptance test"
+	name = "%[2]s"
 	scope {
 		id   = "%[1]d"
 		type = "ACCOUNT"
