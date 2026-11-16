@@ -1,3 +1,8 @@
+<a name="v3.102.0"></a>
+## [v3.102.0] - 2026-11-16
+### Features
+- **maintenancewindow:** add newrelic_maintenance_window resource (NR-645254) ([#3283](https://github.com/newrelic/terraform-provider-newrelic/issues/3283))
+
 <a name="v3.101.12"></a>
 ## [v3.101.12] - 2026-11-05
 ### Bug Fixes
@@ -2997,7 +3002,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.12...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.102.0...HEAD
+[v3.102.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.12...v3.102.0
 [v3.101.12]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.11...v3.101.12
 [v3.101.11]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.10...v3.101.11
 [v3.101.10]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.9...v3.101.10
