@@ -1748,10 +1748,20 @@ func flattenDashboardLineWidgetThresholds(thresholds interface{}) (interface{}, 
 
 func flattenDashboardTableWidgetThresholds(thresholds interface{}) []map[string]interface{} {
 	var thresholdsConsolidated []map[string]interface{}
-	thresholdsFetchedListInterface := thresholds.([]interface{})
+	var thresholdsFetchedListInterface []interface{}
+	switch t := thresholds.(type) {
+	case []interface{}:
+		thresholdsFetchedListInterface = t
+	case map[string]interface{}:
+		thresholdsFetchedListInterface, _ = t["thresholds"].([]interface{})
+	}
+
 	if len(thresholdsFetchedListInterface) > 0 {
 		for _, item := range thresholdsFetchedListInterface {
-			thresholdSingle := item.(map[string]interface{})
+			thresholdSingle, ok := item.(map[string]interface{})
+			if !ok {
+				continue
+			}
 			thresholdSingleToBeFormatted := map[string]interface{}{}
 			for key, terraformSchemaKey := range tableWidgetThresholdAttributesJSON {
 				if value, ok := thresholdSingle[key]; ok {
