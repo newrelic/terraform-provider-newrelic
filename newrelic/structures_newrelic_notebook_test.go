@@ -515,6 +515,29 @@ func TestSuppressEquivalentVariables_InvalidJSON(t *testing.T) {
 	}
 }
 
+func TestSuppressEquivalentVariables_WhitespacePaddedEmpty(t *testing.T) {
+	// " [ ] " is semantically equivalent to "[]" and should suppress diff.
+	if !suppressEquivalentNotebookVariables("", " [ ] ", "[]", nil) {
+		t.Error("whitespace-padded empty array should suppress diff vs []")
+	}
+	if !suppressEquivalentNotebookVariables("", " [ ] ", "", nil) {
+		t.Error("whitespace-padded empty array should suppress diff vs empty string")
+	}
+	if !suppressEquivalentNotebookVariables("", "", " [ ] ", nil) {
+		t.Error("empty string should suppress diff vs whitespace-padded empty array")
+	}
+}
+
+func TestSuppressEquivalentVariables_NullVariants(t *testing.T) {
+	// "null" on either side should suppress diff with "" and "[]".
+	if !suppressEquivalentNotebookVariables("", "null", "", nil) {
+		t.Error("null vs empty should suppress diff")
+	}
+	if !suppressEquivalentNotebookVariables("", "", "null", nil) {
+		t.Error("empty vs null should suppress diff")
+	}
+}
+
 // ── flattenNotebookContent strips variables ───────────────────────────────────
 
 func TestFlattenNotebookContent_StripsVariables(t *testing.T) {

@@ -177,7 +177,7 @@ func customizeNotebookDiff(_ context.Context, d *schema.ResourceDiff, _ interfac
 // values beyond name and from — unknown fields are passed through unchanged
 // so future API additions never require a provider update.
 func checkNotebookVariablesJSON(raw string) []string {
-	if raw == "" {
+	if isEmptyVariables(raw) {
 		return nil
 	}
 	var arr []interface{}
@@ -364,6 +364,22 @@ func notebookOrgID(ctx context.Context, guid string, d *schema.ResourceData, pc 
 
 // ── Variables JSON helpers ────────────────────────────────────────────────────
 
+// isEmptyVariables returns true when s represents an absent or empty variables
+// value: blank string, "null", or a JSON array that normalises to "[]".
+func isEmptyVariables(s string) bool {
+	s = strings.TrimSpace(s)
+	if s == "" || s == "null" || s == "[]" {
+		return true
+	}
+	// Parse and re-encode: catches " [ ] " and other whitespace variants.
+	var v interface{}
+	if err := json.Unmarshal([]byte(s), &v); err != nil {
+		return false
+	}
+	arr, ok := v.([]interface{})
+	return ok && len(arr) == 0
+}
+
 // suppressEquivalentNotebookVariables suppresses diffs between two variables
 // JSON strings that are semantically identical.
 func suppressEquivalentNotebookVariables(_, oldVal, newVal string, _ *schema.ResourceData) bool {
@@ -371,8 +387,7 @@ func suppressEquivalentNotebookVariables(_, oldVal, newVal string, _ *schema.Res
 		return true
 	}
 	// Treat absent and empty-array as equivalent.
-	if (oldVal == "" || oldVal == "[]" || oldVal == "null") &&
-		(newVal == "" || newVal == "[]" || newVal == "null") {
+	if isEmptyVariables(oldVal) && isEmptyVariables(newVal) {
 		return true
 	}
 	normOld, errOld := normalizeJSONString(oldVal)
@@ -412,7 +427,7 @@ func expandNotebookVariables(d *schema.ResourceData) ([]interface{}, error) {
 		return nil, nil
 	}
 	s := raw.(string)
-	if s == "" || s == "[]" || s == "null" {
+	if isEmptyVariables(s) {
 		return nil, nil
 	}
 	var arr []interface{}
