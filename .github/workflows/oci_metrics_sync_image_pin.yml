@@ -54,9 +54,11 @@ jobs:
           echo "Pinned image in the latest release: $ref"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
-      # Catches a reference naming an image that is no longer pullable, before it reaches the
-      # module. The digest still comes from the release asset; this only checks it resolves.
-      - name: Check the reference resolves
+      # Catches a reference naming an image that is no longer pullable or not signed by New Relic,
+      # before it reaches the module. The digest still comes from the release asset; this runs the
+      # module's own resolve, signature check included, so a bump that the module would refuse at
+      # plan time is never proposed.
+      - name: Check the reference resolves and is signed
         working-directory: ${{ env.MODULE }}
         run: |
           echo '{"source_image":"${{ steps.pin.outputs.ref }}","platform":"linux/amd64"}' \

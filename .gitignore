@@ -50,3 +50,5 @@ examples/modules/cloud-integrations/gcp/*.pem
 .env
 *.py
 !examples/modules/cloud-integrations/oci/logs-integration/image_mirror.py
+!examples/modules/cloud-integrations/oci/metrics-integration/image_mirror.py
+!examples/modules/cloud-integrations/oci/metrics-integration/image_signature.py
