@@ -61,6 +61,18 @@ func resourceNewRelicFleet() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"product": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice([]string{"PCG"}, false),
+				},
+				Description: "The product type for this fleet. Use [\"PCG\"] for Pipeline Control Gateway fleets. Changing this forces resource recreation.",
+			},
 			"organization_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -139,6 +151,13 @@ func resourceNewRelicFleetCreate(ctx context.Context, d *schema.ResourceData, me
 
 	if len(tags) > 0 {
 		createInput.Tags = tags
+	}
+
+	if v, ok := d.GetOk("product"); ok {
+		productList := v.([]interface{})
+		if len(productList) > 0 {
+			createInput.Product = productList[0].(string)
+		}
 	}
 
 	// Create fleet
