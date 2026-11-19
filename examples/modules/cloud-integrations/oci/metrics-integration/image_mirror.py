@@ -7,9 +7,11 @@ Resource Manager jobs have no Docker daemon, so this talks to both registries ov
 Docker Registry HTTP API v2 and uses only the Python standard library.
 
 Modes:
-  resolve  Terraform external data source. Reads {"source_image", "platform"} from stdin and
-           prints {"digest", "tag"}: the digest of the platform-specific manifest and the tag
-           to push it under. Read-only.
+  resolve  Terraform external data source. Reads {"source_image", "platform",
+           "verify_signature"} from stdin and prints {"digest", "tag"}: the digest of the
+           platform-specific manifest and the tag to push it under. Fails unless that digest
+           carries a New Relic signature (see image_signature.py), unless verify_signature is
+           "false". Read-only apart from fetching New Relic's public signing keys.
   copy     Called from a local-exec provisioner. Copies SOURCE_DIGEST (with its config and
            layers) to DEST_REGISTRY/DEST_REPOSITORY:DEST_TAG. Settings come from environment
            variables so the registry password never appears on the command line.
@@ -30,6 +32,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+# image_signature.py sits next to this file. Found by path, so the import also works when Python
+# leaves the script's directory off sys.path (-I, -P, PYTHONSAFEPATH).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import image_signature  # noqa: E402
+
 OCI_INDEX = "application/vnd.oci.image.index.v1+json"
 OCI_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
 DOCKER_LIST = "application/vnd.docker.distribution.manifest.list.v2+json"
@@ -41,6 +48,13 @@ TIMEOUT_SECONDS = 120
 CHUNK_SIZE = 1024 * 1024
 # A newly created OCI auth token can take a few minutes before the registry accepts it.
 AUTH_PROPAGATION_SECONDS = int(os.environ.get("AUTH_PROPAGATION_SECONDS", "600"))
+
+# The repository New Relic publishes the function image to. Signatures name it, wherever the
+# image is pulled from, so a copy of the image hosted elsewhere verifies if its signature was
+# copied with it.
+SIGNED_REPOSITORY = "docker.io/newrelic/beyond-oci-metric-function"
+# Public keys of the oci-signer key that signs it. Key names in this URL are lowercase.
+SIGNING_KEYS_URL = "https://publickeys.newrelic.com/g/agent-control-oci/global/beyond-oci-metric-function/jwks.json"
 
 
 class RegistryError(Exception):
@@ -287,7 +301,7 @@ def sha256_digest(data):
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
-def resolve(source_image, platform):
+def resolve(source_image, platform, verify_signature=True):
     """Returns (digest, tag) of the manifest for platform behind source_image."""
     host, repository, tag, digest = parse_image(source_image)
     source = Registry(host, repository, "pull",
@@ -316,6 +330,26 @@ def resolve(source_image, platform):
                 platform, source_image, child))
 
     manifest_digest = sha256_digest(body)
+    # The only signature check: Terraform reads this data source before creating any resource, so
+    # copy() only ever receives a digest this check passed in the same run.
+    if verify_signature:
+        try:
+            keys = image_signature.fetch_keys(SIGNING_KEYS_URL)
+        except image_signature.SignatureError as e:
+            raise RegistryError(
+                "could not read New Relic's image signing keys: %s. The module checks the function "
+                "image's signature against them, so Terraform needs HTTPS access to "
+                "publickeys.newrelic.com." % e)
+        try:
+            kid = image_signature.verify(source, manifest_digest, SIGNED_REPOSITORY, keys)
+        except image_signature.SignatureError as e:
+            raise RegistryError(
+                "%s (%s) is not signed by New Relic: %s. The module deploys only images New Relic "
+                "signed. If function_image points at a copy of New Relic's image in your own "
+                "registry, copy its sha256-<digest>.sig signature tag along with it. For an image "
+                "you built yourself, set verify_function_image_signature to false." % (
+                    source_image, manifest_digest, e))
+        log("%s carries a New Relic signature (key %s)" % (manifest_digest, kid))
     # A digest-pinned source has no tag; derive a stable one from the digest.
     dest_tag = tag or "sha256-" + manifest_digest.split(":", 1)[1][:12]
     return manifest_digest, dest_tag
@@ -378,7 +412,8 @@ def main():
     try:
         if mode == "resolve":
             query = json.load(sys.stdin)
-            digest, tag = resolve(query["source_image"], query.get("platform") or "linux/amd64")
+            digest, tag = resolve(query["source_image"], query.get("platform") or "linux/amd64",
+                                  query.get("verify_signature") != "false")
             print(json.dumps({"digest": digest, "tag": tag}))
         elif mode == "copy":
             copy(os.environ)

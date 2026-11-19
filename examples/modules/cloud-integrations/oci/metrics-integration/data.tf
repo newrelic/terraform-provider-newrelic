@@ -14,15 +14,17 @@ data "oci_core_subnet" "input_subnet" {
 
 data "oci_secrets_secretbundle" "user_api_key" {
   secret_id = var.user_key_secret_ocid
-  provider = oci.home_provider
+  provider  = oci.home_provider
 }
 
-# Resolved on every plan, so re-applying notices when the tag points at a new image.
+# Resolved on every plan: it checks the image's New Relic signature, and notices when the tag
+# points at a new image.
 data "external" "function_image" {
   program = ["python3", "${path.module}/image_mirror.py", "resolve"]
   query = {
-    source_image = var.function_image
-    platform     = "linux/amd64"
+    source_image     = var.function_image
+    platform         = "linux/amd64"
+    verify_signature = var.verify_function_image_signature ? "true" : "false"
   }
 }
 
