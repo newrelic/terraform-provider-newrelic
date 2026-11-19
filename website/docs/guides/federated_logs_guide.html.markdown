@@ -8,9 +8,7 @@ description: |-
 
 ## Getting Started with New Relic Federated Logs
 
-With [New Relic Federated Logs](https://docs-preview.newrelic.com/docs/federated-logs/) your log data stays securely in your own AWS environment. You can still query it directly from the New Relic platform alongside the rest of your telemetry.
-
-This guide describes how to use Terraform to fully automate the provisioning of the Federated Logs setup, including both the AWS data plane and the New Relic control-plane entities.
+With [New Relic Federated Logs](https://docs-preview.newrelic.com/docs/federated-logs/) your log data stays securely in your own AWS environment. You can still query it directly from the New Relic platform alongside the rest of your telemetry. This guide describes how to use Terraform to fully automate the provisioning of the Federated Logs setup, including both the AWS data plane and the New Relic control-plane entities.
 
 Use the links below to go to the relevant sections:
 
@@ -27,7 +25,7 @@ Use the links below to go to the relevant sections:
 - [Delete a setup](#delete-setup)
 - [Delete a partition](#delete-partition)
 
-**NOTE:** Federated Logs is currently provided as a limited preview. Your organization must be enrolled in the preview before these resources will function. See [Enroll in the limited preview program](https://docs-preview.newrelic.com/docs/federated-logs/#enroll) in the product docs.
+**NOTE:** Federated Logs is currently in limited preview. To enroll your organization in the preview, refer [Enroll in the limited preview program](https://docs-preview.newrelic.com/docs/federated-logs/#enroll).
 
 **NOTE:** A few steps in the onboarding flow require the New Relic UI (for example, defining routing conditions and rolling out the gateway configuration). Wherever a UI step is required, this guide points to the matching section of the [Federated Logs product docs](https://docs-preview.newrelic.com/docs/federated-logs/) instead of repeating the wizard walkthrough here.
 
@@ -35,11 +33,21 @@ Use the links below to go to the relevant sections:
 
 Federated Logs has two distinct provisioning stages:
 
-1. **Data Processing** — applied **once per Pipeline Control Gateway (PCG) fleet**. This stage creates the fleet-level cross-account IAM base role, the ABAC inline policy that lets it assume per-setup writer roles, the SQS queue and AWS Managed Flink job that update Iceberg metadata, and the [`newrelic_aws_connection`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/aws_connection) entity that stores the base role ARN against the fleet.
+1. **Data processing** — Applied **once per Pipeline Control Gateway (PCG) fleet**. This stage creates:
+   - Fleet-level cross-account IAM base role
+   - ABAC inline policy that lets it assume per-setup writer roles
+   - SQS queue and AWS Managed Flink job to update Iceberg metadata
+   - The [`newrelic_aws_connection`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/aws_connection) entity to store the base role ARN against the fleet
 
-2. **Federated Logs Setup** — applied **once per log setup**. This stage creates the S3 bucket, the Glue catalog database, the `pcg-writer` IAM role (trusted by the fleet base role via ABAC tag matching), the New Relic reader IAM role for cross-account query access, the Iceberg tables, the [`newrelic_federated_logs_setup`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_setup) entity, and any [`newrelic_federated_logs_partition`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_partition) entities you declare.
+2. **Federated logs setup** — applied **once per log setup**. This stage creates:
+   - S3 bucket
+   - Glue catalog database
+   - The `pcg-writer` IAM role (trusted by the fleet base role via ABAC tag matching)
+   - The New Relic reader IAM role for cross-account query access
+   - Iceberg tables
+   - The [`newrelic_federated_logs_setup`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_setup) entity, and custom [`newrelic_federated_logs_partition`](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/resources/federated_logs_partition) entities you declare.
 
-The `fleet_entity_guid` produced by your PCG installation is the key that links the two stages together. A single fleet can host multiple setups; you only need to run Stage 1 once per fleet.
+The `fleet_entity_guid` produced by your PCG installation is the key that links the two stages together. A single fleet can host multiple setups; you only need to run the first stage once per fleet.
 
 ### Resources covered
 
@@ -108,7 +116,7 @@ module "data_processing" {
 
 Key variables:
 
-* `data_processing_module_name` — Name used in resource naming (3–26 lowercase alphanumeric characters, hyphens allowed but not at the start or end).
+* `data_processing_module_name` — Name used in resource naming (3–26 lowercase alphanumeric characters, don't begin or end the name with a hyphen).
 * `newrelic_org_id` — Your New Relic organization ID.
 * `fleet_entity_guid` — The NGEP entity GUID of the PCG fleet that will forward logs to this storage stack.
 * `newrelic_region` (Optional) — New Relic region context. One of `US` (default).
@@ -191,7 +199,7 @@ module "federated_logs" {
 
 Key variables:
 
-* `setup_name` — Name for this setup. Used in AWS resource naming; 3–26 lowercase alphanumeric characters (hyphens allowed but not at the start or end).
+* `setup_name` — Name for this setup. Used in AWS resource naming; 3–26 lowercase alphanumeric characters, don't begin or end the name with a hyphen).
 * `fleet_entity_guid` — Same GUID you passed to Stage 1. The module uses it to scope the IAM trust on the `pcg-writer` role.
 * `newrelic_account_id` / `newrelic_org_id` — The New Relic account and org receiving the federated logs.
 * `newrelic_region` (Optional) — `US` (default).
