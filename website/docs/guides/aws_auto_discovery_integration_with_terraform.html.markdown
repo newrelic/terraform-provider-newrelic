@@ -57,7 +57,15 @@ Match `externalId` against your AWS account ID.
   * **Allowed Values** - 28800 (8 hours), 43200 (12 hours), 86400 (24 hours)
 * **AWS Regions** `aws_regions` - The AWS regions to be scanned.
   * **Type** - List of strings
+  * **Allowed Values** - Any of the following AWS commercial regions:
+    * US: `us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`
+    * Canada and Mexico: `ca-central-1`, `ca-west-1`, `mx-central-1`
+    * South America: `sa-east-1`
+    * Europe: `eu-central-1`, `eu-central-2`, `eu-north-1`, `eu-south-1`, `eu-south-2`, `eu-west-1`, `eu-west-2`, `eu-west-3`
+    * Asia Pacific: `ap-east-1`, `ap-east-2`, `ap-northeast-1`, `ap-northeast-2`, `ap-northeast-3`, `ap-south-1`, `ap-south-2`, `ap-southeast-1`, `ap-southeast-2`, `ap-southeast-3`, `ap-southeast-4`, `ap-southeast-5`, `ap-southeast-6`, `ap-southeast-7`
+    * Middle East and Africa: `af-south-1`, `il-central-1`, `me-central-1`
   * **Example** - ["us-east-1", "us-west-2"]
+  * Regions that are opt-in in AWS (for example `af-south-1`, `ap-east-1` and `ap-southeast-3`) must be enabled in your AWS account before they can be scanned. AWS GovCloud, China, the AWS European Sovereign Cloud and `me-south-1` are not supported.
 
 ## IAM Permissions
 AWS Infra 360 uses CloudFormation resource scans, so the IAM role of the integration needs the following permissions in addition to the ones it already has:
