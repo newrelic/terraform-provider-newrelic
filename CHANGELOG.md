@@ -1,3 +1,8 @@
+<a name="v3.102.1"></a>
+## [v3.102.1] - 2026-11-19
+### Bug Fixes
+- **oci:** verify the metrics function image's New Relic signature ([#3290](https://github.com/newrelic/terraform-provider-newrelic/issues/3290))
+
 <a name="v3.102.0"></a>
 ## [v3.102.0] - 2026-11-16
 ### Features
@@ -3002,7 +3007,8 @@ new synthetics resources use GraphQL API schema
 ## [v0.1.1] - 2017-08-02
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2017-06-21
-[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.102.0...HEAD
+[Unreleased]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.102.1...HEAD
+[v3.102.1]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.102.0...v3.102.1
 [v3.102.0]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.12...v3.102.0
 [v3.101.12]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.11...v3.101.12
 [v3.101.11]: https://github.com/newrelic/terraform-provider-newrelic/compare/v3.101.10...v3.101.11

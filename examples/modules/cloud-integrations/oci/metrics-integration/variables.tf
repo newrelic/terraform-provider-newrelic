@@ -83,6 +83,12 @@ variable "function_image" {
   description = "Image the metrics function runs. The module copies it into a private Container Registry repository in this region and runs the function from that copy. The default is pinned by digest to the image this module version was published with. Set a tag such as docker.io/newrelic/beyond-oci-metric-function:latest to track that tag instead; re-applying then picks up whatever it points to."
 }
 
+variable "verify_function_image_signature" {
+  type        = bool
+  default     = true
+  description = "Deploy the function image only if it carries a New Relic signature, checked against the public keys at publickeys.newrelic.com. Set to false only for an image you built yourself; for a copy of New Relic's image in your own registry, copy its sha256-<digest>.sig tag with it instead."
+}
+
 variable "registry_username" {
   type        = string
   default     = ""
