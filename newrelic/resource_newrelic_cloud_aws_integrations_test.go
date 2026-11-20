@@ -715,7 +715,7 @@ func testAccNewRelicAwsIntegrationsConfigUpdated(AWSIntegrationsTestConfig map[s
 		}
 		aws_auto_discovery {
 			aws_regions              = ["us-east-1"]
-			metrics_polling_interval = 6000
+			metrics_polling_interval = 28800
 		}
 		security_hub {
 		  aws_regions              = ["us-east-1"]

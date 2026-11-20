@@ -107,6 +107,7 @@ resource "newrelic_cloud_aws_integrations" "bar" {
 | `auto_scaling`          | Auto Scaling Integration      |
 | `aws_app_sync`          | AppSync Integration           |
 | `aws_athena`            | Athena Integration            |
+| `aws_auto_discovery`    | AWS Infra 360 (formerly Auto Discovery) |
 | `aws_cognito`           | Cognito Integration           |
 | `aws_connect`           | Connect Integration           |
 | `aws_direct_connect`    | Direct Connect Integration    |
@@ -614,6 +615,18 @@ As specified above in the [Arguments to be Specified with Integration Blocks](#a
 ```hcl  
         security_hub {
           aws_regions              = ["us-east-1"]
+          metrics_polling_interval = 86400
+        }
+``` 
+  </details>
+  <details>
+    <summary>aws_auto_discovery (AWS Infra 360)</summary>
+*  Supported Arguments: `aws_regions` `metrics_polling_interval`
+*  Valid `metrics_polling_interval` values: 28800, 43200, 86400 (seconds)
+*  Requires additional IAM permissions on the role used for the integration; see the [AWS Infra 360 guide](/providers/newrelic/newrelic/latest/docs/guides/aws_auto_discovery_integration_with_terraform).
+```hcl
+        aws_auto_discovery {
+          aws_regions              = ["us-east-1", "us-west-2"]
           metrics_polling_interval = 86400
         }
 ``` 
