@@ -44,3 +44,9 @@ variable "enable_config_recorder" {
   type        = bool
   default     = false
 }
+
+variable "enable_pull_mode" {
+  description = "Set to true to enable PULL mode integration (API polling). Set to false if you only want PUSH mode (metric stream)."
+  type        = bool
+  default     = true
+}
