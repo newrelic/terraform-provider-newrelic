@@ -435,13 +435,11 @@ var cloudAwsInfra360PollingIntervals = []int{28800, 43200, 86400}
 // shared by many integrations that each permit a different set of intervals, so the
 // Infra 360 values cannot be validated there without breaking them.
 func cloudAwsInfra360Elem() *schema.Resource {
+	// The base builds a fresh map on every call, so narrowing the interval here does not
+	// affect the other integrations that share it.
 	s := cloudAwsIntegrationSchemaBaseExtended()
-	s["metrics_polling_interval"] = &schema.Schema{
-		Type:         schema.TypeInt,
-		Optional:     true,
-		Description:  "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours) and 86400 (24 hours)",
-		ValidateFunc: validation.IntInSlice(cloudAwsInfra360PollingIntervals),
-	}
+	s["metrics_polling_interval"].Description = "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours) and 86400 (24 hours)"
+	s["metrics_polling_interval"].ValidateFunc = validation.IntInSlice(cloudAwsInfra360PollingIntervals)
 
 	return &schema.Resource{
 		Schema: s,
