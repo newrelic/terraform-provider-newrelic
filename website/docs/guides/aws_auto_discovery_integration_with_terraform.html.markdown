@@ -13,7 +13,7 @@ AWS Infra 360 (formerly known as AWS Auto Discovery) discovers the resources in 
 ~> **NOTE:** The Terraform block is still named `aws_auto_discovery` for backwards compatibility. It configures AWS Infra 360.
 
 ## Documentation Reference
-* [AWS Auto Discovery](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/set-up-auto-discovery-of-aws-entities/)
+* [Set up auto-discovery of AWS entities](https://docs.newrelic.com/docs/infrastructure/amazon-integrations/connect/set-up-auto-discovery-of-aws-entities/) - the New Relic documentation for this feature, which refers to AWS Infra 360 as auto-discovery.
 
 ## Pre-Requisites
 AWS Infra 360 is added on top of an existing New Relic AWS integration, which is either API Polling or CloudWatch Metric Streams. If you have not integrated your AWS account yet, start with the [Cloud Integrations guide](/providers/newrelic/newrelic/latest/docs/guides/cloud_integrations_guide) and the `newrelic_cloud_aws_link_account` resource.
@@ -55,7 +55,7 @@ Match `externalId` against your AWS account ID.
 * **Scan Interval** `metrics_polling_interval` - How often, in seconds, AWS Infra 360 scans the AWS account.
   * **Type** - Integer
   * **Allowed Values** - 28800 (8 hours), 43200 (12 hours), 86400 (24 hours)
-* **AWS Regions** `aws_regions` - The AWS regions to be scanned.
+* **AWS Regions** `aws_regions` - The AWS regions to be scanned. This argument is optional, but we recommend always setting it: when no regions are provided, the discovery job falls back to every AWS commercial region, including regions that are not enabled in your AWS account.
   * **Type** - List of strings
   * **Allowed Values** - Any of the following AWS commercial regions:
     * US: `us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`
@@ -126,7 +126,10 @@ resource "newrelic_cloud_aws_integrations" "infra_360" {
 ```
 
 ### Integration managed by Terraform
-If the integration is already managed by Terraform, with a `newrelic_cloud_aws_link_account` resource and an `aws_iam_role` for it, attach the same policy to that role and reference the resources directly instead of using variables:
+If the integration is already managed by Terraform, attach the same policy to the IAM role of the integration and reference the linked account directly instead of using variables. This example builds on the policy from the previous example (`aws_iam_policy.newrelic_aws_infra_360`) and uses two resources that you already have in your configuration. Replace their names with your own:
+
+* `aws_iam_role.newrelic_aws_role` - the `aws_iam_role` used by the integration.
+* `newrelic_cloud_aws_link_account.newrelic_cloud_integration_pull` - the `newrelic_cloud_aws_link_account` that links your AWS account.
 
 ```hcl
 resource "aws_iam_role_policy_attachment" "newrelic_aws_infra_360" {
@@ -149,18 +152,20 @@ resource "newrelic_cloud_aws_integrations" "infra_360" {
 ~> **NOTE:** If you already use a `newrelic_cloud_aws_integrations` resource for the same linked account, you can add the `aws_auto_discovery` block to that resource instead of creating a new one.
 
 ### Scanning every region
-To scan all the regions that are enabled in your AWS account, build the list from the AWS provider:
+To scan every region that is enabled in your AWS account, build the list from the AWS provider and remove `me-south-1`, which is not supported. Regions that AWS adds later are also returned by the data source, so check the list of allowed regions above if you rely on this.
+
+This example reuses the policy and attachment from the first example, and replaces its `newrelic_cloud_aws_integrations` resource.
 
 ```hcl
 data "aws_regions" "enabled" {
-  all_regions = false # only regions enabled by default
+  all_regions = false # only regions enabled in this AWS account
 }
 
 resource "newrelic_cloud_aws_integrations" "infra_360" {
   linked_account_id = var.linked_account_id
 
   aws_auto_discovery {
-    aws_regions              = data.aws_regions.enabled.names
+    aws_regions              = setsubtract(data.aws_regions.enabled.names, ["me-south-1"])
     metrics_polling_interval = 86400
   }
 
