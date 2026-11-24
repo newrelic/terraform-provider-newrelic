@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
@@ -265,8 +266,8 @@ func resourceNewRelicCloudAwsIntegrations() *schema.Resource {
 			"aws_auto_discovery": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Aws Auto Discovery Integration",
-				Elem:        cloudAwsIntegrationCommonSchemaElem(),
+				Description: "AWS Infra 360 (formerly Auto Discovery) integration",
+				Elem:        cloudAwsInfra360Elem(),
 				MaxItems:    1,
 			},
 			"cloudfront": {
@@ -420,6 +421,28 @@ func cloudAwsIntegrationSchemaBase() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The data polling interval in seconds.",
 		},
+	}
+}
+
+// cloudAwsInfra360PollingIntervals are the data polling intervals, in seconds, that the
+// AWS Infra 360 (aws_auto_discovery) integration accepts: 8 hours, 12 hours and 24 hours.
+// It performs a resource scan rather than a metric poll, so the shorter intervals offered
+// by the metric integrations do not apply to it.
+var cloudAwsInfra360PollingIntervals = []int{28800, 43200, 86400}
+
+// cloudAwsInfra360Elem defines the schema of elements in the "aws_auto_discovery" block.
+// It deliberately does not reuse cloudAwsIntegrationCommonSchemaElem: that element is
+// shared by many integrations that each permit a different set of intervals, so the
+// Infra 360 values cannot be validated there without breaking them.
+func cloudAwsInfra360Elem() *schema.Resource {
+	// The base builds a fresh map on every call, so narrowing the interval here does not
+	// affect the other integrations that share it.
+	s := cloudAwsIntegrationSchemaBaseExtended()
+	s["metrics_polling_interval"].Description = "The data polling interval in seconds. Valid values are 28800 (8 hours), 43200 (12 hours) and 86400 (24 hours)"
+	s["metrics_polling_interval"].ValidateFunc = validation.IntInSlice(cloudAwsInfra360PollingIntervals)
+
+	return &schema.Resource{
+		Schema: s,
 	}
 }
 

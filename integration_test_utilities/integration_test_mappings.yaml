@@ -238,6 +238,9 @@ resource_newrelic_cloud_aws_integrations.go:
 resource_newrelic_cloud_aws_integrations_test.go:
   test: true
   product_mapping: CLOUD
+resource_newrelic_cloud_aws_integrations_unit_test.go:
+  test: true
+  product_mapping: CLOUD
 resource_newrelic_cloud_aws_link_account.go:
   test: false
   product_mapping: CLOUD
