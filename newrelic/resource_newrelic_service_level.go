@@ -278,6 +278,22 @@ func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceDat
 
 	sliGUID := getSliGUID(identifier)
 	indicators, err := client.ServiceLevel.GetIndicatorsWithContext(ctx, common.EntityGUID(sliGUID))
+	if err == nil {
+		for _, indicator := range *indicators {
+			if indicator.ID == identifier.ID {
+				return diag.FromErr(flattenServiceLevelIndicator(indicator, identifier, d, sliGUID))
+			}
+		}
+		return diag.Errorf("err: SLI with id=%s not found.", d.Id())
+	}
+	if _, ok := err.(*errors.NotFound); !ok {
+		return diag.FromErr(err)
+	}
+
+	// A newly created SLI is only reachable by its own entity GUID once that entity is indexed,
+	// which takes a few seconds. Until then it is already listed under the entity it was created
+	// on, so look there before concluding that the SLI is gone.
+	indicators, err = client.ServiceLevel.GetIndicatorsWithContext(ctx, common.EntityGUID(identifier.EntityGUID))
 	if err != nil {
 		if _, ok := err.(*errors.NotFound); ok {
 			d.SetId("")
@@ -292,7 +308,8 @@ func resourceNewRelicServiceLevelRead(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	return diag.Errorf("err: SLI with id=%s not found.", d.Id())
+	d.SetId("")
+	return nil
 }
 
 func resourceNewRelicServiceLevelUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
