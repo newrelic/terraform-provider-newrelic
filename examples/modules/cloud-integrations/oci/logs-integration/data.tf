@@ -2,6 +2,13 @@ data "oci_identity_tenancy" "current_tenancy" {
   tenancy_id = var.tenancy_ocid
 }
 
+# Created by the container-registry-setup module (NR-640865), not by this module -- see
+# that module's README for why. Reading it back here means this module never recomputes a
+# name that could drift from what was actually created.
+data "oci_artifacts_container_repository" "existing" {
+  repository_id = var.container_repository_id
+}
+
 data "oci_identity_region_subscriptions" "subscriptions" {
   tenancy_id = var.tenancy_ocid
 }
