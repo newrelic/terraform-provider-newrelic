@@ -202,6 +202,9 @@ resource_newrelic_aws_connection.go:
 resource_newrelic_aws_connection_test.go:
   test: true
   product_mapping: LOGGING_INTEGRATIONS
+resource_newrelic_aws_connection_unit_test.go:
+  test: true
+  product_mapping: LOGGING_INTEGRATIONS
 resource_newrelic_cardinality_management.go:
   test: false
   product_mapping: INGEST
