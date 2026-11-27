@@ -25,8 +25,6 @@ Use the links below to go to the relevant sections:
 - [Delete a setup](#delete-setup)
 - [Delete a partition](#delete-partition)
 
-**NOTE:** Federated Logs is currently in limited preview. To enroll your organization in the preview, refer [Enroll in the limited preview program](https://docs-preview.newrelic.com/docs/federated-logs/#enroll).
-
 **NOTE:** A few steps in the onboarding flow require the New Relic UI (for example, defining routing conditions and rolling out the gateway configuration). Wherever a UI step is required, this guide points to the matching section of the [Federated Logs product docs](https://docs-preview.newrelic.com/docs/federated-logs/) instead of repeating the wizard walkthrough here.
 
 ### Architecture overview
@@ -61,7 +59,6 @@ The `fleet_entity_guid` produced by your PCG installation is the key that links 
 
 Before you onboard Federated Logs through Terraform, confirm the following:
 
-* Your New Relic organization is **enrolled in the Federated Logs limited preview**.
 * A **Pipeline Control Gateway fleet** is already deployed in your Kubernetes environment, with its DNS endpoint reachable from your log sources, and you have its **`fleet_entity_guid`**. If you don't yet have a fleet, refer [Getting Started with New Relic Fleet Control](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/fleet_getting_started) and the [Pipeline Control Gateway documentation](https://docs.newrelic.com/docs/new-relic-control/pipeline-control/overview/).
 * Your **log sources are pointed at the gateway endpoint** rather than sending logs directly to New Relic. The per-source configuration (APM agents, infrastructure agent, Fluent Bit, Fluentd) is covered in [Configure your log source](https://docs-preview.newrelic.com/docs/federated-logs/#configure-source) in the product docs.
 * Federated Logs currently supports **AWS only**. The Query engine is deployed in **`us-west-2`** and **`ap-south-1`**. Provision your AWS resources in one of these supported regions.
