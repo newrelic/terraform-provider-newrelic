@@ -67,6 +67,11 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
   policy_arn = aws_iam_policy.newrelic_aws_permissions.arn
 }
 
+resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach_read_only" {
+  role       = alks_iamrole.newrelic_aws_role.name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+}
+
 resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
