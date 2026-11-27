@@ -8,7 +8,7 @@ description: |-
 
 ## Getting Started with New Relic Federated Logs
 
-With [New Relic Federated Logs](https://docs-preview.newrelic.com/docs/federated-logs/) your log data stays securely in your own AWS environment. You can still query it directly from the New Relic platform alongside the rest of your telemetry. This guide describes how to use Terraform to fully automate the provisioning of the Federated Logs setup, including both the AWS data plane and the New Relic control-plane entities.
+With [New Relic Federated Logs](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/introduction-federated-logs/) your log data stays securely in your own AWS environment. You can still query it directly from the New Relic platform alongside the rest of your telemetry. This guide describes how to use Terraform to fully automate the provisioning of the Federated Logs setup, including both the AWS data plane and the New Relic control-plane entities.
 
 Use the links below to go to the relevant sections:
 
@@ -25,7 +25,7 @@ Use the links below to go to the relevant sections:
 - [Delete a setup](#delete-setup)
 - [Delete a partition](#delete-partition)
 
-**NOTE:** A few steps in the onboarding flow require the New Relic UI (for example, defining routing conditions and rolling out the gateway configuration). Wherever a UI step is required, this guide points to the matching section of the [Federated Logs product docs](https://docs-preview.newrelic.com/docs/federated-logs/) instead of repeating the wizard walkthrough here.
+**NOTE:** A few steps in the onboarding flow require the New Relic UI (for example, defining routing conditions and rolling out the gateway configuration). Wherever a UI step is required, this guide points to the matching section of the [Federated Logs docs](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/introduction-federated-logs/) instead of repeating the wizard walkthrough here.
 
 ### Architecture overview
 
@@ -60,7 +60,7 @@ The `fleet_entity_guid` produced by your PCG installation is the key that links 
 Before you onboard Federated Logs through Terraform, confirm the following:
 
 * A **Pipeline Control Gateway fleet** is already deployed in your Kubernetes environment, with its DNS endpoint reachable from your log sources, and you have its **`fleet_entity_guid`**. If you don't yet have a fleet, refer [Getting Started with New Relic Fleet Control](https://registry.terraform.io/providers/newrelic/newrelic/latest/docs/guides/fleet_getting_started) and the [Pipeline Control Gateway documentation](https://docs.newrelic.com/docs/new-relic-control/pipeline-control/overview/).
-* Your **log sources are pointed at the gateway endpoint** rather than sending logs directly to New Relic. The per-source configuration (APM agents, infrastructure agent, Fluent Bit, Fluentd) is covered in [Configure your log source](https://docs-preview.newrelic.com/docs/federated-logs/#configure-source) in the product docs.
+* Your **log sources are pointed at the gateway endpoint** rather than sending logs directly to New Relic. The per-source configuration (APM agents, infrastructure agent, Fluent Bit, Fluentd) is covered in [Configure your log source](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/set-up-and-configure-federated-logs/) in the product docs.
 * Federated Logs currently supports **AWS only**. The Query engine is deployed in **`us-west-2`** and **`ap-south-1`**. Provision your AWS resources in one of these supported regions.
 * You have an **AWS account** with permissions to create S3 buckets, SQS queues, Glue catalogs, AWS Managed Flink applications, and IAM roles.
 * You have **Terraform >= 1.6.0**, the **New Relic provider >= 3.91.0**, and the **AWS provider >= 6.36.0** configured.
@@ -215,7 +215,7 @@ Useful outputs:
 <a id="activate"></a>
 ### Activate the data path
 
-A successful `terraform apply` creates the setup and links it to your fleet, but no logs flow until you define routing conditions and roll the gateway configuration. In the Federated Logs setup wizard, add the OTTL conditions that decide which logs are routed to federated storage, then trigger a fleet deployment so the gateway pods pick up the new config. Refer [Set up routing conditions](https://docs-preview.newrelic.com/docs/federated-logs/#set-up-routing-conditions) and [Update gateway configuration](https://docs-preview.newrelic.com/docs/federated-logs/#update-gateway-configuration).
+A successful `terraform apply` creates the setup and links it to your fleet, but no logs flow until you define routing conditions and roll the gateway configuration. In the Federated Logs setup wizard, add the OTTL conditions that decide which logs are routed to federated storage, then trigger a fleet deployment so the gateway pods pick up the new config. Refer [Set routing conditions](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/set-up-and-configure-federated-logs/#routing-condition) and [Deploy configuration](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/set-up-and-configure-federated-logs/#deploy-configuration).
 
 <a id="test"></a>
 ### Test the setup
@@ -241,7 +241,7 @@ module "federated_logs" {
 
 After `terraform apply`, the module's `e2e_validation_status` output reports `PASS` on a successful round-trip through the gateway to NRDB, and a failure marker otherwise. `e2e_validation_result` carries the full Lambda response — `status`, `exit_code`, `stdout`, `stderr` — for troubleshooting.
 
-If you'd rather validate from the UI, the setup wizard's **Simulate test log received** button performs the same round-trip — refer [Test the setup](https://docs-preview.newrelic.com/docs/federated-logs/#test-the-setup).
+If you'd rather validate from the UI, the setup wizard's **Simulate test log received** button performs the same round-trip — refer [Test the setup](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/set-up-and-configure-federated-logs/#test-setup).
 
 <a id="adding-partitions"></a>
 ### Add partitions to an existing setup
@@ -271,7 +271,7 @@ module "federated_logs" {
 
 Each entry in `partition_tables` may optionally override `retention_in_days`, `description`, `routing_expression`, `table_parameters`, and `optimizer_configuration`. Apply the change with the usual `terraform plan` / `terraform apply`; the new partition becomes visible in the New Relic UI under **Logs > Data Partitions > Federated Logs**.
 
-As with the initial setup, a new partition only starts receiving logs once you define its routing condition and roll the gateway configuration out from the wizard. The product docs cover the same steps for partitions in [Set up routing conditions](https://docs-preview.newrelic.com/docs/federated-logs/#set-up-routing-conditions-1) and [Update gateway configuration](https://docs-preview.newrelic.com/docs/federated-logs/#update-gateway-configuration-1).
+As with the initial setup, a new partition only starts receiving logs once you define its routing condition and roll the gateway configuration out from the wizard. The product docs cover the same steps for partitions in [Set up routing conditions](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/set-up-and-configure-federated-logs/#routing-condition) and [Update gateway configuration](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/set-up-and-configure-federated-logs/#deploy-configuration).
 
 <a id="query-federated-logs"></a>
 ### Query federated logs
@@ -282,7 +282,7 @@ After `terraform apply` completes and the gateway deployment has rolled out, you
 SELECT * FROM Log_federated SINCE 1 hour ago
 ```
 
-See [Query federated logs](https://docs-preview.newrelic.com/docs/federated-logs/#query) in the product docs for more examples.
+See [Query federated logs](https://nr-609334-federated-logs-ga--docs-website-private.netlify.app/docs/logs/federated-logs/query-federated-logs/) in the product docs for more examples.
 
 The S3 bucket, Glue catalog database, partition folder objects, and Iceberg tables are all declared with `lifecycle { prevent_destroy = true }`, so `terraform destroy` will refuse to remove them and abort the plan. This is intentional: it keeps your historical log data from being accidentally deleted. In both scenarios below, the storage resources stay intact in AWS while everything else is deprovisioned cleanly.
 
